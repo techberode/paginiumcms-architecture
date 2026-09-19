@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, MapPin, Phone } from 'lucide-react';
-import { fetchPublicStaff, type PublicStaffCard, type PublicStaffLists } from '../../api/staff';
+import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import {
+  fetchPublicStaff,
+  fetchStaffCards,
+  sendStaffMessage,
+  type PublicStaffCard,
+  type PublicStaffLists,
+} from '../../api/staff';
 import { useI18n } from '../../context/I18nContext';
 import { PUBLIC_CARD } from '../../theme/publicUiClasses';
 import { SocialBrandLink } from '../ui/SocialBrandIcon';
@@ -16,9 +22,29 @@ function formatAddress(address: PublicStaffCard['address']): string {
   return [address.street, address.postal, address.city, address.country].filter(Boolean).join(', ');
 }
 
-const StaffCard: React.FC<{ card: PublicStaffCard }> = ({ card }) => {
+export const StaffCard: React.FC<{ card: PublicStaffCard }> = ({ card }) => {
   const { t } = useI18n();
   const address = formatAddress(card.address);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const submitChat = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    const result = await sendStaffMessage(card.id, { name, email, message });
+    setBusy(false);
+    if (!result.success) {
+      setError(result.error || t('public.staff.chatFailed'));
+      return;
+    }
+    setSent(true);
+  };
 
   return (
     <article className={`${PUBLIC_CARD} p-6`} data-testid={`staff-card-${card.id}`}>
@@ -31,7 +57,17 @@ const StaffCard: React.FC<{ card: PublicStaffCard }> = ({ card }) => {
           </div>
         )}
         <div className="min-w-0">
-          <h3 className="font-bold text-theme-text">{card.name}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-bold text-theme-text">{card.name}</h3>
+            {card.chatEnabled ? (
+              <span
+                className={`text-[11px] font-semibold uppercase tracking-wide ${card.online ? 'text-emerald-600' : 'text-theme-text-muted'}`}
+                data-testid={`staff-presence-${card.id}`}
+              >
+                {card.online ? t('public.staff.online') : t('public.staff.offline')}
+              </span>
+            ) : null}
+          </div>
           {card.jobTitle ? <p className="text-sm text-theme-text-muted">{card.jobTitle}</p> : null}
         </div>
       </div>
@@ -92,7 +128,85 @@ const StaffCard: React.FC<{ card: PublicStaffCard }> = ({ card }) => {
             ))}
         </nav>
       ) : null}
+      {card.chatEnabled ? (
+        <div className="mt-4">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-theme-primary"
+            data-testid={`staff-chat-toggle-${card.id}`}
+            onClick={() => setOpen((current) => !current)}
+          >
+            <MessageCircle className="w-4 h-4" />
+            {card.online ? t('public.staff.liveChat') : t('public.staff.leaveMessage')}
+          </button>
+          {open ? (
+            sent ? (
+              <p className="mt-3 text-sm text-theme-text-muted">{t('public.staff.chatSent')}</p>
+            ) : (
+              <form className="mt-3 space-y-2" onSubmit={(event) => void submitChat(event)}>
+                <input
+                  required
+                  className="w-full rounded-lg border border-theme-border bg-theme-canvas px-3 py-2 text-sm"
+                  placeholder={t('public.contact.fields.name')}
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                />
+                <input
+                  required
+                  type="email"
+                  className="w-full rounded-lg border border-theme-border bg-theme-canvas px-3 py-2 text-sm"
+                  placeholder={t('public.contact.fields.email')}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+                <textarea
+                  required
+                  minLength={10}
+                  rows={3}
+                  className="w-full rounded-lg border border-theme-border bg-theme-canvas px-3 py-2 text-sm"
+                  placeholder={t('public.contact.fields.messagePlaceholder')}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                />
+                {error ? <p className="text-sm text-red-600">{error}</p> : null}
+                <button type="submit" className="btn btn-primary text-sm" disabled={busy}>
+                  {busy ? t('public.staff.sending') : t('public.staff.send')}
+                </button>
+              </form>
+            )
+          ) : null}
+        </div>
+      ) : null}
     </article>
+  );
+};
+
+export const StaffCardsSection: React.FC<{
+  mode?: string;
+  user?: string;
+  type?: string;
+  team?: string;
+}> = ({ mode, user, type, team }) => {
+  const [cards, setCards] = useState<PublicStaffCard[]>([]);
+
+  useEffect(() => {
+    void fetchStaffCards({
+      user: mode === 'user' ? user : undefined,
+      type: mode === 'type' ? type : undefined,
+      team: mode === 'team' ? team : undefined,
+    }).then(setCards);
+  }, [mode, user, type, team]);
+
+  if (cards.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" data-testid="staff-cards-island">
+      {cards.map((card) => (
+        <StaffCard key={card.id} card={card} />
+      ))}
+    </div>
   );
 };
 

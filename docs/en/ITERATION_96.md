@@ -1,6 +1,6 @@
 # Iteration 96 — Document library & file manager (Office, PDF, text)
 
-> **Status:** ✅ **shipped** (September 18, 2026) — core slices 96a–96f; optional `media:documents:publish` ACL deferred  
+> **Status:** ✅ **shipped** in **`v2.1.0-beta.86`** (September 19, 2026) — core slices 96a–96f; optional `media:documents:publish` ACL deferred  
 > **Priority:** 🟡 **P1 product** — DAM beyond images/video; safe document workflows for editors  
 > **Depends on:** [It.78](ITERATION_78.md) unified upload policy · [It.79](ITERATION_79.md) DAM video · [It.72](ITERATION_72.md) storage drivers · [It.67](ITERATION_67.md) untrusted surfaces  
 > **Related:** Media Library today (images/video) — **download** added pre-96 via `GET /api/media/file/{path}?download=1`  

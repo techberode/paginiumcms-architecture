@@ -18,7 +18,8 @@ import { securityApi, type SsoProvider } from '../../api/security';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { isMaintenanceActive } from '../../api/maintenance';
 import { useI18n } from '../../context/I18nContext';
-import { ADMIN_DEFAULT_ROUTE } from '../../config/adminNavSections';
+import { authApi } from '../../api/auth';
+import { postAuthPath } from '../../utils/postAuthPath';
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from '../auth/AuthShell';
 import { TotpCodeInput } from '../auth/TotpCodeInput';
 import { demoApi } from '../../api/demo';
@@ -101,7 +102,8 @@ export const LoginModal: React.FC = () => {
       if (result?.user) {
         await refreshUser();
         toast.success(t('public.auth.login.toast.success'));
-        navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
+        const probe = await authApi.probeSession();
+        navigate(postAuthPath(probe.user), { replace: true });
         return;
       }
       toast.error(t('public.auth.login.toast.demoQuickLoginFailed'));
@@ -124,7 +126,8 @@ export const LoginModal: React.FC = () => {
         toast.info(t('public.auth.login.toast.totpRequired'));
       } else if (outcome.success) {
         toast.success(t('public.auth.login.toast.success'));
-        navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
+        const probe = await authApi.probeSession();
+        navigate(postAuthPath(probe.user), { replace: true });
       } else {
         toast.error(outcome.error || t('public.auth.login.toast.invalidCredentials'));
       }
@@ -159,7 +162,8 @@ export const LoginModal: React.FC = () => {
       const ok = await verifyTwoFactorLogin(totpCode.trim());
       if (ok) {
         toast.success(t('public.auth.login.toast.twoFactorSuccess'));
-        navigate(ADMIN_DEFAULT_ROUTE, { replace: true });
+        const probe = await authApi.probeSession();
+        navigate(postAuthPath(probe.user), { replace: true });
       } else {
         toast.error(t('public.auth.login.toast.totpInvalid'));
       }

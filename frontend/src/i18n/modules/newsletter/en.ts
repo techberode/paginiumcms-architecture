@@ -2,8 +2,13 @@ import type { MessageTree } from '../../types';
 
 export const newsletterEn: MessageTree = {
   page: {
-    title: 'Newsletter subscribers',
-    subtitle: 'Subscription settings, subscriber list, and campaign sending.',
+    title: 'Newsletter',
+    subtitle: 'Subscription settings, campaign sending, and the recipient list.',
+  },
+  tabs: {
+    settings: 'Newsletter settings',
+    send: 'Email sending',
+    recipients: 'Recipients',
   },
   settings: {
     title: 'Newsletter settings',

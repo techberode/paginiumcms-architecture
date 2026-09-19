@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use InvalidArgumentException;
+use PaginiumCMS\Core\Mail\Services\SiteMailboxGuard;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Teams\Services\TeamRepository;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Support\RequestJsonBody;
@@ -22,6 +24,7 @@ final class TeamController
         private TeamRepository $teams,
         private UserRepository $users,
         private JsonResponder $json,
+        private SettingsRepositoryInterface $settings,
     ) {
     }
 
@@ -70,6 +73,20 @@ final class TeamController
         try {
             $memberIds = $this->acceptedMemberIds($body['memberUserIds'] ?? []);
             $team = $this->teams->create($name, $type, $memberIds);
+            $extras = [];
+            if (array_key_exists('replyMailEnabled', $body)) {
+                $extras['replyMailEnabled'] = (bool) $body['replyMailEnabled'];
+            }
+            if (array_key_exists('replyMail', $body)) {
+                $extras['replyMail'] = strtolower(trim((string) $body['replyMail']));
+            }
+            if (array_key_exists('color', $body)) {
+                $extras['color'] = is_string($body['color']) ? $body['color'] : '';
+            }
+            if ($extras !== []) {
+                $this->assertReplyMailbox((string) $team['id'], $extras);
+                $team = $this->teams->update((string) $team['id'], $extras);
+            }
         } catch (InvalidArgumentException $exception) {
             return $this->json->validation($response, 'Validation failed', ['team' => $exception->getMessage()]);
         }
@@ -98,8 +115,21 @@ final class TeamController
                 return $this->json->validation($response, 'Validation failed', ['members' => $exception->getMessage()]);
             }
         }
+        if (array_key_exists('chatEnabled', $body)) {
+            $payload['chatEnabled'] = (bool) $body['chatEnabled'];
+        }
+        if (array_key_exists('replyMailEnabled', $body)) {
+            $payload['replyMailEnabled'] = (bool) $body['replyMailEnabled'];
+        }
+        if (array_key_exists('replyMail', $body)) {
+            $payload['replyMail'] = strtolower(trim((string) $body['replyMail']));
+        }
+        if (array_key_exists('color', $body)) {
+            $payload['color'] = is_string($body['color']) ? $body['color'] : '';
+        }
 
         try {
+            $this->assertReplyMailbox($id, $payload);
             $team = $this->teams->update($id, $payload);
         } catch (InvalidArgumentException $exception) {
             if ($exception->getMessage() === 'Team not found') {
@@ -179,7 +209,7 @@ final class TeamController
     }
 
     /**
-     * @return array{id: string, name: string, username: string, email: string, active: bool}
+     * @return array{id: string, name: string, username: string, email: string, active: bool, avatarUrl: ?string}
      */
     private function presentUser(User $user): array
     {
@@ -189,6 +219,7 @@ final class TeamController
             'username' => $user->getUsername(),
             'email' => $user->getEmail(),
             'active' => $user->isActive(),
+            'avatarUrl' => $user->getAvatarUrl(),
         ];
     }
 
@@ -224,5 +255,24 @@ final class TeamController
         }
 
         return $kept;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function assertReplyMailbox(string $teamId, array $payload): void
+    {
+        $existing = $this->teams->get($teamId) ?? [];
+        $enabled = array_key_exists('replyMailEnabled', $payload)
+            ? (bool) $payload['replyMailEnabled']
+            : (bool) ($existing['replyMailEnabled'] ?? false);
+        if (!$enabled) {
+            return;
+        }
+        $mailbox = array_key_exists('replyMail', $payload)
+            ? (string) $payload['replyMail']
+            : (string) ($existing['replyMail'] ?? '');
+        $host = SiteMailboxGuard::siteHost((string) ($this->settings->group('general')['siteUrl'] ?? ''));
+        SiteMailboxGuard::assertMailbox($mailbox, $host);
     }
 }

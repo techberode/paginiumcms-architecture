@@ -47,6 +47,40 @@ class UploadSecurityValidatorTest extends TestCase
         $this->assertSame(['image/png', 'application/pdf'], $resolved);
     }
 
+    public function testIncompleteExtensionAllowListAcceptsMediaMimeExtensions(): void
+    {
+        $validator = $this->makeValidator([
+            'allowedExtensions' => 'jpg',
+            'blockExecutables' => true,
+        ]);
+
+        $validator->assertFilenameAllowed('photo.png');
+        $this->addToAssertionCount(1);
+    }
+
+    public function testEmptyExtensionAllowListStillAcceptsImagesWhenDocumentsEnabled(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturnCallback(
+            static function (string $group): array {
+                if ($group === 'uploadSecurity') {
+                    return ['unifiedPolicyEnabled' => false, 'blockExecutables' => true];
+                }
+                if ($group === 'media') {
+                    return [
+                        'documentsEnabled' => true,
+                        'documentMimeTypes' => 'application/pdf,text/plain',
+                    ];
+                }
+
+                return [];
+            }
+        );
+        $validator = new UploadSecurityValidator($settings, UploadPolicyEngineTestFactory::create($settings));
+        $validator->assertFilenameAllowed('photo.png');
+        $this->addToAssertionCount(1);
+    }
+
     public function testUsesStricterUploadSizeLimit(): void
     {
         $validator = $this->makeValidator([

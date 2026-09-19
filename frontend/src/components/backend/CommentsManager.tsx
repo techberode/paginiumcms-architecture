@@ -1,5 +1,6 @@
 // frontend/src/components/backend/CommentsManager.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Archive,
   CheckCircle2,
@@ -17,6 +18,9 @@ import {
   updateCommentFlags,
   updateCommentStatus,
 } from '../../api/comments';
+import { CommentMessengerThread } from './CommentMessengerThread';
+import { useDeskInbox } from '../../hooks/useDeskInbox';
+import { commentThreadReplies, commentThreadRootId, rootComments } from '../../utils/commentThread';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
@@ -38,6 +42,7 @@ import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
+import { useSettings } from '../../hooks/useSettings';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 const statusBadgeClass = (status: CommentStatus): string => {
@@ -58,11 +63,17 @@ const truncate = (text: string, max = 90): string =>
 
 export const CommentsManager: React.FC = () => {
   const { t, locale } = useI18n();
+  const location = useLocation();
+  const { settings } = useSettings();
+  const { inPageChatActive, canReplyComments } = useDeskInbox();
   const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const statusLabel = (status: CommentStatus): string => t(`comments.status.${status}`);
   const { error: showError, success: showSuccess } = useToast();
   const [items, setItems] = useState<Comment[]>([]);
+  const requireApproval =
+    settings.comments?.requireApproval !== false ||
+    items.some((comment) => comment.status === 'pending' || comment.status === 'quarantine');
   const {
     page,
     search,
@@ -113,12 +124,27 @@ export const CommentsManager: React.FC = () => {
     void load();
   }, [load]);
 
+  const roots = useMemo(() => rootComments(items), [items]);
+
+  useEffect(() => {
+    const raw = location.hash.replace(/^#/, '');
+    if (!raw.startsWith('comment-')) {
+      return;
+    }
+    const id = decodeURIComponent(raw.slice('comment-'.length));
+    if (id !== '' && items.length > 0) {
+      setExpandedId(commentThreadRootId(items, id));
+    }
+  }, [location.hash, items]);
+
   const listView = useMemo(
     () =>
-      applyClientListView(items, {
+      applyClientListView(roots, {
         search,
-        searchText: (comment) =>
-          `${comment.author} ${comment.email ?? ''} ${comment.content} ${comment.articleSlug} ${comment.status}`,
+        searchText: (comment) => {
+          const replies = commentThreadReplies(items, comment.id);
+          return `${comment.author} ${comment.email ?? ''} ${comment.content} ${comment.articleSlug} ${comment.status} ${replies.map((reply) => reply.content).join(' ')}`;
+        },
         sortField,
         sortDirection,
         sortFields: [
@@ -131,8 +157,15 @@ export const CommentsManager: React.FC = () => {
         page,
         pageSize,
       }),
-    [items, page, pageSize, search, sortDirection, sortField, t]
+    [items, page, pageSize, roots, search, sortDirection, sortField, t]
   );
+
+  useEffect(() => {
+    if (!expandedId || loading) {
+      return;
+    }
+    document.getElementById(`comment-${expandedId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [expandedId, loading, listView.items]);
 
   const bulkSelection = useBulkSelection(
     listView.items.map((comment) => comment.id),
@@ -145,7 +178,7 @@ export const CommentsManager: React.FC = () => {
     setExpandedId((current) => (current === id ? null : id));
   };
 
-  const handleBulkWorkflow = async (action: 'read' | 'processed' | 'archive') => {
+  const handleBulkWorkflow = async (action: 'read' | 'processed' | 'approve' | 'archive') => {
     if (bulkSelection.count === 0) {
       return;
     }
@@ -155,7 +188,9 @@ export const CommentsManager: React.FC = () => {
         ? 'comments.confirm.bulkArchive'
         : action === 'read'
           ? 'comments.confirm.bulkRead'
-          : 'comments.confirm.bulkProcessed';
+          : action === 'approve'
+            ? 'comments.confirm.bulkApprove'
+            : 'comments.confirm.bulkProcessed';
     if (!(await confirmDestructive(t(confirmKey, counts)))) {
       return;
     }
@@ -274,7 +309,17 @@ export const CommentsManager: React.FC = () => {
         onClear={bulkSelection.clear}
         actions={[
           { id: 'read', label: t('comments.bulk.read'), variant: 'secondary', onClick: () => void handleBulkWorkflow('read') },
-          { id: 'processed', label: t('comments.bulk.processed'), variant: 'primary', onClick: () => void handleBulkWorkflow('processed') },
+          ...(requireApproval
+            ? [
+                {
+                  id: 'approve',
+                  label: t('comments.bulk.approve'),
+                  variant: 'primary' as const,
+                  onClick: () => void handleBulkWorkflow('approve'),
+                },
+              ]
+            : []),
+          { id: 'processed', label: t('comments.bulk.processed'), variant: 'secondary', onClick: () => void handleBulkWorkflow('processed') },
           { id: 'archive', label: t('comments.bulk.archive'), variant: 'secondary', onClick: () => void handleBulkWorkflow('archive') },
           { id: 'delete', label: t('comments.bulk.delete'), variant: 'danger', onClick: () => void handleBulkDelete() },
         ]}
@@ -295,8 +340,8 @@ export const CommentsManager: React.FC = () => {
               onToggleAll={bulkSelection.toggleAll}
             />
             {listView.items.map((comment, index) => (
+              <div key={comment.id} id={`comment-${comment.id}`} className="scroll-mt-24">
               <AdminInboxRow
-                key={comment.id}
                 id={comment.id}
                 index={index}
                 expanded={expandedId === comment.id}
@@ -338,7 +383,14 @@ export const CommentsManager: React.FC = () => {
                       <span>{t('comments.detail.article', { slug: comment.articleSlug })}</span>
                       {comment.email ? <span>{comment.email}</span> : null}
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+                    <CommentMessengerThread
+                      comment={comment}
+                      replies={commentThreadReplies(items, comment.id)}
+                      composerEnabled={inPageChatActive}
+                      canReply={canReplyComments}
+                      onApprove={comment.status !== 'approved' ? () => void approveOne(comment.id) : undefined}
+                      onUpdated={() => void load()}
+                    />
                     <div className="flex flex-wrap gap-2">
                       {!comment.isRead ? (
                         <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => void markOne(comment, { isRead: true })}>
@@ -347,9 +399,14 @@ export const CommentsManager: React.FC = () => {
                         </button>
                       ) : null}
                       {comment.status !== 'approved' ? (
-                        <button type="button" className="btn btn-primary text-xs px-2 py-1" onClick={() => void approveOne(comment.id)}>
+                        <button
+                          type="button"
+                          className="btn btn-primary text-xs px-2 py-1"
+                          data-testid={`comment-approve-${comment.id}`}
+                          onClick={() => void approveOne(comment.id)}
+                        >
                           <CheckCircle2 className="w-3 h-3 inline mr-1" />
-                          {t('comments.actions.processed')}
+                          {t('comments.actions.approve')}
                         </button>
                       ) : null}
                       {!comment.isArchived ? (
@@ -366,6 +423,7 @@ export const CommentsManager: React.FC = () => {
                   </div>
                 }
               />
+              </div>
             ))}
           </AdminInboxList>
 

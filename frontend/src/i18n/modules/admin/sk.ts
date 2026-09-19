@@ -35,6 +35,7 @@ export const adminSk: MessageTree = {
     originPanel: 'Origin Panel',
     users: 'Používatelia',
     teams: 'Tímy',
+    teamChat: 'Tímový chat',
     events: 'Udalosti',
     timeTracker: 'Časovač',
     kanban: 'Kanban',

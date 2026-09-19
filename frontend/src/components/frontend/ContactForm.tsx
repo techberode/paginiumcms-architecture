@@ -26,6 +26,7 @@ export const ContactForm: React.FC = () => {
   const [customSubject, setCustomSubject] = useState('');
   const [message, setMessage] = useState('');
   const [honeypot, setHoneypot] = useState('');
+  const [registrationRequest, setRegistrationRequest] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -40,7 +41,14 @@ export const ContactForm: React.FC = () => {
     }
 
     setSending(true);
-    const result = await submitContactForm({ name, email, subject: resolvedSubject, message, _hp: honeypot });
+    const result = await submitContactForm({
+      name,
+      email,
+      subject: resolvedSubject,
+      message,
+      registrationRequest,
+      _hp: honeypot,
+    });
     setSending(false);
 
     if (result.ok) {
@@ -51,6 +59,7 @@ export const ContactForm: React.FC = () => {
       setSubjectChoice(subjects[0] ?? '');
       setCustomSubject('');
       setMessage('');
+      setRegistrationRequest(false);
     } else {
       toast.error(result.error);
     }
@@ -136,6 +145,17 @@ export const ContactForm: React.FC = () => {
           />
         )}
       </div>
+
+      <label className="flex items-start gap-2 text-sm text-theme-text">
+        <input
+          type="checkbox"
+          data-testid="contact-registration-request"
+          className="mt-0.5"
+          checked={registrationRequest}
+          onChange={(e) => setRegistrationRequest(e.target.checked)}
+        />
+        <span>{t('public.contact.fields.registrationRequest')}</span>
+      </label>
 
       <textarea
         className={`${inputClassName} min-h-[140px]`}

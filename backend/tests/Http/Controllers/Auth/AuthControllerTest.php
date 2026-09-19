@@ -33,6 +33,17 @@ class AuthControllerTest extends TestCase
         $this->assertFalse($data['user']['twoFactorEnabled']);
     }
 
+    public function testRegisterOptionsAreEmptyUntilAdminSeeds(): void
+    {
+        $request = $this->createJsonRequest('GET', '/api/auth/register-options', []);
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame([], $data['data']['options'] ?? ['missing']);
+    }
+
     public function testRegisterWithExistingEmail(): void
     {
         // Vytvoríme používateľa

@@ -34,6 +34,8 @@ describe('editor i18n module', () => {
     expect(translate('sk', 'editor.outline.pickMedia')).toBe('Vybrať z knižnice');
     expect(translate('en', 'editor.outline.fields.image')).toBe('Hero image');
     expect(translate('sk', 'editor.outline.blocks.feature-gallery')).toBe('Galéria');
+    expect(translate('en', 'editor.outline.blocks.staff-card')).toBe('Staff card');
+    expect(translate('sk', 'editor.outline.blocks.staff-team')).toBe('Karty tímu');
     expect(translate('en', 'editor.outline.fields.tag')).toBe('Feature tag');
     expect(translate('sk', 'editor.shell.builderHelp.outline')).toContain('Galérie funkcií');
     expect(translate('en', 'editor.shell.builderHelp.developer')).toContain('live preview');

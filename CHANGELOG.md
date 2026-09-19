@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.86`](#release-2-1-0-beta-86) | 2026-09-19 | It.93o-2–8 desk/staff/external team · It.96 document library · CI media/webhook/shortcode |
 | [`2.1.0-beta.85`](#release-2-1-0-beta-85) | 2026-09-18 | Hotfix — SQLite FTS search token sanitization (CI) |
 | [`2.1.0-beta.84`](#release-2-1-0-beta-84) | 2026-09-18 | Hotfix — admin deploy GitHub token · It.92 SQLite FTS + activate probe · API barrel |
 | [`2.1.0-beta.83`](#release-2-1-0-beta-83) | 2026-09-18 | It.92 SQLite derived query index · Guard advisor · runtime watch |
@@ -160,19 +161,58 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-### Added
-
-- **It.96** — Document library: `documents` upload profile, MIME magic-byte validation, `type=document` filter, admin text editor (`GET/PATCH /api/media/{path}/content`), PDF sandbox preview, bulk ZIP download (`POST /api/media/bulk-download`), public `/storage/` attachment serving for document MIMEs, bundled `[document-link]` shortcode + Markdown picker, Settings SK/EN help for document policy fields.
-- **Admin deploy** — GitHub deploy key path (`GITHUB_DEPLOY_SSH_KEY_PATH`), `scripts/bootstrap-github-deploy-key.sh`, DEPLOY.md §12.5 (WebUI git fetch without PAT in CMS settings).
-- **It.94 (complete)** — Accessible confirm dialog (`ConfirmProvider`, `useAdminConfirm`, `confirmDialog` bridge); dashboard getting-started checklist; keyboard shortcuts modal (`?`, Ctrl/Cmd+/); `ContextHelpPanel` doc links (system update, performance guard, media S3, redirects); `FieldError` on settings, API keys, change password. Docs: [ITERATION_94.md](docs/en/ITERATION_94.md), [ADMIN_TOAST_COVERAGE_94.md](docs/en/ADMIN_TOAST_COVERAGE_94.md).
-- **It.92a (foundation)** — `QueryIndexInterface`, `JsonQueryIndex`, `QueryIndexFactory` (JSON default); Engine settings keys for future sqlite driver (validation still `json`-only). Architecture: [QUERY_INDEX.md](docs/en/architecture/QUERY_INDEX.md). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
-
 ### Planning
 
 - **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
 - **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
-- **It.92** — Hybrid Engine SQLite **query index** (derived, optional) + Performance Guard advisor (suggest only, never auto-enable). Spec: [ITERATION_92.md](docs/en/ITERATION_92.md).
-- **Queue:** **It.92** → 70 → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Queue:** **It.70** → 76/77 → 75 → 48 (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-86"></a>
+
+## [2.1.0-beta.86] – 2026-09-19
+
+Ships **It.93o-2–8** (staff cards, Messenger desk, external team + one-time invite), **It.96** document library (was still unreleased after **beta.85**), and the **remaining GitHub CI failures** from the **beta.85** tree.
+
+`v2.1.0-beta.85` already exists (SQLite FTS sanitization, 2026-09-18). This tag is the next prerelease; it is **not** a move of 85.
+
+Docs: [ITERATION_93.md](docs/en/ITERATION_93.md) · [ITERATION_96.md](docs/en/ITERATION_96.md) · [RELEASE_2_1_0_BETA_86.md](docs/en/RELEASE_2_1_0_BETA_86.md)
+
+### Added — It.93o desk / staff / registration
+
+- **It.93o-8** — External team is a create-form type with a purpose name (not a preset subsection). Team cards take a custom hex color and member avatars. New members join through a one-time invite (`data/registration-invites/{id}.json`, SHA-256 token) even when public registration is off — contact form can request it. Superadmin confirms the inactive account under Users, assigns role/team by hand, then the welcome mail goes out. Approve no longer auto-attaches a team.
+- **Users tabs** — `/users` is split into Users / New user / One-time registration (`AdminTabs` + invite + registration-option panels).
+- **Desk inbox (It.93o-5 follow-up)** — Opening a comment or message (list, beacon, or desk “open”) lands on `/comments#comment-…` / `/messages#message-…` with the item expanded. In-item chat is the reply surface while the Desk bubble is off; comment replies still publish under the article. While the bubble is on, the in-item composer stays hidden.
+- **Comments moderation** — Pending comments get an explicit **Approve** action on the item and in bulk (`POST /api/admin/comments/bulk-workflow` `approve`) when comment settings require approval.
+- **Admin tabs** — Newsletter is split into Settings / Email sending / Recipients. Backups is split into Backup management / Backup list (sortable by name, created, size, scope, type). Firewall incidents / bans / whitelist use the same `AdminTabs` chrome as Settings → System.
+- **Desk queue labels** — Beacon and Stôl bubble mark each item as message or comment, show message priority, and keep “your desk / in progress” so the reply order is obvious.
+- **It.93o-7** — External team + Discord-style chat + registration types: Teams type `external` with `/team-chat` (markdown/code + documents upload, download-only). Public register can pick a type linked to Roles (`data/registration-options.json`); optional admin approval keeps the account inactive, then welcome mail is sent. Public form never assigns ADMIN/SUPER_ADMIN.
+- **It.93o-6** — Desk reply mail: team `replyMail` / `replyMailEnabled` (central domain mailbox, independent of site/company SMTP From) and per-operator `deskMailEnabled`. Staff replies e-mail the visitor address from the contact form or comment. From must be `@site-domain` (`SiteMailboxGuard`; no Gmail etc.). Visitor e-mail is required on contact, staff-chat, and comments; `VisitorEmailGuard` keeps RFC shape and rejects disposable hosts (no MX/VRFY probe).
+- **It.93o-5** — Logged-in team members reply to article comments on the public page (`POST /api/comments/{id}/reply`). The presence bubble (admin + public) shows a desk queue (`GET /api/auth/me/desk`) with a count, open-on-page or in-bubble reply; the reply is also published under that comment. Multiple items stay in a claimed queue. The bubble is an opaque `admin-card` / theme surface. Account → Public card can hide it and pin it to an edge or a dragged custom spot. With the bubble off, a pulsing desk count stays next to the account block and in the admin top bar. Chrome/Edge can still pop it into Picture-in-Picture.
+- **It.93o-4** — Contact subject routing + Messenger desk: Settings → Contact maps each subject to teams/users (`data/message-routing.json`). Inbound contact/staff-chat continues an open thread. First staff reply claims the conversation (`in_progress` flock). Later email alerts go only to the claimant. Inbox lists your desk first; the thread UI is Messenger-style, not a public live-chat widget.
+- **It.93o-3** — Staff/team page cards + Messages chat: `[staff-card]` / `[staff-team]` islands hydrate from `GET /api/public/staff?user|type|team`. Visitors post to `POST /api/public/staff/{id}/message` (`channel=staff-chat`, honeypot + rate limit). Account `chatEnabled` + Teams chat toggle + last-seen presence (`StaffPresenceStore`, 90s). Support members get a floating online/offline bubble. Public cards still publish only opted-in, verified fields.
+- **It.93o-2** — Public-card social links must be verified before publish: `POST /api/auth/me/social/verify` (session + CSRF + rate limit), `verifiedAt` persisted on the user JSON, unverified URLs omitted from `GET /api/public/staff`. HTTP hosts go through `OutboundUrlGuard` (HEAD); chat/email validate format only.
+- **It.96** — Document library: `documents` upload profile, MIME magic-byte validation, `type=document` filter, admin text editor (`GET/PATCH /api/media/{path}/content`), PDF sandbox preview, bulk ZIP download (`POST /api/media/bulk-download`), public `/storage/` attachment serving for document MIMEs, bundled `[document-link]` shortcode + Markdown picker, Settings SK/EN help for document policy fields.
+- **Admin deploy** — GitHub deploy key path (`GITHUB_DEPLOY_SSH_KEY_PATH`), `scripts/bootstrap-github-deploy-key.sh`, DEPLOY.md §12.5 (WebUI git fetch without PAT in CMS settings).
+- **It.94 (complete)** — Accessible confirm dialog (`ConfirmProvider`, `useAdminConfirm`, `confirmDialog` bridge); dashboard getting-started checklist; keyboard shortcuts modal (`?`, Ctrl/Cmd+/); `ContextHelpPanel` doc links; `FieldError` on settings, API keys, change password. Docs: [ITERATION_94.md](docs/en/ITERATION_94.md).
+- **It.92a (foundation)** — already tagged in `beta.83`–`85`; listed here only as the query-index stack this release still ships beside.
+
+### Fixed — remaining CI from beta.85 (2026-09-18)
+
+These failed on GitHub Actions after **beta.85** while the local tree looked green. They are **not** workflow or GitHub Actions config bugs.
+
+- **Frontend Vitest (`MediaManager.test.tsx`)** — `MediaManager` imports `isTextEditableMedia` from `api/media`. The test mock replaced the whole module and omitted that export, so the suite died before render (`No "isTextEditableMedia" export is defined`). The mock now `importOriginal`s the real helpers and only stubs network calls (`listMedia`, upload, optimize, …).
+- **Upload allow-list (`UploadSecurityValidator`)** — Legacy `assertExtensionWhitelisted()` used only `uploadSecurity.allowedExtensions`. When that CSV was empty or incomplete, PNG/JPEG uploads were rejected (`Prípona súboru nie je v povolenom zozname`) before magic-byte checks. The allow-list now **merges** extensions derived from the active media MIME policy (`MediaFormats::defaultMimeTypes()` + document policy). Double extensions, executables, unsupported MIME, and invalid binaries still fail.
+- **Unsupported MIME order (`MediaRepository`)** — `saveUpload` coalesces the declared MIME, then `MediaFormats::validate()` rejects a type that is not on the media allow-list even when the filename extension itself is permitted (regression fixture: `clip.mp4` + `video/mp4` while video is not in `media.allowedMimeTypes`). `notes.txt` + `application/octet-stream` is **not** the fixture: generic octet-stream is coalesced to `text/plain` once documents are enabled.
+- **GitHub release webhook 503** — `handleRelease()` still returns the status from `SystemDeployTriggerService` (controller is not forced to 200). The published-release PHPUnit fixture now sets `githubToken` next to `stackDir` / `backendPort`. CI runners without Git SSH hit `github_token_missing` and returned 503; a local box with SSH passed. Missing secret still 503; disabled webhook still 200 ignored.
+- **Bundled shortcode catalog** — Seeder merge is keyed by shortcode name. The bundled catalog is **20** definitions (adds `staff-card`, `staff-team`, `document-link` to the previous 17). Tests expect 20, not 17.
+
+### Docs
+
+- [ITERATION_93.md](docs/en/ITERATION_93.md) — 93o-2–8 + Users/desk/admin-tab follow-ups.
+- [CONTINUATION.md](docs/en/CONTINUATION.md) — handoff checkpoint `beta.86`.
+- [RELEASE_2_1_0_BETA_86.md](docs/en/RELEASE_2_1_0_BETA_86.md).
 
 ---
 

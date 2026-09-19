@@ -26,6 +26,17 @@ class EmailAdapter implements AdapterInterface
             $html = '<p>' . htmlspecialchars((string) $html, ENT_QUOTES, 'UTF-8') . '</p>';
         }
 
+        $from = $this->from;
+        $fromName = $this->fromName;
+        $override = isset($options['from']) ? strtolower(trim((string) $options['from'])) : '';
+        if ($override !== '' && filter_var($override, FILTER_VALIDATE_EMAIL) !== false) {
+            $from = $override;
+        }
+        $overrideName = trim((string) ($options['from_name'] ?? ''));
+        if ($overrideName !== '') {
+            $fromName = $overrideName;
+        }
+
         if ($this->transport !== null) {
             try {
                 $recipients = MailRecipientParser::parse($to);
@@ -33,7 +44,7 @@ class EmailAdapter implements AdapterInterface
                     return false;
                 }
 
-                return $this->transport->send($this->from, $this->fromName, $recipients, $subject, (string) $html);
+                return $this->transport->send($from, $fromName, $recipients, $subject, (string) $html);
             } catch (\Throwable) {
                 // fall through to mail()
             }
@@ -42,7 +53,7 @@ class EmailAdapter implements AdapterInterface
         $headers = [
             'MIME-Version: 1.0',
             'Content-type: text/html; charset=utf-8',
-            'From: ' . $this->fromName . ' <' . $this->from . '>',
+            'From: ' . $fromName . ' <' . $from . '>',
         ];
 
         if (isset($options['reply_to'])) {

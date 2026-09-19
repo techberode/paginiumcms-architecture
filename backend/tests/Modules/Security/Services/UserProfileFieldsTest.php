@@ -81,4 +81,95 @@ final class UserProfileFieldsTest extends TestCase
         $this->expectException(ValidationException::class);
         UserProfileFields::normalizePhone('drop table');
     }
+
+    public function testPublishSocialsRequiresVerifiedLinks(): void
+    {
+        $user = new User();
+        $user->setEmail('ada@example.com');
+        $user->setName('Ada');
+        $user->setSocialAccounts(UserProfileFields::finalizeSocialAccounts(
+            UserProfileFields::normalizeSocialAccounts([
+                ['platform' => 'telegram', 'url' => '@desk', 'directChat' => true],
+            ]),
+            [['platform' => 'telegram', 'url' => '@desk', 'directChat' => true]],
+            []
+        ));
+
+        $this->expectException(ValidationException::class);
+        UserProfileFields::apply($user, [
+            'publish' => ['socials' => true],
+        ]);
+    }
+
+    public function testVerifiedSocialSurvivesSaveWhenFlaggedInPayload(): void
+    {
+        $user = new User();
+        $user->setEmail('ada@example.com');
+        $user->setName('Ada');
+
+        UserProfileFields::apply($user, [
+            'socialAccounts' => [
+                [
+                    'id' => 'soc-1',
+                    'platform' => 'telegram',
+                    'url' => '@desk',
+                    'directChat' => true,
+                    'verifiedAt' => time(),
+                ],
+            ],
+        ]);
+
+        $accounts = $user->getSocialAccounts();
+        $this->assertGreaterThan(0, (int) ($accounts[0]['verifiedAt'] ?? 0));
+        $this->assertSame('https://t.me/desk', $accounts[0]['url'] ?? null);
+    }
+
+    public function testStorageHydrationKeepsVerifiedAtButClientPayloadDoesNot(): void
+    {
+        $verifiedAt = 1_700_000_000;
+        $stored = UserProfileFields::normalizeSocialAccounts([
+            ['id' => 'soc-1', 'platform' => 'telegram', 'url' => '@desk', 'verifiedAt' => $verifiedAt],
+        ], true);
+        $this->assertSame($verifiedAt, (int) ($stored[0]['verifiedAt'] ?? 0));
+
+        $fromClient = UserProfileFields::normalizeSocialAccounts([
+            ['id' => 'soc-1', 'platform' => 'telegram', 'url' => '@desk', 'verifiedAt' => $verifiedAt],
+        ]);
+        $this->assertSame(0, (int) ($fromClient[0]['verifiedAt'] ?? 0));
+    }
+
+    public function testApplyDeskBubblePlacement(): void
+    {
+        $user = new User();
+        $this->assertTrue($user->isDeskBubbleEnabled());
+        $this->assertSame('right', $user->getDeskBubbleAnchor());
+
+        UserProfileFields::apply($user, [
+            'deskBubbleEnabled' => false,
+            'deskBubbleAnchor' => 'top-left',
+            'deskBubbleX' => 12,
+            'deskBubbleY' => 8,
+        ]);
+
+        $this->assertFalse($user->isDeskBubbleEnabled());
+        $this->assertSame('top-left', $user->getDeskBubbleAnchor());
+        $this->assertSame(12, $user->getDeskBubbleX());
+        $this->assertSame(8, $user->getDeskBubbleY());
+
+        UserProfileFields::apply($user, [
+            'deskBubbleAnchor' => 'nope',
+            'deskBubbleX' => 240,
+        ]);
+        $this->assertSame('right', $user->getDeskBubbleAnchor());
+        $this->assertSame(100, $user->getDeskBubbleX());
+    }
+
+    public function testApplyDeskMailToggle(): void
+    {
+        $user = new User();
+        $this->assertFalse($user->isDeskMailEnabled());
+
+        UserProfileFields::apply($user, ['deskMailEnabled' => true]);
+        $this->assertTrue($user->isDeskMailEnabled());
+    }
 }

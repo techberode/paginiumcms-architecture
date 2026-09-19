@@ -58,6 +58,7 @@ import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { EngineSettingsPanel } from './EngineSettingsPanel';
 import { PrivacyCookieSettingsPanel } from './PrivacyCookieSettingsPanel';
+import { ContactRoutingPanel } from './ContactRoutingPanel';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 import { AdminChromeColorField } from './AdminChromeColorField';
@@ -444,6 +445,21 @@ export const SettingsView: React.FC = () => {
                       />
                     ))}
                     <EngineSettingsPanel meta={engineMeta} onRefresh={() => void load()} />
+                  </>
+                ) : activeGroup === 'contact' ? (
+                  <>
+                    {group.fields.map((field) => (
+                      <SettingFieldRow
+                        key={field.key}
+                        groupKey={activeGroup}
+                        field={field}
+                        register={register}
+                        watch={watch}
+                        setValue={setValue}
+                        error={errors[field.key]?.message as string | undefined}
+                      />
+                    ))}
+                    <ContactRoutingPanel subjects={String(watch('subjects') ?? '')} />
                   </>
                 ) : activeGroup === 'privacy' ? (
                   <PrivacyCookieSettingsPanel register={register} watch={watch} setValue={setValue} />

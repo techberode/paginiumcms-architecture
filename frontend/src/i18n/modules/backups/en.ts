@@ -2,9 +2,13 @@ import type { MessageTree } from '../../types';
 
 export const backupsEn: MessageTree = {
   page: {
-    title: 'Backup Manager',
+    title: 'Backups',
     listTitle: 'Backups',
     listCount: ':count backups',
+  },
+  tabs: {
+    manage: 'Backup management',
+    list: 'Backup list',
   },
   create: {
     title: 'Create New Backup',
@@ -41,7 +45,7 @@ export const backupsEn: MessageTree = {
   },
   table: {
     name: 'Name',
-    created: 'Created',
+    created: 'Created date',
     size: 'Size',
     scope: 'Scope',
     mode: 'Type',

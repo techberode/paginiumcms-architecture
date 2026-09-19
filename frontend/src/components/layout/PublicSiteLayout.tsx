@@ -19,6 +19,7 @@ import { MaintenanceGate } from '../maintenance/MaintenanceGate';
 import { CookieConsentProvider } from '../../context/CookieConsentContext';
 import { CookieConsentBanner } from '../frontend/CookieConsentBanner';
 import { BackToTopButton } from '../frontend/BackToTopButton';
+import { SupportChatPresenceBubble } from '../backend/SupportChatPresenceBubble';
 import { useAnalyticsPageview } from '../../hooks/useAnalyticsPageview';
 import { galleryPublicSlug } from '../../utils/galleryPublicRoute';
 import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
@@ -302,6 +303,7 @@ export const PublicSiteLayout: React.FC = () => {
       ) : (
         coreChrome
       )}
+      <SupportChatPresenceBubble variant="public" />
       <BackToTopButton />
       <CookieConsentBanner />
       <SiteSearchModal

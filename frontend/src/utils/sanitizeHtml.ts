@@ -12,6 +12,7 @@ const ALLOWED_ATTR = [
   'start', 'type', 'reversed', 'value', 'hreflang', 'controls', 'poster', 'preload', 'playsinline',
   'allow', 'allowfullscreen', 'referrerpolicy', 'sandbox', 'frameborder',
   'data-tag', 'data-title',
+  'data-staff-mode', 'data-staff-user', 'data-staff-type', 'data-staff-team',
 ];
 
 /**

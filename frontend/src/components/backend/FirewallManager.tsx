@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { linkTargetProps } from '../../utils/linkTarget';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
@@ -30,6 +31,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { repositoryDoc } from '../../config/repositoryDocs';
 import { summarizeBulkResult } from '../../types/bulk';
+import { AdminTabs } from '../ui/AdminTabs';
 
 type TabId = 'incidents' | 'bans' | 'whitelist';
 
@@ -299,7 +301,7 @@ export const FirewallManager: React.FC = () => {
     }
   };
 
-  const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+  const tabs: { id: TabId; label: string; icon: LucideIcon }[] = [
     { id: 'incidents', label: t('platform.firewall.tabs.incidents'), icon: ShieldAlert },
     { id: 'bans', label: t('platform.firewall.tabs.bans'), icon: Ban },
     { id: 'whitelist', label: t('platform.firewall.tabs.whitelist'), icon: ShieldCheck },
@@ -346,25 +348,19 @@ export const FirewallManager: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="flex flex-wrap gap-2 p-4 border-b border-slate-100">
-            {tabs.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setTab(id)}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                  tab === id
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
-            ))}
-          </div>
+        <AdminTabs
+          ariaLabel={t('platform.firewall.title')}
+          activeId={tab}
+          onSelect={(id) => setTab(id as TabId)}
+          items={tabs.map(({ id, label, icon }) => ({
+            id,
+            label,
+            icon,
+            testId: `firewall-tab-${id}`,
+          }))}
+        />
 
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100">
             <AdminListToolbar
               search={search}

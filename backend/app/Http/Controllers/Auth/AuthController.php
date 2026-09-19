@@ -19,7 +19,12 @@ use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\CsrfProtectionInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\RegistrationInviteService;
+use PaginiumCMS\Modules\Security\Services\RegistrationService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Modules\Teams\Services\TeamChatStore;
+use PaginiumCMS\Core\Validation\VisitorEmailGuard;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -40,8 +45,35 @@ class AuthController
         private SecurityLogger $securityLogger,
         private OtpWorkflowService $otpWorkflow,
         private JsonResponder $json,
-        private DemoLoginGuard $demoLoginGuard
+        private DemoLoginGuard $demoLoginGuard,
+        private ?RegistrationService $registration = null,
+        private ?VisitorEmailGuard $visitorEmail = null,
+        private ?TeamChatStore $teamChat = null,
+        private ?RegistrationInviteService $invites = null,
     ) {
+    }
+
+    public function peekInvite(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $token = trim((string) ($request->getQueryParams()['token'] ?? ''));
+        $peek = $token !== '' && $this->invites !== null ? $this->invites->peek($token) : null;
+        if ($peek === null) {
+            return $this->json->error($response, 'Invite is invalid or expired', 404);
+        }
+
+        return $this->json->success($response, $peek);
+    }
+
+    public function registerOptions(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $general = $this->settings->group('general');
+        if (($general['allowRegistration'] ?? true) === false) {
+            return $this->json->success($response, ['options' => []]);
+        }
+
+        return $this->json->success($response, [
+            'options' => $this->registration?->publicOptions() ?? [],
+        ]);
     }
 
     /**
@@ -146,8 +178,11 @@ class AuthController
             return $this->json->validation($response, $confirmErrors[0], ['passwordConfirm' => $confirmErrors]);
         }
 
+        $inviteToken = is_string($data['inviteToken'] ?? null) ? trim((string) $data['inviteToken']) : '';
+        $usingInvite = $inviteToken !== '' && $this->invites !== null;
+
         $general = $this->settings->group('general');
-        if (($general['allowRegistration'] ?? true) === false) {
+        if (($general['allowRegistration'] ?? true) === false && !$usingInvite) {
             return $this->json->error($response, 'Registrácia nových používateľov je vypnutá', 403);
         }
 
@@ -160,7 +195,20 @@ class AuthController
             $this->passwordPolicy->requireValid($data['password']);
 
             $email = (string) $data['email'];
+            if ($this->visitorEmail !== null) {
+                $email = $this->visitorEmail->normalize($email, 'contact');
+            }
             $name = (string) $data['name'];
+            $optionId = is_string($data['registrationType'] ?? null) ? (string) $data['registrationType'] : '';
+            try {
+                $plan = $usingInvite
+                    ? $this->invites->plan($inviteToken, $email)
+                    : $this->registration?->plan($optionId !== '' ? $optionId : null);
+            } catch (InvalidArgumentException $exception) {
+                $field = $usingInvite ? 'inviteToken' : 'registrationType';
+
+                return $this->json->validation($response, $exception->getMessage(), [$field => $exception->getMessage()]);
+            }
 
             $existingUser = $this->userRepository->findByEmail($email);
             if ($existingUser !== null) {
@@ -168,7 +216,7 @@ class AuthController
             }
 
             if ($this->otpWorkflow->isRegistrationOtpEnabled()) {
-                $otp = $this->otpWorkflow->startRegistration($email, $name, $password);
+                $otp = $this->otpWorkflow->startRegistration($email, $name, $password, $plan ?? []);
 
                 return $this->json->respond($response, [
                     'success' => true,
@@ -185,13 +233,31 @@ class AuthController
             $user->setPassword($password);
             $user->setName($name);
             $user->setRoles(['USER']);
+            if ($usingInvite) {
+                $user->setRoles(['USER']);
+                $user->setActive(false);
+            } elseif ($this->registration !== null) {
+                $this->registration->apply($user, $optionId !== '' ? $optionId : null);
+            }
 
             $this->userRepository->save($user);
+            if ($usingInvite) {
+                $this->invites->consume($inviteToken, $email, $user->getId());
+            }
+            if ($user->isActive()) {
+                $this->registration?->sendWelcome($user);
+
+                return $this->json->respond($response, [
+                    'success' => true,
+                    'message' => 'Registrácia prebehla úspešne',
+                    'user' => $user->jsonSerialize(),
+                ], 201);
+            }
 
             return $this->json->respond($response, [
                 'success' => true,
-                'message' => 'Registrácia prebehla úspešne',
-                'user' => $user->jsonSerialize(),
+                'pending_approval' => true,
+                'message' => 'Registrácia čaká na schválenie administrátorom',
             ], 201);
         } catch (\Exception $e) {
             $status = str_contains($e->getMessage(), 'už existuje') ? 409 : 400;
@@ -221,11 +287,25 @@ class AuthController
                 (string) $data['challenge_id'],
                 (string) $data['code']
             );
+            $payload = $result['user'];
+            $active = (bool) ($payload['active'] ?? true);
+            if ($active) {
+                $saved = $this->userRepository->findByEmail((string) ($payload['email'] ?? ''));
+                if ($saved instanceof User) {
+                    $this->registration?->sendWelcome($saved);
+                }
+
+                return $this->json->respond($response, [
+                    'success' => true,
+                    'message' => 'Registrácia prebehla úspešne',
+                    'user' => $payload,
+                ], 201);
+            }
 
             return $this->json->respond($response, [
                 'success' => true,
-                'message' => 'Registrácia prebehla úspešne',
-                'user' => $result['user'],
+                'pending_approval' => true,
+                'message' => 'Registrácia čaká na schválenie administrátorom',
             ], 201);
         } catch (\Exception $e) {
             return $this->json->error($response, $e->getMessage(), 400);
@@ -402,6 +482,8 @@ class AuthController
 
         $payload = $user->jsonSerialize();
         $payload['permissions'] = $this->authorization->permissionsFor($user);
+        $payload['hasTeamChat'] = $user->isAdmin()
+            || ($this->teamChat !== null && $this->teamChat->roomsFor($user) !== []);
 
         return $this->json->respond($response, [
             'success' => true,

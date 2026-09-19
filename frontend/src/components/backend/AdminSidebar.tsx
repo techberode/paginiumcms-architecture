@@ -8,6 +8,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useAdminNavModel } from '../../hooks/useAdminNavModel';
 import type { AdminNavItemDef } from '../../config/adminNavTypes';
 import { SiteLogo } from '../branding/SiteLogo';
+import { DeskNotificationBeacon } from './DeskNotificationBeacon';
 import { ADMIN_NAV_ACTIVE, ADMIN_NAV_IDLE } from '../../theme/adminUiClasses';
 
 interface AdminSidebarProps {
@@ -99,37 +100,40 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </div>
 
         {user && !collapsed && (
-          <button
-            type="button"
-            data-testid="admin-sidebar-account"
-            title={t('admin.accountMenu.edit')}
-            onClick={() => {
-              onMobileClose?.();
-              navigate('/account');
-            }}
-            className="px-4 py-3 border-b border-admin-border shrink-0 w-full text-left hover:bg-admin-sidebar-hover transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt=""
-                  className="w-8 h-8 rounded-full object-cover border border-admin-border"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-admin-sidebar-active text-admin-sidebar-active-text flex items-center justify-center text-xs font-bold uppercase">
-                  {displayName.slice(0, 2)}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-admin-sidebar-text truncate">{displayName}</div>
-                <div className="flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-admin-primary" />
-                  <span className="text-[10px] text-admin-sidebar-muted capitalize">{roleLabel}</span>
+          <div className="px-3 py-3 border-b border-admin-border shrink-0 flex items-center gap-2">
+            <button
+              type="button"
+              data-testid="admin-sidebar-account"
+              title={t('admin.accountMenu.edit')}
+              onClick={() => {
+                onMobileClose?.();
+                navigate('/account');
+              }}
+              className="flex-1 min-w-0 text-left rounded-lg px-1 py-0.5 hover:bg-admin-sidebar-hover transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt=""
+                    className="w-8 h-8 rounded-full object-cover border border-admin-border"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-admin-sidebar-active text-admin-sidebar-active-text flex items-center justify-center text-xs font-bold uppercase">
+                    {displayName.slice(0, 2)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold text-admin-sidebar-text truncate">{displayName}</div>
+                  <div className="flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-admin-primary" />
+                    <span className="text-[10px] text-admin-sidebar-muted capitalize">{roleLabel}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </button>
+            </button>
+            <DeskNotificationBeacon variant="sidebar" />
+          </div>
         )}
 
         <div className="shrink-0 border-b border-admin-border px-2 py-2">

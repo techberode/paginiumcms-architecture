@@ -2,9 +2,13 @@ import type { MessageTree } from '../../types';
 
 export const backupsSk: MessageTree = {
   page: {
-    title: 'Správa záloh',
+    title: 'Zálohy',
     listTitle: 'Zálohy',
     listCount: ':count záloh',
+  },
+  tabs: {
+    manage: 'Správa záloh',
+    list: 'Zoznam záloh',
   },
   create: {
     title: 'Vytvoriť zálohu',
@@ -41,7 +45,7 @@ export const backupsSk: MessageTree = {
   },
   table: {
     name: 'Názov',
-    created: 'Vytvorené',
+    created: 'Dátum vytvorenia',
     size: 'Veľkosť',
     scope: 'Rozsah',
     mode: 'Typ',

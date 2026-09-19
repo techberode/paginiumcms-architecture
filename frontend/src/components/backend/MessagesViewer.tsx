@@ -1,5 +1,6 @@
 // frontend/src/components/backend/MessagesViewer.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Archive,
   CheckCircle2,
@@ -14,6 +15,7 @@ import {
   listMessages,
   updateMessage,
 } from '../../api/messages';
+import { MessageMessengerThread } from './MessageMessengerThread';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useAdminListPageSize } from '../../hooks/useAdminListPageSize';
@@ -36,6 +38,7 @@ import { messagePriorityWeight } from '../../constants/messageSubjects';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
+import { useDeskInbox } from '../../hooks/useDeskInbox';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 
 const truncate = (text: string, max = 90): string =>
@@ -43,6 +46,8 @@ const truncate = (text: string, max = 90): string =>
 
 export const MessagesViewer: React.FC = () => {
   const { t, locale } = useI18n();
+  const location = useLocation();
+  const { inPageChatActive } = useDeskInbox();
   const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const priorityLabel = (priority: string): string => {
@@ -78,12 +83,23 @@ export const MessagesViewer: React.FC = () => {
     setPage(1);
   }, [search, sortField, sortDirection, pageSize]);
 
+  useEffect(() => {
+    const raw = location.hash.replace(/^#/, '');
+    if (!raw.startsWith('message-')) {
+      return;
+    }
+    const id = decodeURIComponent(raw.slice('message-'.length));
+    if (id !== '') {
+      setExpandedId(id);
+    }
+  }, [location.hash]);
+
   const listView = useMemo(
     () =>
       applyClientListView(items, {
         search,
         searchText: (msg) =>
-          `${msg.name} ${msg.email} ${msg.subject} ${msg.message} ${msg.priority}`,
+          `${msg.name} ${msg.email} ${msg.subject} ${msg.message} ${msg.priority} ${msg.channel ?? ''} ${msg.claimedByName ?? ''}`,
         sortField,
         sortDirection,
         sortFields: [
@@ -102,6 +118,13 @@ export const MessagesViewer: React.FC = () => {
       }),
     [items, page, pageSize, search, sortDirection, sortField, t]
   );
+
+  useEffect(() => {
+    if (!expandedId || loading) {
+      return;
+    }
+    document.getElementById(`message-${expandedId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [expandedId, loading, listView.items]);
 
   const bulkSelection = useBulkSelection(
     listView.items.map((msg) => msg.id),
@@ -219,8 +242,8 @@ export const MessagesViewer: React.FC = () => {
               onToggleAll={bulkSelection.toggleAll}
             />
             {listView.items.map((msg, index) => (
+              <div key={msg.id} id={`message-${msg.id}`} className="scroll-mt-24">
               <AdminInboxRow
-                key={msg.id}
                 id={msg.id}
                 index={index}
                 expanded={expandedId === msg.id}
@@ -248,6 +271,21 @@ export const MessagesViewer: React.FC = () => {
                             {t('messages.status.archived')}
                           </span>
                         ) : null}
+                        {msg.channel === 'staff-chat' ? (
+                          <span className="badge bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 text-xs">
+                            {t('messages.status.staffChat')}
+                          </span>
+                        ) : null}
+                        {msg.desk === 'priority' ? (
+                          <span className="badge bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-xs">
+                            {t('messages.desk.mine')}
+                          </span>
+                        ) : null}
+                        {msg.handleStatus === 'in_progress' ? (
+                          <span className="badge bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 text-xs">
+                            {t('messages.desk.inProgress')}
+                          </span>
+                        ) : null}
                       </div>
                       <p className={`text-sm truncate mt-0.5 ${!msg.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'}`}>
                         {msg.subject}
@@ -268,7 +306,13 @@ export const MessagesViewer: React.FC = () => {
                       {msg.ip ? <span>{t('messages.detail.ip', { ip: msg.ip })}</span> : null}
                     </div>
                     <p className="font-medium text-gray-900 dark:text-white">{msg.subject}</p>
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{msg.message}</p>
+                    <MessageMessengerThread
+                      message={msg}
+                      composerEnabled={inPageChatActive}
+                      onUpdated={(next) =>
+                        setItems((current) => current.map((item) => (item.id === next.id ? next : item)))
+                      }
+                    />
                     <div className="flex flex-wrap gap-2">
                       {!msg.isRead ? (
                         <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => void markOne(msg, { isRead: true })}>
@@ -296,6 +340,7 @@ export const MessagesViewer: React.FC = () => {
                   </div>
                 }
               />
+              </div>
             ))}
           </AdminInboxList>
 

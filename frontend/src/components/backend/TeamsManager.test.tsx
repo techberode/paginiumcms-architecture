@@ -14,8 +14,11 @@ vi.mock('../../hooks/useToast', () => {
   return { useToast: () => toast };
 });
 
-vi.mock('../../api/teams', () => ({
-  teamsApi: {
+vi.mock('../../api/teams', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../api/teams')>();
+  return {
+    ...actual,
+    teamsApi: {
     list: vi.fn(async () => ({
       teams: [
         {
@@ -27,18 +30,28 @@ vi.mock('../../api/teams', () => ({
           createdAt: 1,
           updatedAt: 1,
         },
+        {
+          id: 'team_external01',
+          name: 'Web development',
+          type: 'external',
+          memberUserIds: [],
+          members: [],
+          createdAt: 1,
+          updatedAt: 1,
+        },
       ],
-      types: ['editorial', 'support', 'ops', 'custom'],
+      types: ['editorial', 'support', 'ops', 'external', 'custom'],
       users: [
         { id: 'user_1', name: 'Ada', username: 'ada', email: 'ada@example.com', active: true },
         { id: 'user_2', name: 'Bob', username: 'bob', email: 'bob@example.com', active: false },
       ],
     })),
-    create: vi.fn(),
-    update: vi.fn(),
-    remove: vi.fn(),
-  },
-}));
+      create: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
+    },
+  };
+});
 
 describe('TeamsManager', () => {
   it('lists teams and opens the member picker', async () => {
@@ -55,6 +68,10 @@ describe('TeamsManager', () => {
     expect(screen.queryByTestId('team-name')).not.toBeInTheDocument();
     expect(screen.getByTestId('team-member-user_1')).toBeChecked();
     expect(screen.getByTestId('team-member-user_2')).not.toBeChecked();
+    expect(screen.getByTestId('team-chat-enabled')).toBeChecked();
+    expect(screen.getByTestId('team-reply-mail-enabled')).not.toBeChecked();
+    fireEvent.click(screen.getByTestId('team-reply-mail-enabled'));
+    expect(screen.getByTestId('team-reply-mail')).toBeInTheDocument();
     expect(teamsApi.list).toHaveBeenCalled();
   });
 
@@ -68,5 +85,17 @@ describe('TeamsManager', () => {
     expect(name).toHaveAttribute('placeholder', 'napr. Marketing');
     fireEvent.change(name, { target: { value: 'Marketing' } });
     expect(name).toHaveValue('Marketing');
+  });
+
+  it('requires a purpose name for an external team', async () => {
+    renderWithProviders(<TeamsManager />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nový tím' }));
+    fireEvent.change(screen.getByTestId('team-type'), { target: { value: 'external' } });
+
+    const name = await screen.findByTestId('team-name');
+    expect(name).toHaveAttribute('placeholder', 'napr. Vývoj webu');
+    expect(screen.getByTestId('team-color-custom')).toBeInTheDocument();
+    expect(screen.getByTestId('team-card-team_external01')).toHaveTextContent('Externý');
   });
 });

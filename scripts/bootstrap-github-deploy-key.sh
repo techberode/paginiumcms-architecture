@@ -22,7 +22,8 @@ if [[ ! -f "$KEY" ]]; then
   sudo ssh-keygen -t ed25519 -f "$KEY" -N "" -C "paginiumcms-deploy@$(hostname -f 2>/dev/null || hostname)"
 fi
 
-sudo chmod 600 "$KEY"
+sudo chown root:www-data "$KEY" "${KEY}.pub" 2>/dev/null || sudo chown root:root "$KEY" "${KEY}.pub"
+sudo chmod 640 "$KEY"
 sudo chmod 644 "${KEY}.pub"
 
 echo ""

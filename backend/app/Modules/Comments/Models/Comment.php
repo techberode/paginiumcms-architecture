@@ -23,6 +23,11 @@ class Comment implements JsonSerializable
     private ?string $approvedAt = null;
     private bool $isRead = false;
     private bool $isArchived = false;
+    private string $parentId = '';
+    private string $authorUserId = '';
+    private string $claimedBy = '';
+    private int $claimedAt = 0;
+    private string $handleStatus = 'open';
 
     public function __construct(string $articleSlug, string $author, string $content)
     {
@@ -118,9 +123,75 @@ class Comment implements JsonSerializable
         return $this;
     }
 
+    public function getParentId(): string
+    {
+        return $this->parentId;
+    }
+
+    public function setParentId(string $parentId): self
+    {
+        $this->parentId = trim($parentId);
+
+        return $this;
+    }
+
+    public function getAuthorUserId(): string
+    {
+        return $this->authorUserId;
+    }
+
+    public function setAuthorUserId(string $userId): self
+    {
+        $this->authorUserId = trim($userId);
+
+        return $this;
+    }
+
+    public function getClaimedBy(): string
+    {
+        return $this->claimedBy;
+    }
+
+    public function setClaimedBy(string $userId): self
+    {
+        $this->claimedBy = trim($userId);
+
+        return $this;
+    }
+
+    public function getClaimedAt(): int
+    {
+        return $this->claimedAt;
+    }
+
+    public function setClaimedAt(int $claimedAt): self
+    {
+        $this->claimedAt = max(0, $claimedAt);
+
+        return $this;
+    }
+
+    public function getHandleStatus(): string
+    {
+        return $this->handleStatus;
+    }
+
+    public function setHandleStatus(string $status): self
+    {
+        $this->handleStatus = in_array($status, ['open', 'in_progress', 'done'], true) ? $status : 'open';
+
+        return $this;
+    }
+
+    public function isStaffReply(): bool
+    {
+        return $this->parentId !== '' && $this->authorUserId !== '';
+    }
+
     /**
      * @param array<int|string, mixed> $entry
- */public static function fromArray(array $entry): self
+     */
+    public static function fromArray(array $entry): self
     {
         $comment = new self(
             (string) ($entry['articleSlug'] ?? $entry['articleId'] ?? ''),
@@ -129,13 +200,23 @@ class Comment implements JsonSerializable
         );
 
         $reflection = new \ReflectionClass($comment);
-        foreach (['id', 'email', 'status', 'createdAt', 'approvedAt', 'isRead', 'isArchived'] as $property) {
+        foreach (['id', 'email', 'status', 'createdAt', 'approvedAt', 'isRead', 'isArchived', 'parentId', 'authorUserId', 'claimedBy', 'claimedAt', 'handleStatus'] as $property) {
             if (!array_key_exists($property, $entry)) {
                 continue;
             }
 
             $prop = $reflection->getProperty($property);
-            $prop->setValue($comment, $entry[$property]);
+            $value = $entry[$property];
+            if ($property === 'claimedAt') {
+                $value = (int) $value;
+            } elseif (in_array($property, ['isRead', 'isArchived'], true)) {
+                $value = (bool) $value;
+            } elseif ($property === 'approvedAt') {
+                $value = $value === null || $value === '' ? null : (string) $value;
+            } else {
+                $value = (string) $value;
+            }
+            $prop->setValue($comment, $value);
         }
 
         return $comment;
@@ -143,8 +224,10 @@ class Comment implements JsonSerializable
 
     /**
      * {@inheritDoc}
- * @return array<int|string, mixed>
- */public function jsonSerialize(): array
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,
@@ -157,6 +240,11 @@ class Comment implements JsonSerializable
             'approvedAt' => $this->approvedAt,
             'isRead' => $this->isRead,
             'isArchived' => $this->isArchived,
+            'parentId' => $this->parentId,
+            'authorUserId' => $this->authorUserId,
+            'claimedBy' => $this->claimedBy,
+            'claimedAt' => $this->claimedAt,
+            'handleStatus' => $this->handleStatus,
         ];
     }
 }

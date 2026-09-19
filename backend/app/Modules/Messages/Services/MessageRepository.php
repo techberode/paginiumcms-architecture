@@ -21,7 +21,7 @@ class MessageRepository implements MessageRepositoryInterface
     }
 
     /**
-     * @return array<int|string, mixed>
+     * @return list<ContactMessage>
      */
     public function findAll(): array
     {

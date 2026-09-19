@@ -7,9 +7,10 @@ namespace PaginiumCMS\Http\Controllers\Contact;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Core\Validation\VisitorEmailGuard;
 use PaginiumCMS\Http\Support\JsonResponder;
-use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
+use PaginiumCMS\Modules\Messages\Services\MessageDeskService;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,9 +18,10 @@ use Psr\Http\Message\ServerRequestInterface;
 class ContactController
 {
     public function __construct(
-        private MessageRepositoryInterface $messageRepository,
         private Validator $validator,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private MessageDeskService $desk,
+        private VisitorEmailGuard $visitorEmail
     ) {
     }
 
@@ -54,25 +56,35 @@ class ContactController
             );
         }
 
+        try {
+            $email = $this->visitorEmail->normalize((string) $validated['email'], 'contact');
+        } catch (ValidationException $e) {
+            return $this->json->validation($response, Lang::get('validation_failed', [], 'contact'), $e->getErrors());
+        }
+
         $message = new ContactMessage(
             (string) $validated['name'],
-            (string) $validated['email'],
+            $email,
             (string) $validated['message']
         );
 
+        $registrationRequest = filter_var($data['registrationRequest'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $subject = trim((string) ($validated['subject'] ?? ''));
-        if ($subject !== '') {
+        if ($registrationRequest) {
+            $message->setRegistrationRequest(true);
+            $message->setSubject($subject !== '' ? $subject : ContactMessage::SUBJECT_REGISTRATION);
+        } elseif ($subject !== '') {
             $message->setSubject($subject);
         }
 
         $serverParams = $request->getServerParams();
         $message->setIp((string) ($serverParams['REMOTE_ADDR'] ?? 'unknown'));
 
-        $this->messageRepository->save($message);
+        $result = $this->desk->ingest($message);
 
         return $this->json->success(
             $response,
-            ['id' => $message->getId()],
+            ['id' => $result['message']->getId(), 'appended' => $result['appended']],
             201,
             Lang::get('submitted', [], 'contact')
         );

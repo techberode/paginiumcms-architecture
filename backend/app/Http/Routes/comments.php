@@ -20,6 +20,12 @@ return function (App $app): void {
     $app->get('/api/comments', [$controller, 'listPublic']);
     $app->post('/api/comments', [$controller, 'submit'])
         ->add($container->get(CommentSubmitRateLimitMiddleware::class));
+    $app->post('/api/comments/{id}/reply', [$controller, 'reply'])
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($auth);
+    $app->post('/api/comments/{id}/claim', [$controller, 'claim'])
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($auth);
 
     $app->group('/api/admin/comments', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'listAdmin']);

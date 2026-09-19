@@ -29,6 +29,11 @@ describe('platform i18n module', () => {
     expect(translate('sk', 'platform.widgets.custom.title')).toBe('Vlastné widgety');
     expect(translate('sk', 'platform.teams.title')).toBe('Tímy');
     expect(translate('en', 'platform.teams.types.support')).toBe('Support');
+    expect(translate('sk', 'platform.teams.types.external')).toBe('Externý tím');
+    expect(translate('sk', 'platform.teams.externalBadge')).toBe('Externý');
+    expect(translate('en', 'platform.teamChat.title')).toBe('External team chat');
+    expect(translate('sk', 'platform.registrationOptions.title')).toBe('Typy registrácie');
+    expect(translate('sk', 'platform.registrationInvites.title')).toBe('Jednorazová registrácia');
     expect(translate('sk', 'platform.teams.namePlaceholder')).toBe('napr. Marketing');
     expect(translate('sk', 'platform.events.title')).toBe('Udalosti');
     expect(translate('en', 'platform.events.status.published')).toBe('Published');
@@ -38,6 +43,20 @@ describe('platform i18n module', () => {
     expect(translate('en', 'platform.account.tabs.profile')).toBe('Profile');
     expect(translate('sk', 'platform.account.tabs.public')).toBe('Verejná karta');
     expect(translate('en', 'platform.account.sections.details')).toBe('Profile details');
+    expect(translate('sk', 'platform.account.desk.queueTitle')).toBe('Tvoja fronta');
+    expect(translate('en', 'platform.account.desk.open')).toBe('Open on the page');
+    expect(translate('sk', 'platform.account.desk.popOut')).toBe('Vždy navrchu');
+    expect(translate('en', 'platform.account.desk.enabled')).toBe('Show the desk chat bubble');
+    expect(translate('sk', 'platform.account.desk.kind.comment')).toBe('Komentár');
+    expect(translate('en', 'platform.account.desk.kind.message')).toBe('Message');
+    expect(translate('sk', 'platform.account.desk.beacon')).toBe('Stôl');
+    expect(translate('sk', 'platform.account.desk.anchors.right')).toBe('Vpravo');
+    expect(translate('en', 'platform.account.chat.deskMailEnabled')).toBe(
+      'Send desk replies from my site mailbox',
+    );
+    expect(translate('sk', 'platform.teams.replyMailEnabled')).toBe(
+      'Odosielať odpovede stola z tímovej schránky',
+    );
     expect(translate('sk', 'platform.preview.openFull')).toBe('Náhľad stránky');
   });
 });

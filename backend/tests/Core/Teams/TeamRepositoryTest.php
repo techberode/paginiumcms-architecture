@@ -50,6 +50,8 @@ final class TeamRepositoryTest extends TestCase
         $this->assertSame($support['id'], $supportOnly[0]['id']);
 
         $this->assertSame(['user_b', 'user_c'], $this->repository->memberIdsForType(TeamRepository::TYPE_SUPPORT));
+        $this->assertFalse($editorial['chatEnabled'] ?? true);
+        $this->assertTrue($support['chatEnabled'] ?? false);
     }
 
     public function testUpdateAndDelete(): void
@@ -90,6 +92,20 @@ final class TeamRepositoryTest extends TestCase
         $this->assertNull($this->repository->get('team_nothexxxxx'));
     }
 
+    public function testPersistsReplyMailboxToggle(): void
+    {
+        $team = $this->repository->create('Helpdesk', TeamRepository::TYPE_SUPPORT, []);
+        $this->assertFalse($team['replyMailEnabled'] ?? true);
+        $this->assertSame('', $team['replyMail'] ?? 'x');
+
+        $updated = $this->repository->update($team['id'], [
+            'replyMailEnabled' => true,
+            'replyMail' => ' Support@CMS.EXAMPLE.COM ',
+        ]);
+        $this->assertTrue($updated['replyMailEnabled'] ?? false);
+        $this->assertSame('support@cms.example.com', $updated['replyMail'] ?? '');
+    }
+
     public function testNameIsRequired(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -101,6 +117,22 @@ final class TeamRepositoryTest extends TestCase
         $team = $this->repository->create('', TeamRepository::TYPE_EDITORIAL, []);
         $this->assertSame('Editorial', $team['name']);
         $this->assertSame(TeamRepository::TYPE_EDITORIAL, $team['type']);
+    }
+
+    public function testCreatesExternalType(): void
+    {
+        $team = $this->repository->create('Web development', TeamRepository::TYPE_EXTERNAL, ['user_dev']);
+        $this->assertSame('Web development', $team['name']);
+        $this->assertSame(TeamRepository::TYPE_EXTERNAL, $team['type']);
+        $this->assertSame('#2563eb', $this->repository->update((string) $team['id'], ['color' => '#2563EB'])['color']);
+        $this->assertSame(['user_dev'], $team['memberUserIds']);
+        $this->assertContains(TeamRepository::TYPE_EXTERNAL, $this->repository->types());
+    }
+
+    public function testExternalTypeRequiresName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->repository->create('', TeamRepository::TYPE_EXTERNAL, []);
     }
 
     private function removeTree(string $path): void

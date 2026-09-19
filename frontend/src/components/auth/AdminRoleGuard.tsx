@@ -1,17 +1,22 @@
 // frontend/src/components/auth/AdminRoleGuard.tsx
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-
-const STAFF_ROLES = ['EDITOR', 'ADMIN', 'SUPER_ADMIN'];
+import { isStaffUser } from '../../utils/postAuthPath';
 
 export function AdminRoleGuard({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const roles = user?.roles ?? [];
-  const allowed = roles.some((role) => STAFF_ROLES.includes(role));
+  const location = useLocation();
+  const staff = isStaffUser(user);
+  const teamChat = Boolean(user?.hasTeamChat);
 
-  if (!allowed) {
+  if (!staff && !teamChat) {
     return <Navigate to="/" replace />;
+  }
+
+  const path = location.pathname;
+  if (!staff && teamChat && !path.startsWith('/team-chat') && !path.startsWith('/account')) {
+    return <Navigate to="/team-chat" replace />;
   }
 
   return <>{children}</>;

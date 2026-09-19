@@ -35,6 +35,7 @@ export const adminEn: MessageTree = {
     originPanel: 'Origin Panel',
     users: 'Users',
     teams: 'Teams',
+    teamChat: 'Team chat',
     events: 'Events',
     timeTracker: 'Time tracker',
     kanban: 'Kanban',

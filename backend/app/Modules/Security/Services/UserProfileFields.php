@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\LogSanitizer;
@@ -78,11 +79,43 @@ final class UserProfileFields
         }
 
         if (array_key_exists('socialAccounts', $payload)) {
-            $user->setSocialAccounts(self::normalizeSocialAccounts($payload['socialAccounts']));
+            $user->setSocialAccounts(
+                self::finalizeSocialAccounts(
+                    self::normalizeSocialAccounts($payload['socialAccounts']),
+                    is_array($payload['socialAccounts']) ? array_values($payload['socialAccounts']) : [],
+                    $user->getSocialAccounts()
+                )
+            );
         }
 
         if (array_key_exists('publish', $payload)) {
-            $user->setPublish(self::normalizePublish($payload['publish']));
+            $publish = self::normalizePublish($payload['publish']);
+            self::assertPublishSocialsVerified($user, $publish);
+            $user->setPublish($publish);
+        }
+
+        if (array_key_exists('chatEnabled', $payload)) {
+            $user->setChatEnabled(self::toBool($payload['chatEnabled']));
+        }
+
+        if (array_key_exists('deskMailEnabled', $payload)) {
+            $user->setDeskMailEnabled(self::toBool($payload['deskMailEnabled']));
+        }
+
+        if (array_key_exists('deskBubbleEnabled', $payload)) {
+            $user->setDeskBubbleEnabled(self::toBool($payload['deskBubbleEnabled']));
+        }
+
+        if (array_key_exists('deskBubbleAnchor', $payload)) {
+            $user->setDeskBubbleAnchor((string) $payload['deskBubbleAnchor']);
+        }
+
+        if (array_key_exists('deskBubbleX', $payload)) {
+            $user->setDeskBubbleX((int) $payload['deskBubbleX']);
+        }
+
+        if (array_key_exists('deskBubbleY', $payload)) {
+            $user->setDeskBubbleY((int) $payload['deskBubbleY']);
         }
     }
 
@@ -257,9 +290,9 @@ final class UserProfileFields
     }
 
     /**
-     * @return list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool}>
+     * @return list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool, verifiedAt: int}>
      */
-    public static function normalizeSocialAccounts(mixed $raw): array
+    public static function normalizeSocialAccounts(mixed $raw, bool $fromStorage = false): array
     {
         if (!is_array($raw)) {
             return [];
@@ -274,27 +307,9 @@ final class UserProfileFields
             if (!in_array($platform, self::SOCIAL_PLATFORMS, true)) {
                 $platform = 'website';
             }
-            $url = trim((string) ($row['url'] ?? ''));
+            $url = SocialAccountLinkProbe::normalizeStorageUrl($platform, (string) ($row['url'] ?? ''));
             if ($url === '') {
                 continue;
-            }
-            if ($platform === 'email') {
-                $email = preg_replace('/^mailto:/i', '', $url) ?? $url;
-                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    continue;
-                }
-                $url = $email;
-            } elseif (!filter_var($url, FILTER_VALIDATE_URL)) {
-                if (in_array($platform, ['telegram', 'whatsapp', 'messenger'], true)) {
-                    $url = LogSanitizer::value($url, 120);
-                } else {
-                    continue;
-                }
-            } else {
-                $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
-                if (!in_array($scheme, ['http', 'https'], true)) {
-                    continue;
-                }
             }
 
             $id = trim((string) ($row['id'] ?? ''));
@@ -306,10 +321,107 @@ final class UserProfileFields
                 'label' => $label !== '' ? $label : ucfirst($platform),
                 'directChat' => self::toBool($row['directChat'] ?? false),
                 'notify' => self::toBool($row['notify'] ?? false),
+                // Client payloads must not self-attest; stored JSON may keep a prior probe stamp.
+                'verifiedAt' => $fromStorage ? max(0, (int) ($row['verifiedAt'] ?? 0)) : 0,
             ];
         }
 
         return $items;
+    }
+
+    /**
+     * @param list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool, verifiedAt: int}> $normalized
+     * @param list<mixed> $rawRows
+     * @param list<array<string, mixed>> $previous
+     *
+     * @return list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool, verifiedAt: int}>
+     */
+    public static function finalizeSocialAccounts(array $normalized, array $rawRows, array $previous): array
+    {
+        $probe = self::socialProbe();
+        $rawById = [];
+        foreach ($rawRows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $id = trim((string) ($row['id'] ?? ''));
+            if ($id !== '') {
+                $rawById[$id] = $row;
+            }
+        }
+
+        $previousById = [];
+        foreach ($previous as $row) {
+            $id = trim((string) ($row['id'] ?? ''));
+            if ($id !== '') {
+                $previousById[$id] = $row;
+            }
+        }
+
+        $final = [];
+        foreach ($normalized as $account) {
+            $id = $account['id'];
+            $raw = $rawById[$id] ?? null;
+            $prev = $previousById[$id] ?? null;
+            $clientRequestedVerify = is_array($raw) && (int) ($raw['verifiedAt'] ?? 0) > 0;
+
+            $unchangedVerified = is_array($prev)
+                && SocialAccountLinkProbe::isVerified($prev)
+                && ($prev['platform'] ?? '') === $account['platform']
+                && ($prev['url'] ?? '') === $account['url'];
+
+            $url = $account['url'];
+            $verifiedAt = 0;
+            if ($unchangedVerified) {
+                $verifiedAt = (int) ($prev['verifiedAt'] ?? 0);
+            } elseif ($clientRequestedVerify) {
+                $result = $probe->verify($account['platform'], $account['url']);
+                if ($result['ok']) {
+                    $url = LogSanitizer::value($result['normalizedUrl'], 500);
+                    $verifiedAt = time();
+                }
+            }
+
+            $final[] = [
+                'id' => $account['id'],
+                'platform' => $account['platform'],
+                'url' => $url,
+                'label' => $account['label'],
+                'directChat' => $account['directChat'],
+                'notify' => $account['notify'],
+                'verifiedAt' => $verifiedAt,
+            ];
+        }
+
+        return $final;
+    }
+
+    /**
+     * @param array{address: bool, experience: bool, education: bool, phone: bool, email: bool, socials: bool, contact: bool, support: bool} $publish
+     */
+    public static function assertPublishSocialsVerified(User $user, array $publish): void
+    {
+        if ($publish['socials'] !== true) {
+            return;
+        }
+
+        foreach ($user->getSocialAccounts() as $account) {
+            if (!SocialAccountLinkProbe::isVerified($account)) {
+                throw new ValidationException([
+                    'socialAccounts' => ['Publish social accounts requires each link to be verified first.'],
+                    'publish.socials' => ['Verify every social link before publishing.'],
+                ]);
+            }
+        }
+    }
+
+    private static function socialProbe(): SocialAccountLinkProbe
+    {
+        /** @var SocialAccountLinkProbe|null $probe */
+        static $probe = null;
+        $probe ??= new SocialAccountLinkProbe(OutboundUrlGuard::fromEnv());
+
+        return $probe;
     }
 
     /**

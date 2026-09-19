@@ -121,6 +121,7 @@ final class GitHubReleaseWebhookControllerTest extends TestCase
         $settings->setGroup('systemUpdate', array_merge($settings->group('systemUpdate'), [
             'stackDir' => $stackDir,
             'backendPort' => '8089',
+            'githubToken' => 'test-deploy-token-for-phpunit',
         ]));
     }
 

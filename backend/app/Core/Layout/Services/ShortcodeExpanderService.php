@@ -80,6 +80,18 @@ final class ShortcodeExpanderService
             return $this->sanitizer->sanitizeHtml($html);
         }
 
+        if ($name === 'staff-card' || $name === 'staff-team') {
+            $attrs = $this->parseAttributes($rawAttrs, [
+                'attrs' => [
+                    'user' => ['type' => 'string'],
+                    'type' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                ],
+            ]);
+
+            return $this->sanitizer->sanitizeHtml(StaffCardRenderer::render($name, $attrs));
+        }
+
         $definition = $this->loadDefinition($name);
         if ($definition === null) {
             return '[' . $name . $rawAttrs . ']' . $inner . ($inner === '' ? '' : '[/' . $name . ']');
@@ -97,6 +109,10 @@ final class ShortcodeExpanderService
             $items = $this->gallery !== null ? $this->gallery->findPublishedOrdered() : [];
 
             return $this->sanitizer->sanitizeHtml(FeatureGalleryRenderer::render($attrs, $items));
+        }
+
+        if ($name === 'staff-card' || $name === 'staff-team') {
+            return $this->sanitizer->sanitizeHtml(StaffCardRenderer::render($name, $attrs));
         }
 
         $template = (string) ($definition['expand'] ?? '');

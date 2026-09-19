@@ -11,6 +11,20 @@ use JsonSerializable;
  */
 class User implements JsonSerializable
 {
+    /** @var list<string> */
+    public const DESK_BUBBLE_ANCHORS = [
+        'top-left',
+        'top',
+        'top-right',
+        'left',
+        'center',
+        'right',
+        'bottom-left',
+        'bottom',
+        'bottom-right',
+        'custom',
+    ];
+
     private string $id;
     private string $email;
     private string $username = '';
@@ -31,7 +45,7 @@ class User implements JsonSerializable
     private array $experience = [];
     /** @var list<array{id: string, school: string, field: string, years: string}> */
     private array $education = [];
-    /** @var list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool}> */
+    /** @var list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool, verifiedAt?: int}> */
     private array $socialAccounts = [];
     /** @var array{address: bool, experience: bool, education: bool, phone: bool, email: bool, socials: bool, contact: bool, support: bool} */
     private array $publish = [
@@ -45,6 +59,13 @@ class User implements JsonSerializable
         'support' => false,
     ];
     private ?string $avatarUrl = null;
+    private bool $chatEnabled = false;
+    private bool $deskMailEnabled = false;
+    private bool $deskBubbleEnabled = true;
+    private string $deskBubbleAnchor = 'right';
+    private int $deskBubbleX = 92;
+    private int $deskBubbleY = 50;
+    private string $registrationOptionId = '';
     private bool $active = true;
     private bool $twoFactorEnabled = false;
     private ?string $twoFactorSecret = null;
@@ -101,6 +122,17 @@ class User implements JsonSerializable
     public function setActive(bool $active): self
     {
         $this->active = $active;
+        return $this;
+    }
+
+    public function getRegistrationOptionId(): string
+    {
+        return $this->registrationOptionId;
+    }
+
+    public function setRegistrationOptionId(string $optionId): self
+    {
+        $this->registrationOptionId = trim($optionId);
         return $this;
     }
 
@@ -312,7 +344,7 @@ class User implements JsonSerializable
     }
 
     /**
-     * @return list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool}>
+     * @return list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool, verifiedAt?: int}>
      */
     public function getSocialAccounts(): array
     {
@@ -320,7 +352,7 @@ class User implements JsonSerializable
     }
 
     /**
-     * @param list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool}> $socialAccounts
+     * @param list<array{id: string, platform: string, url: string, label: string, directChat: bool, notify: bool, verifiedAt?: int}> $socialAccounts
      */
     public function setSocialAccounts(array $socialAccounts): self
     {
@@ -343,6 +375,79 @@ class User implements JsonSerializable
     public function setPublish(array $publish): self
     {
         $this->publish = $publish;
+
+        return $this;
+    }
+
+    public function isChatEnabled(): bool
+    {
+        return $this->chatEnabled;
+    }
+
+    public function setChatEnabled(bool $chatEnabled): self
+    {
+        $this->chatEnabled = $chatEnabled;
+
+        return $this;
+    }
+
+    public function isDeskMailEnabled(): bool
+    {
+        return $this->deskMailEnabled;
+    }
+
+    public function setDeskMailEnabled(bool $enabled): self
+    {
+        $this->deskMailEnabled = $enabled;
+
+        return $this;
+    }
+
+    public function isDeskBubbleEnabled(): bool
+    {
+        return $this->deskBubbleEnabled;
+    }
+
+    public function setDeskBubbleEnabled(bool $enabled): self
+    {
+        $this->deskBubbleEnabled = $enabled;
+
+        return $this;
+    }
+
+    public function getDeskBubbleAnchor(): string
+    {
+        return $this->deskBubbleAnchor;
+    }
+
+    public function setDeskBubbleAnchor(string $anchor): self
+    {
+        $anchor = strtolower(trim($anchor));
+        $this->deskBubbleAnchor = in_array($anchor, self::DESK_BUBBLE_ANCHORS, true) ? $anchor : 'right';
+
+        return $this;
+    }
+
+    public function getDeskBubbleX(): int
+    {
+        return $this->deskBubbleX;
+    }
+
+    public function setDeskBubbleX(int $x): self
+    {
+        $this->deskBubbleX = max(0, min(100, $x));
+
+        return $this;
+    }
+
+    public function getDeskBubbleY(): int
+    {
+        return $this->deskBubbleY;
+    }
+
+    public function setDeskBubbleY(int $y): self
+    {
+        $this->deskBubbleY = max(0, min(100, $y));
 
         return $this;
     }
@@ -447,8 +552,15 @@ class User implements JsonSerializable
             'education' => $this->education,
             'socialAccounts' => $this->socialAccounts,
             'publish' => $this->publish,
+            'chatEnabled' => $this->chatEnabled,
+            'deskMailEnabled' => $this->deskMailEnabled,
+            'deskBubbleEnabled' => $this->deskBubbleEnabled,
+            'deskBubbleAnchor' => $this->deskBubbleAnchor,
+            'deskBubbleX' => $this->deskBubbleX,
+            'deskBubbleY' => $this->deskBubbleY,
             'avatarUrl' => $this->avatarUrl,
             'roles' => $this->roles,
+            'registrationOptionId' => $this->registrationOptionId,
             'active' => $this->active,
             'twoFactorEnabled' => $this->twoFactorEnabled,
             'createdAt' => $this->createdAt,

@@ -2,8 +2,13 @@ import type { MessageTree } from '../../types';
 
 export const newsletterSk: MessageTree = {
   page: {
-    title: 'Newsletter — odberatelia',
-    subtitle: 'Nastavenia odberu, prehľad e-mailov a odosielanie kampaní.',
+    title: 'Newsletter',
+    subtitle: 'Nastavenia odberu, odosielanie kampaní a zoznam príjemcov.',
+  },
+  tabs: {
+    settings: 'Nastavenia newsletteru',
+    send: 'Odosielanie mailov',
+    recipients: 'Zoznam príjemcov',
   },
   settings: {
     title: 'Nastavenia newsletteru',

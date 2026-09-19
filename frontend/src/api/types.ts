@@ -21,6 +21,7 @@ export interface User {
     label?: string;
     directChat?: boolean;
     notify?: boolean;
+    verifiedAt?: number;
   }>;
   publish?: {
     address?: boolean;
@@ -32,8 +33,15 @@ export interface User {
     contact?: boolean;
     support?: boolean;
   };
+  chatEnabled?: boolean;
+  deskMailEnabled?: boolean;
+  deskBubbleEnabled?: boolean;
+  deskBubbleAnchor?: string;
+  deskBubbleX?: number;
+  deskBubbleY?: number;
   roles: string[];
   permissions?: string[];
+  hasTeamChat?: boolean;
   active?: boolean;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
@@ -60,6 +68,8 @@ export interface RegisterRequest {
   password: string;
   passwordConfirm?: string;
   name: string;
+  registrationType?: string;
+  inviteToken?: string;
 }
 
 export interface RegisterResponse {

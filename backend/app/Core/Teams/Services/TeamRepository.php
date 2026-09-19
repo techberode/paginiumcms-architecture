@@ -22,6 +22,7 @@ final class TeamRepository
     public const TYPE_EDITORIAL = 'editorial';
     public const TYPE_SUPPORT = 'support';
     public const TYPE_OPS = 'ops';
+    public const TYPE_EXTERNAL = 'external';
     public const TYPE_CUSTOM = 'custom';
 
     /** @var list<string> */
@@ -29,6 +30,7 @@ final class TeamRepository
         self::TYPE_EDITORIAL,
         self::TYPE_SUPPORT,
         self::TYPE_OPS,
+        self::TYPE_EXTERNAL,
         self::TYPE_CUSTOM,
     ];
 
@@ -174,6 +176,18 @@ final class TeamRepository
             $raw = $payload['memberUserIds'];
             $existing['memberUserIds'] = $this->normalizeMemberIds(is_array($raw) ? $raw : []);
         }
+        if (array_key_exists('chatEnabled', $payload)) {
+            $existing['chatEnabled'] = (bool) $payload['chatEnabled'];
+        }
+        if (array_key_exists('replyMailEnabled', $payload)) {
+            $existing['replyMailEnabled'] = (bool) $payload['replyMailEnabled'];
+        }
+        if (array_key_exists('replyMail', $payload)) {
+            $existing['replyMail'] = $this->normalizeReplyMail((string) $payload['replyMail']);
+        }
+        if (array_key_exists('color', $payload)) {
+            $existing['color'] = $this->normalizeColor((string) $payload['color']);
+        }
         $existing['updatedAt'] = time();
 
         return $this->writeRecord($existing);
@@ -230,6 +244,12 @@ final class TeamRepository
             'memberUserIds' => $this->normalizeMemberIds(
                 is_array($record['memberUserIds'] ?? null) ? $record['memberUserIds'] : []
             ),
+            'chatEnabled' => array_key_exists('chatEnabled', $record)
+                ? (bool) $record['chatEnabled']
+                : ($this->normalizeType((string) ($record['type'] ?? '')) === self::TYPE_SUPPORT),
+            'replyMailEnabled' => (bool) ($record['replyMailEnabled'] ?? false),
+            'replyMail' => $this->normalizeReplyMail((string) ($record['replyMail'] ?? '')),
+            'color' => $this->normalizeColor((string) ($record['color'] ?? '')),
             'createdAt' => is_int($record['createdAt'] ?? null) ? $record['createdAt'] : time(),
             'updatedAt' => is_int($record['updatedAt'] ?? null) ? $record['updatedAt'] : time(),
         ];
@@ -280,6 +300,12 @@ final class TeamRepository
                 'name' => $this->normalizeName(is_string($data['name'] ?? null) ? $data['name'] : ''),
                 'type' => $this->normalizeType(is_string($data['type'] ?? null) ? $data['type'] : self::TYPE_CUSTOM),
                 'memberUserIds' => $this->normalizeMemberIds($members),
+                'chatEnabled' => array_key_exists('chatEnabled', $data)
+                    ? (bool) $data['chatEnabled']
+                    : ($this->normalizeType(is_string($data['type'] ?? null) ? $data['type'] : self::TYPE_CUSTOM) === self::TYPE_SUPPORT),
+                'replyMailEnabled' => (bool) ($data['replyMailEnabled'] ?? false),
+                'replyMail' => $this->normalizeReplyMail(is_string($data['replyMail'] ?? null) ? $data['replyMail'] : ''),
+                'color' => $this->normalizeColor(is_string($data['color'] ?? null) ? $data['color'] : ''),
                 'createdAt' => is_int($data['createdAt'] ?? null) ? $data['createdAt'] : 0,
                 'updatedAt' => is_int($data['updatedAt'] ?? null) ? $data['updatedAt'] : 0,
             ];
@@ -309,6 +335,29 @@ final class TeamRepository
         return $names;
     }
 
+    private function normalizeColor(string $color): string
+    {
+        $color = strtolower(trim($color));
+        if ($color === '') {
+            return '';
+        }
+        if (!preg_match('/^#[0-9a-f]{6}$/', $color)) {
+            throw new InvalidArgumentException('Invalid team color.');
+        }
+
+        return $color;
+    }
+
+    private function normalizeReplyMail(string $email): string
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') {
+            return '';
+        }
+
+        return LogSanitizer::value($email, 255);
+    }
+
     private function relativePath(string $id): string
     {
         return $this->relativeDir . '/' . $id . '.json';
@@ -330,7 +379,7 @@ final class TeamRepository
         if ($name !== '') {
             return $name;
         }
-        if ($type === self::TYPE_CUSTOM) {
+        if ($type === self::TYPE_CUSTOM || $type === self::TYPE_EXTERNAL) {
             throw new InvalidArgumentException('Team name is required.');
         }
 
@@ -343,6 +392,7 @@ final class TeamRepository
             self::TYPE_EDITORIAL => 'Editorial',
             self::TYPE_SUPPORT => 'Support',
             self::TYPE_OPS => 'Ops',
+            self::TYPE_EXTERNAL => 'External',
             default => 'Team',
         };
     }

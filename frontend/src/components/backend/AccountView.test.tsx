@@ -20,6 +20,7 @@ vi.mock('../../hooks/useToast', () => {
 vi.mock('../../api/auth', () => ({
   authApi: {
     updateProfile: vi.fn(),
+    verifySocialAccount: vi.fn(),
     uploadMyAvatar: vi.fn(),
     assignMyAvatarFromUrl: vi.fn(),
     removeMyAvatar: vi.fn(),

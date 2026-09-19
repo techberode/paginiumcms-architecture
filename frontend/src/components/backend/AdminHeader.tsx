@@ -7,6 +7,7 @@ import { useCachePurge } from '../../hooks/useCachePurge';
 import { useI18n } from '../../context/I18nContext';
 import { AdminThemeToggle } from './AdminThemeToggle';
 import { AdminAccountMenu } from './AdminAccountMenu';
+import { DeskNotificationBeacon } from './DeskNotificationBeacon';
 
 interface AdminHeaderProps {
   onGoToWebsite: () => void;
@@ -139,6 +140,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <span className="hidden sm:inline">{t('admin.header.viewWebsite')}</span>
         </button>
 
+        <DeskNotificationBeacon variant="header" />
         <AdminAccountMenu variant="header" onOpenChangePassword={onOpenChangePassword} />
 
         <button

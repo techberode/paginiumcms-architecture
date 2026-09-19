@@ -25,6 +25,28 @@ class OtpWorkflowServiceTest extends TestCase
         $verified = $service->verifyRegistration($started['challenge_id'], (string) $started['debug_code']);
         $this->assertSame($email, $verified['user']['email']);
         $this->assertSame('OTP User', $verified['user']['name']);
+        $this->assertTrue((bool) ($verified['user']['active'] ?? false));
+    }
+
+    public function testRegistrationOtpHonorsPendingApprovalPlan(): void
+    {
+        putenv('APP_ENV=testing');
+        $_ENV['APP_ENV'] = 'testing';
+
+        $this->enableWorkflows(['registrationOtpEnabled' => true]);
+
+        $service = $this->app->getContainer()->get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class);
+        $email = 'otp_pending_' . uniqid() . '@example.com';
+
+        $started = $service->startRegistration($email, 'Pending User', 'StrongP@ssw0rd123!', [
+            'roles' => ['USER'],
+            'active' => false,
+            'registrationOptionId' => 'regopt_deadbeef',
+            'assignTeamId' => '',
+        ]);
+        $verified = $service->verifyRegistration($started['challenge_id'], (string) $started['debug_code']);
+        $this->assertFalse((bool) ($verified['user']['active'] ?? true));
+        $this->assertSame('regopt_deadbeef', $verified['user']['registrationOptionId'] ?? '');
     }
 
     public function testRegistrationOtpRejectsInvalidCode(): void

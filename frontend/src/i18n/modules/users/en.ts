@@ -5,6 +5,11 @@ export const usersEn: MessageTree = {
     title: 'User management',
     subtitle: 'Manage accounts, roles, avatars, and security settings.',
   },
+  tabs: {
+    list: 'Users',
+    form: 'New user',
+    invites: 'One-time registration',
+  },
   form: {
     createTitle: 'New user',
     editTitle: 'Edit user',

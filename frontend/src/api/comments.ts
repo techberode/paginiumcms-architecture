@@ -15,6 +15,12 @@ export interface Comment {
   approvedAt?: string | null;
   isRead?: boolean;
   isArchived?: boolean;
+  parentId?: string;
+  authorUserId?: string;
+  claimedBy?: string;
+  staffReply?: boolean;
+  handleStatus?: string;
+  replies?: Comment[];
 }
 
 export interface AdminCommentsResponse {
@@ -103,13 +109,29 @@ export async function bulkDeleteComments(ids: string[]): Promise<BulkBatchResult
   return res.success && res.data ? res.data : null;
 }
 
-export type CommentBulkWorkflowAction = 'read' | 'processed' | 'archive';
+export type CommentBulkWorkflowAction = 'read' | 'processed' | 'approve' | 'archive';
 
 export async function bulkCommentWorkflow(
   ids: string[],
   action: CommentBulkWorkflowAction
 ): Promise<BulkBatchResult | null> {
   const res = await apiClient.post<BulkBatchResult>('/api/admin/comments/bulk-workflow', { ids, action });
+  return res.success && res.data ? res.data : null;
+}
+
+export async function replyToComment(
+  id: string,
+  content: string
+): Promise<{ ok: true; comment: Comment } | { ok: false; error: string }> {
+  const res = await apiClient.post<Comment>(`/api/comments/${encodeURIComponent(id)}/reply`, { content });
+  if (res.success && res.data) {
+    return { ok: true, comment: res.data };
+  }
+  return { ok: false, error: res.error ?? 'Reply failed' };
+}
+
+export async function claimComment(id: string): Promise<Comment | null> {
+  const res = await apiClient.post<Comment>(`/api/comments/${encodeURIComponent(id)}/claim`, {});
   return res.success && res.data ? res.data : null;
 }
 

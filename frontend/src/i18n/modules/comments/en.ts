@@ -32,8 +32,18 @@ export const commentsEn: MessageTree = {
   detail: {
     article: 'Article: :slug',
   },
+  thread: {
+    staff: 'Staff',
+    placeholder: 'Write a reply under the article…',
+    send: 'Send',
+    claim: 'Take this conversation',
+    inProgress: 'This comment is being handled',
+    viewArticle: 'View under the article',
+    needsApproval: 'Chat is available after the comment is approved.',
+  },
   actions: {
     read: 'Mark read',
+    approve: 'Approve',
     processed: 'Mark handled',
     archive: 'Archive',
     delete: 'Delete',
@@ -41,6 +51,7 @@ export const commentsEn: MessageTree = {
   bulk: {
     itemLabel: 'comments selected',
     read: 'Mark read',
+    approve: 'Approve',
     processed: 'Mark handled',
     archive: 'Archive',
     delete: 'Delete selected',
@@ -61,6 +72,7 @@ export const commentsEn: MessageTree = {
     bulkDelete: 'Delete :selected of :total selected comments?',
     bulkArchive: 'Archive :selected of :total selected comments?',
     bulkRead: 'Mark :selected of :total comments as read?',
+    bulkApprove: 'Approve :selected of :total selected comments?',
     bulkProcessed: 'Mark :selected of :total comments as processed?',
   },
   toast: {

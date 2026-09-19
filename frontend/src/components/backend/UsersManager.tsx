@@ -11,6 +11,8 @@ import {
   Shield,
   FileArchive,
   UserX,
+  UserPlus,
+  Link2,
 } from 'lucide-react';
 import { User } from '../../api/types';
 import {
@@ -45,6 +47,11 @@ import { AdminHintCard } from './AdminHintCard';
 import { UserAvatarPicker } from './UserAvatarPicker';
 import { TimezoneSelect } from './TimezoneSelect';
 import { summarizeBulkResult } from '../../types/bulk';
+import { RegistrationInvitesPanel } from './RegistrationInvitesPanel';
+import { RegistrationOptionsPanel } from './RegistrationOptionsPanel';
+import { AdminTabs } from '../ui/AdminTabs';
+
+type UsersTab = 'list' | 'form' | 'invites';
 
 type FormState = CreateUserPayload & {
   password?: string;
@@ -88,6 +95,7 @@ export const UsersManager: React.FC = () => {
   const [twoFactorSecret, setTwoFactorSecret] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [gdprBusy, setGdprBusy] = useState(false);
+  const [tab, setTab] = useState<UsersTab>('list');
   const [form, setForm] = useState<FormState>(emptyForm());
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [userRules, setUserRules] = useState<Record<string, string[]>>({});
@@ -192,6 +200,7 @@ export const UsersManager: React.FC = () => {
         if (res.success) {
           success(t('users.toast.updated'));
           resetForm();
+          setTab('list');
           await load();
         } else if (res.errors) {
           setErrors(res.errors);
@@ -204,6 +213,7 @@ export const UsersManager: React.FC = () => {
         if (res.success) {
           success(t('users.toast.created'));
           resetForm();
+          setTab('list');
           await load();
         } else if (res.errors) {
           setErrors(res.errors);
@@ -218,6 +228,7 @@ export const UsersManager: React.FC = () => {
   };
 
   const handleEdit = async (user: User) => {
+    setTab('form');
     setEditingId(user.id);
     setEditingAvatarUrl(user.avatarUrl ?? null);
     setForm({
@@ -241,7 +252,7 @@ export const UsersManager: React.FC = () => {
     if (detail) {
       setTwoFactorEnforced(Boolean(detail.meta?.two_factor_enforced));
       setTwoFactorSecret(detail.user.twoFactorSecret ?? null);
-      setForm((prev) => ({
+        setForm((prev) => ({
         ...prev,
         twoFactorEnabled: detail.user.twoFactorEnabled,
         active: detail.user.active ?? true,
@@ -345,6 +356,7 @@ export const UsersManager: React.FC = () => {
       if (res.success) {
         success(t('users.gdpr.anonymizeSuccess'));
         resetForm();
+        setTab('list');
         await load();
       } else {
         toastError(res.error || t('users.gdpr.anonymizeFailed'));
@@ -381,6 +393,24 @@ export const UsersManager: React.FC = () => {
         )}
       </header>
 
+      <AdminTabs
+        ariaLabel={t('users.page.title')}
+        activeId={tab}
+        onSelect={(id) => {
+          const next = id as UsersTab;
+          if (next === 'form' && tab !== 'form') {
+            resetForm();
+          }
+          setTab(next);
+        }}
+        items={[
+          { id: 'list', label: t('users.tabs.list'), icon: Users, testId: 'users-tab-list' },
+          { id: 'form', label: t('users.tabs.form'), icon: UserPlus, testId: 'users-tab-form' },
+          { id: 'invites', label: t('users.tabs.invites'), icon: Link2, testId: 'users-tab-invites' },
+        ]}
+      />
+
+      {tab === 'form' ? (
       <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
           <Pencil size={18} className="text-indigo-500" />
@@ -616,7 +646,10 @@ export const UsersManager: React.FC = () => {
             {editingId ? (
               <button
                 type="button"
-                onClick={resetForm}
+                onClick={() => {
+                  resetForm();
+                  setTab('list');
+                }}
                 className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300"
               >
                 {t('users.form.cancel')}
@@ -625,7 +658,10 @@ export const UsersManager: React.FC = () => {
           </div>
         </div>
       </section>
+      ) : null}
 
+      {tab === 'list' ? (
+      <>
       <BulkActionBar
         count={bulkSelection.count}
         itemLabel={t('users.bulk.itemLabel')}
@@ -725,6 +761,15 @@ export const UsersManager: React.FC = () => {
           </tbody>
         </table>
       </div>
+      </>
+      ) : null}
+
+      {tab === 'invites' ? (
+        <div className="space-y-6">
+          <RegistrationInvitesPanel />
+          <RegistrationOptionsPanel />
+        </div>
+      ) : null}
     </div>
   );
 };

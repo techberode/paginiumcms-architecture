@@ -413,6 +413,8 @@ export const editorEn: MessageTree = {
       'alert-box': 'Alert',
       'coming-soon': 'Coming soon',
       'stack-grid': 'Stack tags',
+      'staff-card': 'Staff card',
+      'staff-team': 'Team cards',
     },
   },
   shortcodes: {

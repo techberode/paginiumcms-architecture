@@ -3,6 +3,28 @@ import apiClient from './client';
 import type { BulkBatchResult } from '../types/bulk';
 import type { MessagePriority } from '../constants/messageSubjects';
 
+export interface MessageReply {
+  id: string;
+  authorType: 'visitor' | 'staff' | string;
+  authorUserId?: string;
+  authorName?: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface MessageRoute {
+  subject: string;
+  enabled: boolean;
+  teamIds: string[];
+  userIds: string[];
+}
+
+export interface MessageRouting {
+  schema?: string;
+  enabled: boolean;
+  routes: MessageRoute[];
+}
+
 export interface ContactMessage {
   id: string;
   path: string;
@@ -16,6 +38,21 @@ export interface ContactMessage {
   isArchived: boolean;
   priority: MessagePriority | string;
   ip?: string;
+  channel?: string;
+  staffUserId?: string;
+  assigneeUserIds?: string[];
+  assigneeTeamIds?: string[];
+  claimedBy?: string;
+  claimedAt?: number;
+  handleStatus?: string;
+  notifyUserId?: string;
+  thread?: MessageReply[];
+  desk?: 'priority' | 'later' | string;
+  mine?: boolean;
+  canClaim?: boolean;
+  canReply?: boolean;
+  claimedByName?: string;
+  registrationRequest?: boolean;
 }
 
 export interface MessagesListResponse {
@@ -55,3 +92,28 @@ export async function bulkMessageAction(
   const res = await apiClient.post<BulkBatchResult>('/api/admin/messages/bulk', { ids, action });
   return res.success && res.data ? res.data : null;
 }
+
+export const messagesApi = {
+  claim: async (id: string): Promise<ContactMessage | null> => {
+    const res = await apiClient.post<ContactMessage>(`/api/admin/messages/${encodeURIComponent(id)}/claim`, {});
+    return res.success && res.data ? res.data : null;
+  },
+  release: async (id: string): Promise<ContactMessage | null> => {
+    const res = await apiClient.post<ContactMessage>(`/api/admin/messages/${encodeURIComponent(id)}/release`, {});
+    return res.success && res.data ? res.data : null;
+  },
+  reply: async (id: string, body: string): Promise<ContactMessage | null> => {
+    const res = await apiClient.post<ContactMessage>(`/api/admin/messages/${encodeURIComponent(id)}/replies`, { body });
+    return res.success && res.data ? res.data : null;
+  },
+  routing: async (): Promise<MessageRouting> => {
+    const res = await apiClient.get<MessageRouting>('/api/admin/messages/routing');
+    return res.success && res.data
+      ? { enabled: Boolean(res.data.enabled), routes: Array.isArray(res.data.routes) ? res.data.routes : [] }
+      : { enabled: false, routes: [] };
+  },
+  saveRouting: async (payload: MessageRouting): Promise<boolean> => {
+    const res = await apiClient.put('/api/admin/messages/routing', payload);
+    return Boolean(res.success);
+  },
+};

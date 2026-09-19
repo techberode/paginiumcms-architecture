@@ -80,6 +80,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'alert-box',
                 'coming-soon',
                 'cta-banner',
+                'document-link',
                 'feature-card',
                 'feature-gallery',
                 'feature-grid',
@@ -91,6 +92,8 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'showcase-hero',
                 'stack-grid',
                 'stack-tag',
+                'staff-card',
+                'staff-team',
                 'stat-item',
                 'stats-row',
                 'testimonial',
@@ -104,7 +107,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->seeder->seedIfEmpty();
         $this->seeder->seedMissingBundled();
 
-        $this->assertCount(17, $this->manager->list());
+        $this->assertCount(20, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
         $this->assertNotEmpty($this->manager->get('coming-soon'));
         $this->assertNotEmpty($this->manager->get('feature-gallery'));

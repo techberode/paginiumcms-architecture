@@ -283,13 +283,27 @@ class UserRepository
             } elseif ($key === 'education') {
                 $user->setEducation(UserProfileFields::normalizeEducation($value));
             } elseif ($key === 'socialAccounts') {
-                $user->setSocialAccounts(UserProfileFields::normalizeSocialAccounts($value));
+                $user->setSocialAccounts(UserProfileFields::normalizeSocialAccounts($value, true));
             } elseif ($key === 'publish') {
                 $user->setPublish(UserProfileFields::normalizePublish($value));
+            } elseif ($key === 'chatEnabled') {
+                $user->setChatEnabled((bool) $value);
+            } elseif ($key === 'deskMailEnabled') {
+                $user->setDeskMailEnabled((bool) $value);
+            } elseif ($key === 'deskBubbleEnabled') {
+                $user->setDeskBubbleEnabled((bool) $value);
+            } elseif ($key === 'deskBubbleAnchor') {
+                $user->setDeskBubbleAnchor(is_string($value) ? $value : 'right');
+            } elseif ($key === 'deskBubbleX') {
+                $user->setDeskBubbleX((int) $value);
+            } elseif ($key === 'deskBubbleY') {
+                $user->setDeskBubbleY((int) $value);
             } elseif ($key === 'avatarUrl') {
                 $user->setAvatarUrl(is_string($value) ? $value : null);
             } elseif ($key === 'username') {
                 $user->setUsername((string) $value);
+            } elseif ($key === 'registrationOptionId') {
+                $user->setRegistrationOptionId(is_string($value) ? $value : '');
             } elseif ($key === 'active') {
                 $user->setActive((bool) $value);
             } elseif ($key === 'twoFactorEnabled') {
@@ -341,7 +355,14 @@ class UserRepository
             'education' => $user->getEducation(),
             'socialAccounts' => $user->getSocialAccounts(),
             'publish' => $user->getPublish(),
+            'chatEnabled' => $user->isChatEnabled(),
+            'deskMailEnabled' => $user->isDeskMailEnabled(),
+            'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
+            'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
+            'deskBubbleX' => $user->getDeskBubbleX(),
+            'deskBubbleY' => $user->getDeskBubbleY(),
             'avatarUrl' => $user->getAvatarUrl(),
+            'registrationOptionId' => $user->getRegistrationOptionId(),
             'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),
             // Šifrovanie TOTP seedu „at-rest" (audit A1). Ak EncryptionService

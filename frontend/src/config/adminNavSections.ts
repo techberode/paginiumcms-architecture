@@ -107,7 +107,8 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     labelKey: 'admin.sections.inbox',
     items: [
       { id: 'comments', labelKey: 'admin.nav.comments', href: '/comments', icon: MessageSquare, adminOnly: true },
-      { id: 'messages', labelKey: 'admin.nav.messages', href: '/messages', icon: Mail, adminOnly: true },
+      { id: 'messages', labelKey: 'admin.nav.messages', href: '/messages', icon: Mail },
+      { id: 'team-chat', labelKey: 'admin.nav.teamChat', href: '/team-chat', icon: MessageSquare },
       { id: 'kanban', labelKey: 'admin.nav.kanban', href: '/kanban', icon: Columns },
       { id: 'mail', labelKey: 'admin.nav.mail', href: '/mail', icon: Mail },
       { id: 'newsletter', labelKey: 'admin.nav.newsletter', href: '/newsletter', icon: Newspaper, adminOnly: true },

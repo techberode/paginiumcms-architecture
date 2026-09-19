@@ -290,6 +290,16 @@ JSON;
         $this->assertStringNotContainsString('[feature-gallery', $result);
     }
 
+    public function testExpandsStaffCardWithoutCatalogDefinition(): void
+    {
+        $result = $this->expander->expand('[staff-card user="ada@example.com"/]');
+
+        $this->assertStringContainsString('pg-staff-cards', $result);
+        $this->assertStringContainsString('data-staff-mode="user"', $result);
+        $this->assertStringContainsString('data-staff-user="ada@example.com"', $result);
+        $this->assertStringNotContainsString('[staff-card', $result);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

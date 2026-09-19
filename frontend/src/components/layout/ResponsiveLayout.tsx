@@ -18,6 +18,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { AdminTopNav } from '../backend/AdminTopNav';
 import { KeyboardShortcutsModal } from '../admin/KeyboardShortcutsModal';
 import { adminChromeCssVars, resolveAdminChrome } from '../../theme/adminChrome';
+import { SupportChatPresenceBubble } from '../backend/SupportChatPresenceBubble';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -183,6 +184,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
         onOpenShortcuts={() => setShortcutsOpen(true)}
       />
       <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <SupportChatPresenceBubble />
     </div>
   );
 };

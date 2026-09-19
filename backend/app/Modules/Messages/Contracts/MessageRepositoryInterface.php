@@ -10,8 +10,13 @@ interface MessageRepositoryInterface
 {
     /**
      * @return list<ContactMessage>
- * @return array<int|string, mixed>
- */public function findAll(): array;
+     */
+    public function findAll(): array;
+
+    /**
+     * @return list<ContactMessage>
+     */
+    public function findByEmail(string $email): array;
 
     public function findById(string $id): ?ContactMessage;
 

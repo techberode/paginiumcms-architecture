@@ -19,6 +19,8 @@ export const OUTLINE_PALETTE_SHORTCODES = [
   'alert-box',
   'coming-soon',
   'stack-grid',
+  'staff-card',
+  'staff-team',
 ] as const;
 
 export type OutlinePaletteShortcode = (typeof OUTLINE_PALETTE_SHORTCODES)[number];

@@ -15,11 +15,11 @@ Pôvodná It.93 (izolovaný origin) je **zrušená**. Archív: [ISOLATED_ORIGIN.
 | Support desk | Tickety + členovia support tímu (základ, potom rozšírenie) |
 | Pošta | IMAP schránky **len `@doména-webu`**, len prihlásený; ADMIN+ všetky také účty |
 | Udalosti | Firemné udalosti (zoznam + vytvorenie). Editoriálny kalendár ostáva na publikovanie obsahu |
-| Účet | Rozšírený profil používateľa (záložky) |
+| Účet | Rozšírený profil. **93o-2–8:** sociálne overenie, karty, smerovanie, Messenger stôl, odpovede na komentáre, odosielanie odpovedí z tímovej/operátorskej schránky na doméne, externý tím + jednorazový invite, karty Používatelia / Nový používateľ / Jednorazová registrácia. Bublina stola: zapnúť/vypnúť a umiestnenie na Verejnej karte, ťahaním alebo PiP. |
 | Time tracker | Čas na položku projektového plánu alebo udalosť |
 | Moduly (forms/tables/charts/widgets) | Spoločný admin kit (`AdminOfferCard` katalóg). Nie e-shop, LMS, sociálne. Support Kanban je naša tabuľa. |
 
-Komentáre ostávajú komentármi. Chat aplikáciu nerobíme.
+Komentáre ostávajú komentármi. **93o-3** nie je nový WebSocket chat — návštevnícke správy z kariet padajú do existujúcej schránky Správ (`channel=staff-chat`).
 
 ## Pošta (tvrdé pravidlá)
 

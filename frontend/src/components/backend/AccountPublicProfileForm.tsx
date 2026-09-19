@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { authApi } from '../../api/auth';
 import type { User } from '../../api/types';
 import { useI18n } from '../../context/I18nContext';
+import { useToast } from '../../hooks/useToast';
 import { AdminFormActions } from './AdminFormActions';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { SocialBrandButton } from '../ui/SocialBrandIcon';
 import { ADMIN_INPUT } from '../../theme/adminUiClasses';
+import { socialProfilePrefix, suggestSocialProfileUrl } from '../../utils/socialProfileUrl';
+import { DESK_BUBBLE_PAD, normalizeDeskBubbleAnchor, type DeskBubbleAnchor } from '../../utils/deskBubbleLayout';
 
 const PLATFORMS = [
   'telegram',
@@ -30,6 +34,7 @@ export interface AccountPublicDraft {
     label: string;
     directChat: boolean;
     notify: boolean;
+    verifiedAt?: number;
   }>;
   publish: {
     address: boolean;
@@ -41,6 +46,12 @@ export interface AccountPublicDraft {
     contact: boolean;
     support: boolean;
   };
+  chatEnabled: boolean;
+  deskMailEnabled: boolean;
+  deskBubbleEnabled: boolean;
+  deskBubbleAnchor: DeskBubbleAnchor;
+  deskBubbleX: number;
+  deskBubbleY: number;
 }
 
 export function draftFromUser(user: User): AccountPublicDraft {
@@ -70,6 +81,7 @@ export function draftFromUser(user: User): AccountPublicDraft {
       label: row.label ?? '',
       directChat: Boolean(row.directChat),
       notify: Boolean(row.notify),
+      verifiedAt: row.verifiedAt && row.verifiedAt > 0 ? row.verifiedAt : undefined,
     })),
     publish: {
       address: Boolean(user.publish?.address),
@@ -81,6 +93,12 @@ export function draftFromUser(user: User): AccountPublicDraft {
       contact: Boolean(user.publish?.contact),
       support: Boolean(user.publish?.support),
     },
+    chatEnabled: Boolean(user.chatEnabled),
+    deskMailEnabled: Boolean(user.deskMailEnabled),
+    deskBubbleEnabled: user.deskBubbleEnabled !== false,
+    deskBubbleAnchor: normalizeDeskBubbleAnchor(user.deskBubbleAnchor),
+    deskBubbleX: user.deskBubbleX ?? 92,
+    deskBubbleY: user.deskBubbleY ?? 50,
   };
 }
 
@@ -103,6 +121,44 @@ export const AccountPublicProfileForm: React.FC<AccountPublicProfileFormProps> =
   saving,
 }) => {
   const { t } = useI18n();
+  const toast = useToast();
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+
+  const verifyRow = async (rowId: string) => {
+    const row = draft.socialAccounts.find((item) => item.id === rowId);
+    if (!row || row.url.trim() === '') {
+      toast.error(t('platform.account.social.verifyNeedsUrl'));
+      return;
+    }
+
+    setVerifyingId(rowId);
+    try {
+      const res = await authApi.verifySocialAccount(row.platform, row.url.trim());
+      const data = res.data;
+      if (!res.success || !data?.verifiedAt) {
+        toast.error(res.error || t('platform.account.social.verifyFailed'));
+        return;
+      }
+
+      onChange({
+        ...draft,
+        socialAccounts: draft.socialAccounts.map((item) =>
+          item.id === rowId
+            ? {
+                ...item,
+                url: data.normalizedUrl ?? item.url,
+                verifiedAt: data.verifiedAt,
+              }
+            : item
+        ),
+      });
+      toast.success(data.message || t('platform.account.social.verifyOk'));
+    } catch {
+      toast.error(t('platform.account.social.verifyFailed'));
+    } finally {
+      setVerifyingId(null);
+    }
+  };
 
   return (
     <div className="space-y-5" data-testid="account-public">
@@ -134,6 +190,62 @@ export const AccountPublicProfileForm: React.FC<AccountPublicProfileFormProps> =
             </label>
           ))}
         </div>
+        <label className={`${checkRow} mt-3`}>
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={draft.chatEnabled}
+            data-testid="account-chat-enabled"
+            onChange={(event) => onChange({ ...draft, chatEnabled: event.target.checked })}
+          />
+          <span>{t('platform.account.chat.enabled')}</span>
+        </label>
+        <p className="mt-2 text-xs text-admin-text-muted">{t('platform.account.chat.hint')}</p>
+        <label className={`${checkRow} mt-3`}>
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={draft.deskMailEnabled}
+            data-testid="account-desk-mail-enabled"
+            onChange={(event) => onChange({ ...draft, deskMailEnabled: event.target.checked })}
+          />
+          <span>{t('platform.account.chat.deskMailEnabled')}</span>
+        </label>
+        <p className="mt-2 text-xs text-admin-text-muted">{t('platform.account.chat.deskMailHint')}</p>
+        <label className={`${checkRow} mt-3`} data-testid="account-desk-bubble-row">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={draft.deskBubbleEnabled}
+            data-testid="account-desk-bubble-enabled"
+            onChange={(event) => onChange({ ...draft, deskBubbleEnabled: event.target.checked })}
+          />
+          <span>{t('platform.account.desk.enabled')}</span>
+        </label>
+        <p className="mt-2 text-xs text-admin-text-muted">{t('platform.account.desk.enabledHint')}</p>
+        {draft.deskBubbleEnabled ? (
+          <fieldset className="mt-3">
+            <legend className="text-xs font-semibold text-admin-text mb-2">{t('platform.account.desk.placement')}</legend>
+            <div className="grid grid-cols-3 gap-1.5 max-w-[12rem]" role="group" aria-label={t('platform.account.desk.placement')}>
+              {DESK_BUBBLE_PAD.map((anchor) => (
+                <button
+                  key={anchor}
+                  type="button"
+                  data-testid={`account-desk-anchor-${anchor}`}
+                  className={`rounded-md border px-2 py-1.5 text-[11px] font-semibold ${
+                    draft.deskBubbleAnchor === anchor
+                      ? 'border-admin-primary bg-admin-primary text-white'
+                      : 'border-admin-border bg-admin-card text-admin-text'
+                  }`}
+                  onClick={() => onChange({ ...draft, deskBubbleAnchor: anchor })}
+                >
+                  {t(`platform.account.desk.anchors.${anchor}`)}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-admin-text-muted">{t('platform.account.desk.placementHint')}</p>
+          </fieldset>
+        ) : null}
       </AdminWidgetCard>
 
       <AdminWidgetCard title={t('platform.account.sections.address')}>
@@ -219,12 +331,20 @@ export const AccountPublicProfileForm: React.FC<AccountPublicProfileFormProps> =
           <button
             type="button"
             className="text-sm font-semibold text-admin-primary"
+            data-testid="account-social-add"
             onClick={() =>
               onChange({
                 ...draft,
                 socialAccounts: [
                   ...draft.socialAccounts,
-                  { id: `soc-${Date.now()}`, platform: 'telegram', url: '', label: '', directChat: true, notify: false },
+                  {
+                    id: `soc-${Date.now()}`,
+                    platform: 'telegram',
+                    url: socialProfilePrefix('telegram'),
+                    label: '',
+                    directChat: true,
+                    notify: false,
+                  },
                 ],
               })
             }
@@ -248,26 +368,57 @@ export const AccountPublicProfileForm: React.FC<AccountPublicProfileFormProps> =
                       onChange({
                         ...draft,
                         socialAccounts: draft.socialAccounts.map((item) =>
-                          item.id === row.id ? { ...item, platform } : item
+                          item.id === row.id
+                            ? {
+                                ...item,
+                                platform,
+                                url: suggestSocialProfileUrl(platform, item.platform, item.url),
+                                verifiedAt: undefined,
+                              }
+                            : item
                         ),
                       })
                     }
                   />
                 ))}
               </div>
-              <input
-                className={inputClass}
-                placeholder={t('platform.account.fields.socialUrl')}
-                value={row.url}
-                onChange={(e) =>
-                  onChange({
-                    ...draft,
-                    socialAccounts: draft.socialAccounts.map((item) =>
-                      item.id === row.id ? { ...item, url: e.target.value } : item
-                    ),
-                  })
-                }
-              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  className={`${inputClass} flex-1`}
+                  placeholder={socialProfilePrefix(row.platform) || t('platform.account.fields.socialUrl')}
+                  data-testid={`account-social-url-${row.id}`}
+                  value={row.url}
+                  onChange={(e) =>
+                    onChange({
+                      ...draft,
+                      socialAccounts: draft.socialAccounts.map((item) =>
+                        item.id === row.id
+                          ? { ...item, url: e.target.value, verifiedAt: undefined }
+                          : item
+                      ),
+                    })
+                  }
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary text-sm whitespace-nowrap"
+                  data-testid={`account-social-verify-${row.id}`}
+                  disabled={verifyingId === row.id || row.url.trim() === ''}
+                  onClick={() => void verifyRow(row.id)}
+                >
+                  {verifyingId === row.id
+                    ? t('platform.account.social.verifying')
+                    : t('platform.account.social.verifyButton')}
+                </button>
+              </div>
+              <p className="text-xs text-admin-text-muted" data-testid={`account-social-status-${row.id}`}>
+                {(row.verifiedAt ?? 0) > 0
+                  ? t('platform.account.social.statusVerified')
+                  : t('platform.account.social.statusUnverified')}
+                {draft.publish.socials && (row.verifiedAt ?? 0) <= 0 && row.url.trim() !== ''
+                  ? ` · ${t('platform.account.social.publishBlocked')}`
+                  : ''}
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <label className="flex items-center gap-2 text-sm text-admin-text">
                   <input

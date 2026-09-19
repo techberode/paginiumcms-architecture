@@ -281,6 +281,14 @@ export const publicEn: MessageTree = {
     contactsTitle: 'Contact persons',
     supportTitle: 'Support team',
     chat: 'Direct chat',
+    online: 'Online',
+    offline: 'Offline',
+    liveChat: 'Live chat',
+    leaveMessage: 'Leave a message',
+    send: 'Send to Messages',
+    sending: 'Sending…',
+    chatSent: 'Message saved to the site inbox.',
+    chatFailed: 'Could not send the message.',
   },
   contact: {
     title: 'Contact form',
@@ -291,6 +299,7 @@ export const publicEn: MessageTree = {
       subject: 'Subject',
       customSubjectOption: 'Custom subject…',
       customSubjectPlaceholder: 'Custom message subject',
+      registrationRequest: 'I want to request registration (one-time link from the site admin)',
       messagePlaceholder: 'Your message…',
     },
     submit: 'Send message',
@@ -395,6 +404,7 @@ export const publicEn: MessageTree = {
     form: {
       title: 'Add a comment',
       name: 'Name',
+      email: 'Email',
       emailOptional: 'Email (optional)',
       contentPlaceholder: 'Your comment…',
       submitting: 'Sending…',
@@ -402,9 +412,13 @@ export const publicEn: MessageTree = {
     },
     toast: {
       guestsDisabled: 'Guest comments are disabled for this article. Please sign in.',
+      emailRequired: 'A lasting e-mail address is required.',
       pendingApproval: 'Comment submitted for approval.',
       published: 'Comment published.',
     },
+    reply: 'Reply on the page',
+    replyPlaceholder: 'Write a public reply…',
+    staffReply: 'Team',
   },
   auth: {
     common: {
@@ -495,12 +509,18 @@ export const publicEn: MessageTree = {
         resend: 'Resend code',
         backToForm: 'Back to registration form',
       },
+      invite: {
+        checking: 'Checking the registration link…',
+        hint: 'This link is one-time. A superadmin confirms the account before the welcome mail is sent.',
+      },
       fields: {
         fullName: 'Full name',
+        registrationType: 'Registration type',
       },
       placeholders: {
         fullName: 'John Doe',
         email: 'john@example.com',
+        registrationType: 'Choose a type…',
       },
       submit: 'Create account',
       submitting: 'Registering…',
@@ -515,6 +535,9 @@ export const publicEn: MessageTree = {
         otpSent: 'Verification code sent to your email',
         devOtp: 'Dev OTP: :code',
         success: 'Registration successful — you can sign in now',
+        pendingApproval: 'Registration is waiting for administrator approval',
+        typeRequired: 'Choose a registration type',
+        inviteInvalid: 'This registration link is invalid or expired',
         failed: 'Registration failed',
         otpRequired: 'Enter the 6-digit verification code',
         otpInvalid: 'Invalid verification code',

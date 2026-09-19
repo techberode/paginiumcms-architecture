@@ -126,6 +126,12 @@ export const AccountView: React.FC = () => {
       education: publicDraft.education,
       socialAccounts: publicDraft.socialAccounts,
       publish: publicDraft.publish,
+      chatEnabled: publicDraft.chatEnabled,
+      deskMailEnabled: publicDraft.deskMailEnabled,
+      deskBubbleEnabled: publicDraft.deskBubbleEnabled,
+      deskBubbleAnchor: publicDraft.deskBubbleAnchor,
+      deskBubbleX: publicDraft.deskBubbleX,
+      deskBubbleY: publicDraft.deskBubbleY,
     });
   };
 

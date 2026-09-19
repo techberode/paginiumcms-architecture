@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download, Mail, RefreshCw, Send, Trash2, UserMinus } from 'lucide-react';
+import { Download, Mail, RefreshCw, Send, Settings2, Trash2, UserMinus, Users } from 'lucide-react';
 import {
   bulkDeleteNewsletterSubscribers,
   bulkUnsubscribeNewsletterSubscribers,
@@ -29,6 +29,9 @@ import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { NewsletterSettingsPanel } from './NewsletterSettingsPanel';
+import { AdminTabs } from '../ui/AdminTabs';
+
+type NewsletterTab = 'settings' | 'send' | 'recipients';
 
 const sourceLabelKey = (source: string): string => `newsletter.source.${source}`;
 
@@ -53,6 +56,7 @@ export const NewsletterSubscribersPanel: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [tab, setTab] = useState<NewsletterTab>('settings');
   const [bulkBusy, setBulkBusy] = useState(false);
   const [pageSize, setPageSize] = useAdminListPageSize('newsletter');
   const { sortField, sortDirection, handleSort } = useColumnSort('subscribedAt', 'desc');
@@ -362,34 +366,38 @@ export const NewsletterSubscribersPanel: React.FC = () => {
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {t('newsletter.actions.refresh')}
           </button>
-          <button
-            type="button"
-            onClick={() => void handleExport()}
-            disabled={exporting || items.length === 0}
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
-          >
-            <Download className="h-4 w-4" />
-            {t('newsletter.actions.exportCsv')}
-          </button>
+          {tab === 'recipients' ? (
+            <button
+              type="button"
+              onClick={() => void handleExport()}
+              disabled={exporting || items.length === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+            >
+              <Download className="h-4 w-4" />
+              {t('newsletter.actions.exportCsv')}
+            </button>
+          ) : null}
         </div>
       </div>
 
-      {Object.keys(bySource).length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(bySource).map(([source, count]) => (
-            <span
-              key={source}
-              className="inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400"
-            >
-              {formatSource(source)}: <strong className="text-slate-900 dark:text-white">{count}</strong>
-            </span>
-          ))}
-        </div>
+      <AdminTabs
+        ariaLabel={t('newsletter.page.title')}
+        activeId={tab}
+        onSelect={(id) => setTab(id as NewsletterTab)}
+        items={[
+          { id: 'settings', label: t('newsletter.tabs.settings'), icon: Settings2, testId: 'newsletter-tab-settings' },
+          { id: 'send', label: t('newsletter.tabs.send'), icon: Send, testId: 'newsletter-tab-send' },
+          { id: 'recipients', label: t('newsletter.tabs.recipients'), icon: Users, testId: 'newsletter-tab-recipients' },
+        ]}
+      />
+
+      {tab === 'settings' ? <NewsletterSettingsPanel onSaved={() => void load()} /> : null}
+
+      {tab === 'send' && !sendStatus ? (
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('newsletter.send.subtitle')}</p>
       ) : null}
 
-      <NewsletterSettingsPanel onSaved={() => void load()} />
-
-      {sendStatus ? (
+      {tab === 'send' && sendStatus ? (
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('newsletter.send.title')}</h2>
@@ -502,6 +510,21 @@ export const NewsletterSubscribersPanel: React.FC = () => {
           ) : (
             <p className="text-xs text-slate-500 dark:text-slate-400">{t('newsletter.send.superAdminHint')}</p>
           )}
+        </div>
+      ) : null}
+
+      {tab === 'recipients' ? (
+      <>
+      {Object.keys(bySource).length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(bySource).map(([source, count]) => (
+            <span
+              key={source}
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400"
+            >
+              {formatSource(source)}: <strong className="text-slate-900 dark:text-white">{count}</strong>
+            </span>
+          ))}
         </div>
       ) : null}
 
@@ -658,6 +681,8 @@ export const NewsletterSubscribersPanel: React.FC = () => {
         pageSize={pageSize}
         onPageChange={setPage}
       />
+      </>
+      ) : null}
     </div>
   );
 };

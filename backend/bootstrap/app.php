@@ -14,6 +14,8 @@ use PaginiumCMS\Http\Middleware\ContactRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\RateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\LoginRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\SocialVerifyRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\StaffChatRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\OtpResendRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\NewsletterSubscribeRateLimitMiddleware;
 use PaginiumCMS\Http\Middleware\NewsletterTokenRateLimitMiddleware;
@@ -254,7 +256,9 @@ $containerBuilder->addDefinitions([
             $container->get(\PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Versioning\Services\ContentVersioningService::class),
             $container->get(\PaginiumCMS\Core\Content\LocalizedContentWriter::class),
-            $container->get(\PaginiumCMS\Core\Hook\Services\HookEmitter::class)
+            $container->get(\PaginiumCMS\Core\Hook\Services\HookEmitter::class),
+            $container->get(\PaginiumCMS\Modules\Security\Services\RegistrationService::class),
+            $container->get(\PaginiumCMS\Modules\Security\Services\RegistrationInviteService::class)
         );
     },
 
@@ -347,6 +351,20 @@ $containerBuilder->addDefinitions([
             $container->get(CacheManager::class),
                                             // Ak beží ZA nginx reverse proxy (LAN: .26 → PHP .20), pridajte IP nginx hosta.
     trustedProxies: ClientIpResolver::trustedProxiesFromEnv()
+        );
+    },
+
+    SocialVerifyRateLimitMiddleware::class => function ($container) {
+        return new SocialVerifyRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            ClientIpResolver::trustedProxiesFromEnv()
+        );
+    },
+
+    StaffChatRateLimitMiddleware::class => function ($container) {
+        return new StaffChatRateLimitMiddleware(
+            $container->get(CacheManager::class),
+            ClientIpResolver::trustedProxiesFromEnv()
         );
     },
 
@@ -552,7 +570,11 @@ $containerBuilder->addDefinitions([
             $container->get(SecurityLogger::class),
             $container->get(OtpWorkflowService::class),
             $container->get(JsonResponder::class),
-            $container->get(DemoLoginGuard::class)
+            $container->get(DemoLoginGuard::class),
+            $container->get(\PaginiumCMS\Modules\Security\Services\RegistrationService::class),
+            $container->get(\PaginiumCMS\Core\Validation\VisitorEmailGuard::class),
+            $container->get(\PaginiumCMS\Modules\Teams\Services\TeamChatStore::class),
+            $container->get(\PaginiumCMS\Modules\Security\Services\RegistrationInviteService::class)
         );
     },
 
@@ -874,6 +896,9 @@ $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) 
     $accountController = $container->get(AccountController::class);
     $twoFactorController = $container->get(TwoFactorController::class);
 
+    $group->get('/register-options', [$authController, 'registerOptions']);
+    $group->get('/register-invite', [$authController, 'peekInvite'])
+        ->add($container->get(\PaginiumCMS\Http\Middleware\InviteRegisterRateLimitMiddleware::class));
     $group->post('/register', [$authController, 'register'])
         ->add($container->get(OtpStartRateLimitMiddleware::class));
     $group->post('/register/verify-otp', [$authController, 'verifyRegisterOtp'])
@@ -888,11 +913,16 @@ $app->group('/api/auth', function (RouteCollectorProxy $group) use ($container) 
     $group->post('/verify-reset-token', [$authController, 'verifyResetToken']);
     $group->get('/csrf-token', [$authController, 'getCsrfToken']);
 
-    $group->group('', function (RouteCollectorProxy $protected) use ($authController, $accountController, $twoFactorController) {
+    $group->group('', function (RouteCollectorProxy $protected) use ($container, $authController, $accountController, $twoFactorController) {
         $protected->post('/logout', [$authController, 'logout']);
         $protected->post('/change-password', [$authController, 'changePassword']);
         $protected->get('/me', [$authController, 'getCurrentUser']);
         $protected->put('/me', [$accountController, 'update']);
+        $protected->post('/me/social/verify', [$accountController, 'verifySocialAccount'])
+            ->add($container->get(SocialVerifyRateLimitMiddleware::class));
+        $protected->get('/me/chat-status', [$accountController, 'chatStatus']);
+        $protected->get('/me/desk', [$accountController, 'desk']);
+        $protected->post('/me/presence', [$accountController, 'updatePresence']);
         $protected->post('/me/avatar', [$accountController, 'uploadAvatar']);
         $protected->put('/me/avatar', [$accountController, 'assignAvatarFromUrl']);
         $protected->delete('/me/avatar', [$accountController, 'removeAvatar']);

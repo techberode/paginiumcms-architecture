@@ -254,6 +254,14 @@ export const publicSk: MessageTree = {
     contactsTitle: 'Kontaktné osoby',
     supportTitle: 'Support tím',
     chat: 'Priamy chat',
+    online: 'Online',
+    offline: 'Offline',
+    liveChat: 'Živý chat',
+    leaveMessage: 'Napísať správu',
+    send: 'Odoslať do Správ',
+    sending: 'Odosielam…',
+    chatSent: 'Správa je uložená v schránke webu.',
+    chatFailed: 'Správu sa nepodarilo odoslať.',
   },
   contact: {
     title: 'Kontaktný formulár',
@@ -264,6 +272,7 @@ export const publicSk: MessageTree = {
       subject: 'Predmet',
       customSubjectOption: 'Vlastný predmet…',
       customSubjectPlaceholder: 'Vlastný predmet správy',
+      registrationRequest: 'Chcem požiadať o registráciu (jednorazový link od správcu)',
       messagePlaceholder: 'Vaša správa…',
     },
     submit: 'Odoslať správu',
@@ -368,6 +377,7 @@ export const publicSk: MessageTree = {
     form: {
       title: 'Pridať komentár',
       name: 'Meno',
+      email: 'E-mail',
       emailOptional: 'E-mail (voliteľné)',
       contentPlaceholder: 'Váš komentár…',
       submitting: 'Odosielam…',
@@ -375,9 +385,13 @@ export const publicSk: MessageTree = {
     },
     toast: {
       guestsDisabled: 'Komentáre od hostí sú pre tento článok vypnuté. Prihláste sa prosím.',
+      emailRequired: 'Trvalá e-mailová adresa je povinná.',
       pendingApproval: 'Komentár bol odoslaný na schválenie.',
       published: 'Komentár bol publikovaný.',
     },
+    reply: 'Odpovedať na stránke',
+    replyPlaceholder: 'Napíš verejnú odpoveď…',
+    staffReply: 'Tím',
   },
   auth: {
     common: {
@@ -468,12 +482,18 @@ export const publicSk: MessageTree = {
         resend: 'Znovu odoslať kód',
         backToForm: 'Späť na registračný formulár',
       },
+      invite: {
+        checking: 'Overujem registračný link…',
+        hint: 'Tento link je jednorazový. Účet potvrdí superadmin a až potom vám príde uvítací mail.',
+      },
       fields: {
         fullName: 'Celé meno',
+        registrationType: 'Typ registrácie',
       },
       placeholders: {
         fullName: 'Ján Novák',
         email: 'jan@example.com',
+        registrationType: 'Vyberte typ…',
       },
       submit: 'Vytvoriť účet',
       submitting: 'Registrujem…',
@@ -488,6 +508,9 @@ export const publicSk: MessageTree = {
         otpSent: 'Overovací kód bol odoslaný na e-mail',
         devOtp: 'Dev OTP: :code',
         success: 'Registrácia úspešná — môžete sa prihlásiť',
+        pendingApproval: 'Registrácia čaká na schválenie administrátorom',
+        typeRequired: 'Vyberte typ registrácie',
+        inviteInvalid: 'Registračný link je neplatný alebo expirovaný',
         failed: 'Registrácia zlyhala',
         otpRequired: 'Zadajte 6-miestny overovací kód',
         otpInvalid: 'Neplatný overovací kód',

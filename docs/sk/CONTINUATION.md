@@ -1,7 +1,7 @@
 # PaginiumCMS — kontext pre pokračovanie vývoja
 
 > **Účel:** stručný handoff pre ďalšiu reláciu  
-> **Checkpoint:** 18. september 2026 · **`v2.1.0-beta.82`**  
+> **Checkpoint:** 19. september 2026 · **`v2.1.0-beta.86`**  
 > **Aktívna fáza:** **plný vývoj naplánovaných iterácií** — stabilizačný freeze zrušený
 
 Anglický master: [en/CONTINUATION.md](../en/CONTINUATION.md)
@@ -16,14 +16,15 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 
 | Oblasť | Stav |
 |--------|------|
-| Najnovší tag | ✅ `v2.1.0-beta.82` — It.89b–e plugin broker · CLI |
-| Rozpracované | **58f-h** · **It.95** · **It.96** (It.94 ✅ · It.92 v tagoch `beta.83+`) |
+| Najnovší tag | ✅ `v2.1.0-beta.86` — It.93o-2–8 stôl/staff/externý tím · It.96 knižnica dokumentov · CI media/webhook/shortcode |
+| Predchádzajúci | `v2.1.0-beta.85` — FTS sanitizácia (tag sa nepresúva) |
+| Rozpracované | **58f-h** · **It.95** · **It.70** (It.94 ✅ · It.92 v tagoch `beta.83+` · It.96 v `beta.86`) |
 
 ## Fronta
 
 1. **It.70** · **It.76/77** · **It.75** · **It.48** (58g compile s It.48)
 
-Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md). **It.93** ✅ `beta.77`–`78` (93l Kanban + 93m domain IMAP).
+Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITERATION_58f.md](ITERATION_58f.md). **It.93** ✅ `beta.77`–`79` + **93o-2–8** v `beta.86`.
 
 **It.92** ✅ SQLite odvodený query index, runtime watch, Engine UI — CHANGELOG `2.1.0-beta.83`. Deep-link: `/settings?group=engine` (alias `/settings/engine`). **It.89** hotové (`beta.80`–`82`).
 
@@ -33,7 +34,7 @@ Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITER
 |----------|--------|
 | [ITERATION_93.md](ITERATION_93.md) | Admin chrome + denné aplikácie |
 | [architecture/ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md) | Admin SPA cesty (`/{module}`; aliasy `/platform/*`) |
-| [RELEASE_2_1_0_BETA_82.md](RELEASE_2_1_0_BETA_82.md) | Posledný release |
+| [RELEASE_2_1_0_BETA_86.md](../en/RELEASE_2_1_0_BETA_86.md) | Posledný release (aj zvyšný CI fix po beta.85) |
 | [ITERATION_89.md](../ITERATION_89.md) | Plugin capabilities (hotové) |
 | [ITERATION_58f.md](ITERATION_58f.md) | Vizuálne bloky (58f-a–g; **58f-h** plánované) |
 | [ITERATION_94.md](ITERATION_94.md) | Admin UX pre neskúsených (94a–94d) |

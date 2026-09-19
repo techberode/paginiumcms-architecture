@@ -21,6 +21,8 @@ describe('It.18f i18n modules', () => {
     registerModuleMessages('en', 'comments', commentsEn);
     expect(translate('sk', 'comments.page.title')).toBe('Komentáre');
     expect(translate('en', 'comments.filter.pending')).toBe('Pending');
+    expect(translate('sk', 'comments.actions.approve')).toBe('Schváliť');
+    expect(translate('en', 'comments.bulk.approve')).toBe('Approve');
   });
 
   it('registers messages catalogs', () => {
@@ -33,6 +35,8 @@ describe('It.18f i18n modules', () => {
   it('registers backups catalogs', () => {
     registerModuleMessages('sk', 'backups', backupsSk);
     registerModuleMessages('en', 'backups', backupsEn);
+    expect(translate('sk', 'backups.tabs.manage')).toBe('Správa záloh');
+    expect(translate('en', 'backups.tabs.list')).toBe('Backup list');
     expect(translate('sk', 'backups.create.button')).toBe('Vytvoriť zálohu');
     expect(translate('en', 'backups.status.completed')).toBe('Completed');
     expect(translate('en', 'backups.scope.modeIncremental')).toContain('Incremental');

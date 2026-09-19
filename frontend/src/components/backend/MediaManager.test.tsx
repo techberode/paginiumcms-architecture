@@ -37,57 +37,31 @@ vi.mock('../../hooks/useAdminViewMode', () => ({
   useAdminViewMode: mocks.useAdminViewMode,
 }));
 
-vi.mock('../../api/media', () => ({
-  listMedia: mocks.listMedia,
-  listMediaFolders: mocks.listMediaFolders,
-  listStockImageTopics: mocks.listStockImageTopics,
-  listMediaFormats: mocks.listMediaFormats,
-  importStockImage: mocks.importStockImage,
-  uploadMedia: mocks.uploadMedia,
-  deleteMedia: mocks.deleteMedia,
-  bulkDeleteMedia: mocks.bulkDeleteMedia,
-  createMediaFolder: mocks.createMediaFolder,
-  updateMediaMetadata: mocks.updateMediaMetadata,
-  updateMediaAlt: mocks.updateMediaMetadata,
-  getMediaImageInfo: mocks.getMediaImageInfo,
-  previewOptimizeMedia: mocks.previewOptimizeMedia,
-  applyOptimizeMedia: mocks.applyOptimizeMedia,
-  optimizeMedia: mocks.optimizeMedia,
-  resolveAdminMediaPreviewUrl: (path: string) => `/api/media/file/${path}`,
-  resolvePublicMediaUrl: (url: string) => url,
-  resolveMediaUrl: (url: string) => url,
-  resolveOptimizePreviewUrl: (token: string) => `/api/media/optimize-preview/${token}`,
-  formatMediaSize: (bytes: number) => `${bytes} B`,
-  scaleMediaDimensions: (
-    originalWidth: number,
-    originalHeight: number,
-    changedAxis: 'width' | 'height',
-    newValue: number
-  ) => {
-    if (changedAxis === 'width') {
-      const width = Math.max(1, Math.min(originalWidth, Math.round(newValue)));
-      const height = Math.max(1, Math.round((originalHeight * width) / originalWidth));
-      return { width, height };
-    }
-    const height = Math.max(1, Math.min(originalHeight, Math.round(newValue)));
-    const width = Math.max(1, Math.round((originalWidth * height) / originalHeight));
-    return { width, height };
-  },
-  isImageMedia: (file: { mimeType: string }) => file.mimeType.startsWith('image/'),
-  isVideoMedia: (file: { mimeType: string }) => file.mimeType.startsWith('video/'),
-  isPreviewableMedia: (file: { mimeType: string }, previewableMimeTypes?: string[]) => {
-    if (previewableMimeTypes && previewableMimeTypes.length > 0) {
-      return previewableMimeTypes.includes(file.mimeType);
-    }
-    return file.mimeType.startsWith('image/');
-  },
-  isOptimizableMedia: (file: { mimeType: string }, capabilities?: { available: boolean }) => {
-    if (capabilities !== undefined && !capabilities.available) {
-      return false;
-    }
-    return ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimeType.toLowerCase());
-  },
-}));
+vi.mock('../../api/media', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../api/media')>();
+
+  return {
+    ...actual,
+    listMedia: mocks.listMedia,
+    listMediaFolders: mocks.listMediaFolders,
+    listStockImageTopics: mocks.listStockImageTopics,
+    listMediaFormats: mocks.listMediaFormats,
+    importStockImage: mocks.importStockImage,
+    uploadMedia: mocks.uploadMedia,
+    deleteMedia: mocks.deleteMedia,
+    bulkDeleteMedia: mocks.bulkDeleteMedia,
+    createMediaFolder: mocks.createMediaFolder,
+    updateMediaMetadata: mocks.updateMediaMetadata,
+    updateMediaAlt: mocks.updateMediaMetadata,
+    getMediaImageInfo: mocks.getMediaImageInfo,
+    previewOptimizeMedia: mocks.previewOptimizeMedia,
+    applyOptimizeMedia: mocks.applyOptimizeMedia,
+    optimizeMedia: mocks.optimizeMedia,
+    downloadMediaFile: vi.fn(async () => ({ ok: true })),
+    bulkDownloadMedia: vi.fn(async () => ({ ok: true })),
+    saveMediaBulkDownloadBlob: vi.fn(),
+  };
+});
 
 vi.mock('../../api/settings', () => ({
   getSettings: vi.fn().mockResolvedValue({

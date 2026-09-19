@@ -22,6 +22,14 @@ export function buildShortcodeSampleMarkup(name: string): string {
     return `[${name} title="Selected work" tag=""/]`;
   }
 
+  if (name === 'staff-card') {
+    return `[${name} user="ada@example.com"/]`;
+  }
+
+  if (name === 'staff-team') {
+    return `[${name} type="support"/]`;
+  }
+
   if (name === 'cta-banner') {
     return `[${name} title="Ready to start?" subtitle="Join teams shipping content with PaginiumCMS." cta="Get started" href="/contact" tone="primary"/]`;
   }

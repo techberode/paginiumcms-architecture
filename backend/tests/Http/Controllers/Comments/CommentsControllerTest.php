@@ -51,6 +51,43 @@ class CommentsControllerTest extends TestCase
         $this->assertCount(1, $publicAfterData['data']);
     }
 
+    public function testStaffCanReplyOnApprovedComment(): void
+    {
+        $articleSlug = 'desk-article-' . uniqid('', true);
+        $submit = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => $articleSlug,
+            'author' => 'Reader',
+            'email' => 'reader@example.com',
+            'content' => 'Please clarify the second paragraph.',
+        ]));
+        $commentId = $this->getJsonResponse($submit)['data']['id'] ?? null;
+        $this->assertNotNull($commentId);
+
+        $this->loginAsAdminUser();
+        $this->handleRequest($this->createJsonRequest('PUT', '/api/admin/comments/' . $commentId, [
+            'status' => Comment::STATUS_APPROVED,
+        ]));
+
+        $reply = $this->handleRequest($this->createJsonRequest('POST', '/api/comments/' . $commentId . '/reply', [
+            'content' => 'The second paragraph is about the public API contract.',
+        ]));
+        $this->assertSame(201, $reply->getStatusCode());
+
+        $public = $this->getJsonResponse($this->handleRequest(
+            $this->createJsonRequest('GET', '/api/comments?articleSlug=' . urlencode($articleSlug))
+        ));
+        $this->assertIsArray($public['data']);
+        $this->assertCount(1, $public['data']);
+        $this->assertCount(1, $public['data'][0]['replies'] ?? []);
+        $this->assertTrue($public['data'][0]['replies'][0]['staffReply'] ?? false);
+
+        $desk = $this->getJsonResponse($this->handleRequest($this->createJsonRequest('GET', '/api/auth/me/desk')));
+        $this->assertTrue($desk['success'] ?? false);
+        $this->assertIsArray($desk['data']);
+        $this->assertArrayHasKey('deskCount', $desk['data']);
+        $this->assertArrayHasKey('items', $desk['data']);
+    }
+
     public function testGuestCommentsDisabledBySetting(): void
     {
         $settings = $this->app->getContainer()->get(SettingsRepositoryInterface::class);
@@ -61,6 +98,7 @@ class CommentsControllerTest extends TestCase
         $request = $this->createJsonRequest('POST', '/api/comments', [
             'articleSlug' => 'blocked-guest-' . uniqid(),
             'author' => 'Guest',
+            'email' => 'guest@example.com',
             'content' => 'Should fail',
         ]);
 
@@ -184,6 +222,26 @@ class CommentsControllerTest extends TestCase
             . json_encode($data, JSON_UNESCAPED_UNICODE)
         );
         $this->assertTrue($data['requires_otp'] ?? false);
+    }
+
+    public function testSubmitRequiresRegisteredEmail(): void
+    {
+        $missing = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => 'mail-comment-' . uniqid('', true),
+            'author' => 'Reader',
+            'content' => 'Great article, thanks!',
+        ]));
+        $this->assertSame(422, $missing->getStatusCode());
+
+        $disposable = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => 'mail-comment-' . uniqid('', true),
+            'author' => 'Reader',
+            'email' => 'guest@mailinator.com',
+            'content' => 'Great article, thanks!',
+        ]));
+        $this->assertSame(422, $disposable->getStatusCode());
+        $errors = $this->getJsonResponse($disposable)['errors'] ?? [];
+        $this->assertArrayHasKey('email', $errors);
     }
 
     public function testHoneypotReturnsSilentSuccess(): void

@@ -661,3 +661,50 @@
   min-height: 0;
   height: 100%;
 }
+
+/* Desk bubble / beacon portal to document.body — .admin-shell tokens do not apply there.
+   Sidebar remaps text-admin-text to light ink; these hex colors stay readable. */
+.desk-solid-panel,
+.desk-solid-chip {
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+}
+.desk-solid-panel {
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+}
+.desk-solid-panel textarea {
+  background-color: #f8fafc;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+}
+.admin-shell .admin-sidebar .desk-solid-panel,
+.admin-shell .admin-sidebar .desk-solid-panel .text-admin-text,
+.admin-shell .admin-sidebar .desk-solid-panel .text-admin-muted,
+.admin-shell .admin-sidebar .desk-solid-panel button {
+  color: #1e293b;
+}
+html.dark .desk-solid-panel,
+html.dark .desk-solid-chip,
+.admin-shell.dark .desk-solid-panel,
+.admin-shell.dark .desk-solid-chip {
+  background-color: #0f172a;
+  color: #f8fafc;
+  border-color: #334155;
+}
+html.dark .desk-solid-panel textarea,
+.admin-shell.dark .desk-solid-panel textarea {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
+html.dark .admin-shell .admin-sidebar .desk-solid-panel,
+html.dark .admin-shell .admin-sidebar .desk-solid-panel .text-admin-text,
+html.dark .admin-shell .admin-sidebar .desk-solid-panel .text-admin-muted,
+html.dark .admin-shell .admin-sidebar .desk-solid-panel button,
+.admin-shell.dark .admin-sidebar .desk-solid-panel,
+.admin-shell.dark .admin-sidebar .desk-solid-panel .text-admin-text,
+.admin-shell.dark .admin-sidebar .desk-solid-panel .text-admin-muted,
+.admin-shell.dark .admin-sidebar .desk-solid-panel button {
+  color: #f8fafc;
+}

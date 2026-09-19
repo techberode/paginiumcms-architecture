@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Validation\ValidationException;
 use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Core\Validation\VisitorEmailGuard;
 use PaginiumCMS\Core\Workflow\Services\OtpWorkflowService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
@@ -17,6 +18,7 @@ use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Modules\Comments\Services\CommentPolicyResolver;
+use PaginiumCMS\Modules\Messages\Services\DeskInboxService;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -30,7 +32,9 @@ class CommentsController
         private CommentPolicyResolver $commentPolicy,
         private Validator $validator,
         private OtpWorkflowService $otpWorkflow,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private DeskInboxService $desk,
+        private VisitorEmailGuard $visitorEmail
     ) {
     }
 
@@ -46,10 +50,13 @@ class CommentsController
             $filters['articleSlug'] = $articleSlug;
         }
 
-        $comments = array_map(
-            fn (Comment $comment) => $this->publicShape($comment),
-            $this->commentsRepository->findAll($filters)
-        );
+        $comments = [];
+        foreach ($this->commentsRepository->findAll($filters) as $comment) {
+            if ($comment->getParentId() !== '') {
+                continue;
+            }
+            $comments[] = $this->desk->publicComment($comment);
+        }
 
         return $this->json->success($response, $comments);
     }
@@ -61,11 +68,28 @@ class CommentsController
             return $this->json->error($response, Lang::get('invalid_payload', [], 'comments'), 400);
         }
 
+        if (trim((string) ($data['_hp'] ?? '')) !== '') {
+            return $this->json->success(
+                $response,
+                [
+                    'id' => 'hp_' . bin2hex(random_bytes(8)),
+                    'articleSlug' => trim((string) ($data['articleSlug'] ?? '')),
+                    'author' => (string) ($data['author'] ?? ''),
+                    'content' => (string) ($data['content'] ?? ''),
+                    'status' => Comment::STATUS_PENDING,
+                    'createdAt' => date('c'),
+                    'approvedAt' => null,
+                ],
+                201,
+                Lang::get('submitted', [], 'comments')
+            );
+        }
+
         try {
             $validated = $this->validator->validate($data, [
                 'articleSlug' => ['required', 'string', 'min:1', 'max:120'],
                 'author' => ['required', 'string', 'min:2', 'max:120'],
-                'email' => ['email', 'max:255'],
+                'email' => ['required', 'email', 'max:255'],
                 'content' => ['required', 'string', 'min:3', 'max:2000'],
             ]);
         } catch (ValidationException $e) {
@@ -121,7 +145,11 @@ class CommentsController
             (string) $validated['author'],
             (string) $validated['content']
         );
-        $comment->setEmail((string) ($validated['email'] ?? ''));
+        try {
+            $comment->setEmail($this->visitorEmail->normalize((string) ($validated['email'] ?? '')));
+        } catch (ValidationException $e) {
+            return $this->json->validation($response, Lang::get('validation_failed', [], 'comments'), $e->getErrors());
+        }
 
         if ($spamVerdict->isQuarantine()) {
             $comment->setStatus(Comment::STATUS_QUARANTINE);
@@ -134,10 +162,66 @@ class CommentsController
 
         return $this->json->success(
             $response,
-            $this->publicShape($comment),
+            $this->desk->publicComment($comment),
             201,
             Lang::get('submitted', [], 'comments')
         );
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function reply(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $actor = $request->getAttribute('user');
+        if (!$actor instanceof User) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+        if (!$this->desk->canReplyComments($actor)) {
+            return $this->json->error($response, Lang::get('forbidden', [], 'comments'), 403);
+        }
+
+        $parent = $this->commentsRepository->findById(trim((string) ($args['id'] ?? '')));
+        if ($parent === null || $parent->getStatus() !== Comment::STATUS_APPROVED) {
+            return $this->json->error($response, Lang::get('not_found', [], 'comments'), 404);
+        }
+
+        $data = RequestJsonBody::decode($request);
+        $body = is_array($data) ? trim((string) ($data['content'] ?? $data['body'] ?? '')) : '';
+        if (mb_strlen($body) < 2) {
+            return $this->json->error($response, Lang::get('content_required', [], 'comments'), 400);
+        }
+
+        $reply = $this->desk->replyToComment($parent, $actor, $body);
+        if ($reply === null) {
+            return $this->json->error($response, Lang::get('claimed', [], 'comments'), 409);
+        }
+
+        return $this->json->success($response, $this->desk->publicComment($reply), 201, Lang::get('replied', [], 'comments'));
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function claim(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $actor = $request->getAttribute('user');
+        if (!$actor instanceof User) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+        if (!$this->desk->canReplyComments($actor)) {
+            return $this->json->error($response, Lang::get('forbidden', [], 'comments'), 403);
+        }
+
+        $comment = $this->commentsRepository->findById(trim((string) ($args['id'] ?? '')));
+        if ($comment === null) {
+            return $this->json->error($response, Lang::get('not_found', [], 'comments'), 404);
+        }
+        if (!$this->desk->claimComment($comment, $actor)) {
+            return $this->json->error($response, Lang::get('claimed', [], 'comments'), 409);
+        }
+
+        return $this->json->success($response, $this->desk->publicComment($comment));
     }
 
     public function listAdmin(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -362,7 +446,7 @@ class CommentsController
             return $limitResponse;
         }
 
-        if (!in_array($action, ['read', 'processed', 'archive'], true)) {
+        if (!in_array($action, ['read', 'processed', 'approve', 'archive'], true)) {
             return $this->json->error($response, Lang::get('invalid_action', [], 'comments'), 422);
         }
 
@@ -378,7 +462,7 @@ class CommentsController
             try {
                 if ($action === 'read') {
                     $comment->markRead(true);
-                } elseif ($action === 'processed') {
+                } elseif ($action === 'processed' || $action === 'approve') {
                     $comment->setStatus(Comment::STATUS_APPROVED)->markRead(true);
                 } elseif ($action === 'archive') {
                     $comment->markArchived(true);
@@ -420,21 +504,5 @@ class CommentsController
         }
 
         return null;
-    }
-
-    /**
-     * @return array<int|string, mixed>
-     */
-    private function publicShape(Comment $comment): array
-    {
-        return [
-            'id' => $comment->getId(),
-            'articleSlug' => $comment->getArticleSlug(),
-            'author' => $comment->getAuthor(),
-            'content' => $comment->getContent(),
-            'status' => $comment->getStatus(),
-            'createdAt' => $comment->getCreatedAt(),
-            'approvedAt' => $comment->getApprovedAt(),
-        ];
     }
 }

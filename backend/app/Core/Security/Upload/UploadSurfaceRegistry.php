@@ -25,6 +25,8 @@ final class UploadSurfaceRegistry
 
     public const SURFACE_MEDIA_DOCUMENT_UPLOAD = 'media.document.upload';
 
+    public const SURFACE_TEAM_CHAT_UPLOAD = 'team-chat.upload';
+
     /**
      * @return array<string, string> surface id => profile id
      */
@@ -33,6 +35,7 @@ final class UploadSurfaceRegistry
         return [
             self::SURFACE_MEDIA_UPLOAD => UploadPolicyProfileId::MEDIA,
             self::SURFACE_MEDIA_DOCUMENT_UPLOAD => UploadPolicyProfileId::DOCUMENTS,
+            self::SURFACE_TEAM_CHAT_UPLOAD => UploadPolicyProfileId::DOCUMENTS,
             self::SURFACE_MEDIA_VIDEO_UPLOAD => UploadPolicyProfileId::MEDIA_VIDEO,
             self::SURFACE_AVATAR_UPLOAD => UploadPolicyProfileId::AVATAR,
             self::SURFACE_BACKUP_IMPORT => UploadPolicyProfileId::BACKUP_ARCHIVE,

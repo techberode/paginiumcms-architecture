@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Modules\Security\Services;
 
+use PaginiumCMS\Modules\Security\Services\UserProfileFields;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
@@ -291,5 +292,24 @@ class UserRepositoryTest extends TestCase
         $this->assertTrue($found->getNotifyFailedLogin());
         $this->assertTrue($found->getNotifySecurityIncident());
         $this->assertArrayHasKey('jobTitle', $found->jsonSerialize());
+        $this->assertTrue($found->isDeskBubbleEnabled());
+        $this->assertSame('right', $found->getDeskBubbleAnchor());
+    }
+
+    public function testSocialVerifiedAtSurvivesReload(): void
+    {
+        $user = new User();
+        $user->setEmail('social@example.com');
+        $user->setPassword('StrongP@ssw0rd123!');
+        $user->setName('Social');
+        $user->setSocialAccounts(UserProfileFields::normalizeSocialAccounts([
+            ['id' => 'soc-1', 'platform' => 'telegram', 'url' => '@desk', 'verifiedAt' => 1_700_000_123],
+        ], true));
+        $this->repository->save($user);
+
+        $found = $this->repository->findByEmail('social@example.com');
+        $this->assertNotNull($found);
+        $this->assertSame(1_700_000_123, (int) ($found->getSocialAccounts()[0]['verifiedAt'] ?? 0));
+        $this->assertSame('https://t.me/desk', $found->getSocialAccounts()[0]['url'] ?? null);
     }
 }

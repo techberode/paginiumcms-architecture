@@ -58,6 +58,7 @@ import { RedirectsManager } from './components/backend/RedirectsManager';
 import { ShortcodesManager } from './components/backend/ShortcodesManager';
 import { WidgetsManager } from './components/backend/WidgetsManager';
 import { TeamsManager } from './components/backend/TeamsManager';
+import { TeamChatView } from './components/backend/TeamChatView';
 import { EventsManager } from './components/backend/EventsManager';
 import { TimeTrackerView } from './components/backend/TimeTrackerView';
 import { KanbanBoardView } from './components/backend/KanbanBoardView';
@@ -73,6 +74,7 @@ import { SetupWizardView } from './components/setup/SetupWizardView';
 import { useSetupStatus } from './hooks/useSetupStatus';
 import { debugLog } from './utils/debugLog';
 import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
+import { postAuthPath } from './utils/postAuthPath';
 
 function LoadingScreen() {
   return (
@@ -114,7 +116,7 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
 
   if (user && !pendingTwoFactor) {
-    return <Navigate to={twoFactorSetupPending ? '/account/security' : ADMIN_DEFAULT_ROUTE} replace />;
+    return <Navigate to={twoFactorSetupPending ? '/account/security' : postAuthPath(user)} replace />;
   }
 
   return <>{children}</>;
@@ -266,6 +268,7 @@ function App() {
         <Route path="/account/preferences" element={<AccountView />} />
         <Route path="/users" element={<UsersManager />} />
         <Route path="/teams" element={<TeamsManager />} />
+        <Route path="/team-chat" element={<TeamChatView />} />
         <Route path="/events" element={<EventsManager />} />
         <Route path="/time-tracker" element={<TimeTrackerView />} />
         <Route path="/kanban" element={<KanbanBoardView />} />

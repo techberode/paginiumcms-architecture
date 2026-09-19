@@ -1,6 +1,8 @@
 // frontend/src/components/auth/RegisterModal.tsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { registrationOptionsApi, type PublicRegistrationOption } from '../../api/registrationOptions';
+import { registrationInvitesApi } from '../../api/registrationInvites';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
@@ -25,19 +27,57 @@ export const RegisterModal: React.FC = () => {
   const [otpCode, setOtpCode] = useState('');
   const [challengeId, setChallengeId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registrationType, setRegistrationType] = useState('');
+  const [registrationOptions, setRegistrationOptions] = useState<PublicRegistrationOption[]>([]);
+  const [searchParams] = useSearchParams();
+  const inviteToken = (searchParams.get('invite') ?? '').trim();
+  const [inviteReady, setInviteReady] = useState(inviteToken === '');
+  const [inviteValid, setInviteValid] = useState(false);
   const { register, verifyRegisterOtp, resendRegisterOtp } = useAuth();
   const toast = useToast();
   const { t, locale } = useI18n();
   const { settings } = useSettingsContext();
   const passwordPolicy = usePasswordPolicy();
   const allowRegistration =
-    settings.general.allowRegistration !== false &&
+    (settings.general.allowRegistration !== false || inviteValid) &&
     !isMaintenanceActive(settings.maintenance?.mode);
+
+  useEffect(() => {
+    if (inviteToken === '') {
+      setInviteReady(true);
+      setInviteValid(false);
+      return;
+    }
+    setInviteReady(false);
+    void registrationInvitesApi.peek(inviteToken).then((peek) => {
+      if (peek) {
+        setEmail(peek.email);
+        setInviteValid(true);
+      } else {
+        setInviteValid(false);
+        toast.error(t('public.auth.register.toast.inviteInvalid'));
+      }
+      setInviteReady(true);
+    });
+  }, [inviteToken, t, toast]);
+
+  useEffect(() => {
+    if (!allowRegistration || inviteValid) {
+      return;
+    }
+    void registrationOptionsApi.publicList().then((options) => {
+      setRegistrationOptions(options);
+    });
+  }, [allowRegistration, inviteValid]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password || !passwordConfirm) {
       toast.warning(t('public.auth.register.toast.fillRequired'));
+      return;
+    }
+    if (!inviteValid && registrationOptions.length > 0 && registrationType === '') {
+      toast.warning(t('public.auth.register.toast.typeRequired'));
       return;
     }
 
@@ -55,7 +95,14 @@ export const RegisterModal: React.FC = () => {
 
     setLoading(true);
     try {
-      const result = await register(email, password, name, passwordConfirm);
+      const result = await register(
+        email,
+        password,
+        name,
+        passwordConfirm,
+        inviteValid ? undefined : registrationType || undefined,
+        inviteValid ? inviteToken : undefined
+      );
       if (result.success && result.requiresOtp && result.challengeId) {
         setChallengeId(result.challengeId);
         setStep('otp');
@@ -65,7 +112,9 @@ export const RegisterModal: React.FC = () => {
         }
         return;
       }
-      if (result.success) {
+      if (result.success && result.pendingApproval) {
+        toast.success(t('public.auth.register.toast.pendingApproval'));
+      } else if (result.success) {
         toast.success(t('public.auth.register.toast.success'));
       } else {
         toast.error(result.error || t('public.auth.register.toast.failed'));
@@ -85,7 +134,9 @@ export const RegisterModal: React.FC = () => {
     setLoading(true);
     try {
       const result = await verifyRegisterOtp(challengeId, otpCode.trim());
-      if (result.success) {
+      if (result.success && result.pendingApproval) {
+        toast.success(t('public.auth.register.toast.pendingApproval'));
+      } else if (result.success) {
         toast.success(t('public.auth.register.toast.success'));
       } else {
         toast.error(result.error || t('public.auth.register.toast.otpInvalid'));
@@ -118,6 +169,18 @@ export const RegisterModal: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (!inviteReady) {
+    return (
+      <AuthShell
+        variant="register"
+        formTitle={t('public.auth.register.form.title')}
+        formSubtitle={t('public.auth.register.invite.checking')}
+      >
+        <p className="text-sm text-theme-text-muted">{t('public.auth.register.invite.checking')}</p>
+      </AuthShell>
+    );
+  }
 
   if (!allowRegistration) {
     return (
@@ -166,6 +229,32 @@ export const RegisterModal: React.FC = () => {
             </div>
           </div>
 
+          {inviteValid ? (
+            <p className="text-sm text-theme-text-muted">{t('public.auth.register.invite.hint')}</p>
+          ) : null}
+
+          {!inviteValid && registrationOptions.length > 0 ? (
+            <div>
+              <label className={authLabelClass}>
+                {t('public.auth.register.fields.registrationType')} <span className="text-rose-500">*</span>
+              </label>
+              <select
+                required
+                data-testid="register-type"
+                value={registrationType}
+                onChange={(e) => setRegistrationType(e.target.value)}
+                className={authInputClass}
+              >
+                <option value="">{t('public.auth.register.placeholders.registrationType')}</option>
+                {registrationOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
           <div>
             <label className={authLabelClass}>
               {t('public.auth.common.email')} <span className="text-rose-500">*</span>
@@ -175,6 +264,7 @@ export const RegisterModal: React.FC = () => {
               <input
                 type="email"
                 required
+                readOnly={inviteValid}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={authInputClass}

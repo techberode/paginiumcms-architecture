@@ -18,6 +18,7 @@ const ADMIN_ROUTES = new Set([
   '/navigation',
   '/comments',
   '/messages',
+  '/team-chat',
   '/newsletter',
   '/settings',
   '/translations',

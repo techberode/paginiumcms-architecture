@@ -51,6 +51,7 @@ abstract class TestCase extends BaseTestCase
         TestStorageCleaner::purgeLoginAttempts();
         $this->container()->get(LoginAttemptTracker::class)->clearAll();
         $this->purgeOtpChallenges();
+        $this->purgeRegistrationFixtures();
         $this->applyTestSettingsOverrides();
     }
 
@@ -133,6 +134,21 @@ abstract class TestCase extends BaseTestCase
         $challengeFile = 'data/otp-challenges.json';
         if ($storage->exists($challengeFile)) {
             $storage->delete($challengeFile, false);
+        }
+    }
+
+    private function purgeRegistrationFixtures(): void
+    {
+        $storage = $this->container()->get(\PaginiumCMS\Core\Storage\Contracts\StorageInterface::class);
+        if ($storage->exists('data/registration-options.json')) {
+            $storage->delete('data/registration-options.json', false);
+        }
+        $inviteDir = TestStorageCleaner::contentRoot() . '/data/registration-invites';
+        if (!is_dir($inviteDir)) {
+            return;
+        }
+        foreach (glob($inviteDir . '/*.json') ?: [] as $file) {
+            @unlink($file);
         }
     }
 

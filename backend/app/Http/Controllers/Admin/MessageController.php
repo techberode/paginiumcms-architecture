@@ -10,6 +10,8 @@ use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Messages\Contracts\MessageRepositoryInterface;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
+use PaginiumCMS\Modules\Messages\Services\MessageDeskService;
+use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,21 +20,96 @@ class MessageController
 {
     public function __construct(
         private MessageRepositoryInterface $messageRepository,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private MessageDeskService $desk
     ) {
     }
 
     public function listMessages(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $messages = array_map(
-            fn ($message) => $message->jsonSerialize(),
-            $this->messageRepository->findAll()
-        );
+        $actor = $this->actor($request);
+        if ($actor === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $items = [];
+        foreach ($this->desk->visibleFor($actor) as $message) {
+            $items[] = $this->desk->present($message, $actor);
+        }
 
         return $this->json->success($response, [
-            'items' => $messages,
-            'count' => count($messages),
+            'items' => $items,
+            'count' => count($items),
         ]);
+    }
+
+    public function routing(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $actor = $this->actor($request);
+        if ($actor === null || !$actor->isAdmin()) {
+            return $this->json->error($response, Lang::get('forbidden', [], 'messages'), 403);
+        }
+
+        return $this->json->success($response, $this->desk->routing());
+    }
+
+    public function saveRouting(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $actor = $this->actor($request);
+        if ($actor === null || !$actor->isAdmin()) {
+            return $this->json->error($response, Lang::get('forbidden', [], 'messages'), 403);
+        }
+
+        $payload = RequestJsonBody::decode($request);
+        if (!is_array($payload)) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'messages'), 400);
+        }
+
+        return $this->json->success($response, $this->desk->saveRouting($payload), 200, Lang::get('routing_saved', [], 'messages'));
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function claim(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->mutateDesk($request, $response, $args, 'claim');
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function release(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->mutateDesk($request, $response, $args, 'release');
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function reply(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $actor = $this->actor($request);
+        if ($actor === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $loaded = $this->loadVisible($request, $response, $args);
+        if ($loaded instanceof ResponseInterface) {
+            return $loaded;
+        }
+
+        $data = RequestJsonBody::decode($request);
+        $body = is_array($data) ? trim((string) ($data['body'] ?? '')) : '';
+        if (mb_strlen($body) < 2) {
+            return $this->json->error($response, Lang::get('invalid_payload', [], 'messages'), 400);
+        }
+
+        if (!$this->desk->reply($loaded, $actor, $body)) {
+            return $this->json->error($response, Lang::get('claimed', [], 'messages'), 409);
+        }
+
+        return $this->json->success($response, $this->desk->present($loaded, $actor), 200, Lang::get('replied', [], 'messages'));
     }
 
     /**
@@ -48,10 +125,14 @@ class MessageController
      */
     public function updateMessage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $id = $args['id'] ?? '';
-        $message = $this->messageRepository->findById($id);
-        if ($message === null) {
-            return $this->json->error($response, Lang::get('not_found', [], 'messages'), 404);
+        $actor = $this->actor($request);
+        if ($actor === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $loaded = $this->loadVisible($request, $response, $args);
+        if ($loaded instanceof ResponseInterface) {
+            return $loaded;
         }
 
         $data = RequestJsonBody::decode($request);
@@ -60,25 +141,28 @@ class MessageController
         }
 
         if (array_key_exists('isRead', $data)) {
-            $message->markRead((bool) $data['isRead']);
+            $loaded->markRead((bool) $data['isRead']);
         }
         if (array_key_exists('isProcessed', $data)) {
-            $message->markProcessed((bool) $data['isProcessed']);
+            $loaded->markProcessed((bool) $data['isProcessed']);
         }
         if (array_key_exists('isArchived', $data)) {
-            $message->markArchived((bool) $data['isArchived']);
+            if (!$actor->isAdmin()) {
+                return $this->json->error($response, Lang::get('forbidden', [], 'messages'), 403);
+            }
+            $loaded->markArchived((bool) $data['isArchived']);
         }
         if (array_key_exists('priority', $data)) {
-            $message->setPriority((string) $data['priority']);
+            $loaded->setPriority((string) $data['priority']);
         }
 
         try {
-            $this->messageRepository->update($message);
+            $this->messageRepository->update($loaded);
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 500);
         }
 
-        return $this->json->success($response, $message->jsonSerialize(), 200, Lang::get('updated', [], 'messages'));
+        return $this->json->success($response, $this->desk->present($loaded, $actor), 200, Lang::get('updated', [], 'messages'));
     }
 
     /**
@@ -86,6 +170,10 @@ class MessageController
      */
     public function deleteMessage(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        if (!$this->actor($request)?->isAdmin()) {
+            return $this->json->error($response, Lang::get('forbidden', [], 'messages'), 403);
+        }
+
         $id = $args['id'] ?? '';
 
         try {
@@ -99,6 +187,11 @@ class MessageController
 
     public function bulkAction(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $actor = $this->actor($request);
+        if ($actor === null || !$actor->isAdmin()) {
+            return $this->json->error($response, Lang::get('forbidden', [], 'messages'), 403);
+        }
+
         $data = RequestJsonBody::decode($request);
         if (!is_array($data)) {
             return $this->json->error($response, Lang::get('invalid_payload', [], 'messages'), 400);
@@ -158,6 +251,63 @@ class MessageController
             200,
             Lang::get('bulk_updated', [], 'messages')
         );
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    private function mutateDesk(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args,
+        string $action
+    ): ResponseInterface {
+        $actor = $this->actor($request);
+        if ($actor === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $loaded = $this->loadVisible($request, $response, $args);
+        if ($loaded instanceof ResponseInterface) {
+            return $loaded;
+        }
+
+        $ok = $action === 'release'
+            ? $this->desk->release($loaded, $actor)
+            : $this->desk->claim($loaded, $actor);
+        if (!$ok) {
+            return $this->json->error($response, Lang::get('claimed', [], 'messages'), 409);
+        }
+
+        return $this->json->success($response, $this->desk->present($loaded, $actor));
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     */
+    private function loadVisible(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ContactMessage|ResponseInterface {
+        $actor = $this->actor($request);
+        $id = (string) ($args['id'] ?? '');
+        $message = $this->messageRepository->findById($id);
+        if ($actor === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+        if ($message === null || !$this->desk->canSee($message, $actor)) {
+            return $this->json->error($response, Lang::get('not_found', [], 'messages'), 404);
+        }
+
+        return $message;
+    }
+
+    private function actor(ServerRequestInterface $request): ?User
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User ? $user : null;
     }
 
     /**

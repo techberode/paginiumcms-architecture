@@ -105,6 +105,10 @@ final class UploadSecurityValidator
             );
         }
 
+        if ($mediaMimeTypes === []) {
+            return $this->mediaPolicyMimeTypes();
+        }
+
         return $this->resolveAllowedMimeTypesLegacy($mediaMimeTypes);
     }
 
@@ -206,6 +210,17 @@ final class UploadSecurityValidator
     }
 
     /**
+     * MIME policy used by both the allow-list merge and resolveAllowedMimeTypes().
+     * Kept separate so assertExtensionWhitelisted() never recurses through resolveAllowedMimeTypes().
+     *
+     * @return list<string>
+     */
+    private function mediaPolicyMimeTypes(): array
+    {
+        return $this->resolveAllowedMimeTypesLegacy(MediaFormats::defaultMimeTypes());
+    }
+
+    /**
      * @param array<string, mixed> $cfg
      *
      * @throws FlatFileException
@@ -213,6 +228,10 @@ final class UploadSecurityValidator
     private function assertExtensionWhitelisted(string $filename, array $cfg): void
     {
         $allowed = $this->parseCsv((string) ($cfg['allowedExtensions'] ?? ''));
+
+        $allowedFromMimeTypes = MediaFormats::toApiPayload($this->mediaPolicyMimeTypes())['extensions'];
+        $allowed = array_values(array_unique(array_merge($allowed, $allowedFromMimeTypes)));
+
         if (MediaDocumentPolicy::isEnabled($this->settings)) {
             $documentExtensions = MediaFormats::toApiPayload(
                 MediaDocumentPolicy::allowedMimeTypes($this->settings)

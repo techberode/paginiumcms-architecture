@@ -48,6 +48,8 @@ export * from './origin';
 export * from './projectPlanner';
 export * from './queryIndex';
 export * from './redirects';
+export * from './registrationInvites';
+export * from './registrationOptions';
 export * from './roles';
 export * from './search';
 export * from './security';
@@ -56,6 +58,7 @@ export * from './shortcodes';
 export * from './snippets';
 export * from './staff';
 export * from './systemUpdate';
+export * from './teamChat';
 export * from './teams';
 export * from './themes';
 export * from './timeEntries';
@@ -98,7 +101,10 @@ import { gitApi } from './git';
 import { healthApi } from './health';
 import { logsApi } from './logs';
 import { mailApi } from './mail';
+import { messagesApi } from './messages';
 import { originApi } from './origin';
+import { registrationInvitesApi } from './registrationInvites';
+import { registrationOptionsApi } from './registrationOptions';
 import { projectPlannerApi } from './projectPlanner';
 import { redirectsApi } from './redirects';
 import { rolesApi } from './roles';
@@ -107,6 +113,7 @@ import { shortcodesApi } from './shortcodes';
 import { snippetsApi } from './snippets';
 import { supportKanbanApi } from './kanban';
 import { translationsApi } from './translations';
+import { teamChatApi } from './teamChat';
 import { teamsApi } from './teams';
 import { themesApi } from './themes';
 import { timeEntriesApi } from './timeEntries';
@@ -136,7 +143,10 @@ export const api = {
   health: healthApi,
   logs: logsApi,
   mail: mailApi,
+  messages: messagesApi,
   origin: originApi,
+  registrationInvites: registrationInvitesApi,
+  registrationOptions: registrationOptionsApi,
   projectPlanner: projectPlannerApi,
   redirects: redirectsApi,
   roles: rolesApi,
@@ -144,6 +154,7 @@ export const api = {
   shortcodes: shortcodesApi,
   snippets: snippetsApi,
   supportKanban: supportKanbanApi,
+  teamChat: teamChatApi,
   teams: teamsApi,
   themes: themesApi,
   timeEntries: timeEntriesApi,

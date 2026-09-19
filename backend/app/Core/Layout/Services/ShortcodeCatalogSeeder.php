@@ -246,6 +246,23 @@ final class ShortcodeCatalogSeeder
                 ],
                 'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}"></section>',
             ],
+            'staff-card' => [
+                'name' => 'staff-card',
+                'version' => 1,
+                'attrs' => [
+                    'user' => ['type' => 'string'],
+                ],
+                'expand' => '<section class="pg-staff-cards" data-staff-mode="user" data-staff-user="{{user}}"></section>',
+            ],
+            'staff-team' => [
+                'name' => 'staff-team',
+                'version' => 2,
+                'attrs' => [
+                    'type' => ['type' => 'enum', 'options' => ['support', 'contact', 'editorial', 'ops', 'external', 'custom']],
+                    'id' => ['type' => 'string'],
+                ],
+                'expand' => '<section class="pg-staff-cards" data-staff-mode="type" data-staff-type="{{type}}" data-staff-team="{{id}}"></section>',
+            ],
             'document-link' => [
                 'name' => 'document-link',
                 'version' => 1,

@@ -11,6 +11,7 @@ import {
 } from '../config/adminNavSections';
 import type { AdminNavItemDef, AdminNavSectionDef } from '../config/adminNavTypes';
 import { loadOpenNavSections, saveOpenNavSections } from '../utils/adminNavPersistence';
+import { isStaffUser } from '../utils/postAuthPath';
 
 export function useAdminNavModel() {
   const { user } = useAuth();
@@ -19,6 +20,8 @@ export function useAdminNavModel() {
   const location = useLocation();
   const isAdmin = user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN') ?? false;
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
+  const isStaff = isStaffUser(user);
+  const hasTeamChat = Boolean(user?.hasTeamChat);
   const isDemoInstance = settings?.demo?.enabled === true;
   const isOriginPanelEnabled = settings?.origin?.enabled === true;
   const isProjectPlannerEnabled = settings?.projectPlanner?.enabled !== false;
@@ -73,22 +76,35 @@ export function useAdminNavModel() {
       if (item.projectPlannerOnly && !isProjectPlannerEnabled) {
         return false;
       }
+      if (item.id === 'team-chat' && !isStaff && !hasTeamChat) {
+        return false;
+      }
       return true;
     };
+
+    if (!isStaff && hasTeamChat) {
+      return ADMIN_NAV_SECTIONS.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item.id === 'team-chat'),
+      })).filter((section) => section.items.length > 0);
+    }
 
     return ADMIN_NAV_SECTIONS.map((section) => ({
       ...section,
       items: section.items.filter(itemVisible),
     })).filter((section) => section.items.length > 0);
-  }, [isAdmin, isSuperAdmin, isDemoInstance, isOriginPanelEnabled, isProjectPlannerEnabled]);
+  }, [isAdmin, isSuperAdmin, isDemoInstance, isOriginPanelEnabled, isProjectPlannerEnabled, isStaff, hasTeamChat]);
 
   const primaryItems = useMemo(() => {
+    if (!isStaff && hasTeamChat) {
+      return [];
+    }
     const items = [ADMIN_NAV_PRIMARY_ITEM];
     if (!ADMIN_NAV_ANALYTICS_ITEM.adminOnly || isAdmin) {
       items.push(ADMIN_NAV_ANALYTICS_ITEM);
     }
     return items;
-  }, [isAdmin]);
+  }, [isAdmin, isStaff, hasTeamChat]);
 
   return {
     visibleSections,

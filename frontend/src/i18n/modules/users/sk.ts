@@ -5,6 +5,11 @@ export const usersSk: MessageTree = {
     title: 'Správa používateľov',
     subtitle: 'Spravujte prístupové účty, role, avatary a zabezpečenie používateľov systému.',
   },
+  tabs: {
+    list: 'Používatelia',
+    form: 'Nový používateľ',
+    invites: 'Jednorazová registrácia',
+  },
   form: {
     createTitle: 'Nový používateľ',
     editTitle: 'Upraviť používateľa',

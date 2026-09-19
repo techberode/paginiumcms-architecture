@@ -271,7 +271,9 @@ class MediaRepositoryTest extends TestCase
     public function testSaveUploadRejectsUnsupportedMimeType(): void
     {
         $this->expectException(FlatFileException::class);
-        $this->repository->saveUpload('notes.txt', 'hello', 'text/plain');
+        $this->expectExceptionMessage('Nepodporovaný typ súboru');
+        // Extension is on the media allow-list; declared MIME is not.
+        $this->repository->saveUpload('clip.mp4', 'not-a-video', 'video/mp4');
     }
 
     public function testCreateFolderRejectsInvalidName(): void

@@ -15,6 +15,8 @@ use PaginiumCMS\Core\Versioning\Services\ContentVersioningService;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\RegistrationInviteService;
+use PaginiumCMS\Modules\Security\Services\RegistrationService;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use RuntimeException;
 
@@ -37,6 +39,8 @@ final class OtpWorkflowService
         private ContentVersioningService $versioning,
         private LocalizedContentWriter $localizedWriter,
         private ?HookEmitter $hookEmitter = null,
+        private ?RegistrationService $registration = null,
+        private ?RegistrationInviteService $invites = null,
     ) {
     }
 
@@ -64,7 +68,11 @@ final class OtpWorkflowService
     /**
      * @return array{challenge_id: string, expires_at: int, debug_code?: string}
      */
-    public function startRegistration(string $email, string $name, string $plainPassword): array
+    /**
+     * @param array<string, mixed> $plan
+     * @return array{challenge_id: string, expires_at: int, debug_code?: string}
+     */
+    public function startRegistration(string $email, string $name, string $plainPassword, array $plan = []): array
     {
         if ($this->users->findByEmail($email) !== null) {
             throw new RuntimeException('Používateľ s týmto emailom už existuje');
@@ -79,7 +87,8 @@ final class OtpWorkflowService
         $user->setEmail($email);
         $user->setName($name);
         $user->setPassword($plainPassword);
-        $user->setRoles(['USER']);
+        $roles = is_array($plan['roles'] ?? null) ? $plan['roles'] : ['USER'];
+        $user->setRoles($roles);
         $user->setActive(false);
 
         $this->store->save([
@@ -91,7 +100,11 @@ final class OtpWorkflowService
                 'name' => $name,
                 'email' => $email,
                 'password_hash' => $user->getPasswordHash(),
-                'roles' => ['USER'],
+                'roles' => $roles,
+                'active' => (bool) ($plan['active'] ?? true),
+                'registrationOptionId' => (string) ($plan['registrationOptionId'] ?? ''),
+                'assignTeamId' => (string) ($plan['assignTeamId'] ?? ''),
+                'inviteToken' => (string) ($plan['inviteToken'] ?? ''),
             ],
             'expires_at' => $expiresAt,
             'attempts' => 0,
@@ -144,9 +157,17 @@ final class OtpWorkflowService
         $user->setName((string) ($payload['name'] ?? ''));
         $user->setPasswordHash((string) ($payload['password_hash'] ?? ''));
         $user->setRoles(is_array($payload['roles'] ?? null) ? $payload['roles'] : ['USER']);
-        $user->setActive(true);
+        $active = (bool) ($payload['active'] ?? true);
+        $user->setActive($active);
+        $user->setRegistrationOptionId((string) ($payload['registrationOptionId'] ?? ''));
 
         $this->users->save($user);
+        $inviteToken = (string) ($payload['inviteToken'] ?? '');
+        if ($inviteToken !== '') {
+            $this->invites?->consume($inviteToken, $email, $user->getId());
+        } elseif ($active) {
+            $this->registration?->attachIfAssigned($user, (string) ($payload['assignTeamId'] ?? ''));
+        }
         $this->store->delete($challengeId);
 
         return ['user' => $user->jsonSerialize()];

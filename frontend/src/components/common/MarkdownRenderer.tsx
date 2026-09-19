@@ -1,7 +1,8 @@
 import React from 'react';
 import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
+import { StaffCardsSection } from '../frontend/StaffDirectory';
 import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
-import { splitFeatureGalleryHtml } from '../../utils/featureGalleryIslands';
+import { splitPublicHtmlIslands } from '../../utils/publicHtmlIslands';
 
 interface MarkdownRendererProps {
   content: string;
@@ -16,8 +17,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 }) => {
   if (html) {
     const safe = sanitizePublicHtml(html);
-    const parts = splitFeatureGalleryHtml(safe);
-    if (!parts.some((part) => part.kind === 'gallery')) {
+    const parts = splitPublicHtmlIslands(safe);
+    if (!parts.some((part) => part.kind === 'gallery' || part.kind === 'staff')) {
       return (
         <div
           className={className}
@@ -38,12 +39,22 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               />
             )
           ) : (
+            part.kind === 'staff' ? (
+              <StaffCardsSection
+                key={`staff-${index}`}
+                mode={part.mode}
+                user={part.user}
+                type={part.type}
+                team={part.team}
+              />
+            ) : (
             <FeatureGallerySection
               key={`gallery-${index}`}
               variant="block"
               featureTag={part.tag || undefined}
               heading={part.title || undefined}
             />
+            )
           )
         )}
       </div>

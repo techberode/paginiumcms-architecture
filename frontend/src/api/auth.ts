@@ -15,6 +15,7 @@ export interface RegisterResult {
   success: boolean;
   user?: User;
   requiresOtp?: boolean;
+  pendingApproval?: boolean;
   challengeId?: string;
   expiresAt?: number;
   debugCode?: string;
@@ -37,6 +38,27 @@ export interface AccountProfilePayload {
   education?: User['education'];
   socialAccounts?: User['socialAccounts'];
   publish?: User['publish'];
+  chatEnabled?: boolean;
+  deskMailEnabled?: boolean;
+  deskBubbleEnabled?: boolean;
+  deskBubbleAnchor?: string;
+  deskBubbleX?: number;
+  deskBubbleY?: number;
+}
+
+export interface DeskItem {
+  kind: 'message' | 'comment' | string;
+  id: string;
+  title: string;
+  preview: string;
+  href: string;
+  articleSlug?: string;
+  createdAt: string;
+  handleStatus?: string;
+  claimedBy?: string;
+  mine?: boolean;
+  priority?: string;
+  priorityRank?: number;
 }
 
 export const authApi = {
@@ -55,6 +77,7 @@ export const authApi = {
     const res = await apiClient.post<{
       user?: User;
       requires_otp?: boolean;
+      pending_approval?: boolean;
       challenge_id?: string;
       expires_at?: number;
       debug_code?: string;
@@ -70,6 +93,10 @@ export const authApi = {
       };
     }
 
+    if (res.success && (res.pending_approval || (res as { pending_approval?: boolean }).pending_approval)) {
+      return { success: true, pendingApproval: true };
+    }
+
     if (res.success && res.user) {
       return { success: true, user: res.user as User };
     }
@@ -78,10 +105,14 @@ export const authApi = {
   },
 
   verifyRegisterOtp: async (challengeId: string, code: string): Promise<RegisterResult> => {
-    const res = await apiClient.post<{ user?: User }>('/api/auth/register/verify-otp', {
+    const res = await apiClient.post<{ user?: User; pending_approval?: boolean }>('/api/auth/register/verify-otp', {
       challenge_id: challengeId,
       code,
     });
+
+    if (res.success && res.pending_approval) {
+      return { success: true, pendingApproval: true };
+    }
 
     if (res.success && res.user) {
       return { success: true, user: res.user as User };
@@ -167,6 +198,68 @@ export const authApi = {
       new_password: newPassword,
     });
     return Boolean(res.success);
+  },
+
+  verifySocialAccount: async (
+    platform: string,
+    url: string
+  ): Promise<
+    ApiResponse<{
+      platform: string;
+      normalizedUrl: string;
+      verifiedAt: number;
+      message?: string;
+      httpStatus?: number | null;
+    }>
+  > => {
+    return apiClient.post('/api/auth/me/social/verify', { platform, url });
+  },
+
+  chatStatus: async (): Promise<
+    ApiResponse<{
+      chatEnabled: boolean;
+      online: boolean;
+      lastSeen: number;
+      inSupportTeam: boolean;
+      canPublicChat: boolean;
+      hasDesk?: boolean;
+      canReplyComments?: boolean;
+      deskCount?: number;
+    }>
+  > => {
+    return apiClient.get('/api/auth/me/chat-status');
+  },
+
+  desk: async (): Promise<
+    ApiResponse<{
+      chatEnabled: boolean;
+      online: boolean;
+      lastSeen: number;
+      inSupportTeam: boolean;
+      canPublicChat: boolean;
+      hasDesk: boolean;
+      canReplyComments: boolean;
+      deskCount: number;
+      items: DeskItem[];
+      deskBubbleEnabled?: boolean;
+      deskBubbleAnchor?: string;
+      deskBubbleX?: number;
+      deskBubbleY?: number;
+    }>
+  > => {
+    return apiClient.get('/api/auth/me/desk');
+  },
+
+  updatePresence: async (online: boolean): Promise<
+    ApiResponse<{
+      chatEnabled: boolean;
+      online: boolean;
+      lastSeen: number;
+      inSupportTeam: boolean;
+      canPublicChat: boolean;
+    }>
+  > => {
+    return apiClient.post('/api/auth/me/presence', { online });
   },
 
   updateProfile: async (payload: AccountProfilePayload): Promise<ApiResponse<{ user: User }>> => {

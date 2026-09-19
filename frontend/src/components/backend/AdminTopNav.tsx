@@ -6,6 +6,7 @@ import { useAdminNavModel } from '../../hooks/useAdminNavModel';
 import type { AdminNavItemDef } from '../../config/adminNavTypes';
 import { ADMIN_NAV_ACTIVE, ADMIN_NAV_IDLE } from '../../theme/adminUiClasses';
 import { AdminAccountMenu } from './AdminAccountMenu';
+import { DeskNotificationBeacon } from './DeskNotificationBeacon';
 
 interface AdminTopNavProps {
   mobileOpen: boolean;
@@ -109,6 +110,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({ mobileOpen, onNavigate
   const desktopBar = (
     <div data-testid="admin-topnav-desktop" className="admin-topnav-bar hidden lg:flex items-center gap-1 px-4 sm:px-6 py-2 flex-wrap">
       <AdminAccountMenu variant="topnav" onNavigate={onNavigate} />
+      <DeskNotificationBeacon variant="topnav" />
       {primaryItems.map((item) => renderItem(item, false))}
       {visibleSections.map((section) => {
         const sectionActive = section.items.some((item) => isItemActive(item.href));
@@ -140,7 +142,10 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({ mobileOpen, onNavigate
       data-testid="admin-topnav-mobile"
       className={`admin-topnav-bar ${mobileOpen ? 'block' : 'hidden'} lg:hidden border-t border-admin-border px-3 py-2 space-y-2 max-h-[70vh] overflow-y-auto`}
     >
-      <AdminAccountMenu variant="topnav" onNavigate={onNavigate} />
+      <div className="flex items-center gap-2">
+        <AdminAccountMenu variant="topnav" onNavigate={onNavigate} />
+        <DeskNotificationBeacon variant="topnav" />
+      </div>
       {primaryItems.map((item) => renderItem(item, false))}
       {visibleSections.map((section) => {
         const expanded = openId === section.id;

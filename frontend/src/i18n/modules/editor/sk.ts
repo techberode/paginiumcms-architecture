@@ -413,6 +413,8 @@ export const editorSk: MessageTree = {
       'alert-box': 'Upozornenie',
       'coming-soon': 'Čoskoro',
       'stack-grid': 'Stack značky',
+      'staff-card': 'Karta používateľa',
+      'staff-team': 'Karty tímu',
     },
   },
   shortcodes: {

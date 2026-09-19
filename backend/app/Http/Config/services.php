@@ -218,6 +218,12 @@ use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Http\Controllers\Admin\GitHubController;
 use PaginiumCMS\Http\Controllers\Admin\GitPublishController;
 use PaginiumCMS\Http\Controllers\Admin\MessageController;
+use PaginiumCMS\Modules\Messages\Services\DeskInboxService;
+use PaginiumCMS\Modules\Messages\Services\MessageDeskService;
+use PaginiumCMS\Modules\Messages\Services\MessageRoutingStore;
+use PaginiumCMS\Modules\Messages\Services\ReplyMailboxResolver;
+use PaginiumCMS\Modules\Messages\Services\VisitorReplyMailer;
+use PaginiumCMS\Core\Validation\VisitorEmailGuard;
 use PaginiumCMS\Http\Controllers\Admin\NotificationController;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Controllers\Admin\DemoController;
@@ -227,6 +233,16 @@ use PaginiumCMS\Http\Controllers\Admin\ExtensionsController;
 use PaginiumCMS\Http\Controllers\Admin\ShortcodeController;
 use PaginiumCMS\Http\Controllers\Admin\WidgetController;
 use PaginiumCMS\Http\Controllers\Admin\TeamController;
+use PaginiumCMS\Http\Controllers\Admin\TeamChatController;
+use PaginiumCMS\Http\Controllers\Admin\RegistrationOptionsController;
+use PaginiumCMS\Http\Controllers\Admin\RegistrationInvitesController;
+use PaginiumCMS\Http\Middleware\TeamChatRateLimitMiddleware;
+use PaginiumCMS\Http\Middleware\InviteRegisterRateLimitMiddleware;
+use PaginiumCMS\Modules\Teams\Services\TeamChatStore;
+use PaginiumCMS\Modules\Security\Services\RegistrationOptionsStore;
+use PaginiumCMS\Modules\Security\Services\RegistrationService;
+use PaginiumCMS\Modules\Security\Services\RegistrationInviteStore;
+use PaginiumCMS\Modules\Security\Services\RegistrationInviteService;
 use PaginiumCMS\Core\Teams\Services\TeamRepository;
 use PaginiumCMS\Http\Controllers\Admin\EventController;
 use PaginiumCMS\Core\Events\Services\EventRepository;
@@ -241,8 +257,11 @@ use PaginiumCMS\Core\Mail\Services\MailClientStateRepository;
 use PaginiumCMS\Core\Mail\Services\DomainMailService;
 use PaginiumCMS\Http\Controllers\Admin\MailController;
 use PaginiumCMS\Http\Controllers\Auth\AccountController;
+use PaginiumCMS\Modules\Security\Services\SocialAccountLinkProbe;
+use PaginiumCMS\Modules\Security\Services\StaffPresenceStore;
 use PaginiumCMS\Modules\Security\Services\PublishedStaffDirectory;
 use PaginiumCMS\Http\Controllers\PublicApi\StaffDirectoryController;
+use PaginiumCMS\Http\Middleware\StaffChatRateLimitMiddleware;
 use PaginiumCMS\Http\Controllers\Admin\SnippetController;
 use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\ThemeStudioController;
@@ -795,7 +814,8 @@ return [
             get(RoleCatalogSeeder::class),
             get(Validator::class),
             get(PasswordPolicyInterface::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(RegistrationService::class)
         ),
 
     // Revízny odtlačok obsahu (optimistické zamykanie / detekcia konfliktov – Iterácia 2)
@@ -1035,7 +1055,9 @@ return [
             get(CommentPolicyResolver::class),
             get(Validator::class),
             get(OtpWorkflowService::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(DeskInboxService::class),
+            get(VisitorEmailGuard::class)
         ),
 
     MessageRepositoryInterface::class => create(MessageRepository::class)
@@ -1045,9 +1067,45 @@ return [
         ),
     ContactController::class => create(ContactController::class)
         ->constructor(
-            get(MessageRepositoryInterface::class),
             get(Validator::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(MessageDeskService::class),
+            get(VisitorEmailGuard::class)
+        ),
+    MessageRoutingStore::class => create(MessageRoutingStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    MessageDeskService::class => create(MessageDeskService::class)
+        ->constructor(
+            get(MessageRepositoryInterface::class),
+            get(MessageRoutingStore::class),
+            get(TeamRepository::class),
+            get(UserRepository::class),
+            get(NotificationService::class),
+            get(VisitorReplyMailer::class)
+        ),
+    ReplyMailboxResolver::class => create(ReplyMailboxResolver::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(TeamRepository::class)
+        ),
+    VisitorReplyMailer::class => create(VisitorReplyMailer::class)
+        ->constructor(
+            get(ReplyMailboxResolver::class),
+            get(NotificationService::class)
+        ),
+    VisitorEmailGuard::class => create(VisitorEmailGuard::class)
+        ->constructor(
+            get(DisposableEmailDomainList::class)
+        ),
+    DeskInboxService::class => create(DeskInboxService::class)
+        ->constructor(
+            get(MessageDeskService::class),
+            get(CommentsRepositoryInterface::class),
+            get(TeamRepository::class),
+            get(VisitorReplyMailer::class)
         ),
     PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken::class => function () {
         $appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? null);
@@ -1118,7 +1176,8 @@ return [
     MessageController::class => create(MessageController::class)
         ->constructor(
             get(MessageRepositoryInterface::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(MessageDeskService::class)
         ),
 
     GitHubService::class => function ($container) {
@@ -1523,7 +1582,8 @@ return [
         ->constructor(
             get(TeamRepository::class),
             get(UserRepository::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(SettingsRepositoryInterface::class)
         ),
     EventRepository::class => create(EventRepository::class)
         ->constructor(
@@ -1595,6 +1655,8 @@ return [
             get(DomainMailService::class),
             get(JsonResponder::class)
         ),
+    SocialAccountLinkProbe::class => create(SocialAccountLinkProbe::class)
+        ->constructor(get(OutboundUrlGuard::class)),
     AccountController::class => create(AccountController::class)
         ->constructor(
             get(UserRepository::class),
@@ -1602,15 +1664,88 @@ return [
             get(SessionManager::class),
             get(AuthorizationInterface::class),
             get(Validator::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(SocialAccountLinkProbe::class),
+            get(PublishedStaffDirectory::class),
+            get(StaffPresenceStore::class),
+            get(DeskInboxService::class)
+        ),
+    StaffPresenceStore::class => create(StaffPresenceStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
         ),
     PublishedStaffDirectory::class => create(PublishedStaffDirectory::class)
-        ->constructor(get(UserRepository::class)),
+        ->constructor(
+            get(UserRepository::class),
+            get(TeamRepository::class),
+            get(StaffPresenceStore::class)
+        ),
     StaffDirectoryController::class => create(StaffDirectoryController::class)
         ->constructor(
             get(PublishedStaffDirectory::class),
+            get(JsonResponder::class),
+            get(UserRepository::class),
+            get(MessageDeskService::class),
+            get(Validator::class),
+            get(VisitorEmailGuard::class)
+        ),
+    StaffChatRateLimitMiddleware::class => create(StaffChatRateLimitMiddleware::class)
+        ->constructor(get(CacheManager::class), ClientIpResolver::trustedProxiesFromEnv()),
+    RegistrationOptionsStore::class => create(RegistrationOptionsStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(RoleRepository::class)
+        ),
+    RegistrationService::class => create(RegistrationService::class)
+        ->constructor(
+            get(RegistrationOptionsStore::class),
+            get(TeamRepository::class),
+            get(UserRepository::class),
+            get(NotificationService::class)
+        ),
+    TeamChatStore::class => create(TeamChatStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(TeamRepository::class),
+            get(UploadPolicyEngine::class)
+        ),
+    TeamChatRateLimitMiddleware::class => create(TeamChatRateLimitMiddleware::class)
+        ->constructor(get(CacheManager::class), ClientIpResolver::trustedProxiesFromEnv()),
+    TeamChatController::class => create(TeamChatController::class)
+        ->constructor(
+            get(TeamChatStore::class),
             get(JsonResponder::class)
         ),
+    RegistrationOptionsController::class => create(RegistrationOptionsController::class)
+        ->constructor(
+            get(RegistrationOptionsStore::class),
+            get(RoleRepository::class),
+            get(JsonResponder::class)
+        ),
+    RegistrationInviteStore::class => create(RegistrationInviteStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    RegistrationInviteService::class => create(RegistrationInviteService::class)
+        ->constructor(
+            get(RegistrationInviteStore::class),
+            get(UserRepository::class),
+            get(TeamRepository::class),
+            get(VisitorEmailGuard::class),
+            get(SettingsRepositoryInterface::class),
+            get(NotificationService::class)
+        ),
+    RegistrationInvitesController::class => create(RegistrationInvitesController::class)
+        ->constructor(
+            get(RegistrationInviteService::class),
+            get(JsonResponder::class)
+        ),
+    InviteRegisterRateLimitMiddleware::class => create(InviteRegisterRateLimitMiddleware::class)
+        ->constructor(get(CacheManager::class), ClientIpResolver::trustedProxiesFromEnv()),
     ThemeManifestValidator::class => create(ThemeManifestValidator::class),
     ThemeRegistry::class => create(ThemeRegistry::class)
         ->constructor(

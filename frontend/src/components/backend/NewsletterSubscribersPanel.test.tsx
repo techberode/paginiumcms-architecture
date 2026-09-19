@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { NewsletterSubscribersPanel } from './NewsletterSubscribersPanel';
 import { renderWithRouter } from '../../test/renderWithRouter';
 
@@ -81,11 +81,14 @@ describe('NewsletterSubscribersPanel', () => {
   it('renders subscriber table', async () => {
     renderWithRouter(<NewsletterSubscribersPanel />);
 
-    expect(screen.getByText('Newsletter — odberatelia')).toBeInTheDocument();
+    expect(screen.getByText('Newsletter')).toBeInTheDocument();
+    expect(screen.getByTestId('newsletter-tab-settings')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(mocks.list).toHaveBeenCalled();
     });
+
+    fireEvent.click(screen.getByTestId('newsletter-tab-recipients'));
 
     await waitFor(() => {
       expect(screen.getByText('user@example.com')).toBeInTheDocument();

@@ -1,6 +1,6 @@
 // frontend/src/components/backend/BackupManager.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarClock, ShieldCheck, Upload } from 'lucide-react';
+import { CalendarClock, List, Settings2, ShieldCheck, Upload } from 'lucide-react';
 import { backupApi } from '../../api/backup';
 import type { Backup, ScheduleInfo } from '../../api/types';
 import { useToast } from '../../hooks/useToast';
@@ -10,12 +10,15 @@ import { useColumnSort } from '../../hooks/useColumnSort';
 import { BulkActionBar } from './BulkActionBar';
 import { AdminListToolbar } from './AdminListToolbar';
 import { AdminListPagination } from './AdminListPagination';
-import { SortableTableHeader } from './SortableTableHeader';
+import { AdminListSortBar, SortableTableHeader } from './SortableTableHeader';
 import { applyClientListView } from '../../utils/clientListView';
 import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminFormActions } from './AdminFormActions';
+import { AdminTabs } from '../ui/AdminTabs';
+
+type BackupTab = 'manage' | 'list';
 
 const CONTENT_SCOPE_KEYS = ['pages', 'blog', 'media', 'data', 'navigation', 'trash'] as const;
 const DEFAULT_SCOPE_FLAGS: Record<(typeof CONTENT_SCOPE_KEYS)[number] | 'config', boolean> = {
@@ -63,6 +66,7 @@ export const BackupManager: React.FC = () => {
   const [includeFlags, setIncludeFlags] = useState(DEFAULT_SCOPE_FLAGS);
   const [backupMode, setBackupMode] = useState<'full' | 'incremental'>('full');
   const [savingSchedule, setSavingSchedule] = useState(false);
+  const [tab, setTab] = useState<BackupTab>('manage');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useAdminListPageSize('backups');
@@ -128,6 +132,16 @@ export const BackupManager: React.FC = () => {
           { value: 'name', label: t('backups.table.name'), getValue: (backup) => backup.name },
           { value: 'createdAt', label: t('backups.table.created'), getValue: (backup) => backup.createdAt },
           { value: 'size', label: t('backups.table.size'), getValue: (backup) => backup.size },
+          {
+            value: 'scope',
+            label: t('backups.table.scope'),
+            getValue: (backup) => (backup.includes ?? []).join(', '),
+          },
+          {
+            value: 'mode',
+            label: t('backups.table.mode'),
+            getValue: (backup) => backup.mode ?? 'full',
+          },
           { value: 'status', label: t('backups.table.status'), getValue: (backup) => backup.status },
         ],
         page,
@@ -364,6 +378,18 @@ export const BackupManager: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('backups.page.title')}</h1>
       </div>
 
+      <AdminTabs
+        ariaLabel={t('backups.page.title')}
+        activeId={tab}
+        onSelect={(id) => setTab(id as BackupTab)}
+        items={[
+          { id: 'manage', label: t('backups.tabs.manage'), icon: Settings2, testId: 'backups-tab-manage' },
+          { id: 'list', label: t('backups.tabs.list'), icon: List, testId: 'backups-tab-list' },
+        ]}
+      />
+
+      {tab === 'manage' ? (
+      <>
       <div className="card">
         <div className="card-header">{t('backups.scope.title')}</div>
         <div className="card-body space-y-4">
@@ -555,7 +581,11 @@ export const BackupManager: React.FC = () => {
           />
         </div>
       </div>
+      </>
+      ) : null}
 
+      {tab === 'list' ? (
+      <>
       <BulkActionBar
         count={bulkSelection.count}
         itemLabel={t('backups.bulk.itemLabel')}
@@ -583,6 +613,19 @@ export const BackupManager: React.FC = () => {
         pageSize={pageSize}
         onPageSizeChange={setPageSize}
         pageSizeOptions={[5, 10, 20, 50]}
+      />
+
+      <AdminListSortBar
+        columns={[
+          { field: 'name', label: t('backups.table.name') },
+          { field: 'createdAt', label: t('backups.table.created') },
+          { field: 'size', label: t('backups.table.size') },
+          { field: 'scope', label: t('backups.table.scope') },
+          { field: 'mode', label: t('backups.table.mode') },
+        ]}
+        activeField={sortField}
+        direction={sortDirection}
+        onSort={handleSort}
       />
 
       <div className="card w-full">
@@ -638,8 +681,22 @@ export const BackupManager: React.FC = () => {
                         direction={sortDirection}
                         onSort={handleSort}
                       />
-                      <th className="hide-tablet">{t('backups.table.scope')}</th>
-                      <th className="hide-tablet">{t('backups.table.mode')}</th>
+                      <SortableTableHeader
+                        label={t('backups.table.scope')}
+                        field="scope"
+                        activeField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                        thClassName="hide-tablet"
+                      />
+                      <SortableTableHeader
+                        label={t('backups.table.mode')}
+                        field="mode"
+                        activeField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                        thClassName="hide-tablet"
+                      />
                       <th className="hide-tablet">{t('backups.table.hash')}</th>
                       <SortableTableHeader
                         label={t('backups.table.status')}
@@ -742,6 +799,8 @@ export const BackupManager: React.FC = () => {
           )}
         </div>
       </div>
+      </>
+      ) : null}
     </div>
   );
 };

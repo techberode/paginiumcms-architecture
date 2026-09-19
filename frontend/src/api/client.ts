@@ -14,6 +14,7 @@ export interface ApiResponse<T = unknown> {
   token?: string;
   requires_two_factor?: boolean;
   requires_otp?: boolean;
+  pending_approval?: boolean;
   challenge_id?: string;
   expires_at?: number;
   debug_code?: string;

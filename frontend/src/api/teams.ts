@@ -1,8 +1,19 @@
 import apiClient, { type ApiResponse } from './client';
 
-export const TEAM_TYPES = ['editorial', 'support', 'ops', 'custom'] as const;
+export const TEAM_TYPES = ['editorial', 'support', 'ops', 'external', 'custom'] as const;
 
 export type TeamType = (typeof TEAM_TYPES)[number];
+
+export const TEAM_COLOR_SWATCHES = [
+  '#2563eb',
+  '#0f766e',
+  '#7c3aed',
+  '#b45309',
+  '#be123c',
+  '#334155',
+  '#0369a1',
+  '#15803d',
+] as const;
 
 export interface TeamMember {
   id: string;
@@ -10,6 +21,7 @@ export interface TeamMember {
   username: string;
   email: string;
   active: boolean;
+  avatarUrl?: string | null;
 }
 
 export interface Team {
@@ -18,6 +30,10 @@ export interface Team {
   type: TeamType;
   memberUserIds: string[];
   members: TeamMember[];
+  color?: string;
+  chatEnabled?: boolean;
+  replyMailEnabled?: boolean;
+  replyMail?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -32,6 +48,10 @@ export interface TeamPayload {
   name: string;
   type: TeamType;
   memberUserIds: string[];
+  color?: string;
+  chatEnabled?: boolean;
+  replyMailEnabled?: boolean;
+  replyMail?: string;
 }
 
 function emptyIndex(): TeamsIndex {

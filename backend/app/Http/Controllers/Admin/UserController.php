@@ -16,6 +16,7 @@ use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Modules\Security\Services\RegistrationService;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserProfileFields;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -47,7 +48,8 @@ final class UserController
         private RoleCatalogSeeder $roleCatalogSeeder,
         private Validator $validator,
         private PasswordPolicyInterface $passwordPolicy,
-        private JsonResponder $json
+        private JsonResponder $json,
+        private ?RegistrationService $registration = null,
     ) {
     }
 
@@ -220,8 +222,11 @@ final class UserController
             $user->setRoles([(string) $validated['role']]);
         }
 
+        $becameActive = false;
         if (array_key_exists('active', $validated)) {
-            $user->setActive((bool) $validated['active']);
+            $nextActive = (bool) $validated['active'];
+            $becameActive = !$user->isActive() && $nextActive;
+            $user->setActive($nextActive);
         }
 
         if ($this->isTwoFactorEnforcedFor($user)) {
@@ -253,6 +258,9 @@ final class UserController
 
         $user->setUpdatedAt(time());
         $this->users->save($user);
+        if ($becameActive) {
+            $this->registration?->approve($user);
+        }
 
         $actor = $this->resolveActor($request);
 

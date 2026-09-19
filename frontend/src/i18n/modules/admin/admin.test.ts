@@ -70,6 +70,8 @@ describe('admin i18n module', () => {
     expect(translate('en', 'admin.nav.widgets')).toBe('Widgets');
     expect(translate('sk', 'admin.nav.teams')).toBe('Tímy');
     expect(translate('en', 'admin.nav.teams')).toBe('Teams');
+    expect(translate('sk', 'admin.nav.teamChat')).toBe('Tímový chat');
+    expect(translate('en', 'admin.nav.teamChat')).toBe('Team chat');
     expect(translate('sk', 'admin.nav.events')).toBe('Udalosti');
     expect(translate('en', 'admin.nav.events')).toBe('Events');
     expect(translate('sk', 'admin.nav.timeTracker')).toBe('Časovač');

@@ -32,8 +32,18 @@ export const commentsSk: MessageTree = {
   detail: {
     article: 'Článok: :slug',
   },
+  thread: {
+    staff: 'Tím',
+    placeholder: 'Napíš odpoveď pod článok…',
+    send: 'Odoslať',
+    claim: 'Prevziať konverzáciu',
+    inProgress: 'Komentár je v riešení',
+    viewArticle: 'Zobraziť pod článkom',
+    needsApproval: 'Chat je dostupný po schválení komentára.',
+  },
   actions: {
     read: 'Prečítané',
+    approve: 'Schváliť',
     processed: 'Vybavené',
     archive: 'Archivovať',
     delete: 'Vymazať',
@@ -41,6 +51,7 @@ export const commentsSk: MessageTree = {
   bulk: {
     itemLabel: 'označených komentárov',
     read: 'Prečítané',
+    approve: 'Schváliť',
     processed: 'Vybavené',
     archive: 'Archivovať',
     delete: 'Vymazať označené',
@@ -61,6 +72,7 @@ export const commentsSk: MessageTree = {
     bulkDelete: 'Vymazať :selected z :total označených komentárov?',
     bulkArchive: 'Archivovať :selected z :total označených komentárov?',
     bulkRead: 'Označiť :selected z :total komentárov ako prečítané?',
+    bulkApprove: 'Schváliť :selected z :total označených komentárov?',
     bulkProcessed: 'Označiť :selected z :total komentárov ako vybavené?',
   },
   toast: {

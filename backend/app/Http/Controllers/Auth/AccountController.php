@@ -11,9 +11,14 @@ use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
+use PaginiumCMS\Modules\Messages\Services\DeskInboxService;
+use PaginiumCMS\Modules\Security\Services\PublishedStaffDirectory;
+use PaginiumCMS\Modules\Security\Services\SocialAccountLinkProbe;
+use PaginiumCMS\Modules\Security\Services\StaffPresenceStore;
 use PaginiumCMS\Modules\Security\Services\UserAvatarService;
 use PaginiumCMS\Modules\Security\Services\UserProfileFields;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Support\LogSanitizer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -30,7 +35,96 @@ final class AccountController
         private AuthorizationInterface $authorization,
         private Validator $validator,
         private JsonResponder $json,
+        private SocialAccountLinkProbe $socialLinkProbe,
+        private PublishedStaffDirectory $directory,
+        private StaffPresenceStore $presence,
+        private DeskInboxService $deskInbox,
     ) {
+    }
+
+    public function verifySocialAccount(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $payload = RequestJsonBody::decode($request) ?? [];
+        $platform = strtolower(trim((string) ($payload['platform'] ?? '')));
+        $url = trim((string) ($payload['url'] ?? ''));
+        if ($platform === '' || $url === '') {
+            return $this->json->error($response, 'Platform and URL are required', 400);
+        }
+
+        if (!in_array($platform, UserProfileFields::SOCIAL_PLATFORMS, true)) {
+            return $this->json->error($response, 'Unsupported platform', 400);
+        }
+
+        $result = $this->socialLinkProbe->verify($platform, $url);
+        if (!$result['ok']) {
+            return $this->json->error($response, LogSanitizer::value($result['message'], 240), 400);
+        }
+
+        return $this->json->success($response, [
+            'platform' => $platform,
+            'normalizedUrl' => $result['normalizedUrl'],
+            'verifiedAt' => time(),
+            'message' => $result['message'],
+            'httpStatus' => $result['httpStatus'],
+        ], 200, 'Social link verified');
+    }
+
+    public function chatStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        return $this->json->success($response, array_merge(
+            $this->directory->chatStatus($user),
+            $this->deskInbox->status($user)
+        ));
+    }
+
+    public function desk(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $status = $this->deskInbox->status($user);
+
+        return $this->json->success($response, array_merge(
+            $this->directory->chatStatus($user),
+            $status,
+            [
+                'items' => $this->deskInbox->items($user),
+                'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
+                'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
+                'deskBubbleX' => $user->getDeskBubbleX(),
+                'deskBubbleY' => $user->getDeskBubbleY(),
+            ]
+        ));
+    }
+
+    public function updatePresence(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $payload = RequestJsonBody::decode($request) ?? [];
+        $online = (bool) ($payload['online'] ?? false);
+        if ($online && !$user->isChatEnabled()) {
+            return $this->json->error($response, 'Enable chat on the public card first', 400);
+        }
+
+        $this->presence->heartbeat($user->getId(), $online);
+
+        return $this->json->success($response, $this->directory->chatStatus($user), 200, 'Presence updated');
     }
 
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -67,6 +161,9 @@ final class AccountController
             }
 
             UserProfileFields::apply($user, $payload);
+            if (array_key_exists('chatEnabled', $payload) && !$user->isChatEnabled()) {
+                $this->presence->heartbeat($user->getId(), false);
+            }
         } catch (ValidationException $exception) {
             return $this->json->validation($response, 'Validation failed', $exception->getErrors());
         }

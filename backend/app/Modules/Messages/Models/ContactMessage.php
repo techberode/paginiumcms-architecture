@@ -21,10 +21,15 @@ class ContactMessage implements JsonSerializable
         self::PRIORITY_URGENT,
     ];
 
+    public const STATUS_OPEN = 'open';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_DONE = 'done';
+
     public const SUBJECT_GENERAL = 'Všeobecný dotaz';
     public const SUBJECT_SUPPORT = 'Technická podpora';
     public const SUBJECT_SALES = 'Obchodné informácie';
     public const SUBJECT_PARTNERSHIP = 'Spolupráca';
+    public const SUBJECT_REGISTRATION = 'Žiadosť o registráciu';
 
     /** @var list<string> */
     public const SUBJECT_PRESETS = [
@@ -32,6 +37,7 @@ class ContactMessage implements JsonSerializable
         self::SUBJECT_SUPPORT,
         self::SUBJECT_SALES,
         self::SUBJECT_PARTNERSHIP,
+        self::SUBJECT_REGISTRATION,
     ];
 
     private string $id;
@@ -45,6 +51,19 @@ class ContactMessage implements JsonSerializable
     private bool $isArchived = false;
     private string $priority = self::PRIORITY_NORMAL;
     private string $ip = 'unknown';
+    private string $staffUserId = '';
+    private string $channel = 'contact';
+    /** @var list<string> */
+    private array $assigneeUserIds = [];
+    /** @var list<string> */
+    private array $assigneeTeamIds = [];
+    private string $claimedBy = '';
+    private int $claimedAt = 0;
+    private string $handleStatus = self::STATUS_OPEN;
+    private string $notifyUserId = '';
+    private bool $registrationRequest = false;
+    /** @var list<array{id: string, authorType: string, authorUserId: string, authorName: string, body: string, createdAt: string}> */
+    private array $thread = [];
 
     public function __construct(string $name, string $email, string $message)
     {
@@ -130,6 +149,12 @@ class ContactMessage implements JsonSerializable
     public function markProcessed(bool $isProcessed = true): self
     {
         $this->isProcessed = $isProcessed;
+        if ($isProcessed) {
+            $this->handleStatus = self::STATUS_DONE;
+        } elseif ($this->handleStatus === self::STATUS_DONE) {
+            $this->handleStatus = $this->claimedBy !== '' ? self::STATUS_IN_PROGRESS : self::STATUS_OPEN;
+        }
+
         return $this;
     }
 
@@ -168,6 +193,181 @@ class ContactMessage implements JsonSerializable
     {
         $this->ip = $ip;
         return $this;
+    }
+
+    public function getStaffUserId(): string
+    {
+        return $this->staffUserId;
+    }
+
+    public function setStaffUserId(string $staffUserId): self
+    {
+        $this->staffUserId = trim($staffUserId);
+
+        return $this;
+    }
+
+    public function getChannel(): string
+    {
+        return $this->channel;
+    }
+
+    public function setChannel(string $channel): self
+    {
+        $this->channel = $channel === 'staff-chat' ? 'staff-chat' : 'contact';
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getAssigneeUserIds(): array
+    {
+        return $this->assigneeUserIds;
+    }
+
+    /**
+     * @param list<mixed> $ids
+     */
+    public function setAssigneeUserIds(array $ids): self
+    {
+        $this->assigneeUserIds = self::normalizeIds($ids);
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getAssigneeTeamIds(): array
+    {
+        return $this->assigneeTeamIds;
+    }
+
+    /**
+     * @param list<mixed> $ids
+     */
+    public function setAssigneeTeamIds(array $ids): self
+    {
+        $this->assigneeTeamIds = self::normalizeIds($ids);
+
+        return $this;
+    }
+
+    public function getClaimedBy(): string
+    {
+        return $this->claimedBy;
+    }
+
+    public function setClaimedBy(string $userId): self
+    {
+        $this->claimedBy = trim($userId);
+
+        return $this;
+    }
+
+    public function getClaimedAt(): int
+    {
+        return $this->claimedAt;
+    }
+
+    public function setClaimedAt(int $claimedAt): self
+    {
+        $this->claimedAt = max(0, $claimedAt);
+
+        return $this;
+    }
+
+    public function getHandleStatus(): string
+    {
+        return $this->handleStatus;
+    }
+
+    public function setHandleStatus(string $status): self
+    {
+        $this->handleStatus = in_array($status, [self::STATUS_OPEN, self::STATUS_IN_PROGRESS, self::STATUS_DONE], true)
+            ? $status
+            : self::STATUS_OPEN;
+
+        return $this;
+    }
+
+    public function getNotifyUserId(): string
+    {
+        return $this->notifyUserId;
+    }
+
+    public function isRegistrationRequest(): bool
+    {
+        return $this->registrationRequest;
+    }
+
+    public function setRegistrationRequest(bool $requested): self
+    {
+        $this->registrationRequest = $requested;
+
+        return $this;
+    }
+
+    public function setNotifyUserId(string $userId): self
+    {
+        $this->notifyUserId = trim($userId);
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{id: string, authorType: string, authorUserId: string, authorName: string, body: string, createdAt: string}>
+     */
+    public function getThread(): array
+    {
+        return $this->thread;
+    }
+
+    /**
+     * @param array{id?: string, authorType?: string, authorUserId?: string, authorName?: string, body?: string, createdAt?: string} $reply
+     */
+    public function addReply(array $reply): self
+    {
+        $body = trim((string) ($reply['body'] ?? ''));
+        if ($body === '' || count($this->thread) >= 80) {
+            return $this;
+        }
+
+        $type = ($reply['authorType'] ?? '') === 'staff' ? 'staff' : 'visitor';
+        $id = trim((string) ($reply['id'] ?? ''));
+        $createdAt = trim((string) ($reply['createdAt'] ?? ''));
+        $this->thread[] = [
+            'id' => $id !== '' ? $id : uniqid('rep_', true),
+            'authorType' => $type,
+            'authorUserId' => trim((string) ($reply['authorUserId'] ?? '')),
+            'authorName' => trim((string) ($reply['authorName'] ?? '')),
+            'body' => mb_substr($body, 0, 5000),
+            'createdAt' => $createdAt !== '' ? $createdAt : date('c'),
+        ];
+
+        return $this;
+    }
+
+    /**
+     * @param list<mixed> $ids
+     * @return list<string>
+     */
+    public static function normalizeIds(array $ids): array
+    {
+        $out = [];
+        foreach ($ids as $id) {
+            if (!is_string($id)) {
+                continue;
+            }
+            $id = trim($id);
+            if ($id !== '' && !in_array($id, $out, true)) {
+                $out[] = $id;
+            }
+        }
+
+        return $out;
     }
 
     public static function priorityWeight(string $priority): int
@@ -217,6 +417,39 @@ class ContactMessage implements JsonSerializable
         if (!empty($entry['ip'])) {
             $message->setIp((string) $entry['ip']);
         }
+        if (!empty($entry['staffUserId'])) {
+            $message->setStaffUserId((string) $entry['staffUserId']);
+        }
+        if (!empty($entry['channel'])) {
+            $message->setChannel((string) $entry['channel']);
+        }
+        $users = $entry['assigneeUserIds'] ?? [];
+        $teams = $entry['assigneeTeamIds'] ?? [];
+        $message->setAssigneeUserIds(is_array($users) ? array_values($users) : []);
+        $message->setAssigneeTeamIds(is_array($teams) ? array_values($teams) : []);
+        if (!empty($entry['claimedBy'])) {
+            $message->setClaimedBy((string) $entry['claimedBy']);
+        }
+        if (!empty($entry['claimedAt'])) {
+            $message->setClaimedAt((int) $entry['claimedAt']);
+        }
+        if (!empty($entry['handleStatus'])) {
+            $message->setHandleStatus((string) $entry['handleStatus']);
+        }
+        if (!empty($entry['notifyUserId'])) {
+            $message->setNotifyUserId((string) $entry['notifyUserId']);
+        }
+        if (array_key_exists('registrationRequest', $entry)) {
+            $message->setRegistrationRequest((bool) $entry['registrationRequest']);
+        }
+        $thread = $entry['thread'] ?? [];
+        if (is_array($thread)) {
+            foreach ($thread as $row) {
+                if (is_array($row)) {
+                    $message->addReply($row);
+                }
+            }
+        }
 
         return $message;
     }
@@ -241,6 +474,16 @@ class ContactMessage implements JsonSerializable
             'isArchived' => $this->isArchived,
             'priority' => $this->priority,
             'ip' => $this->ip,
+            'staffUserId' => $this->staffUserId,
+            'channel' => $this->channel,
+            'assigneeUserIds' => $this->assigneeUserIds,
+            'assigneeTeamIds' => $this->assigneeTeamIds,
+            'claimedBy' => $this->claimedBy,
+            'claimedAt' => $this->claimedAt,
+            'handleStatus' => $this->handleStatus,
+            'notifyUserId' => $this->notifyUserId,
+            'registrationRequest' => $this->registrationRequest,
+            'thread' => $this->thread,
         ];
     }
 }

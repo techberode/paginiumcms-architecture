@@ -10,4 +10,8 @@ return [
     'ids_required' => 'Chýba zoznam ID',
     'invalid_action' => 'Neplatná hromadná akcia',
     'bulk_updated' => 'Hromadná akcia dokončená',
+    'forbidden' => 'Túto správu nemôžete meniť',
+    'claimed' => 'Túto konverzáciu už niekto rieši',
+    'replied' => 'Odpoveď uložená',
+    'routing_saved' => 'Smerovanie správ uložené',
 ];
