@@ -284,6 +284,7 @@ export const platformSk: MessageTree = {
       editTitle: 'Theme Studio — :id',
       subtitle: 'Uprav layout HTML, CSS a theme.json v Monaco. Normalizuj vložený kód, náhľad v sandboxe, potom ulož balík.',
       back: 'Späť na témy',
+      openPlayground: 'Otvoriť playground',
       save: 'Uložiť',
       saving: 'Ukladám…',
       saved: 'Balík témy bol uložený',

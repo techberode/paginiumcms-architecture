@@ -45,6 +45,7 @@ const ADMIN_ROUTES = new Set([
   '/blueprints',
   '/extensions',
   '/themes',
+  '/playground',
   '/demo',
   '/firewall',
   '/logs',

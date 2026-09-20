@@ -458,6 +458,15 @@ rollback reference
 
 The record may be short, but it must establish what was deployed.
 
+## 16.5 Component playground (It.95)
+
+The admin `/playground` route is **off by default**. SUPER_ADMIN enables it in Settings → Component playground.
+
+- Enabling adds CodeSandbox bundler hosts to **admin CSP** (`connect-src` / `frame-src`). Public pages stay fail-closed until that setting is on.
+- Preview code never runs in PHP. Do **not** `npm install` user URLs inside the PHP container.
+- Optional org packages belong at **frontend build** (`npm ci` with a deploy token), not at runtime.
+- `DEMO_MODE` keeps the playground off.
+
 ## 17. Related documents
 
 - [RELEASE.md](../developer/RELEASE.md) — release gate and decision

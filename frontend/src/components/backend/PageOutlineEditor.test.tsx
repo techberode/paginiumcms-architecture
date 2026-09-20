@@ -141,6 +141,22 @@ describe('PageOutlineEditor', () => {
     expect(markdown).toContain('[cta-banner');
   });
 
+  it('renders a canvas with inspector hint before a block is selected', () => {
+    const { getByTestId, queryByTestId } = renderWithProviders(
+      <PageOutlineEditor
+        value={'[landing-hero title="A"/]\n\n[cta-banner title="B"/]\n'}
+        onChange={vi.fn()}
+      />
+    );
+
+    expect(getByTestId('page-outline-canvas')).toBeInTheDocument();
+    expect(getByTestId('page-outline-inspector')).toBeInTheDocument();
+    expect(getByTestId('page-outline-select-hint')).toBeInTheDocument();
+    expect(getByTestId('page-outline-stack')).toBeInTheDocument();
+    expect(getByTestId('page-outline-kind-0')).toHaveTextContent(/landing/i);
+    expect(queryByTestId('page-outline-form')).not.toBeInTheDocument();
+  });
+
   it('reorders stacked blocks with the move controls', () => {
     const onChange = vi.fn();
     const { getByTestId } = renderWithProviders(

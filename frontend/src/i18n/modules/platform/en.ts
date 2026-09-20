@@ -284,6 +284,7 @@ export const platformEn: MessageTree = {
       editTitle: 'Theme studio — :id',
       subtitle: 'Edit layout HTML, CSS, and theme.json in Monaco. Normalize pasted markup, preview in a sandbox, then save the package.',
       back: 'Back to themes',
+      openPlayground: 'Open playground',
       save: 'Save',
       saving: 'Saving…',
       saved: 'Theme package saved',

@@ -47,6 +47,7 @@ export * from './navigation';
 export * from './newsletter';
 export * from './notifications';
 export * from './origin';
+export * from './playground';
 export * from './projectPlanner';
 export * from './queryIndex';
 export * from './redirects';

@@ -1,0 +1,13 @@
+{
+  "packId": "paginium-starter",
+  "manifestVersion": 1,
+  "title": "Paginium starter",
+  "source": { "type": "bundled" },
+  "modules": [
+    {
+      "id": "stat-card",
+      "sandpackEntry": "StatCard.tsx",
+      "capabilities": ["admin-ui:widget"]
+    }
+  ]
+}

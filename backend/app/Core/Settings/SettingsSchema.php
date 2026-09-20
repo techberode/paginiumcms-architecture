@@ -310,6 +310,15 @@ final class SettingsSchema
                     ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save. Untrusted trees also block include/require/unserialize/extract/call_user_func* and indirect calls ($fn(), $$, array_map(\'system\')).'],
                 ],
             ],
+            'playground' => [
+                'label' => 'Component playground',
+                'superAdminOnly' => true,
+                'fields' => [
+                    ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable Sandpack playground', 'default' => false, 'rules' => ['bool'], 'help' => 'SUPER_ADMIN only. Off in DEMO_MODE. Enabling adds CodeSandbox CDN hosts to admin CSP so the live preview iframe can load. Preview code is untrusted and never runs on PHP.'],
+                    ['key' => 'template', 'type' => 'enum', 'label' => 'Default playground template', 'default' => 'react-ts', 'options' => ['react-ts', 'vanilla', 'vue'], 'rules' => ['required', 'in:react-ts,vanilla,vue'], 'help' => 'Allow-listed Sandpack templates only. No arbitrary npm search.'],
+                    ['key' => 'enabledPacks', 'type' => 'string', 'label' => 'Enabled component packs', 'default' => 'paginium-starter', 'rules' => ['string', 'max:500'], 'help' => 'Comma-separated pack IDs from the bundled/imported registry. Toggle modules here — this is not npm install on the server.'],
+                ],
+            ],
             'engine' => [
                 'label' => 'Hybrid Engine',
                 'superAdminOnly' => true,

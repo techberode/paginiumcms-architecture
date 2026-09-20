@@ -370,7 +370,11 @@ use PaginiumCMS\Http\Themes\Services\ThemeRuntimeService;
 use PaginiumCMS\Http\Themes\Services\ThemeScriptIntegrityService;
 use PaginiumCMS\Http\Themes\Services\ThemeCspScriptSrcContributor;
 use PaginiumCMS\Http\Controllers\Themes\ThemeAssetController;
+use PaginiumCMS\Http\Controllers\Admin\PlaygroundController;
+use PaginiumCMS\Http\Security\CspDirectiveContributorInterface;
 use PaginiumCMS\Http\Security\CspScriptSrcContributorInterface;
+use PaginiumCMS\Modules\Playground\PlaygroundPackRegistry;
+use PaginiumCMS\Modules\Playground\PlaygroundSettings;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
@@ -1976,6 +1980,24 @@ return [
             get(SettingsRepositoryInterface::class),
             get(ThemeRuntimeService::class),
             get(ThemeScriptIntegrityService::class)
+        ),
+    PlaygroundSettings::class => create(PlaygroundSettings::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(DemoMode::class)
+        ),
+    CspDirectiveContributorInterface::class => get(PlaygroundSettings::class),
+    PlaygroundPackRegistry::class => create(PlaygroundPackRegistry::class)
+        ->constructor(
+            dirname(__DIR__, 2) . '/Modules/Playground/Resources/packs',
+            dirname(__DIR__, 4) . '/data/playground-packs.json',
+            get(PlaygroundSettings::class)
+        ),
+    PlaygroundController::class => create(PlaygroundController::class)
+        ->constructor(
+            get(PlaygroundSettings::class),
+            get(PlaygroundPackRegistry::class),
+            get(JsonResponder::class)
         ),
     ThemeAssetController::class => create(ThemeAssetController::class)
         ->constructor(

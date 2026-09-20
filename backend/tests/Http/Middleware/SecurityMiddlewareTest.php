@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Http\Middleware;
 
 use PaginiumCMS\Http\Middleware\SecurityMiddleware;
+use PaginiumCMS\Http\Security\CspDirectiveContributorInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -137,5 +138,43 @@ final class SecurityMiddlewareTest extends TestCase
         $this->assertStringContainsString("default-src 'none'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertStringNotContainsString("script-src 'self'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
+    }
+
+    public function testPlaygroundCspExtrasAreOffByDefault(): void
+    {
+        $middleware = new SecurityMiddleware();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
+        $inner = (new ResponseFactory())->createResponse(200);
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->willReturn($inner);
+
+        $csp = $middleware->process($request, $handler)->getHeaderLine('Content-Security-Policy');
+        $this->assertStringNotContainsString('codesandbox.io', $csp);
+        $this->assertStringNotContainsString('frame-src', $csp);
+    }
+
+    public function testPlaygroundCspExtrasApplyWhenContributorEnabled(): void
+    {
+        $contributor = new class implements CspDirectiveContributorInterface {
+            public function extraConnectSrcTokens(): array
+            {
+                return ['https://*.codesandbox.io'];
+            }
+
+            public function frameSrcDirective(): string
+            {
+                return "frame-src 'self' blob: https://*.codesandbox.io";
+            }
+        };
+
+        $middleware = new SecurityMiddleware([], null, $contributor);
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
+        $inner = (new ResponseFactory())->createResponse(200);
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->willReturn($inner);
+
+        $csp = $middleware->process($request, $handler)->getHeaderLine('Content-Security-Policy');
+        $this->assertStringContainsString('https://*.codesandbox.io', $csp);
+        $this->assertStringContainsString("frame-src 'self' blob:", $csp);
     }
 }

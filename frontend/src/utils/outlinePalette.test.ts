@@ -8,6 +8,7 @@ import {
   createPaletteVideo,
   isOutlinePaletteShortcode,
   moveOutlineBlock,
+  outlineIndexesFromDrag,
   newOutlineId,
   outlineStarterNames,
 } from './outlinePalette';
@@ -97,5 +98,13 @@ describe('outlinePalette', () => {
     expect(moveOutlineBlock(['a', 'b', 'c'], 2, 0)).toEqual(['c', 'a', 'b']);
     expect(moveOutlineBlock(['a', 'b', 'c'], 1, 1)).toEqual(['a', 'b', 'c']);
     expect(moveOutlineBlock(['a', 'b', 'c'], -1, 1)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('maps dnd-kit drag ids onto outline indexes', () => {
+    expect(outlineIndexesFromDrag(['a', 'b', 'c'], 'a', 'c')).toEqual({ from: 0, to: 2 });
+    expect(outlineIndexesFromDrag(['a', 'b', 'c'], 'c', 'a')).toEqual({ from: 2, to: 0 });
+    expect(outlineIndexesFromDrag(['a', 'b', 'c'], 'a', 'a')).toBeNull();
+    expect(outlineIndexesFromDrag(['a', 'b', 'c'], 'a', null)).toBeNull();
+    expect(outlineIndexesFromDrag(['a', 'b', 'c'], 'missing', 'b')).toBeNull();
   });
 });

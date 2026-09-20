@@ -1,6 +1,6 @@
 # Iteration 95 — Component playground & private design-system registry
 
-> **Status:** ⏳ planned (product request September 17, 2026)  
+> **Status:** 🟡 partial — **95a/c** shipped (Unreleased after `v2.1.0-beta.89`); **95b** Monaco bridge and **95d** Git import remain.  
 > **Priority:** 🟡 **P1** for developers/theme authors · 🔵 **P2** for optional admin widgets from private repos  
 > **Depends on:** [It.88](ITERATION_88.md) Theme Studio + sandbox preview · [It.89](ITERATION_89.md) manifest/capabilities · [It.90](ITERATION_90.md) Editor Tool SDK · [Code Policy](architecture/CODE_POLICY.md) · `OutboundUrlGuard`  
 > **Does not replace:** It.58f page outline (amateur blocks), full MDX/React-in-article (out of scope)
@@ -65,10 +65,10 @@ Import pipeline reuses **It.78 upload policy** + **CodePolicyEngine** on any shi
 
 | ID | Work | Outcome |
 |----|------|---------|
-| **95a** | **Sandpack playground** route or Theme Studio tab | Split pane: editor + live preview; deps from pinned `@codesandbox/sandpack-client` templates + optional org pack files served from `/api/admin/playground/assets/*` (auth + allow-list) |
-| **95b** | **Monaco bridge** | “Open in playground” from Theme Studio / Code Editor for allow-listed `.tsx`/`.jsx`/`.css` paths; round-trip **export snippet** back through validate/normalize (88b pattern) |
-| **95c** | **Registry + settings toggles** | UI: enable/disable modules per pack; storage in flat-file registry `data/playground-packs.json` (or extension slot under `Http/Extensions/`) |
-| **95d** | **Private Git import** | Admin action: fetch tarball/zip from configured repo (token from `systemUpdate`-style secret field); Zip-Slip + scan; register pack; **no** auto-update cron without explicit webhook + verifier (mirror It.70 webhook patterns) |
+| **95a** | **Sandpack playground** route or Theme Studio tab | ✅ `/playground` + Theme Studio link; `@codesandbox/sandpack-react`; `GET /api/admin/playground` + `/assets/{pack}/{path}` |
+| **95b** | **Monaco bridge** | ⏳ “Open in playground” from Theme Studio / Code Editor for allow-listed `.tsx`/`.jsx`/`.css` paths; round-trip **export snippet** back through validate/normalize (88b pattern) |
+| **95c** | **Registry + settings toggles** | ✅ Settings `playground.*` + bundled `paginium-starter`; imported slots in `data/playground-packs.json` |
+| **95d** | **Private Git import** | ⏳ Admin action: fetch tarball/zip from configured repo (token from `systemUpdate`-style secret field); Zip-Slip + scan; register pack; **no** auto-update cron without explicit webhook + verifier (mirror It.70 webhook patterns) |
 
 Recommended order: **95a → 95c → 95b → 95d** (playground visible first; Git import last).
 
@@ -121,4 +121,4 @@ Private repo → Import ZIP/Git (95d) → registry → toggles in Settings
 
 ## Queue
 
-Listed after **It.89** / parallel with **58f-h** / **It.94** where FE-only — [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md), [CONTINUATION.md](CONTINUATION.md).
+**95a/c shipped.** Remaining: **95b** then **95d**. Then [93l-2](ITERATION_93.md). Do not invent 95e. [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md), [CONTINUATION.md](CONTINUATION.md).

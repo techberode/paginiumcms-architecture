@@ -107,3 +107,24 @@ export function moveOutlineBlock<T>(items: T[], fromIndex: number, toIndex: numb
   next.splice(toIndex, 0, moved);
   return next;
 }
+
+/**
+ * Map a dnd-kit drag-end pair onto outline indexes. Null when the drop is a no-op.
+ */
+export function outlineIndexesFromDrag(
+  ids: readonly string[],
+  activeId: string | number,
+  overId: string | number | null | undefined
+): { from: number; to: number } | null {
+  if (overId === null || overId === undefined) {
+    return null;
+  }
+
+  const from = ids.indexOf(String(activeId));
+  const to = ids.indexOf(String(overId));
+  if (from < 0 || to < 0 || from === to) {
+    return null;
+  }
+
+  return { from, to };
+}

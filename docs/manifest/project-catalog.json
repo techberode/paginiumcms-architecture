@@ -35,6 +35,8 @@
         "id": "unreleased",
         "titleKey": "origin.snapshot.unreleased",
         "items": [
+          { "titleKey": "origin.catalog.it58f_canvas", "noteKey": "origin.snapshot.note_tag" },
+          { "titleKey": "origin.catalog.it95_sandpack", "noteKey": "origin.snapshot.note_tag" },
           { "titleKey": "origin.catalog.ops_tag_deploy", "noteKey": "origin.snapshot.note_deploy" }
         ]
       },
@@ -42,8 +44,8 @@
         "id": "next",
         "titleKey": "origin.snapshot.next",
         "items": [
-          { "titleKey": "origin.catalog.it58f_canvas", "noteKey": "origin.snapshot.note_next" },
-          { "titleKey": "origin.catalog.it95", "noteKey": "origin.snapshot.note_next" },
+          { "titleKey": "origin.catalog.it95_monaco", "noteKey": "origin.snapshot.note_next" },
+          { "titleKey": "origin.catalog.it95_git", "noteKey": "origin.snapshot.note_next" },
           { "titleKey": "origin.catalog.it93_canned", "noteKey": "origin.snapshot.note_next" },
           { "titleKey": "origin.catalog.it69_redis", "noteKey": "origin.snapshot.note_next" },
           { "titleKey": "origin.catalog.it82_host_metrics", "noteKey": "origin.snapshot.note_next" }
@@ -231,11 +233,14 @@
     {
       "id": "it.95",
       "titleKey": "origin.catalog.it95",
-      "phase": "planned",
+      "phase": "partial",
       "doc": "docs/en/ITERATION_95.md",
       "priority": "medium",
       "items": [
-        { "id": "95a", "titleKey": "origin.catalog.it95_sandpack", "phase": "planned", "weight": 1 }
+        { "id": "95a", "titleKey": "origin.catalog.it95_sandpack", "phase": "shipped", "weight": 1 },
+        { "id": "95c", "titleKey": "origin.catalog.it95_registry", "phase": "shipped", "weight": 1 },
+        { "id": "95b", "titleKey": "origin.catalog.it95_monaco", "phase": "planned", "weight": 1 },
+        { "id": "95d", "titleKey": "origin.catalog.it95_git", "phase": "planned", "weight": 1 }
       ],
       "history": []
     },
@@ -290,7 +295,7 @@
     {
       "id": "it.58f",
       "titleKey": "origin.catalog.it58f",
-      "phase": "partial",
+      "phase": "shipped",
       "doc": "docs/en/ITERATION_58f.md",
       "priority": "high",
       "items": [
@@ -301,7 +306,7 @@
         { "id": "58f-e", "titleKey": "origin.catalog.it58f_hero", "phase": "shipped", "weight": 1 },
         { "id": "58f-f", "titleKey": "origin.catalog.it58f_gallery", "phase": "shipped", "weight": 1 },
         { "id": "58f-g", "titleKey": "origin.catalog.it58f_tests", "phase": "shipped", "weight": 1 },
-        { "id": "58f-h", "titleKey": "origin.catalog.it58f_canvas", "phase": "planned", "weight": 1 }
+        { "id": "58f-h", "titleKey": "origin.catalog.it58f_canvas", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },

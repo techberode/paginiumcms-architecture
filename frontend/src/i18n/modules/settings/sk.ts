@@ -87,6 +87,7 @@ export const settingsSk: MessageTree = {
     "scheduler": "Plánovač jobov",
     "systemUpdate": "Aktualizácia systému (deploy)",
     "codePolicy": "Politika kódu",
+    "playground": "Playground komponentov",
     "engine": "Hybridný engine",
     "translation": "Asistovaný preklad",
     "agent": "CMS AI asistent",
@@ -278,7 +279,7 @@ export const settingsSk: MessageTree = {
       "outline": {
         "name": "Outline blokov",
         "description": "Vizuálne bloky s formulármi — bez písania shortcode tagov.",
-        "help": "Editor stránky sa zmení na paletu blokov s formulármi (Hero, karty, Galéria…). Presun myšou. Ukladá sa ako Markdown shortcody — režim môžeš kedykoľvek prepnúť. Odporúčané pre nové landing a marketingové stránky."
+        "help": "Editor stránky sa zmení na vizuálne plátno: paleta, karty blokov s ťahaním a inspector polí. Ukladá sa ako Markdown shortcody — režim môžeš kedykoľvek prepnúť. Odporúčané pre nové landing a marketingové stránky."
       },
       "developer": {
         "name": "Developer",
@@ -1263,6 +1264,20 @@ export const settingsSk: MessageTree = {
         "tooltip": "Po zapnutí sa pravidlá vyhodnocujú pred read/write API obsahu. Cesty používajú glob pod content/pages a content/articles. SUPER_ADMIN path ACL obíde."
       }
     },
+    "playground": {
+      "enabled": {
+        "label": "Zapnúť Sandpack playground",
+        "help": "Len SUPER_ADMIN. Na DEMO_MODE vypnuté. Zapnutie pridá hosty CodeSandbox CDN do admin CSP. Kód z náhľadu nikdy nebeží v PHP."
+      },
+      "template": {
+        "label": "Predvolená šablóna playgroundu",
+        "help": "Len šablóny z allow-listu Sandpack. Žiadne voľné npm vyhľadávanie."
+      },
+      "enabledPacks": {
+        "label": "Zapnuté balíky komponentov",
+        "help": "ID balíkov oddelené čiarkou z bundled/importovaného registry. Toto nie je npm install na serveri."
+      }
+    },
     "codePolicy": {
       "enabled": {
         "label": "Zapnúť kontrolu politiky kódu (jadro)",
@@ -2138,6 +2153,11 @@ export const settingsSk: MessageTree = {
       "shortcodes": "Shortcodes",
       "outline": "Outline blokov",
       "developer": "Developer"
+    },
+    "template": {
+      "react-ts": "React + TypeScript",
+      "vanilla": "HTML / CSS / JS",
+      "vue": "Vue"
     },
     "effectPreset": {
       "subtle": "Jemný",

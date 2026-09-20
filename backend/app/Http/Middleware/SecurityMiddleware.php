@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use PaginiumCMS\Http\Security\CspDirectiveContributorInterface;
 use PaginiumCMS\Http\Security\CspScriptSrcContributorInterface;
 use Slim\Psr7\Response;
 
@@ -25,6 +26,7 @@ final class SecurityMiddleware implements MiddlewareInterface
     public function __construct(
         array $config = [],
         private ?CspScriptSrcContributorInterface $scriptSrcContributor = null,
+        private ?CspDirectiveContributorInterface $directiveContributor = null,
     ) {
         $this->config = array_merge([
             'hsts_max_age' => 31536000,
@@ -89,18 +91,30 @@ final class SecurityMiddleware implements MiddlewareInterface
             $scriptSrc .= ' ' . implode(' ', $extra);
         }
 
-        $csp = implode('; ', [
+        $connectSrc = $this->config['csp_connect'];
+        $extraConnect = $this->directiveContributor?->extraConnectSrcTokens() ?? [];
+        if ($extraConnect !== []) {
+            $connectSrc .= ' ' . implode(' ', $extraConnect);
+        }
+
+        $cspParts = [
             $this->config['csp_default'],
             $scriptSrc,
             $this->config['csp_style'],
             $this->config['csp_img'],
             $this->config['csp_font'],
-            $this->config['csp_connect'],
+            $connectSrc,
             $this->config['csp_worker'],
             $this->config['csp_frame_ancestors'],
             $this->config['csp_base_uri'],
             $this->config['csp_form_action'],
-        ]);
+        ];
+        $frameSrc = $this->directiveContributor?->frameSrcDirective();
+        if (is_string($frameSrc) && $frameSrc !== '') {
+            $cspParts[] = $frameSrc;
+        }
+
+        $csp = implode('; ', $cspParts);
         $path = $request->getUri()->getPath();
         $preserveCompiledHtmlCsp = str_starts_with($path, '/static-html/')
             && $response->hasHeader('Content-Security-Policy');

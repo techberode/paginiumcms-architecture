@@ -208,6 +208,14 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
       { id: 'extensions', labelKey: 'admin.nav.extensions', href: '/extensions', icon: Puzzle, adminOnly: true },
       { id: 'themes', labelKey: 'admin.nav.themes', href: '/themes', icon: Palette, adminOnly: true },
       {
+        id: 'playground',
+        labelKey: 'admin.nav.playground',
+        href: '/playground',
+        icon: Boxes,
+        superAdminOnly: true,
+        hideOnDemoInstance: true,
+      },
+      {
         id: 'demo',
         labelKey: 'admin.nav.demo',
         href: '/demo',

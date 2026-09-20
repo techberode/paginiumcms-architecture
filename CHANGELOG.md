@@ -164,14 +164,18 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Added
+
+- **58f-h** — Visual block canvas in outline mode: `@dnd-kit` sortable stack, block cards + inspector, Markdown SSOT unchanged. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
+- **It.95a/c** — Sandpack playground (`/playground`, SUPER_ADMIN) + bundled `paginium-starter` pack toggled from Settings. Off by default and in `DEMO_MODE`. Enabling adds CodeSandbox CDN hosts to admin CSP. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
+
 ### Planning
 
-- **58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
+- **95b** — Monaco bridge. **95d** — private Git import.
 - **93l-2** — Canned replies / SLA notes (remainder of It.93).
 - **It.69 Redis driver** — optional **cache only** (never SSOT). File/memory/auto already shipped; `engine.cacheDriver=redis` still falls back to `auto`.
 - **It.82d** — Origin host metrics (optional).
-- **Queue:** 58f-h first. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Queue:** 95b, then 95d, then 93l-2. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 
 ---
 

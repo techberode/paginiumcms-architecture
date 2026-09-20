@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ImagePlus, Palette, Eye, Wand2 } from 'lucide-react';
+import { ArrowLeft, Boxes, ImagePlus, Palette, Eye, Wand2 } from 'lucide-react';
 import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker } from '../CodeEditor/MonacoCodeEditor';
 import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { themesApi, themeThumbnailUrl, type ThemeFileListItem } from '../../api/themes';
@@ -547,6 +547,14 @@ export const ThemeStudioShell: React.FC = () => {
             />
             {t('platform.themes.studio.activateAfterSave')}
           </label>
+          <Link
+            to="/playground"
+            className="btn btn-secondary inline-flex items-center gap-2"
+            data-testid="theme-studio-open-playground"
+          >
+            <Boxes className="h-4 w-4" />
+            {t('platform.themes.studio.openPlayground')}
+          </Link>
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"

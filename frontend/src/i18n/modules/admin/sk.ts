@@ -28,6 +28,7 @@ export const adminSk: MessageTree = {
     blueprints: 'Blueprinty',
     extensions: 'Rozšírenia',
     themes: 'Témy vzhľadu',
+    playground: 'Playground',
     demo: 'Demo modul',
     notifications: 'Notifikácie',
     scheduler: 'Plánovač',

@@ -1,6 +1,6 @@
 # Iterácia 58f — Vizuálne bloky stránky (amater + developer náhľad)
 
-> **Stav:** 🟡 partial — **58f-a–g** hotové; **58f-h** vizuálne plátno blokov ⏳ (audit 2026-09-17). 58g compile ostáva pri It.48.  
+> **Stav:** ✅ hotové — **58f-a–h** v strome (58f-h Unreleased po `v2.1.0-beta.89`). 58g compile s It.48.  
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_58f.md](../en/ITERATION_58f.md)
 
 ## Prečo 58f, nie 94
@@ -24,6 +24,6 @@ Mimo 58f: editor stránky/článku má voliteľný celoobrazovkový **Workspace*
 
 Hero video (muted, loop, poster, `prefers-reduced-motion`) je blok Core, nie izolovaný origin. 58g compile ostáva pri It.48.
 
-## 58f-h (plánované)
+## 58f-h (hotové)
 
-`LayoutBuilderCard` dnes = výber šablóny, nie skladanie blokov. **58f-h** doplní vizuálny canvas (dnd-kit) nad existujúcimi renderermi — detail [EN](../en/ITERATION_58f.md#slice-58f-h--visual-block-canvas). Súvisí s [It.94](ITERATION_94.md) (toasty, checklist, tooltipy, skratky), ale builder ostáva pod **58f**.
+Outline režim je vizuálne plátno: paleta, `@dnd-kit` stack kariet, inspector polí. `LayoutBuilderCard` ostáva výberom režimu editora. Detail [EN](../en/ITERATION_58f.md#slice-58f-h--visual-block-canvas). Ďalšia fronta: [It.95](ITERATION_95.md). 58i nezakladáme.

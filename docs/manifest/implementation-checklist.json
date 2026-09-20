@@ -58,11 +58,26 @@
         {
           "id": "58f-h-canvas",
           "labelKey": "origin.catalog.it58f_canvas",
-          "phase": "pending"
+          "phase": "shipped"
         },
         {
           "id": "95-sandpack",
           "labelKey": "origin.catalog.it95_sandpack",
+          "phase": "shipped"
+        },
+        {
+          "id": "95-registry",
+          "labelKey": "origin.catalog.it95_registry",
+          "phase": "shipped"
+        },
+        {
+          "id": "95-monaco",
+          "labelKey": "origin.catalog.it95_monaco",
+          "phase": "pending"
+        },
+        {
+          "id": "95-git",
+          "labelKey": "origin.catalog.it95_git",
           "phase": "pending"
         },
         {

@@ -87,6 +87,7 @@ export const settingsEn: MessageTree = {
     "scheduler": "Job scheduler",
     "systemUpdate": "System update (deploy)",
     "codePolicy": "Code policy",
+    "playground": "Component playground",
     "engine": "Hybrid Engine",
     "translation": "Assisted translation",
     "agent": "CMS AI assistant",
@@ -278,7 +279,7 @@ export const settingsEn: MessageTree = {
       "outline": {
         "name": "Block outline",
         "description": "Visual blocks with forms — no shortcode tags to type.",
-        "help": "The page editor becomes a block palette with forms (Hero, Cards, Gallery…). Drag to reorder. Saved as Markdown shortcodes — switch modes any time without losing the page. Recommended for new marketing and landing pages."
+        "help": "The page editor becomes a visual canvas: palette, drag-and-drop block cards, and a field inspector. Saved as Markdown shortcodes — switch modes any time without losing the page. Recommended for new marketing and landing pages."
       },
       "developer": {
         "name": "Developer",
@@ -1874,6 +1875,20 @@ export const settingsEn: MessageTree = {
         "tooltip": "When enabled, rules below are evaluated before content read/write APIs. Paths use glob semantics under content/pages and content/articles. SUPER_ADMIN bypasses path ACL."
       }
     },
+    "playground": {
+      "enabled": {
+        "label": "Enable Sandpack playground",
+        "help": "SUPER_ADMIN only. Off in DEMO_MODE. Enabling adds CodeSandbox CDN hosts to admin CSP. Preview code never runs on PHP."
+      },
+      "template": {
+        "label": "Default playground template",
+        "help": "Allow-listed Sandpack templates only. No arbitrary npm search."
+      },
+      "enabledPacks": {
+        "label": "Enabled component packs",
+        "help": "Comma-separated pack IDs from the bundled or imported registry. This is not npm install on the server."
+      }
+    },
     "codePolicy": {
       "enabled": {
         "label": "Enable code policy checks (core)",
@@ -2138,6 +2153,11 @@ export const settingsEn: MessageTree = {
       "shortcodes": "Shortcodes",
       "outline": "Block outline",
       "developer": "Developer"
+    },
+    "template": {
+      "react-ts": "React + TypeScript",
+      "vanilla": "HTML / CSS / JS",
+      "vue": "Vue"
     },
     "effectPreset": {
       "subtle": "Subtle",

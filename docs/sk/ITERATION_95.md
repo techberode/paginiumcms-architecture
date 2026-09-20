@@ -1,6 +1,6 @@
 # Iterácia 95 — Component playground a vlastná knižnica komponentov
 
-> **Stav:** ⏳ plánované (17. 9. 2026)  
+> **Stav:** 🟡 partial — **95a/c** hotové (Unreleased); **95b/d** ostávajú.  
 > **EN špecifikácia:** [../en/ITERATION_95.md](../en/ITERATION_95.md)
 
 ## Zhrnutie

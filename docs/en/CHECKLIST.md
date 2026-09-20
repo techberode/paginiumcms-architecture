@@ -255,8 +255,8 @@ Machine-readable SSOT: slice `slice-2026-09-20-remaining` in [`implementation-ch
 
 | Item | Status | Contract |
 |------|--------|----------|
-| **58f-h** visual block canvas | ⏳ next | Outline/palette as primary amateur surface; `@dnd-kit` stack; Markdown SSOT. [ITERATION_58f.md](ITERATION_58f.md) |
-| **It.95** Sandpack playground | ⏳ | Private component registry. [ITERATION_95.md](ITERATION_95.md) |
+| **58f-h** visual block canvas | ✅ shipped (Unreleased) | Outline canvas + `@dnd-kit` stack + inspector; Markdown SSOT. [ITERATION_58f.md](ITERATION_58f.md) |
+| **It.95** Sandpack playground | 🟡 95a/c shipped | `/playground` + Settings packs. **95b/d** remain. [ITERATION_95.md](ITERATION_95.md) |
 | **93l-2** canned replies / SLA notes | ⏳ | Remainder of It.93 — no new number |
 | **It.69 Redis driver** | ⏳ deferred | **Cache only**, never SSOT. File/memory/auto already shipped. `cacheDriver=redis` currently falls back to `auto`. Guard never enables Redis. |
 | **It.82d** Origin host metrics | ⏳ optional | Maintainer hook; not a product blocker |

@@ -1,6 +1,6 @@
 # Iteration 58f — Visual page blocks (amateur outline + developer live preview)
 
-> **Status:** 🟡 partial — **58f-a–g** shipped; **58f-h** visual block canvas planned (audit 2026-09-17). Remainder of [It.58](ITERATION_58.md) is **58g** compile/cache with [It.48](ITERATION_48.md).  
+> **Status:** ✅ shipped — **58f-a–h** in tree (58f-h visual canvas Unreleased after `v2.1.0-beta.89`). **58g** compile/cache shipped with [It.48](ITERATION_48.md).  
 > **Priority:** 🟡 **P1 for the publishing product** (ahead of It.92/93; parallel with It.89)  
 > **Wave:** Layout builder (58b–e shipped; **58g compile stays with [It.48](ITERATION_48.md)**)  
 > **Depends on:** It.58d expander + catalog · It.58e `pg-*` · It.90 insert wizards · It.88 sandbox preview pattern · It.65 gallery · It.79 DAM video · It.67/It.91 sanitizers  
@@ -129,15 +129,15 @@ This is **not** isolated-origin widgets. It is Core HTML like It.79, different p
 | **58f-e** | Media fields + `hero-video` / hero image on `landing-hero` | ✅ DAM picker on outline; `image`/`src`/`srcmobile`/`poster`; muted looping video; reduced-motion hides video |
 | **58f-f** | `feature-gallery` outline block → It.65 API | ✅ |
 | **58f-g** | i18n SK/EN, builderMode help, gate tests | ✅ |
-| **58f-h** | Visual block canvas (DnD stack), not template-only card | ⏳ planned — see below |
+| **58f-h** | Visual block canvas (DnD stack), not template-only card | ✅ `@dnd-kit` stack + inspector in `PageOutlineEditor` |
 
-Order: `a → b → d → c → e → f → g`. **58f-a–g shipped.** **58f-h** closes the amateur gap when `LayoutBuilderCard` is template-pick only. Next core queue: [It.89](ITERATION_89.md); novice UX bundle: [It.94](ITERATION_94.md).
+Order: `a → b → d → c → e → f → g → h`. **58f-a–h shipped.** `LayoutBuilderCard` still picks the editor mode; outline mode is the visual canvas. Next product queue: [It.95](ITERATION_95.md).
 
 **58g** (compile/cache): not in this spec.
 
 ### Slice 58f-h — Visual block canvas
 
-**Problem (audit 2026-09-17):** `LayoutBuilderCard` (~69 lines) selects a **page template**, not a block-by-block layout. `PageOutlineEditor` exists for outline mode, but product expectation is a **visual canvas**: drag hero, gallery, CTA from a palette, reorder with **@dnd-kit** (already used elsewhere in the admin stack).
+**Problem (audit 2026-09-17):** `LayoutBuilderCard` (~69 lines) selects a **page template**, not a block-by-block layout. `PageOutlineEditor` existed as a list, not a canvas. **Shipped:** palette + `@dnd-kit` stack + inspector when `layout.builderMode=outline`.
 
 **Goal:**
 
@@ -164,4 +164,4 @@ Order: `a → b → d → c → e → f → g`. **58f-a–g shipped.** **58f-h**
 
 ## Queue note
 
-**58f-a–g are shipped.** Remaining slice is **58f-h** (visual block canvas). **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. Next product queue: 58f-h, then [It.95](ITERATION_95.md).
+**58f-a–h are shipped.** **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. Next product queue: [It.95](ITERATION_95.md). Do not invent 58i.

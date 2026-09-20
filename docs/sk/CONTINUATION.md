@@ -18,7 +18,7 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 |--------|------|
 | Najnovší tag | ✅ `v2.1.0-beta.88` — It.75 asistent · E.164 + SMTP reply · diskusia · remount deploy kľúča · Origin snapshot |
 | Predchádzajúci | `v2.1.0-beta.87` — It.70 GitHub API · It.76/77 preklad |
-| Rozpracované | Produkčný deploy `beta.88` — ďalšia číslovaná práca: **It.48** · **58f-h** · **It.95** |
+| Rozpracované | Produkčný deploy `beta.89` — **95b/d** · **93l-2** |
 | Origin Panel | Prehľad k dnešku (live / unreleased / next) · 19. 9. 2026 · tag `2.1.0-beta.88` |
 
 ## Fronta
@@ -37,9 +37,9 @@ Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–g**) — [ITER
 | [architecture/ADMIN_DEEP_LINKS.md](architecture/ADMIN_DEEP_LINKS.md) | Admin SPA cesty (`/{module}`; aliasy `/platform/*`) |
 | [RELEASE_2_1_0_BETA_88.md](../en/RELEASE_2_1_0_BETA_88.md) | Posledný release — It.75 asistent · visitor polish · Origin snapshot |
 | [ITERATION_89.md](../ITERATION_89.md) | Plugin capabilities (hotové) |
-| [ITERATION_58f.md](ITERATION_58f.md) | Vizuálne bloky (58f-a–g; **58f-h** plánované) |
+| [ITERATION_58f.md](ITERATION_58f.md) | Vizuálne bloky (58f-a–h hotové) |
 | [ITERATION_94.md](ITERATION_94.md) | Admin UX pre neskúsených (94a–94d) |
-| [ITERATION_95.md](ITERATION_95.md) | Sandpack playground + import komponentov z Git |
+| [ITERATION_95.md](ITERATION_95.md) | Sandpack playground; **95a/c** hotové, **95b/d** ostávajú |
 | [ISSUES.md](../ISSUES.md#iss-170) | Audit 2026-09-17 — ISS-170–172 (APP_KEY, mail pixely, `/api/test`) |
 | [ITERATION_92.md](ITERATION_92.md) | SQLite query index |
 | [architecture/QUERY_INDEX.md](architecture/QUERY_INDEX.md) | Prečo SQLite / kam to vedie (It.92) |

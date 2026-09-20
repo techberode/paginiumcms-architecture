@@ -35,7 +35,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
-| 11 | **It.58f** Visual page blocks | 🟡 P1 | 🟡 partial | **58f-a–g** shipped; **58f-h** visual canvas ⏳; 58g shipped with It.48 in `beta.89` — [ITERATION_58f](ITERATION_58f.md) |
+| 11 | **It.58f** Visual page blocks | 🟡 P1 | ✅ | **58f-a–h** shipped; 58g compile with It.48 in `beta.89` — [ITERATION_58f](ITERATION_58f.md) |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
@@ -53,8 +53,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
 | 27 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
 | 28 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
-| 29 | **It.94** Admin self-service UX (toast, checklist, tooltips, shortcuts) | 🟡 P1 | ✅ | shipped in tree — [ITERATION_94](en/ITERATION_94.md); **58f-h** canvas stays under It.58f |
-| 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | ⏳ | Monaco bridge, settings pack toggles, Git import — [ITERATION_95](en/ITERATION_95.md) |
+| 29 | **It.94** Admin self-service UX (toast, checklist, tooltips, shortcuts) | 🟡 P1 | ✅ | shipped in tree — [ITERATION_94](en/ITERATION_94.md); visual canvas shipped as **58f-h** |
+| 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | 🟡 partial | **95a/c** shipped; **95b/d** remain — [ITERATION_95](ITERATION_95.md) |
 | 31 | **It.96** Document library & file manager (PDF, Office, text) | 🟡 P1 | ✅ | Upload policy `documents`, text edit, PDF preview, bulk ZIP, `[document-link]` — [ITERATION_96](ITERATION_96.md) · shipped `beta.86` |
 
 ---

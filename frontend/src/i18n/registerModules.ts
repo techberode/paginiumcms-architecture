@@ -51,6 +51,8 @@ import { projectPlannerEn } from './modules/projectPlanner/en';
 import { projectPlannerSk } from './modules/projectPlanner/sk';
 import { onboardingEn } from './modules/onboarding/en';
 import { onboardingSk } from './modules/onboarding/sk';
+import { playgroundEn } from './modules/playground/en';
+import { playgroundSk } from './modules/playground/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -103,6 +105,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'projectPlanner', projectPlannerEn);
   registerModuleMessages('sk', 'onboarding', onboardingSk);
   registerModuleMessages('en', 'onboarding', onboardingEn);
+  registerModuleMessages('sk', 'playground', playgroundSk);
+  registerModuleMessages('en', 'playground', playgroundEn);
 }
 
 registerAllI18nModules();

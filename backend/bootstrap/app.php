@@ -282,7 +282,7 @@ $containerBuilder->addDefinitions([
             'content_type' => 'nosniff',
             'referrer_policy' => 'strict-origin-when-cross-origin',
             'remove_server_headers' => true,
-        ], $container->get(\PaginiumCMS\Http\Security\CspScriptSrcContributorInterface::class));
+        ], $container->get(\PaginiumCMS\Http\Security\CspScriptSrcContributorInterface::class), $container->get(\PaginiumCMS\Http\Security\CspDirectiveContributorInterface::class));
     },
 
     LocaleMiddleware::class => function ($container) {

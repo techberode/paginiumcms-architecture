@@ -1,6 +1,6 @@
 ---
 title: Iteration 58 – Page layout builder and color schemes
-description: Partially delivered Layout Switch: schemes and template builder shipped; shortcode, outline, and compile slices remain.
+description: Layout Switch complete: schemes, templates, shortcodes, outline canvas, and compile/cache with It.48.
 icon: material/history
 ---
 
@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | 🟡 Partially complete: 58b–58f ✅, **58g** compile/cache with It.48 ⏳ |
+| Status | ✅ 58b–58f + **58f-h** canvas shipped; **58g** compile/cache with It.48 in `beta.89` |
 | Release / period | 58c: 2.1.0-beta.23 |
 | Record type | historical product and architecture record |
 
@@ -26,7 +26,7 @@ Delivered in 58d: shortcode expand pipeline (`ShortcodeExpanderService` at rende
 
 Delivered in 58e: allow-listed `pg-*` layout utilities in `frontend/src/theme/pgLayout.css` for shortcode expand templates.
 
-Planned for 58f–58g: optional outline/DnD, and HTML compile/cache with It.48. The `featureGallery` block must reuse the It.65 API without a second store.
+Delivered in 58f–58g: outline/DnD canvas, and HTML compile/cache with It.48. The `featureGallery` block reuses the It.65 API without a second store.
 
 ## Architecture and security boundaries
 
@@ -38,6 +38,6 @@ Decisions and the phased plan are in [ITERATION_58_ALTERNATIVES.md](ITERATION_58
 
 ## Current interpretation (September 2026)
 
-It.58 is not closed. **58b–58e shipped.** Publishing UX **[ITERATION_58f.md](ITERATION_58f.md)** (**58f-a–g shipped**: visual outline, forms, live preview, DAM hero video, feature-gallery, i18n/help). **58g** compile/cache stays aligned with [It.48](ITERATION_48.md) / It.69 — not in 58f.
+It.58 is closed for product slices. **58b–58e shipped.** Publishing UX **[ITERATION_58f.md](ITERATION_58f.md)** (**58f-a–h shipped**: visual canvas, forms, live preview, DAM hero video, feature-gallery, i18n/help). **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. Do not invent 58i.
 
 Do not invent It.94 for page blocks.

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, GripVertical, Image as ImageIcon, LayoutList, Plus, Sparkles, Trash2, Type, Video } from 'lucide-react';
+import { Image as ImageIcon, LayoutList, Plus, Sparkles, Trash2, Type, Video } from 'lucide-react';
 import { shortcodesApi, type ShortcodeDefinition } from '../../api/shortcodes';
 import { MediaPickerModal } from './MediaPickerModal';
+import { PageOutlineSortableStack } from './PageOutlineSortableStack';
 import { useI18n } from '../../context/I18nContext';
 import {
   outlineFingerprint,
@@ -42,7 +43,6 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
   const [catalogNames, setCatalogNames] = useState<string[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [customName, setCustomName] = useState('');
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
 
@@ -159,6 +159,7 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
         </div>
         <p className="text-xs text-indigo-800/80 dark:text-indigo-200/80">{t('editor.outline.description')}</p>
         <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70">{t('editor.outline.livePreviewHint')}</p>
+        <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70">{t('editor.outline.canvasHint')}</p>
         <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70">{t('editor.outline.reorderHint')}</p>
         {loadError ? (
           <p className="text-xs text-amber-700 dark:text-amber-400">{t('editor.outline.loadFailed')}</p>
@@ -249,6 +250,11 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
         </div>
       </div>
 
+      <div
+        className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)]"
+        data-testid="page-outline-canvas"
+      >
+        <div className="min-w-0 space-y-3">
       {blocks.length === 0 ? (
         <div
           className="space-y-3 rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700"
@@ -279,90 +285,22 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
           </div>
         </div>
       ) : (
-        <ul className="space-y-2" data-testid="page-outline-stack">
-          {blocks.map((block, index) => (
-            <li
-              key={block.id}
-              onDragOver={(event) => {
-                event.preventDefault();
-                event.dataTransfer.dropEffect = 'move';
-              }}
-              onDrop={(event) => {
-                event.preventDefault();
-                const from = Number.parseInt(event.dataTransfer.getData('text/plain'), 10);
-                setDragIndex(null);
-                if (Number.isFinite(from)) {
-                  reorder(from, index);
-                }
-              }}
-              className={dragIndex === index ? 'opacity-60' : ''}
-              data-testid={`page-outline-row-${index}`}
-            >
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  draggable={!disabled}
-                  disabled={disabled}
-                  aria-label={t('editor.outline.dragHandle')}
-                  title={t('editor.outline.dragHandle')}
-                  data-testid={`page-outline-drag-${index}`}
-                  onDragStart={(event) => {
-                    event.dataTransfer.setData('text/plain', String(index));
-                    event.dataTransfer.effectAllowed = 'move';
-                    setDragIndex(index);
-                  }}
-                  onDragEnd={() => setDragIndex(null)}
-                  className="inline-flex h-9 w-8 shrink-0 cursor-grab items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 active:cursor-grabbing disabled:cursor-not-allowed dark:border-slate-700"
-                >
-                  <GripVertical className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setSelectedId(block.id)}
-                  className={`flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm transition ${
-                    selectedId === block.id
-                      ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 dark:border-indigo-400 dark:bg-indigo-950/40'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:hover:bg-slate-900'
-                  }`}
-                  data-testid={`page-outline-card-${index}`}
-                >
-                  <span className="min-w-0 truncate font-medium text-slate-800 dark:text-slate-100">
-                    {blockLabel(block, t)}
-                  </span>
-                  <span className="shrink-0 font-mono text-[10px] uppercase tracking-wide text-slate-400">
-                    {block.kind === 'shortcode' ? block.name : block.kind}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled || index === 0}
-                  aria-label={t('editor.outline.moveUp')}
-                  data-testid={`page-outline-move-up-${index}`}
-                  onClick={() => reorder(index, index - 1)}
-                  className="inline-flex h-9 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled || index === blocks.length - 1}
-                  aria-label={t('editor.outline.moveDown')}
-                  data-testid={`page-outline-move-down-${index}`}
-                  onClick={() => reorder(index, index + 1)}
-                  className="inline-flex h-9 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700"
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            <PageOutlineSortableStack
+              blocks={blocks}
+              selectedId={selectedId}
+              disabled={disabled}
+              onSelect={setSelectedId}
+              onReorder={reorder}
+              blockLabel={(block) => blockLabel(block, t)}
+              t={t}
+            />
+          )}
+        </div>
 
+        <aside className="min-w-0" data-testid="page-outline-inspector">
       {selected ? (
         <div
-          className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-950"
+          className="sticky top-0 space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-950"
           data-testid="page-outline-form"
         >
           <div className="flex items-center justify-between gap-2">
@@ -388,7 +326,16 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
             t={t}
           />
         </div>
-      ) : null}
+      ) : (
+            <div
+              className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700"
+              data-testid="page-outline-select-hint"
+            >
+              {t('editor.outline.selectBlock')}
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   );
 };

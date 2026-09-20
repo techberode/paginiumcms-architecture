@@ -67,6 +67,7 @@ import { CategoriesManager } from './components/backend/CategoriesManager';
 import { RolesManager } from './components/backend/RolesManager';
 import { SnippetsManager } from './components/backend/SnippetsManager';
 import { OriginPanelView } from './components/backend/OriginPanelView';
+import { PlaygroundView } from './components/backend/PlaygroundView';
 import { ProjectPlannerView } from './components/backend/ProjectPlannerView';
 import { ProjectPlanDetailView } from './components/backend/ProjectPlanDetailView';
 import { WebhooksManager } from './components/backend/WebhooksManager';
@@ -259,6 +260,7 @@ function App() {
         <Route path="/widgets" element={<WidgetsManager />} />
         <Route path="/snippets" element={<SnippetsManager />} />
         <Route path="/origin" element={<OriginPanelView />} />
+        <Route path="/playground" element={<PlaygroundView />} />
         <Route path="/settings/:group" element={<SettingsGroupDeepLinkRedirect />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/translations" element={<TranslationEditor />} />

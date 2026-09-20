@@ -28,6 +28,7 @@ export const adminEn: MessageTree = {
     blueprints: 'Blueprints',
     extensions: 'Extensions',
     themes: 'Themes',
+    playground: 'Playground',
     demo: 'Demo module',
     notifications: 'Notifications',
     scheduler: 'Scheduler',

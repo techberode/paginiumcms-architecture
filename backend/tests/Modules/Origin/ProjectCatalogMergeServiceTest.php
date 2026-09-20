@@ -72,8 +72,8 @@ final class ProjectCatalogMergeServiceTest extends TestCase
         $this->assertSame('shipped', $byId['it.83']['phase'] ?? '');
         $this->assertSame(100, $byId['it.72']['percentComplete'] ?? 0);
         $this->assertSame('shipped', $byId['it.86']['phase'] ?? '');
-        $this->assertLessThan(100, $byId['it.58f']['percentComplete'] ?? 100);
-        $this->assertSame('partial', $byId['it.58f']['phase'] ?? '');
+        $this->assertSame(100, $byId['it.58f']['percentComplete'] ?? 0);
+        $this->assertSame('shipped', $byId['it.58f']['phase'] ?? '');
         $this->assertSame(100, $byId['it.75']['percentComplete'] ?? 0);
         $this->assertSame(100, $byId['it.48']['percentComplete'] ?? 0);
         $this->assertSame('shipped', $byId['it.48']['phase'] ?? '');
