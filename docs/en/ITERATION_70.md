@@ -146,7 +146,8 @@ Remote push and static build are separate steps. It.48 may trigger a build only 
 - [x] Content-list `pending_publish` badges and **Publish release** panel (Settings → Engine).
 - [x] Retry endpoint reuses idempotent queued release publish.
 - [x] Command/path/remote security validation (`GitPathValidator` + regression tests).
-- [ ] It.48 uses the same publish contract rather than a parallel pipeline (deferred).
+- [x] It.48a compile is a separate Build step (own API/job). Git queue unchanged.
+- [x] It.48b public HTML serve is a separate GET surface (`/static-html`), not a Git hook.
 - [x] The Classic default does not invoke Git (`gitEnabled=false`).
 - [x] EN backlog, CHANGELOG, and engine probe documentation updated; SK detail catch-up deferred.
 

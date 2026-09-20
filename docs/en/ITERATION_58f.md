@@ -164,4 +164,4 @@ Order: `a → b → d → c → e → f → g`. **58f-a–g shipped.** **58f-h**
 
 ## Queue note
 
-**58f is shipped.** Next planned iteration is [It.89](ITERATION_89.md) (plugin capabilities). **58g** compile/cache stays with [It.48](ITERATION_48.md).
+**58f-a–g are shipped.** Remaining slice is **58f-h** (visual block canvas). **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. Next product queue: 58f-h, then [It.95](ITERATION_95.md).

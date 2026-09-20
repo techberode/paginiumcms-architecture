@@ -52,7 +52,7 @@ final class GitDeployTransportTest extends TestCase
     {
         $key = tempnam(sys_get_temp_dir(), 'paginium-deploy-key-');
         $this->assertNotFalse($key);
-        file_put_contents($key, "-----BEGIN OPENSSH PRIVATE KEY-----\ntest\n");
+        file_put_contents($key, self::dummyOpenSshKeyMaterial());
         chmod($key, 0640);
         putenv('GITHUB_DEPLOY_SSH_KEY_PATH=' . $key);
         $_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] = $key;
@@ -65,7 +65,7 @@ final class GitDeployTransportTest extends TestCase
     {
         $key = tempnam(sys_get_temp_dir(), 'paginium-deploy-key-');
         $this->assertNotFalse($key);
-        file_put_contents($key, "-----BEGIN OPENSSH PRIVATE KEY-----\ntest\n");
+        file_put_contents($key, self::dummyOpenSshKeyMaterial());
         chmod($key, 0640);
         putenv('GITHUB_DEPLOY_SSH_KEY_PATH=' . $key);
         $_ENV['GITHUB_DEPLOY_SSH_KEY_PATH'] = $key;
@@ -75,6 +75,12 @@ final class GitDeployTransportTest extends TestCase
             GitDeployTransport::prefersDeployKeySsh()
         );
         @unlink($key);
+    }
+
+    /** Split the PEM fence so secret scanners do not treat this test as a leaked key (ISS-173). */
+    private static function dummyOpenSshKeyMaterial(): string
+    {
+        return '-----BEGIN ' . 'OPENSSH PRIVATE KEY-----' . "\ntest\n";
     }
 
     public function testResolveGithubKnownHostsFileFindsBundledKeys(): void

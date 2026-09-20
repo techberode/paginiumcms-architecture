@@ -182,6 +182,22 @@ export const settingsEn: MessageTree = {
     "gitPublishConfirmBody": "Create one release commit for :count queued file(s). SSOT is already saved.",
     "gitPublishConfirmAction": "Create release commit",
     "gitPublishImmediateHint": "Immediate strategy commits on each save. Switch to queued to batch a release.",
+    "staticRebuildTitle": "Static compile (It.48)",
+    "staticRebuildIntro": "Writes derived HTML under storage/app/static/. Markdown/JSON stays the source of truth. hybrid/static also serve that HTML at /static-html/{pages|blog}/{slug}. /admin and /api stay dynamic.",
+    "staticRebuildMode": "Render mode",
+    "staticRebuildCounts": "Compiled pages / articles",
+    "staticRebuildPublic": "Public HTML serve",
+    "staticRebuildPublicOn": "On — {prefix}/pages/<slug> and {prefix}/blog/<slug>",
+    "staticRebuildPublicOff": "Off (dynamic mode — SPA + API only)",
+    "staticRebuildRun": "Rebuild static tree",
+    "staticRebuildWorking": "Compiling…",
+    "staticRebuildLoading": "Loading static compile status…",
+    "staticRebuildLoadFailed": "Could not load static compile status.",
+    "staticRebuildSuccess": "Static tree rebuilt.",
+    "staticRebuildFailed": "Static rebuild failed. CMS documents are unchanged.",
+    "staticRebuildConfirmTitle": "Rebuild static HTML?",
+    "staticRebuildConfirmBody": "Compile every published page and article into storage/app/static/. This does not push Git or change the live SPA.",
+    "staticRebuildConfirmAction": "Rebuild static tree",
     "performanceGuardTitle": "Performance Guard (APM)",
     "performanceGuardIntro": "In-request latency and I/O sampling. Disabled by default — tune budgets for your hardware. Does not replace host metrics.",
     "performanceGuardOverhead": "Overhead grows with sample rate; ring buffer retains the latest 500 route templates without content payloads.",
@@ -1698,6 +1714,11 @@ export const settingsEn: MessageTree = {
         "help": "Conditional requests on safe public GET endpoints (e.g. /api/settings/public).",
         "tooltip": "Clients may send If-None-Match / If-Modified-Since and receive 304 with no body. Reduces traffic for public settings."
       },
+      "renderMode": {
+        "label": "Public render mode",
+        "help": "dynamic = React SPA + API only. hybrid/static compile published HTML into storage/app/static/ and serve it at /static-html/{pages|blog}/{slug}. Enable the nginx snippet for pretty URLs.",
+        "tooltip": "Save, Build, and Git publish stay separate. /admin and /api stay dynamic. Missing compiled files 404 so nginx can fall back to the SPA."
+      },
       "gitEnabled": {
         "label": "Enable Git publish distribution",
         "help": "Git is distribution only; SSOT stays on disk. Default off.",
@@ -2004,6 +2025,11 @@ export const settingsEn: MessageTree = {
     "queryIndexDriver": {
       "json": "JSON (content.json)",
       "sqlite": "SQLite (derived)"
+    },
+    "renderMode": {
+      "dynamic": "Dynamic (SPA)",
+      "hybrid": "Hybrid (SPA + compile)",
+      "static": "Static compile"
     },
     "gitPublishStrategy": {
       "disabled": "Disabled",

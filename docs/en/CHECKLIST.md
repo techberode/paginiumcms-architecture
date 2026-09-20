@@ -249,7 +249,21 @@ Machine-readable SSOT: [`docs/manifest/project-catalog.json`](../manifest/projec
 - [x] `implementation-checklist.json` slices exposed in Origin Panel **Release slices**
 - [x] `./scripts/validate-project-catalog.sh` validates probeIds + checklist iteration refs
 
-## 19. Planned iteration 87 (post-stable)
+## 19. Remaining planned work (2026-09-20)
+
+Machine-readable SSOT: slice `slice-2026-09-20-remaining` in [`implementation-checklist.json`](../manifest/implementation-checklist.json). Do not invent new iteration numbers.
+
+| Item | Status | Contract |
+|------|--------|----------|
+| **58f-h** visual block canvas | ⏳ next | Outline/palette as primary amateur surface; `@dnd-kit` stack; Markdown SSOT. [ITERATION_58f.md](ITERATION_58f.md) |
+| **It.95** Sandpack playground | ⏳ | Private component registry. [ITERATION_95.md](ITERATION_95.md) |
+| **93l-2** canned replies / SLA notes | ⏳ | Remainder of It.93 — no new number |
+| **It.69 Redis driver** | ⏳ deferred | **Cache only**, never SSOT. File/memory/auto already shipped. `cacheDriver=redis` currently falls back to `auto`. Guard never enables Redis. |
+| **It.82d** Origin host metrics | ⏳ optional | Maintainer hook; not a product blocker |
+| **It.92 SQLite** | ✅ shipped | Derived catalog index only. Classic default is `content.json`. Not a database. |
+| Production deploy `v2.1.0-beta.89` | ⏳ | Origin unreleased item until the instance version matches the tag |
+
+## 20. Planned iteration 87 (post-stable)
 
 Spec: [`docs/en/ITERATION_87.md`](../en/ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](../sk/ITERATION_87.md)
 

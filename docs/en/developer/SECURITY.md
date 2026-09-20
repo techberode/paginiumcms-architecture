@@ -37,6 +37,14 @@ run-backend-tests-ci.sh
 
 The complete local log remains outside the repository. The public workflow template is [`../../LOCAL_TEST_LOGS.md.example`](../../../LOCAL_TEST_LOGS.md.example); raw logs, the local checklist, and sanitized working copies are not committed.
 
+### Secret scan — ISS-173
+
+CI job **Secret scan (gitleaks)** in [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) runs on every push/PR (`--redact`). It scans the checkout plus commits added by that event (not unrelated historical branches). Binary is checksum-verified (gitleaks 8.30.1). Config: [`.gitleaks.toml`](../../../.gitleaks.toml) (PEM/OpenSSH only).
+
+Before commit, `./scripts/iteration-gate.sh` runs `scripts/secret-scan.sh` (paths only, no secret bodies). Enable the repo hook with `./scripts/install-git-hooks.sh` (`core.hooksPath=.githooks`).
+
+Deploy keys live only on the host (`/var/lib/paginiumcms/secrets/github_deploy_key`). Never commit `paginiumcms`, `*.pub` key pairs, or `github_deploy_key`.
+
 ### Dependency disclosure
 
 React Router advisories published after `v2.1.0-beta.2` were addressed in `v2.1.0-beta.3`. An audit exit code must not be interpreted without checking the severity threshold and complete output; a finding below the configured threshold may still require `PASS_WITH_REVIEW` or `INVESTIGATION_REQUIRED`.
@@ -428,7 +436,7 @@ The release gate includes:
 
 - Composer/npm lockfile installation,
 - SCA audit with a versioned severity policy,
-- secret scanning,
+- secret scanning (gitleaks in CI + `scripts/secret-scan.sh` locally; ISS-173),
 - review of GitHub Actions permissions,
 - pinning or review of third-party actions,
 - immutable release commit/tag,

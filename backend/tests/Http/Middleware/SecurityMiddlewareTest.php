@@ -120,4 +120,22 @@ final class SecurityMiddlewareTest extends TestCase
         preg_match('/script-src ([^;]+)/', $csp, $scriptSrc);
         $this->assertStringNotContainsString('unsafe-inline', $scriptSrc[1] ?? '');
     }
+
+    public function testPreservesCompiledHtmlCsp(): void
+    {
+        $middleware = new SecurityMiddleware();
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/static-html/pages/about');
+        $inner = (new ResponseFactory())
+            ->createResponse(200)
+            ->withHeader('Content-Security-Policy', "default-src 'none'; script-src 'none'");
+
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->willReturn($inner);
+
+        $response = $middleware->process($request, $handler);
+
+        $this->assertStringContainsString("default-src 'none'", $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertStringNotContainsString("script-src 'self'", $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
+    }
 }

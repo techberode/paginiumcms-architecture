@@ -84,6 +84,21 @@ class StorageControllerTest extends TestCase
         $this->assertStringContainsString('attachment', (string) $response->getHeaderLine('Content-Disposition'));
     }
 
+    public function testServeRejectsCompiledStaticHtml(): void
+    {
+        mkdir($this->storageRoot . '/app/static/pages/home', 0755, true);
+        $relative = 'app/static/pages/home/index.html';
+        file_put_contents($this->storageRoot . '/' . $relative, '<!doctype html><title>Leak</title>');
+
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/' . $relative);
+        $response = (new ResponseFactory())->createResponse();
+
+        $response = $this->controller->serve($request, $response, ['path' => $relative]);
+
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertStringNotContainsString('Leak', (string) $response->getBody());
+    }
+
     public function testServeMissingFileReturns404(): void
     {
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/missing.txt');

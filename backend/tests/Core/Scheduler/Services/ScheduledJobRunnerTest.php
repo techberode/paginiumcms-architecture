@@ -119,7 +119,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
             $this->webhookDeliveryHandler(),
-            new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class))
+            new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class)),
+            $this->staticRebuildHandler()
         );
 
         $runner = new ScheduledJobRunner(
@@ -158,7 +159,8 @@ final class ScheduledJobRunnerTest extends TestCase
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
             $this->webhookDeliveryHandler(),
-            new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class))
+            new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class)),
+            $this->staticRebuildHandler()
         );
 
         return new ScheduledJobRunner(
@@ -270,6 +272,36 @@ final class ScheduledJobRunnerTest extends TestCase
             new WebhookDeliveryService($registry, $deliveries),
             $deliveries
         );
+    }
+
+    private function staticRebuildHandler(): \PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler
+    {
+        $base = sys_get_temp_dir() . '/paginium-static-rebuild-' . uniqid('', true);
+        mkdir($base, 0777, true);
+        $validator = new FileValidator($base);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturn(['renderMode' => 'dynamic', 'language' => 'en']);
+        $siteSettings = new \PaginiumCMS\Core\StaticSite\StaticSiteSettings($settings);
+        $renderer = new \PaginiumCMS\Core\Editor\Services\ContentBodyRenderer(
+            new \PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser(),
+            new \PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer(),
+            new \PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer($settings)
+        );
+        $compiler = new \PaginiumCMS\Core\StaticSite\StaticSiteCompiler($reader, $writer, $siteSettings, $renderer);
+        $repo = $this->createMock(ContentRepositoryInterface::class);
+        $repo->method('findAllPages')->willReturn([]);
+        $repo->method('findAllArticles')->willReturn([]);
+        $generator = new \PaginiumCMS\Core\StaticSite\StaticSiteGenerator(
+            $repo,
+            $reader,
+            $writer,
+            $siteSettings,
+            $compiler
+        );
+
+        return new \PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler($generator);
     }
 
     private function makeMaintenanceCleanupHandler(

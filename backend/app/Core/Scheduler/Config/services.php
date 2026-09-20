@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
@@ -61,6 +62,8 @@ return [
         ->constructor(get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterMailService::class)),
     GitPublishHandler::class => create(GitPublishHandler::class)
         ->constructor(get(\PaginiumCMS\Core\Git\Services\GitPublishService::class)),
+    StaticRebuildHandler::class => create(StaticRebuildHandler::class)
+        ->constructor(get(\PaginiumCMS\Core\StaticSite\StaticSiteGenerator::class)),
     WebhookDeliveryHandler::class => create(WebhookDeliveryHandler::class)
         ->constructor(
             get(\PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService::class),
@@ -76,7 +79,8 @@ return [
             get(NewsletterWeeklyDigestHandler::class),
             get(GitPublishHandler::class),
             get(WebhookDeliveryHandler::class),
-            get(AgentRunHandler::class)
+            get(AgentRunHandler::class),
+            get(StaticRebuildHandler::class)
         ),
     ScheduledJobRunner::class => create(ScheduledJobRunner::class)
         ->constructor(

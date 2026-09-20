@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
@@ -30,6 +31,7 @@ final class JobHandlerRegistry
         private GitPublishHandler $gitPublish,
         private WebhookDeliveryHandler $webhookDeliver,
         private AgentRunHandler $agentRun,
+        private StaticRebuildHandler $staticRebuild,
     ) {
     }
 
@@ -45,6 +47,7 @@ final class JobHandlerRegistry
             'git.publish' => $this->gitPublish,
             'webhook.deliver' => $this->webhookDeliver,
             'agent.run' => $this->agentRun,
+            'static.rebuild' => $this->staticRebuild,
             default => null,
         };
     }
@@ -64,6 +67,7 @@ final class JobHandlerRegistry
             ['key' => $this->gitPublish->key(), 'label' => $this->gitPublish->label()],
             ['key' => $this->webhookDeliver->key(), 'label' => $this->webhookDeliver->label()],
             ['key' => $this->agentRun->key(), 'label' => $this->agentRun->label()],
+            ['key' => $this->staticRebuild->key(), 'label' => $this->staticRebuild->label()],
         ];
     }
 }

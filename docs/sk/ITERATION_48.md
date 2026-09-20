@@ -10,7 +10,7 @@ icon: material/history
 
 | Pole | Hodnota |
 |---|---|
-| Stav | ⏳ Plánované |
+| Stav | ✅ Dodané — **48a** compile/cache + **48b** verejné HTML |
 | Release / obdobie | bez samostatného release |
 | Typ záznamu | historický render/publish návrh |
 

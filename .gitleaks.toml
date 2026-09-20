@@ -1,0 +1,25 @@
+# PaginiumCMS — ISS-173
+# Private-key rules only. Default gitleaks rules (generic-api-key, etc.) fire on
+# vendor PHAR, test fixtures (ghp_test_token), and old branches — not used here.
+
+title = "PaginiumCMS private-key gate"
+
+[[rules]]
+id = "private-key-pem"
+description = "PEM or OpenSSH private key"
+regex = '''-----BEGIN[ A-Z0-9]*PRIVATE KEY-----'''
+tags = ["key", "ssh"]
+keywords = [
+  "PRIVATE KEY",
+]
+
+[allowlist]
+description = "Dependencies and lockfiles — never key files"
+paths = [
+  '''(^|/)vendor/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)frontend/dist/''',
+  '''(^|/)frontend/build/''',
+  '''(^|/)composer.lock$''',
+  '''(^|/)package-lock.json$''',
+]

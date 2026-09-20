@@ -102,6 +102,7 @@ import { eventsApi } from './events';
 import { extensionsApi } from './extensions';
 import { firewallApi } from './firewall';
 import { gitApi } from './git';
+import { staticSiteApi } from './staticSite';
 import { healthApi } from './health';
 import { logsApi } from './logs';
 import { mailApi } from './mail';
@@ -146,6 +147,7 @@ export const api = {
   extensions: extensionsApi,
   firewall: firewallApi,
   git: gitApi,
+  staticSite: staticSiteApi,
   health: healthApi,
   logs: logsApi,
   mail: mailApi,

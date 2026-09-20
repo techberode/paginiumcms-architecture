@@ -49,6 +49,8 @@ final class PermissionCatalogTest extends TestCase
     {
         $this->assertContains('themes:read', PermissionCatalog::ALL);
         $this->assertContains('themes:edit', PermissionCatalog::ALL);
+        $this->assertContains('static:rebuild', PermissionCatalog::ALL);
+        $this->assertContains('static:rebuild', PermissionCatalog::defaultRolePermissions()['ADMIN']);
         $admin = PermissionCatalog::defaultRolePermissions()['ADMIN'];
         $this->assertContains('themes:read', $admin);
         $this->assertContains('themes:edit', $admin);

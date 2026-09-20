@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.89`](#release-2-1-0-beta-89) | 2026-09-20 | It.48 static compile + `/static-html` serve · ISS-173 gitleaks · ISS-174 desk role gate · AppVersion floor |
 | [`2.1.0-beta.88`](#release-2-1-0-beta-88) | 2026-09-19 | It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount · Origin today snapshot |
 | [`2.1.0-beta.87`](#release-2-1-0-beta-87) | 2026-09-19 | It.70 GitHub API publisher · It.76/77 assisted translation · outbound grep allow-list |
 | [`2.1.0-beta.86`](#release-2-1-0-beta-86) | 2026-09-19 | It.93o-2–8 desk/staff/external team · It.96 document library · CI media/webhook/shortcode |
@@ -165,9 +166,36 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Planning
 
-- **It.58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
+- **58f-h** — Visual block canvas (DnD stack). Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
 - **It.95** — Sandpack playground + private component registry. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
-- **Queue:** **It.48** (58g with 48). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **93l-2** — Canned replies / SLA notes (remainder of It.93).
+- **It.69 Redis driver** — optional **cache only** (never SSOT). File/memory/auto already shipped; `engine.cacheDriver=redis` still falls back to `auto`.
+- **It.82d** — Origin host metrics (optional).
+- **Queue:** 58f-h first. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-89"></a>
+
+## [2.1.0-beta.89] – 2026-09-20
+
+Ships **It.48** static compile + public HTML serve, **ISS-173** gitleaks, **ISS-174** desk role gate, and an AppVersion floor after the history rewrite.
+
+Docs: [ITERATION_48.md](docs/en/ITERATION_48.md) · [RELEASE_2_1_0_BETA_89.md](docs/en/RELEASE_2_1_0_BETA_89.md)
+
+### Security
+
+- **ISS-173** — CI **gitleaks** job (checksum-pinned 8.30.1, PEM/OpenSSH rules only) fails the workflow if a private key is in the checkout or in commits added by the push/PR. Local `scripts/secret-scan.sh` runs in the iteration gate and `run-all-tests.zsh`; optional `core.hooksPath=.githooks`. Follow-up to the public deploy-key leak (rotated + history rewritten first).
+- **ISS-174** — `/api/admin/messages` requires EDITOR+ (It.93o desk). USER / external-team accounts can no longer probe the admin inbox API. Audit of It.70 / It.93o / It.96 found no critical or high issues.
+
+### Fixed
+
+- **AppVersion** — after the ISS-173 history rewrite, `git describe` can still land on old annotated tag `v2.0.1`. Runtime no longer reports a version older than the `VERSION` constant (extensions were rejected as “requires 2.0.38, current 2.0.1”).
+
+### Added
+
+- **It.48a** — Static compile/cache (58g): `engine.renderMode` (`dynamic` / `hybrid` / `static`), derived HTML under `storage/app/static/`, job `static.rebuild`, admin rebuild panel. Git publish queue is unchanged.
+- **It.48b** — Public serve of compiled HTML: `GET /static-html/pages/{slug}` and `/static-html/blog/{slug}` when `renderMode` is hybrid/static (404 in dynamic, reserved slugs, or missing file). Strict CSP, no script-src. `/storage` still does not serve the static tree. Optional nginx snippet `docs/deploy/nginx-static-html.conf` maps pretty URLs and falls back to the SPA; `/api` and admin first-segments stay dynamic.
 
 ---
 

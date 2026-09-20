@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | ⏳ Planned |
+| Status | ✅ Shipped — **48a** compile/cache + **48b** public HTML serve |
 | Release / period | bez samostatného release |
 | Record type | historical rendering and publishing design |
 
@@ -34,4 +34,8 @@ The source is a plan, not implementation evidence. The later documentation plan 
 
 ## Current interpretation
 
-It.48 remains the target static-build layer. It must align with the It.58 layout AST, It.69 cache invalidation, and It.70 publish states; Save, Build, Git publish, and Deploy remain separate actions.
+**48a (this tree):** `engine.renderMode` (`dynamic` default / `hybrid` / `static`), `StaticSiteCompiler` + `StaticSiteGenerator` write derived HTML under `storage/app/static/` (never `.php`). Jobs `static.rebuild`. Admin `GET/POST /api/admin/static/*` with `static:rebuild`. Auto-compile after content save when mode is hybrid/static. Git publish queue is untouched.
+
+**48b (this tree):** PHP serves allow-listed `index.html` at `GET /static-html/pages/{slug}` and `GET /static-html/blog/{slug}` when `renderMode` is `hybrid` or `static`. Dynamic mode and reserved slugs (`login`, `dashboard`, `api`, …) return 404. `/storage/*` still never serves the compiled tree. Optional nginx snippet `docs/deploy/nginx-static-html.conf` maps `/` and pretty URLs to those endpoints and falls back to the SPA; `/api`, `/admin` first-segments, and `/assets` stay dynamic. Include the snippet only after switching off Classic/dynamic — otherwise every public GET pays an extra PHP 404.
+
+It.48 must keep aligning with the It.58 layout AST, It.69 cache invalidation, and It.70 publish states; Save, Build, Git publish, and Deploy remain separate actions.

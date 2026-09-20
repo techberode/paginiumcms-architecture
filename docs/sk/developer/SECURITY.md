@@ -398,7 +398,7 @@ Release gate zahŕňa:
 
 - Composer/npm lockfile install,
 - SCA audit s verzovanou severity policy,
-- secret scan,
+- secret scan (gitleaks v CI + `scripts/secret-scan.sh` lokálne; ISS-173),
 - review GitHub Actions permissions,
 - pinning alebo kontrolu third-party actions,
 - immutable release commit/tag,

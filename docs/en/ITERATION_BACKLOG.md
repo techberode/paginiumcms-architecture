@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.88` · September 19, 2026  
+> **Snapshot:** `v2.1.0-beta.89` · September 20, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -35,7 +35,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 8 | **It.73** Multi-locale document | 🟡 | ✅ | shipped in `v2.1.0-beta.29` — see [ITERATION_73](ITERATION_73.md) |
 | 9 | **It.74** API keys/JWT | 🟡 | ✅ | shipped in `v2.1.0-beta.30` — see [ITERATION_74](ITERATION_74.md) |
 | 10 | **It.80** SEO, integrations & ops toolkit | 🟡 | ✅ | shipped `beta.39` — see [ITERATION_80](en/ITERATION_80.md) |
-| 11 | **It.58f** Visual page blocks | 🟡 P1 | 🟡 partial | **58f-a–g** shipped; **58f-h** visual canvas ⏳; 58g with It.48 — [ITERATION_58f](ITERATION_58f.md) |
+| 11 | **It.58f** Visual page blocks | 🟡 P1 | 🟡 partial | **58f-a–g** shipped; **58f-h** visual canvas ⏳; 58g shipped with It.48 in `beta.89` — [ITERATION_58f](ITERATION_58f.md) |
 | 12 | **It.81** Editorial workflow & content ops | 🟡 | ✅ | 81a–81f shipped — [ITERATION_81](ITERATION_81.md) |
 | 13 | **It.82** Origin Panel (maintainer cockpit) | 🔵 | ✅ | env-gated; excluded from customer archive — [ITERATION_82](ITERATION_82.md) |
 | 14 | **It.87** Project site planner + UX audit completion | 🟡 P1 | ✅ shipped | [ITERATION_87](ITERATION_87.md) — 87a–87m |
@@ -282,7 +282,7 @@ Deferred (post-M1+ / stretch):
 | **It.58d** layout blocks/polish | ✅ | 58f-a–g ✅; 58g compile with It.48 |
 | **It.81** editorial workflow | ✅ | [ITERATION_81](ITERATION_81.md) — complete (81f snippets) |
 | **It.82** Origin Panel | ✅ | [ITERATION_82](ITERATION_82.md) — shipped `beta.56`; excluded from archive |
-| **It.48** static/dynamic rendering | ⏳ | combine design with It.70 publishing pipeline |
+| **It.48** static/dynamic rendering | ✅ | **48a** compile/cache + **48b** `/static-html` serve in `beta.89` |
 | **It.83** theme runtime + Terminal Breach | ✅ | [ITERATION_83](ITERATION_83.md) — shipped `beta.59` |
 | **It.84** presentation & access expansion | ✅ | [ITERATION_84](ITERATION_84.md) — 84a–84e complete (2026-08-17) |
 | Server metrics agent (remaining It.46) | ⏳ | coordinate with It.71 |

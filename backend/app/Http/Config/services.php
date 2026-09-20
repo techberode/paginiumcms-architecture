@@ -241,8 +241,16 @@ use PaginiumCMS\Http\Controllers\Admin\DashboardController;
 use PaginiumCMS\Http\Controllers\Admin\HealthController;
 use PaginiumCMS\Core\GitHub\Services\GitHubService;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
+use PaginiumCMS\Core\StaticSite\StaticHtmlServer;
+use PaginiumCMS\Core\StaticSite\StaticSiteCompiler;
+use PaginiumCMS\Core\StaticSite\StaticSiteDispatcher;
+use PaginiumCMS\Core\StaticSite\StaticSiteGenerator;
+use PaginiumCMS\Core\StaticSite\StaticSiteSettings;
 use PaginiumCMS\Http\Controllers\Admin\GitHubController;
 use PaginiumCMS\Http\Controllers\Admin\GitPublishController;
+use PaginiumCMS\Http\Controllers\Admin\StaticSiteController;
+use PaginiumCMS\Http\Controllers\PublicApi\StaticHtmlController;
 use PaginiumCMS\Http\Controllers\Admin\MessageController;
 use PaginiumCMS\Modules\Messages\Services\DeskInboxService;
 use PaginiumCMS\Modules\Messages\Services\MessageDeskService;
@@ -527,7 +535,8 @@ return [
             get(SettingsRepositoryInterface::class),
             get(StorageInterface::class),
             get(GitPublishDispatcher::class),
-            get(LocalizedContentWriter::class)
+            get(LocalizedContentWriter::class),
+            get(StaticSiteDispatcher::class)
         ),
     ContentDuplicationService::class => create(ContentDuplicationService::class)
         ->constructor(
@@ -769,6 +778,36 @@ return [
         ->constructor(get(GitPublishService::class), get(JsonResponder::class)),
     GitPublishHandler::class => create(GitPublishHandler::class)
         ->constructor(get(GitPublishService::class)),
+    StaticSiteSettings::class => create(StaticSiteSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    StaticSiteCompiler::class => create(StaticSiteCompiler::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(StaticSiteSettings::class),
+            get(ContentBodyRenderer::class)
+        ),
+    StaticSiteDispatcher::class => create(StaticSiteDispatcher::class)
+        ->constructor(
+            get(StaticSiteSettings::class),
+            get(StaticSiteCompiler::class)
+        ),
+    StaticSiteGenerator::class => create(StaticSiteGenerator::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(StaticSiteSettings::class),
+            get(StaticSiteCompiler::class)
+        ),
+    StaticSiteController::class => create(StaticSiteController::class)
+        ->constructor(get(StaticSiteGenerator::class), get(JsonResponder::class)),
+    StaticHtmlServer::class => create(StaticHtmlServer::class)
+        ->constructor(get(FileReaderInterface::class), get(StaticSiteSettings::class)),
+    StaticHtmlController::class => create(StaticHtmlController::class)
+        ->constructor(get(StaticHtmlServer::class)),
+    StaticRebuildHandler::class => create(StaticRebuildHandler::class)
+        ->constructor(get(StaticSiteGenerator::class)),
 
     TranslationHttpTransport::class => create(TranslationHttpClient::class),
     TranslationSettings::class => create(TranslationSettings::class)

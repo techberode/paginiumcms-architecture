@@ -29,7 +29,7 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=21
+TOTAL_STEPS=22
 CLEANUP_STEP=19
 
 typeset -a FAILED_STEPS
@@ -540,6 +540,9 @@ run_step 20 "PHPUnit XSS/Zip/headers pack" \
 run_step 21 "Security static grep (OutboundUrlGuard hygiene)" \
   './scripts/security-static-grep.sh'
 
+run_step 22 "Secret scan (ISS-173 private-key gate)" \
+  './scripts/secret-scan.sh --self-test && ./scripts/secret-scan.sh'
+
 # ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
@@ -570,6 +573,7 @@ labels=(
   "PHPUnit CodePolicy pack (untrusted + shortcode defs)"
   "PHPUnit XSS/Zip/headers pack"
   "Security static grep (OutboundUrlGuard hygiene)"
+  "Secret scan (ISS-173 private-key gate)"
 )
 
 i=1

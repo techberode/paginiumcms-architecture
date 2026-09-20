@@ -37,4 +37,16 @@ final class AppVersionTest extends TestCase
             AppVersion::VERSION
         );
     }
+
+    public function testPreferNewerDoesNotDowngradeFallback(): void
+    {
+        $this->assertSame('2.1.0-beta.89', AppVersion::preferNewer('2.0.1', '2.1.0-beta.89'));
+        $this->assertSame('2.1.0-beta.90', AppVersion::preferNewer('2.1.0-beta.90', '2.1.0-beta.89'));
+        $this->assertSame('2.1.0-beta.89', AppVersion::preferNewer(null, '2.1.0-beta.89'));
+    }
+
+    public function testCurrentIsNotOlderThanVersionConstant(): void
+    {
+        $this->assertFalse(version_compare(AppVersion::current(), AppVersion::VERSION, '<'));
+    }
 }

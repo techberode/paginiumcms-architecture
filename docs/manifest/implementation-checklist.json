@@ -1,38 +1,60 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-19",
+  "updatedAt": "2026-09-20",
   "description": "Operator checklist mirrored for Origin Panel automation. Progress percent and deploy badges are computed from project-catalog.json + runtime probes.",
   "catalogPath": "docs/manifest/project-catalog.json",
   "releaseReadinessDoc": "docs/en/CHECKLIST.md",
   "issuesRegister": "docs/ISSUES.md",
   "slices": [
     {
-      "id": "slice-2026-09-19-it75-agent",
-      "catalogIterationIds": ["it.75"],
+      "id": "slice-2026-09-20-it48-security",
+      "catalogIterationIds": ["it.48"],
+      "targetVersion": "2.1.0-beta.89",
+      "since": "2.1.0-beta.89",
       "status": "in_progress",
-      "items": [
-        {
-          "id": "75-code",
-          "labelKey": "origin.catalog.it75",
-          "phase": "shipped"
-        },
-        {
-          "id": "75-tag-deploy",
-          "labelKey": "origin.checklist.deploy_production",
-          "phase": "pending"
-        }
-      ]
-    },
-    {
-      "id": "slice-2026-09-19-remaining",
-      "catalogIterationIds": ["it.48", "it.95"],
-      "status": "planned",
+      "issues": ["ISS-173", "ISS-174"],
       "items": [
         {
           "id": "48-static",
           "labelKey": "origin.catalog.it48_static",
-          "phase": "pending"
+          "phase": "shipped"
         },
+        {
+          "id": "48-serve",
+          "labelKey": "origin.catalog.it48_serve",
+          "phase": "shipped"
+        },
+        {
+          "id": "173-gitleaks",
+          "labelKey": "origin.catalog.ops_gitleaks",
+          "phase": "shipped",
+          "issues": ["ISS-173"]
+        },
+        {
+          "id": "174-desk",
+          "labelKey": "origin.catalog.ops_desk_gate",
+          "phase": "shipped",
+          "issues": ["ISS-174"]
+        },
+        {
+          "id": "89-gate",
+          "labelKey": "origin.checklist.gate_green",
+          "phase": "shipped",
+          "verify": "./scripts/iteration-gate.sh"
+        },
+        {
+          "id": "89-tag-deploy",
+          "labelKey": "origin.checklist.deploy_production",
+          "phase": "pending",
+          "dependsOnVersion": "2.1.0-beta.89"
+        }
+      ]
+    },
+    {
+      "id": "slice-2026-09-20-remaining",
+      "catalogIterationIds": ["it.58f", "it.95", "it.69"],
+      "status": "planned",
+      "items": [
         {
           "id": "58f-h-canvas",
           "labelKey": "origin.catalog.it58f_canvas",
@@ -47,6 +69,36 @@
           "id": "93l-2",
           "labelKey": "origin.catalog.it93_canned",
           "phase": "pending"
+        },
+        {
+          "id": "69-redis",
+          "labelKey": "origin.catalog.it69_redis",
+          "phase": "pending"
+        },
+        {
+          "id": "82d-host-metrics",
+          "labelKey": "origin.catalog.it82_host_metrics",
+          "phase": "pending"
+        }
+      ]
+    },
+    {
+      "id": "slice-2026-09-19-it75-agent",
+      "catalogIterationIds": ["it.75"],
+      "targetVersion": "2.1.0-beta.88",
+      "since": "2.1.0-beta.88",
+      "status": "shipped",
+      "items": [
+        {
+          "id": "75-code",
+          "labelKey": "origin.catalog.it75",
+          "phase": "shipped"
+        },
+        {
+          "id": "75-tag-deploy",
+          "labelKey": "origin.checklist.deploy_production",
+          "phase": "pending",
+          "dependsOnVersion": "2.1.0-beta.88"
         }
       ]
     },

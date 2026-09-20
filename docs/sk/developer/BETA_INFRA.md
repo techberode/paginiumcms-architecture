@@ -113,7 +113,7 @@ Odporúčané jobs:
 | Backend | Composer install, PHPUnit, PHPStan L8, syntax, dependency audit |
 | Frontend | `npm ci`, type-check, ESLint, API barrel, Vitest, production build, audit policy |
 | Integration | bootstrap test, HTTP smoke, auth/CSRF/RBAC, storage diagnostics |
-| Security | extension policy packs, traversal/ZIP, SSRF, log sanitization, secret scan |
+| Security | extension policy packs, traversal/ZIP, SSRF, log sanitization, gitleaks + `scripts/secret-scan.sh` (ISS-173) |
 | Docs | Markdown links, code fences, SK/EN path/heading parity pre zmenené docs |
 | Artifact | build, checksum/SBOM podľa release procesu, archive contents check |
 

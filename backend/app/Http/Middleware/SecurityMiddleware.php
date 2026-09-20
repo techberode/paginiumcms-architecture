@@ -101,7 +101,12 @@ final class SecurityMiddleware implements MiddlewareInterface
             $this->config['csp_base_uri'],
             $this->config['csp_form_action'],
         ]);
-        $response = $response->withHeader('Content-Security-Policy', $csp);
+        $path = $request->getUri()->getPath();
+        $preserveCompiledHtmlCsp = str_starts_with($path, '/static-html/')
+            && $response->hasHeader('Content-Security-Policy');
+        if (!$preserveCompiledHtmlCsp) {
+            $response = $response->withHeader('Content-Security-Policy', $csp);
+        }
 
         // Ďalšie hlavičky
         $response = $response

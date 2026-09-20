@@ -75,7 +75,8 @@ final class ProjectCatalogMergeServiceTest extends TestCase
         $this->assertLessThan(100, $byId['it.58f']['percentComplete'] ?? 100);
         $this->assertSame('partial', $byId['it.58f']['phase'] ?? '');
         $this->assertSame(100, $byId['it.75']['percentComplete'] ?? 0);
-        $this->assertSame(0, $byId['it.48']['percentComplete'] ?? 1);
+        $this->assertSame(100, $byId['it.48']['percentComplete'] ?? 0);
+        $this->assertSame('shipped', $byId['it.48']['phase'] ?? '');
 
         $checklist87 = null;
         foreach ($merged['checklist']['slices'] as $slice) {
@@ -87,14 +88,16 @@ final class ProjectCatalogMergeServiceTest extends TestCase
         $this->assertIsArray($checklist87);
         $this->assertSame(100, $checklist87['percentComplete']);
 
-        $this->assertSame('2026-09-19', $merged['snapshot']['asOf'] ?? '');
-        $this->assertSame('2.1.0-beta.88', $merged['snapshot']['latestTag'] ?? '');
-        $this->assertSame('State as of 19 September 2026', $merged['snapshot']['headlineLabel'] ?? '');
+        $this->assertSame('2026-09-20', $merged['snapshot']['asOf'] ?? '');
+        $this->assertSame('2.1.0-beta.89', $merged['snapshot']['latestTag'] ?? '');
+        $this->assertSame('State as of 20 September 2026', $merged['snapshot']['headlineLabel'] ?? '');
         $this->assertCount(3, $merged['snapshot']['groups'] ?? []);
         $this->assertSame('On the latest production tag', $merged['snapshot']['groups'][0]['titleLabel'] ?? '');
         $this->assertNotSame('', $merged['snapshot']['groups'][0]['items'][0]['titleLabel'] ?? '');
-        $this->assertArrayHasKey('ops.2026-09-19', $byId);
-        $this->assertLessThan(100, $byId['ops.2026-09-19']['percentComplete'] ?? 100);
+        $this->assertArrayHasKey('ops.2026-09-20', $byId);
+        $this->assertLessThan(100, $byId['ops.2026-09-20']['percentComplete'] ?? 100);
+        $this->assertSame(50, $byId['it.69']['percentComplete'] ?? 0);
+        $this->assertSame('partial', $byId['it.69']['phase'] ?? '');
         $this->assertSame($merged['progress']['total'], $merged['progress']['shipped'] + $merged['progress']['partial'] + $merged['progress']['planned']);
     }
 }

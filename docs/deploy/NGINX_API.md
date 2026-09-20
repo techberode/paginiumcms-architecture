@@ -13,8 +13,11 @@ browser
   ├─ /, /assets/*, /.well-known/security.txt → host nginx → frontend/dist
   ├─ /api/*                                 → host nginx → Docker nginx/PHP API
   ├─ /storage/*                             → PHP-controlled storage route
-  └─ /feed.xml, /sitemap.xml, /robots.txt   → public PHP endpoints
+  ├─ /feed.xml, /sitemap.xml, /robots.txt   → public PHP endpoints
+  └─ /static-html/* (optional It.48b)       → compiled HTML when renderMode is hybrid/static
 ```
+
+Pretty public URLs (`/`, `/about`, `/blog/{slug}`) stay on the SPA unless the operator includes [nginx-static-html.conf](nginx-static-html.conf). That snippet proxies those paths to `/static-html/…` and falls back to `index.html` on 404. Do not enable it in Classic/dynamic mode.
 
 The key principle is **same-origin**. The public frontend and API use the same scheme, host, and port. This reduces CORS complexity and preserves the session/CSRF model.
 

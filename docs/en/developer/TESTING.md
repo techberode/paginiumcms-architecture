@@ -178,7 +178,7 @@ CI is independent evidence from a clean checkout. Minimum jobs:
 | Backend | Composer install from lockfile, PHPUnit, PHPStan L8, syntax, audit |
 | Frontend | `npm ci`, type-check, lint, API barrel, Vitest, production build, audit |
 | Integration | bootstrap, HTTP contract, auth/CSRF/RBAC, storage diagnostics |
-| Security | SSRF, traversal/ZIP, CodePolicy, XSS/rendering, log sanitization, secret scan |
+| Security | SSRF, traversal/ZIP, CodePolicy, XSS/rendering, log sanitization, gitleaks + `scripts/secret-scan.sh` (ISS-173) |
 | Docs | links, front matter, code fences, and SK/EN parity for changed documents |
 | Artifact | build, archive contents, SHA-256, and optional SBOM/signing evidence |
 

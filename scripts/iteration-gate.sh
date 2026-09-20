@@ -22,6 +22,14 @@ echo "=== PaginiumCMS iteration gate ==="
 echo "Root: $ROOT"
 echo
 
+# 0) Secret scan (ISS-173) — fail before expensive PHPStan if a key is in the tree
+echo "--- Secret scan ---"
+if ./scripts/secret-scan.sh; then
+  ok "No private-key material in the working tree"
+else
+  fail "Secret scan failed — remove the key, rotate if it was pushed, never commit it"
+fi
+
 # 1) PHP syntax (changed app files or full backend/app if no git)
 echo "--- PHP syntax (php -l) ---"
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then

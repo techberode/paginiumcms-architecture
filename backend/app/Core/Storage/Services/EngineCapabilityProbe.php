@@ -67,6 +67,10 @@ final class EngineCapabilityProbe
                     'status' => ($engineSettings['schemaValidationEnabled'] ?? true) ? 'available' : 'disabled',
                     'message' => 'JSON Schema validation for admin documents.',
                 ],
+                'staticCompile' => [
+                    'status' => 'available',
+                    'message' => 'It.48 compile writes derived HTML under storage/app/static/. hybrid/static also serve it at /static-html/{pages|blog}/{slug}.',
+                ],
             ],
         ];
     }

@@ -181,6 +181,22 @@ export const settingsSk: MessageTree = {
     "gitPublishConfirmBody": "Vytvoriť jeden release commit pre :count zaradených súborov. SSOT je už uložené.",
     "gitPublishConfirmAction": "Vytvoriť release commit",
     "gitPublishImmediateHint": "Stratégia immediate commituje pri každom uložení. Pre dávku prepnite na queued.",
+    "staticRebuildTitle": "Statický compile (It.48)",
+    "staticRebuildIntro": "Zapisuje odvodené HTML do storage/app/static/. Markdown/JSON ostáva zdrojom pravdy. hybrid/static ho aj servírujú na /static-html/{pages|blog}/{slug}. /admin a /api ostávajú dynamické.",
+    "staticRebuildMode": "Režim renderu",
+    "staticRebuildCounts": "Skompilované stránky / články",
+    "staticRebuildPublic": "Verejné HTML",
+    "staticRebuildPublicOn": "Zapnuté — {prefix}/pages/<slug> a {prefix}/blog/<slug>",
+    "staticRebuildPublicOff": "Vypnuté (dynamic — len SPA + API)",
+    "staticRebuildRun": "Rebuild statického stromu",
+    "staticRebuildWorking": "Kompilujem…",
+    "staticRebuildLoading": "Načítavam stav statického compile…",
+    "staticRebuildLoadFailed": "Stav statického compile sa nepodarilo načítať.",
+    "staticRebuildSuccess": "Statický strom je znovu zostavený.",
+    "staticRebuildFailed": "Statický rebuild zlyhal. Dokumenty v CMS ostávajú nezmenené.",
+    "staticRebuildConfirmTitle": "Znovu zostaviť statické HTML?",
+    "staticRebuildConfirmBody": "Skompilovať každú publikovanú stránku a článok do storage/app/static/. Git sa nepushne a živé SPA sa nemení.",
+    "staticRebuildConfirmAction": "Rebuild statického stromu",
     "gitProbeStrategy": "Nastavená stratégia",
     "performanceGuardTitle": "Performance Guard (APM)",
     "performanceGuardIntro": "Meranie latencie a I/O v rámci requestu. Predvolene vypnuté — budgety nastavte podľa vlastného hardvéru. Nenahrádza metriky hostiteľa.",
@@ -1086,6 +1102,11 @@ export const settingsSk: MessageTree = {
         "label": "HTTP ETag / Last-Modified",
         "help": "Podmienené requesty na bezpečných verejných GET endpointoch (napr. /api/settings/public).",
         "tooltip": "Klient môže poslať If-None-Match / If-Modified-Since a dostať 304 bez tela. Znižuje traffic pre verejné nastavenia."
+      },
+      "renderMode": {
+        "label": "Režim verejného renderu",
+        "help": "dynamic = len React SPA + API. hybrid/static skompilujú publikované HTML do storage/app/static/ a servírujú ho na /static-html/{pages|blog}/{slug}. Pretty URL zapne nginx snippet.",
+        "tooltip": "Uložiť, Build a Git publish ostávajú oddelené. /admin a /api ostávajú dynamické. Chýbajúce HTML vráti 404, aby nginx mohol spadnúť na SPA."
       },
       "gitEnabled": {
         "label": "Povoliť Git publish distribúciu",
@@ -2004,6 +2025,11 @@ export const settingsSk: MessageTree = {
     "queryIndexDriver": {
       "json": "JSON (content.json)",
       "sqlite": "SQLite (odvodený)"
+    },
+    "renderMode": {
+      "dynamic": "Dynamický (SPA)",
+      "hybrid": "Hybrid (SPA + compile)",
+      "static": "Statický compile"
     },
     "gitPublishStrategy": {
       "disabled": "Vypnuté",

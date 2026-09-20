@@ -131,4 +131,15 @@ final class StaffDirectoryControllerTest extends TestCase
         $this->assertSame('staff-chat', $match['channel'] ?? null);
         $this->assertSame($user->getId(), $match['staffUserId'] ?? null);
     }
+
+    public function testAdminMessagesRejectsPlainUserRole(): void
+    {
+        $registered = $this->createTestUser(
+            'desk-user-' . uniqid('', true) . '@example.com'
+        );
+        $this->loginTestUser($registered['email'], $registered['password']);
+
+        $response = $this->handleRequest($this->createJsonRequest('GET', '/api/admin/messages'));
+        $this->assertSame(403, $response->getStatusCode());
+    }
 }

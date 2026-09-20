@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 17 September 2026 · register **ISS-001–ISS-172** · security audit follow-up (ISS-170–172)
+> **Last updated:** 20 September 2026 · register **ISS-001–ISS-174** · ISS-173/174 shipped in **2.1.0-beta.89**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -195,6 +195,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-170](#iss-170) | Missing `APP_KEY` silently stored secrets as plaintext | **High (security)** | ✅ Fixed · **[Unreleased]** |
 | [ISS-171](#iss-171) | Mail HTML loaded remote tracking pixels by default | Medium (privacy) | ✅ Fixed · **[Unreleased]** |
 | [ISS-172](#iss-172) | Public `GET /api/test` probe + dead Auth controller file | Low (hygiene) | ✅ Fixed · **[Unreleased]** |
+| [ISS-173](#iss-173) | Unencrypted GitHub deploy private key committed then deleted from HEAD only | Critical | ✅ Revoked + rotated + history rewritten · CI gitleaks · **2.1.0-beta.89** |
+| [ISS-174](#iss-174) | `/api/admin/messages` allowed any authenticated USER (no role gate) | Low (hygiene) | ✅ Fixed · **2.1.0-beta.89** |
 
 ## CI failures (GitHub Actions)
 
@@ -5342,6 +5344,76 @@ Sanitizer blocked active content (scripts, `on*=`, dangerous URIs) but treated r
 ### Verification
 
 - `ApplicationFlowTest` · `./scripts/iteration-gate.sh`
+
+---
+
+<a id="iss-173"></a>
+
+## ISS-173 – GitHub deploy private key committed to the public repository
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Critical |
+| **Status** | ✅ Key revoked and rotated on the host; files purged from rewritten `main` and tags `v2.1.0-beta.86`–`.88`; CI gitleaks + local secret-scan added |
+| **Area** | Git / deploy key · System Update · CI |
+| **Related** | old SHAs `cbc167fa` / `29f9a01b` (removed from rewritten `main`) · new `main` `3822f79e` |
+
+### Symptom
+
+An unencrypted ed25519 SSH **private** key used as a GitHub deploy key was pushed to the public repo (`paginiumcms` + `paginiumcms.pub`). Deleting the files in a follow-up commit does **not** remove them from git history. The key bypasses CMS 2FA/RBAC and can `git push` if it was a write deploy key.
+
+### Immediate response (done 2026-09-19)
+
+1. Deleted the leaked deploy key on GitHub (comment `admin@techberode.com`).
+2. Generated a new host key at `/var/lib/paginiumcms/secrets/github_deploy_key` — never committed.
+3. `git filter-repo --path paginiumcms --path paginiumcms.pub --invert-paths` and force-push: `main` `76a58ec7` → `3822f79e`; tags `.86`–`.88` moved.
+4. GitHub object cache / secret-scanning alerts may still show the old blob until GitHub GC. The live key is rotated.
+
+### Prevention
+
+- CI job **Secret scan (gitleaks)** in `.github/workflows/ci.yml` (gitleaks 8.30.1, checksum-verified, PEM/OpenSSH rules only) fails on a key in the checkout or in commits added by the push/PR.
+- Local gate: `scripts/secret-scan.sh` (iteration-gate, `run-all-tests.zsh`, optional `git config core.hooksPath .githooks`).
+- Files stay gitignored: `/paginiumcms`, `/paginiumcms.pub`, `**/github_deploy_key`.
+
+### Verification
+
+- Rewritten remote: `git log --all -- paginiumcms paginiumcms.pub` is empty.
+- `./scripts/secret-scan.sh --self-test` and `./scripts/secret-scan.sh` exit 0 on a clean tree.
+- Existing clones must re-fetch the rewritten `main`. Do not force-push an old local `main`.
+
+---
+
+<a id="iss-174"></a>
+
+## ISS-174 – Admin message desk reachable by USER role
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (hygiene / attack surface) |
+| **Status** | ✅ Fixed · **2.1.0-beta.89** |
+| **Area** | It.93o desk · AuthZ |
+| **Related** | audit remainder 2026-09-19 (It.70 / It.93o / It.96) |
+
+### Symptom
+
+`/api/admin/messages` was wrapped in `AuthMiddleware` + 2FA only. A logged-in `USER` (including an It.93o external-team member) could call the desk API. `MessageDeskService::canSee()` still hid other people’s threads, so this was not a cross-tenant read, but it violated the mutating `/api/*` baseline (role/permission on the route) and let a USER probe the admin inbox shape.
+
+### Resolution
+
+`RoleMiddleware(['EDITOR', 'ADMIN', 'SUPER_ADMIN'])` on the messages group. External team chat stays on `/api/team-chat` (membership ACL). Routing/bulk/delete remain admin-only inside the controller.
+
+### Verification
+
+- `StaffDirectoryControllerTest::testAdminMessagesRejectsPlainUserRole`
+- Admin/editor desk tests still 200
+
+### Audit remainder (It.70 / It.93o / It.96)
+
+No critical or high findings. It.70: token is `password` + `engine` SUPER_ADMIN-only; publish is `git:publish` + 2FA; `OutboundUrlGuard`; `api.github.com` host fixed; paths `pages/`/`blog/` only; local git is `proc_open` argv. It.93o public staff is opt-in, honeypot + rate-limit; team-chat files are download-only with ID allow-list. It.96 documents use a MIME allow-list (no legacy OLE), dedicated upload surface, public/admin serve as `attachment` (PDF admin preview + CSP sandbox only).
 
 ---
 

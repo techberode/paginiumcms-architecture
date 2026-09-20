@@ -20,6 +20,8 @@ use PaginiumCMS\Modules\Origin\Probes\ScheduledPublishFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ShortcodesFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\SnippetLibraryFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\StaleContentFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\StaticHtmlServeFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\StaticSiteFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ThemePackagesFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ThemeRuntimeFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\UntrustedSurfacesFeatureProbe;
@@ -49,6 +51,8 @@ final class FeatureProbeRegistry
             new AdminCommandPaletteFeatureProbe($support),
             new ArticlePrintFeatureProbe($support),
             new BulkSelectionUxFeatureProbe($support),
+            new StaticSiteFeatureProbe($support),
+            new StaticHtmlServeFeatureProbe($support),
         ];
     }
 

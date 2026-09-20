@@ -136,7 +136,7 @@ Git may be a distribution or replication layer, but deployment documentation mus
 | `engine.git.publishStrategy` | `immediate` \| `queued` | It.70 |
 | `engine.git.remote` | URL or named remote | It.70 |
 | `engine.git.branch` | branch name | It.70 |
-| `site.renderMode` | `dynamic` \| `static` \| `hybrid` | It.48 |
+| `engine.renderMode` | `dynamic` \| `static` \| `hybrid` | It.48 (key lives on the engine group; Classic default `dynamic`; hybrid/static also serve `/static-html`) |
 | `engine.performanceGuard.enabled` | `true` \| `false` | It.71 |
 
 Defaults must preserve Classic behavior through safe `??` fallbacks when keys are absent.
@@ -167,6 +167,7 @@ Differences are primarily in:
 - an optional Redis sidecar,
 - the Git worker,
 - build hooks and static output.
+- optional include of [nginx-static-html.conf](../../deploy/nginx-static-html.conf) when `engine.renderMode` is `hybrid` or `static` (pretty URLs → PHP `/static-html`, 404 → SPA). Leave it out in Classic/dynamic.
 
 See [../deploy/DEPLOY.md](../deploy/DEPLOY.md) for details.
 

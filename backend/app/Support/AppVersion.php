@@ -13,14 +13,14 @@ namespace PaginiumCMS\Support;
 final class AppVersion
 {
     /** Fallback when git tag cannot be resolved (e.g. exported tarball, CI without tags). */
-    public const VERSION = '2.1.0-beta.88';
+    public const VERSION = '2.1.0-beta.89';
 
     private static ?string $resolved = null;
 
     public static function current(): string
     {
         if (self::$resolved === null) {
-            self::$resolved = self::resolveFromGit() ?? self::VERSION;
+            self::$resolved = self::preferNewer(self::resolveFromGit(), self::VERSION);
         }
 
         return self::$resolved;
@@ -53,6 +53,19 @@ final class AppVersion
         }
 
         return $matches[1];
+    }
+
+    /**
+     * After a history rewrite, the nearest reachable tag can be an old annotated
+     * tag (e.g. v2.0.1) while VERSION already names the current beta. Never go backwards.
+     */
+    public static function preferNewer(?string $fromGit, string $fallback): string
+    {
+        if ($fromGit === null || $fromGit === '') {
+            return $fallback;
+        }
+
+        return version_compare($fromGit, $fallback, '<') ? $fallback : $fromGit;
     }
 
     private static function resolveFromGit(): ?string

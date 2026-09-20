@@ -16,6 +16,7 @@ use PaginiumCMS\Core\FlatFile\Models\Page;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Exception\FileNotFoundException;
 use PaginiumCMS\Core\Git\Services\GitPublishDispatcher;
+use PaginiumCMS\Core\StaticSite\StaticSiteDispatcher;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
@@ -46,6 +47,7 @@ class ContentRepository implements ContentRepositoryInterface
         private StorageInterface $storageLayer,
         private GitPublishDispatcher $gitPublishDispatcher,
         private LocalizedContentWriter $localizedWriter,
+        private ?StaticSiteDispatcher $staticSiteDispatcher = null,
     ) {
     }
 
@@ -255,6 +257,12 @@ class ContentRepository implements ContentRepositoryInterface
             // SSOT write succeeded; Git distribution failures are handled separately.
         }
 
+        try {
+            $this->staticSiteDispatcher?->afterContentStored($content);
+        } catch (\Throwable) {
+            // Derived static compile must not roll back SSOT.
+        }
+
         $info = $this->reader->getInfo($path);
         $content->setSize($info['size']);
         $content->setModifiedAt($info['mtime']);
@@ -279,6 +287,12 @@ class ContentRepository implements ContentRepositoryInterface
 
         $this->writer->delete($path, !$permanent);
         $this->index->remove($type, $slug);
+
+        try {
+            $this->staticSiteDispatcher?->afterContentDeleted($content);
+        } catch (\Throwable) {
+            // SSOT delete already succeeded.
+        }
     }
 
     /**

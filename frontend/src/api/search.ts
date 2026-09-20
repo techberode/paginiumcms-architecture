@@ -14,7 +14,7 @@ export interface SearchResultItem {
   subtitle?: string;
 }
 
-export type AdminSearchResultType = 'page' | 'article' | 'media' | 'route';
+export type AdminSearchResultType = 'page' | 'article' | 'media' | 'route' | 'setting' | 'help';
 
 export interface AdminSearchResultItem {
   type: AdminSearchResultType;

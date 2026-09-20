@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Admin\MessageController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use PaginiumCMS\Http\Support\RouteBootstrap;
@@ -14,6 +16,7 @@ return function (App $app): void {
     $controller = $container->get(MessageController::class);
     $auth = $container->get(AuthMiddleware::class);
     $twoFactor = $container->get(TwoFactorMiddleware::class);
+    $authz = $container->get(AuthorizationInterface::class);
 
     $app->group('/api/admin/messages', function (RouteCollectorProxy $group) use ($controller): void {
         $group->get('', [$controller, 'listMessages']);
@@ -25,5 +28,8 @@ return function (App $app): void {
         $group->post('/{id}/replies', [$controller, 'reply']);
         $group->patch('/{id}', [$controller, 'updateMessage']);
         $group->delete('/{id}', [$controller, 'deleteMessage']);
-    })->add($twoFactor)->add($auth);
+    })
+        ->add(new RoleMiddleware($authz, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
+        ->add($twoFactor)
+        ->add($auth);
 };

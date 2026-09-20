@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# ISS-173 — fail the commit if a private key is staged or sitting in the tree.
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+exec "$ROOT/scripts/secret-scan.sh"

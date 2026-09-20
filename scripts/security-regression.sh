@@ -33,6 +33,10 @@ vendor/bin/phpunit --colors=always \
 echo "=== Static outbound hygiene ==="
 ./scripts/security-static-grep.sh
 
+echo "=== Secret scan (ISS-173) ==="
+./scripts/secret-scan.sh --self-test
+./scripts/secret-scan.sh
+
 echo "=== FE security vitest ==="
 (cd frontend && npm run test:security)
 

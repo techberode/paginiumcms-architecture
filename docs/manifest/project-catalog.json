@@ -1,16 +1,19 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-19",
+  "updatedAt": "2026-09-20",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "snapshot": {
-    "asOf": "2026-09-19",
-    "latestTag": "2.1.0-beta.88",
+    "asOf": "2026-09-20",
+    "latestTag": "2.1.0-beta.89",
     "headlineKey": "origin.snapshot.headline",
     "groups": [
       {
         "id": "live",
         "titleKey": "origin.snapshot.live",
         "items": [
+          { "titleKey": "origin.catalog.it48", "noteKey": "origin.snapshot.note_beta89" },
+          { "titleKey": "origin.catalog.ops_gitleaks", "noteKey": "origin.snapshot.note_beta89" },
+          { "titleKey": "origin.catalog.ops_desk_gate", "noteKey": "origin.snapshot.note_beta89" },
           { "titleKey": "origin.catalog.it75", "noteKey": "origin.snapshot.note_beta88" },
           { "titleKey": "origin.catalog.ops_phone", "noteKey": "origin.snapshot.note_beta88" },
           { "titleKey": "origin.catalog.ops_smtp_reply", "noteKey": "origin.snapshot.note_beta88" },
@@ -39,19 +42,35 @@
         "id": "next",
         "titleKey": "origin.snapshot.next",
         "items": [
-          { "titleKey": "origin.catalog.it48", "noteKey": "origin.snapshot.note_next" },
           { "titleKey": "origin.catalog.it58f_canvas", "noteKey": "origin.snapshot.note_next" },
           { "titleKey": "origin.catalog.it95", "noteKey": "origin.snapshot.note_next" },
-          { "titleKey": "origin.catalog.it93_canned", "noteKey": "origin.snapshot.note_next" }
+          { "titleKey": "origin.catalog.it93_canned", "noteKey": "origin.snapshot.note_next" },
+          { "titleKey": "origin.catalog.it69_redis", "noteKey": "origin.snapshot.note_next" },
+          { "titleKey": "origin.catalog.it82_host_metrics", "noteKey": "origin.snapshot.note_next" }
         ]
       }
     ]
   },
   "iterations": [
     {
-      "id": "ops.2026-09-19",
+      "id": "ops.2026-09-20",
       "titleKey": "origin.catalog.ops_today",
       "phase": "partial",
+      "doc": "CHANGELOG.md",
+      "priority": "high",
+      "items": [
+        { "id": "ops-it48", "titleKey": "origin.catalog.it48", "phase": "shipped", "weight": 1 },
+        { "id": "ops-gitleaks", "titleKey": "origin.catalog.ops_gitleaks", "phase": "shipped", "weight": 1 },
+        { "id": "ops-desk-gate", "titleKey": "origin.catalog.ops_desk_gate", "phase": "shipped", "weight": 1 },
+        { "id": "ops-tag", "titleKey": "origin.catalog.ops_tag_deploy", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
+    {
+      "id": "ops.2026-09-19",
+      "titleKey": "origin.catalog.ops_beta88",
+      "phase": "shipped",
+      "since": "2.1.0-beta.88",
       "doc": "CHANGELOG.md",
       "priority": "high",
       "items": [
@@ -60,10 +79,11 @@
         { "id": "ops-smtp", "titleKey": "origin.catalog.ops_smtp_reply", "phase": "shipped", "weight": 1 },
         { "id": "ops-discuss", "titleKey": "origin.catalog.ops_discussion", "phase": "shipped", "weight": 1 },
         { "id": "ops-desk", "titleKey": "origin.catalog.ops_desk_harden", "phase": "shipped", "weight": 1 },
-        { "id": "ops-deploykey", "titleKey": "origin.catalog.ops_deploy_key", "phase": "shipped", "weight": 1 },
-        { "id": "ops-tag", "titleKey": "origin.catalog.ops_tag_deploy", "phase": "planned", "weight": 1 }
+        { "id": "ops-deploykey", "titleKey": "origin.catalog.ops_deploy_key", "phase": "shipped", "weight": 1 }
       ],
-      "history": []
+      "history": [
+        { "version": "2.1.0-beta.88", "date": "2026-09-19", "summaryKey": "origin.timeline.it75" }
+      ]
     },
     {
       "id": "it.75",
@@ -181,13 +201,32 @@
     {
       "id": "it.48",
       "titleKey": "origin.catalog.it48",
-      "phase": "planned",
+      "phase": "shipped",
+      "since": "2.1.0-beta.89",
       "doc": "docs/en/ITERATION_48.md",
       "priority": "high",
       "items": [
-        { "id": "48a", "titleKey": "origin.catalog.it48_static", "phase": "planned", "weight": 1 }
+        { "id": "48a", "titleKey": "origin.catalog.it48_static", "phase": "shipped", "weight": 1 },
+        { "id": "48b", "titleKey": "origin.catalog.it48_serve", "phase": "shipped", "weight": 1 }
       ],
-      "history": []
+      "history": [
+        { "version": "2.1.0-beta.89", "date": "2026-09-20", "summaryKey": "origin.timeline.it48" }
+      ]
+    },
+    {
+      "id": "it.69",
+      "titleKey": "origin.catalog.it69",
+      "phase": "partial",
+      "since": "2.1.0-beta.26",
+      "doc": "docs/en/ITERATION_69.md",
+      "priority": "medium",
+      "items": [
+        { "id": "69a", "titleKey": "origin.catalog.it69_cache", "phase": "shipped", "weight": 1 },
+        { "id": "69b", "titleKey": "origin.catalog.it69_redis", "phase": "planned", "weight": 1 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.26", "date": "2026-08-03", "summaryKey": "origin.timeline.it69" }
+      ]
     },
     {
       "id": "it.95",
@@ -251,7 +290,7 @@
     {
       "id": "it.58f",
       "titleKey": "origin.catalog.it58f",
-      "phase": "shipped",
+      "phase": "partial",
       "doc": "docs/en/ITERATION_58f.md",
       "priority": "high",
       "items": [

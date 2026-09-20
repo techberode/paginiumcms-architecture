@@ -178,7 +178,7 @@ CI je nezávislý dôkaz z čistého checkoutu. Minimálne jobs:
 | Backend | Composer install z lockfile, PHPUnit, PHPStan L8, syntax, audit |
 | Frontend | `npm ci`, type-check, lint, API barrel, Vitest, produkčný build, audit |
 | Integration | bootstrap, HTTP contract, auth/CSRF/RBAC, storage diagnose |
-| Security | SSRF, traversal/ZIP, CodePolicy, XSS/rendering, log sanitization, secret scan |
+| Security | SSRF, traversal/ZIP, CodePolicy, XSS/rendering, log sanitization, gitleaks + `scripts/secret-scan.sh` (ISS-173) |
 | Docs | odkazy, front matter, code fences a SK/EN parita zmenených dokumentov |
 | Artifact | zostavenie, obsah archívu, SHA-256 a voliteľný SBOM/signing dôkaz |
 

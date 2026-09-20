@@ -4,6 +4,7 @@ import { useToast } from '../../hooks/useToast';
 import type { EngineSettingsMeta } from '../../api/settings';
 import { activateQueryIndexDriver, rebuildQueryIndex } from '../../api/queryIndex';
 import { GitPublishPanel } from './GitPublishPanel';
+import { StaticRebuildPanel } from './StaticRebuildPanel';
 
 interface Props {
   meta: EngineSettingsMeta | null;
@@ -198,6 +199,7 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta, onRefresh }) => {
       ) : null}
 
       <GitPublishPanel />
+      <StaticRebuildPanel />
 
       <h5 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
         {t('settings.engine.performanceGuardTitle')}
