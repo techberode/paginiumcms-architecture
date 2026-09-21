@@ -3,13 +3,15 @@
 declare(strict_types=1);
 
 /**
- * Support Kanban (It.93l). Auto-discovered from bootstrap/app.php.
+ * Support Kanban (It.93l / 93l-2). Auto-discovered from bootstrap/app.php.
  *
  *  - GET    /api/admin/support-kanban
  *  - PUT    /api/admin/support-kanban/board
+ *  - PUT    /api/admin/support-kanban/canned
  *  - POST   /api/admin/support-kanban/tickets
  *  - PUT    /api/admin/support-kanban/tickets/{id}
  *  - DELETE /api/admin/support-kanban/tickets/{id}
+ *  - POST   /api/admin/support-kanban/tickets/{id}/notes
  */
 
 use PaginiumCMS\Http\Controllers\Admin\SupportKanbanController;
@@ -30,9 +32,11 @@ return function (App $app): void {
 
         $group->get('', [$controller, 'index']);
         $group->put('/board', [$controller, 'saveBoard']);
+        $group->put('/canned', [$controller, 'saveCanned']);
         $group->post('/tickets', [$controller, 'storeTicket']);
         $group->put('/tickets/{id}', [$controller, 'updateTicket']);
         $group->delete('/tickets/{id}', [$controller, 'destroyTicket']);
+        $group->post('/tickets/{id}/notes', [$controller, 'addNote']);
     })
         ->add(new PermissionMiddleware($authz, 'support-ticket:manage'))
         ->add($container->get(TwoFactorMiddleware::class))

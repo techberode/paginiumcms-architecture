@@ -465,6 +465,7 @@ The admin `/playground` route is **off by default**. SUPER_ADMIN enables it in S
 - Enabling adds CodeSandbox bundler hosts to **admin CSP** (`connect-src` / `frame-src`). Public pages stay fail-closed until that setting is on.
 - Preview code never runs in PHP. Do **not** `npm install` user URLs inside the PHP container.
 - Optional org packages belong at **frontend build** (`npm ci` with a deploy token), not at runtime.
+- Private design-system **Git import** (It.95d) is an explicit SUPER_ADMIN action (`POST /api/admin/playground/import-git`). It fetches a zipball through `OutboundUrlGuard`, rejects Zip-Slip and PHP, and scans with `CodePolicyEngine`. There is **no** auto-update cron.
 - `DEMO_MODE` keeps the playground off.
 
 ## 17. Related documents

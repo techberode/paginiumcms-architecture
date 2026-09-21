@@ -79,11 +79,11 @@ final class PublishedStaffDirectory
 
             $members = $team['memberUserIds'] ?? [];
 
-            return $this->cardsForMemberIds(is_array($members) ? array_values($members) : []);
+            return $this->cardsForMemberIds($this->memberIdList(is_array($members) ? $members : []));
         }
 
         if (in_array($type, ['editorial', 'ops', 'custom'], true) && $this->teams !== null) {
-            return $this->cardsForMemberIds($this->teams->memberIdsForType($type));
+            return $this->cardsForMemberIds($this->memberIdList($this->teams->memberIdsForType($type)));
         }
 
         $lists = $this->publicLists();
@@ -201,16 +201,29 @@ final class PublishedStaffDirectory
     }
 
     /**
-     * @param list<mixed> $memberIds
+     * @param array<mixed> $raw
+     * @return list<string>
+     */
+    private function memberIdList(array $raw): array
+    {
+        $out = [];
+        foreach ($raw as $memberId) {
+            if (is_string($memberId) && $memberId !== '') {
+                $out[] = $memberId;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param list<string> $memberIds
      * @return list<array<string, mixed>>
      */
     private function cardsForMemberIds(array $memberIds): array
     {
         $cards = [];
         foreach ($memberIds as $memberId) {
-            if (!is_string($memberId) || $memberId === '') {
-                continue;
-            }
             $user = $this->users->findById($memberId);
             if (!$user instanceof User || !$this->isListed($user)) {
                 continue;

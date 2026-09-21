@@ -9,6 +9,7 @@ import { useAdminNavModel } from '../../hooks/useAdminNavModel';
 import type { AdminNavItemDef } from '../../config/adminNavTypes';
 import { SiteLogo } from '../branding/SiteLogo';
 import { DeskNotificationBeacon } from './DeskNotificationBeacon';
+import { TeamChatNotificationBeacon } from './TeamChatNotificationBeacon';
 import { ADMIN_NAV_ACTIVE, ADMIN_NAV_IDLE } from '../../theme/adminUiClasses';
 
 interface AdminSidebarProps {
@@ -132,6 +133,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 </div>
               </div>
             </button>
+            <TeamChatNotificationBeacon variant="sidebar" />
             <DeskNotificationBeacon variant="sidebar" />
           </div>
         )}

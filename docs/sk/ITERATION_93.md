@@ -1,6 +1,6 @@
 # Iterácia 93 — Admin chrome + denné aplikácie
 
-> **Stav:** ✅ hotové (Wave 1–5 v strome; **93l-2** interné poznámky / SLA ostáva listed remainder)  
+> **Stav:** ✅ hotové (Wave 1–5 v strome, vrátane **93l-2** interné poznámky / SLA)
 > **Kanónická špecifikácia (EN):** [../en/ITERATION_93.md](../en/ITERATION_93.md)
 
 Pôvodná It.93 (izolovaný origin) je **zrušená**. Archív: [ISOLATED_ORIGIN.md](../en/architecture/ISOLATED_ORIGIN.md).

@@ -16,7 +16,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Admin CRUD for teams (It.93k). ADMIN+ via RoleMiddleware.
+ * Admin teams (It.93k). Read: ADMIN+; create/update/delete (incl. members): SUPER_ADMIN only.
  */
 final class TeamController
 {
@@ -66,6 +66,9 @@ final class TeamController
 
     public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if ($deny = $this->denyUnlessSuperAdmin($request, $response)) {
+            return $deny;
+        }
         $body = RequestJsonBody::decode($request) ?? [];
         $name = is_string($body['name'] ?? null) ? $body['name'] : '';
         $type = is_string($body['type'] ?? null) ? $body['type'] : TeamRepository::TYPE_CUSTOM;
@@ -83,6 +86,26 @@ final class TeamController
             if (array_key_exists('color', $body)) {
                 $extras['color'] = is_string($body['color']) ? $body['color'] : '';
             }
+            if (array_key_exists('chatEnabled', $body)) {
+                $extras['chatEnabled'] = (bool) $body['chatEnabled'];
+            }
+            if (array_key_exists('kanbanEnabled', $body)) {
+                $extras['kanbanEnabled'] = (bool) $body['kanbanEnabled'];
+            }
+            if (array_key_exists('teamChatEnabled', $body)) {
+                $extras['teamChatEnabled'] = (bool) $body['teamChatEnabled'];
+            }
+            if (array_key_exists('teamChatShareEnabled', $body)) {
+                $extras['teamChatShareEnabled'] = (bool) $body['teamChatShareEnabled'];
+            }
+            if (array_key_exists('teamChatShareWithTeamIds', $body)) {
+                $extras['teamChatShareWithTeamIds'] = is_array($body['teamChatShareWithTeamIds'])
+                    ? $body['teamChatShareWithTeamIds']
+                    : [];
+            }
+            if (array_key_exists('teamLeaderUserIds', $body)) {
+                $extras['teamLeaderUserIds'] = is_array($body['teamLeaderUserIds']) ? $body['teamLeaderUserIds'] : [];
+            }
             if ($extras !== []) {
                 $this->assertReplyMailbox((string) $team['id'], $extras);
                 $team = $this->teams->update((string) $team['id'], $extras);
@@ -99,6 +122,9 @@ final class TeamController
      */
     public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        if ($deny = $this->denyUnlessSuperAdmin($request, $response)) {
+            return $deny;
+        }
         $id = (string) ($args['id'] ?? '');
         $body = RequestJsonBody::decode($request) ?? [];
         $payload = [];
@@ -118,6 +144,20 @@ final class TeamController
         if (array_key_exists('chatEnabled', $body)) {
             $payload['chatEnabled'] = (bool) $body['chatEnabled'];
         }
+        if (array_key_exists('kanbanEnabled', $body)) {
+            $payload['kanbanEnabled'] = (bool) $body['kanbanEnabled'];
+        }
+        if (array_key_exists('teamChatEnabled', $body)) {
+            $payload['teamChatEnabled'] = (bool) $body['teamChatEnabled'];
+        }
+        if (array_key_exists('teamChatShareEnabled', $body)) {
+            $payload['teamChatShareEnabled'] = (bool) $body['teamChatShareEnabled'];
+        }
+        if (array_key_exists('teamChatShareWithTeamIds', $body)) {
+            $payload['teamChatShareWithTeamIds'] = is_array($body['teamChatShareWithTeamIds'])
+                ? $body['teamChatShareWithTeamIds']
+                : [];
+        }
         if (array_key_exists('replyMailEnabled', $body)) {
             $payload['replyMailEnabled'] = (bool) $body['replyMailEnabled'];
         }
@@ -126,6 +166,9 @@ final class TeamController
         }
         if (array_key_exists('color', $body)) {
             $payload['color'] = is_string($body['color']) ? $body['color'] : '';
+        }
+        if (array_key_exists('teamLeaderUserIds', $body)) {
+            $payload['teamLeaderUserIds'] = is_array($body['teamLeaderUserIds']) ? $body['teamLeaderUserIds'] : [];
         }
 
         try {
@@ -147,6 +190,9 @@ final class TeamController
      */
     public function destroy(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        if ($deny = $this->denyUnlessSuperAdmin($request, $response)) {
+            return $deny;
+        }
         try {
             $this->teams->delete((string) ($args['id'] ?? ''));
         } catch (InvalidArgumentException $exception) {
@@ -274,5 +320,17 @@ final class TeamController
             : (string) ($existing['replyMail'] ?? '');
         $host = SiteMailboxGuard::siteHost((string) ($this->settings->group('general')['siteUrl'] ?? ''));
         SiteMailboxGuard::assertMailbox($mailbox, $host);
+    }
+
+    private function denyUnlessSuperAdmin(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+    ): ?ResponseInterface {
+        $user = $request->getAttribute('user');
+        if (!$user instanceof User || !$user->hasRole('SUPER_ADMIN')) {
+            return $this->json->error($response, 'Only SUPER_ADMIN may manage teams.', 403);
+        }
+
+        return null;
     }
 }

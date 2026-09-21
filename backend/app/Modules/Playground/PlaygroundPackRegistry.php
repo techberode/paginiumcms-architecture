@@ -12,7 +12,10 @@ use PaginiumCMS\Support\JsonHelper;
  */
 final class PlaygroundPackRegistry
 {
-    private const ALLOWED_EXTENSIONS = ['tsx', 'ts', 'jsx', 'js', 'css', 'json', 'html', 'md'];
+    public const ALLOWED_EXTENSIONS = ['tsx', 'ts', 'jsx', 'js', 'css', 'json', 'html', 'md'];
+    public const MAX_FILE_COUNT = 200;
+    public const MAX_FILE_BYTES = 400_000;
+    public const MAX_TOTAL_BYTES = 2_000_000;
 
     public function __construct(
         private string $bundledPacksDir,
@@ -70,7 +73,7 @@ final class PlaygroundPackRegistry
         }
 
         $content = file_get_contents($safe);
-        if ($content === false) {
+        if ($content === false || strlen($content) > self::MAX_FILE_BYTES) {
             return null;
         }
 
@@ -159,7 +162,13 @@ final class PlaygroundPackRegistry
 
         $packs = [];
         foreach ($decoded['packs'] as $pack) {
-            if (!is_array($pack) || !is_string($pack['packId'] ?? null)) {
+            if (
+                !is_array($pack)
+                || !is_string($pack['packId'] ?? null)
+                || preg_match('/^[a-z0-9][a-z0-9-]{0,62}$/', $pack['packId']) !== 1
+                || !is_string($pack['root'] ?? null)
+                || !$this->isImportedRootAllowed($pack['root'])
+            ) {
                 continue;
             }
             $packs[] = $pack;
@@ -173,10 +182,20 @@ final class PlaygroundPackRegistry
      */
     private function readPackFiles(string $root): array
     {
+        if (!is_dir($root)) {
+            return [];
+        }
+
         $files = [];
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
-        );
+        $fileCount = 0;
+        $totalBytes = 0;
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+            );
+        } catch (\UnexpectedValueException) {
+            return [];
+        }
         foreach ($iterator as $file) {
             if (!$file instanceof \SplFileInfo || !$file->isFile()) {
                 continue;
@@ -190,9 +209,18 @@ final class PlaygroundPackRegistry
             if ($safe === null) {
                 continue;
             }
+            $size = filesize($safe);
+            if ($size === false || $size > self::MAX_FILE_BYTES) {
+                return [];
+            }
+            $fileCount++;
+            $totalBytes += $size;
+            if ($fileCount > self::MAX_FILE_COUNT || $totalBytes > self::MAX_TOTAL_BYTES) {
+                return [];
+            }
             $content = file_get_contents($safe);
             if ($content === false) {
-                continue;
+                return [];
             }
             $files['/' . $this->normalizeRelative($relative)] = $content;
         }
@@ -223,6 +251,103 @@ final class PlaygroundPackRegistry
         }
 
         return $real;
+    }
+
+    /**
+     * @param array<string, mixed> $pack
+     */
+    public function registerImported(array $pack): void
+    {
+        $id = (string) ($pack['packId'] ?? '');
+        $root = (string) ($pack['root'] ?? '');
+        if ($id === '' || preg_match('/^[a-z0-9][a-z0-9-]{0,62}$/', $id) !== 1) {
+            throw new \InvalidArgumentException('Invalid imported pack id.');
+        }
+        if (!$this->isImportedRootAllowed($root) && !$this->isImportedRootAllowedPending($root, $id)) {
+            throw new \InvalidArgumentException('Imported pack root is outside the playground-packs directory.');
+        }
+
+        $existing = [];
+        if (is_file($this->importedRegistryPath)) {
+            try {
+                $decoded = JsonHelper::decode(file_get_contents($this->importedRegistryPath) ?: '');
+                if (isset($decoded['packs']) && is_array($decoded['packs'])) {
+                    $existing = $decoded['packs'];
+                }
+            } catch (JsonException) {
+                $existing = [];
+            }
+        }
+
+        $packs = [];
+        foreach ($existing as $row) {
+            if (!is_array($row) || (string) ($row['packId'] ?? '') === $id) {
+                continue;
+            }
+            $packs[] = $row;
+        }
+        $packs[] = [
+            'packId' => $id,
+            'title' => (string) ($pack['title'] ?? $id),
+            'source' => is_array($pack['source'] ?? null) ? $pack['source'] : ['type' => 'git'],
+            'modules' => is_array($pack['modules'] ?? null) ? $pack['modules'] : [],
+            'root' => $root,
+        ];
+
+        $dir = dirname($this->importedRegistryPath);
+        if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new \RuntimeException('Unable to write playground pack registry.');
+        }
+
+        $tmp = $this->importedRegistryPath . '.tmp';
+        try {
+            $json = JsonHelper::encode(['packs' => $packs]);
+        } catch (JsonException) {
+            throw new \RuntimeException('Unable to encode playground pack registry.');
+        }
+        if (file_put_contents($tmp, $json) === false || !rename($tmp, $this->importedRegistryPath)) {
+            throw new \RuntimeException('Unable to write playground pack registry.');
+        }
+    }
+
+    public function importedPacksDirectory(): string
+    {
+        return dirname($this->importedRegistryPath) . DIRECTORY_SEPARATOR . 'playground-packs';
+    }
+
+    public function isBundledPack(string $packId): bool
+    {
+        foreach ($this->bundledPacks() as $pack) {
+            if ((string) ($pack['packId'] ?? '') === $packId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Allow a root that is about to be created under playground-packs/{id}.
+     */
+    private function isImportedRootAllowedPending(string $root, string $packId): bool
+    {
+        $base = $this->importedPacksDirectory();
+        $expected = $base . DIRECTORY_SEPARATOR . $packId;
+        $normalizedRoot = rtrim(str_replace('\\', '/', $root), '/');
+        $normalizedExpected = rtrim(str_replace('\\', '/', $expected), '/');
+
+        return $normalizedRoot === $normalizedExpected;
+    }
+
+    private function isImportedRootAllowed(string $root): bool
+    {
+        $base = realpath(dirname($this->importedRegistryPath) . DIRECTORY_SEPARATOR . 'playground-packs');
+        $real = realpath($root);
+        if ($base === false || $real === false || !is_dir($real)) {
+            return false;
+        }
+
+        return str_starts_with($real, $base . DIRECTORY_SEPARATOR);
     }
 
     private function normalizeRelative(string $path): string

@@ -76,7 +76,7 @@ export function useAdminNavModel() {
       if (item.projectPlannerOnly && !isProjectPlannerEnabled) {
         return false;
       }
-      if (item.id === 'team-chat' && !isStaff && !hasTeamChat) {
+      if (item.id === 'team-chat' && !hasTeamChat) {
         return false;
       }
       return true;

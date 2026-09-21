@@ -1,27 +1,54 @@
-import React from 'react';
-import { Sandpack } from '@codesandbox/sandpack-react';
-import type { PlaygroundPack, PlaygroundTemplate } from '../../api/playground';
+import React, { useEffect } from 'react';
+import {
+  SandpackCodeEditor,
+  SandpackConsole,
+  SandpackLayout,
+  SandpackPreview,
+  SandpackProvider,
+  useSandpack,
+} from '@codesandbox/sandpack-react';
+import type { PlaygroundTemplate } from '../../api/playground';
 
 interface PlaygroundWorkbenchProps {
   template: PlaygroundTemplate;
-  pack: PlaygroundPack | null;
+  files: Record<string, string>;
+  onFilesChange?: (files: Record<string, string>) => void;
 }
 
-export const PlaygroundWorkbench: React.FC<PlaygroundWorkbenchProps> = ({ template, pack }) => {
-  const files = pack?.files ?? {};
+const SandpackFilesSync: React.FC<{ onFilesChange?: (files: Record<string, string>) => void }> = ({
+  onFilesChange,
+}) => {
+  const { sandpack } = useSandpack();
 
+  useEffect(() => {
+    if (!onFilesChange) {
+      return;
+    }
+    const next: Record<string, string> = {};
+    for (const [path, file] of Object.entries(sandpack.files)) {
+      next[path] = file.code;
+    }
+    onFilesChange(next);
+  }, [onFilesChange, sandpack.files]);
+
+  return null;
+};
+
+export const PlaygroundWorkbench: React.FC<PlaygroundWorkbenchProps> = ({
+  template,
+  files,
+  onFilesChange,
+}) => {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700" data-testid="playground-sandpack">
-      <Sandpack
-        template={template}
-        files={files}
-        options={{
-          showLineNumbers: true,
-          showConsole: true,
-          editorHeight: 520,
-          editorWidthPercentage: 50,
-        }}
-      />
+      <SandpackProvider template={template} files={files}>
+        <SandpackFilesSync onFilesChange={onFilesChange} />
+        <SandpackLayout>
+          <SandpackCodeEditor showLineNumbers showTabs />
+          <SandpackPreview />
+        </SandpackLayout>
+        <SandpackConsole />
+      </SandpackProvider>
     </div>
   );
 };

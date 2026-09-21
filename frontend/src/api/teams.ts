@@ -29,9 +29,14 @@ export interface Team {
   name: string;
   type: TeamType;
   memberUserIds: string[];
+  teamLeaderUserIds?: string[];
   members: TeamMember[];
   color?: string;
   chatEnabled?: boolean;
+  teamChatEnabled?: boolean;
+  kanbanEnabled?: boolean;
+  teamChatShareEnabled?: boolean;
+  teamChatShareWithTeamIds?: string[];
   replyMailEnabled?: boolean;
   replyMail?: string;
   createdAt: number;
@@ -48,8 +53,13 @@ export interface TeamPayload {
   name: string;
   type: TeamType;
   memberUserIds: string[];
+  teamLeaderUserIds?: string[];
   color?: string;
   chatEnabled?: boolean;
+  teamChatEnabled?: boolean;
+  kanbanEnabled?: boolean;
+  teamChatShareEnabled?: boolean;
+  teamChatShareWithTeamIds?: string[];
   replyMailEnabled?: boolean;
   replyMail?: string;
 }

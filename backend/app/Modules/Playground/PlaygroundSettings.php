@@ -71,6 +71,28 @@ final class PlaygroundSettings implements CspDirectiveContributorInterface
         return in_array($packId, $this->enabledPackIds(), true);
     }
 
+    public function gitRepoUrl(): string
+    {
+        return trim((string) $this->settings->get('playground.gitRepoUrl', ''));
+    }
+
+    public function gitRef(): string
+    {
+        $ref = trim((string) $this->settings->get('playground.gitRef', 'main'));
+
+        return $ref !== '' ? $ref : 'main';
+    }
+
+    public function gitToken(): string
+    {
+        return trim((string) $this->settings->get('playground.gitToken', ''));
+    }
+
+    public function gitConfigured(): bool
+    {
+        return $this->gitRepoUrl() !== '';
+    }
+
     /**
      * @return list<string>
      */

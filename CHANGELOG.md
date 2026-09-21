@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.90`](#release-2-1-0-beta-90) | 2026-09-21 | Team Kanban per team · team chat history/inbox · Kanban WIP/stats · Playground git import · 58f-h · It.95a/c |
 | [`2.1.0-beta.89`](#release-2-1-0-beta-89) | 2026-09-20 | It.48 static compile + `/static-html` serve · ISS-173 gitleaks · ISS-174 desk role gate · AppVersion floor |
 | [`2.1.0-beta.88`](#release-2-1-0-beta-88) | 2026-09-19 | It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount · Origin today snapshot |
 | [`2.1.0-beta.87`](#release-2-1-0-beta-87) | 2026-09-19 | It.70 GitHub API publisher · It.76/77 assisted translation · outbound grep allow-list |
@@ -164,18 +165,36 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-### Added
-
-- **58f-h** — Visual block canvas in outline mode: `@dnd-kit` sortable stack, block cards + inspector, Markdown SSOT unchanged. Spec: [ITERATION_58f.md](docs/en/ITERATION_58f.md).
-- **It.95a/c** — Sandpack playground (`/playground`, SUPER_ADMIN) + bundled `paginium-starter` pack toggled from Settings. Off by default and in `DEMO_MODE`. Enabling adds CodeSandbox CDN hosts to admin CSP. Spec: [ITERATION_95.md](docs/en/ITERATION_95.md).
-
 ### Planning
 
-- **95b** — Monaco bridge. **95d** — private Git import.
-- **93l-2** — Canned replies / SLA notes (remainder of It.93).
 - **It.69 Redis driver** — optional **cache only** (never SSOT). File/memory/auto already shipped; `engine.cacheDriver=redis` still falls back to `auto`.
 - **It.82d** — Origin host metrics (optional).
-- **Queue:** 95b, then 95d, then 93l-2. Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+- **Queue:** It.69 Redis driver (optional). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
+
+---
+
+<a id="release-2-1-0-beta-90"></a>
+
+## [2.1.0-beta.90] – 2026-09-21
+
+Team-scoped Kanban, team chat history and inbox polish, Support Kanban WIP/stats/filters, Playground git import, visual block canvas, and Sandpack playground (It.95a/c). Legacy `/api/admin/support-kanban` remains for `support-ticket:manage`.
+
+Docs: [ITERATION_93.md](docs/en/ITERATION_93.md) · [ITERATION_95.md](docs/en/ITERATION_95.md) · [ITERATION_58f.md](docs/en/ITERATION_58f.md)
+
+### Added
+
+- **Team Kanban** — `kanbanEnabled` per team; storage under `data/team-kanban/{teamId}/`; API `/api/admin/team-kanban` gated by team membership (board settings: team leaders + SUPER_ADMIN). UI: team badge vs outlined label chips, team picker on `/kanban`. Legacy global board migrates on first team access.
+- **93l-2 / Kanban polish** — Internal notes, canned replies, ticket labels, SLA `dueAt`; column WIP limits, board stats (`completedAt` cycle time), assignee/label filters, link to team chat from a ticket.
+- **Team chat** — `teamLeaderUserIds`, history search/export/import/clear (leaders + SUPER_ADMIN), inbox API + notification beacon, shared-room rules; Teams UI scroll and member sort fixes.
+- **58f-h** — Visual block canvas in outline mode (`@dnd-kit` sortable stack); Markdown remains SSOT.
+- **It.95a/c** — Sandpack playground (`/playground`, SUPER_ADMIN) + bundled `paginium-starter` pack (Settings toggle; CSP when enabled).
+- **It.95b** — Monaco → Playground bridge via `sessionStorage` (allow-listed sources; validate on export).
+- **It.95d** — `POST /api/admin/playground/import-git` via `OutboundUrlGuard`, Zip-Slip, and `CodePolicyEngine` (encrypted token in Settings).
+
+### Fixed
+
+- **PHPStan L8** — `PublishedStaffDirectory`, team/Kanban typings, and `TeamChatStoreTest` static-analysis-safe assertions.
+- **Vitest** — single-router test harness (`renderWithRouter` / providers split); Kanban and team chat suites green.
 
 ---
 

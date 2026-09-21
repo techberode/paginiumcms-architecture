@@ -1,6 +1,9 @@
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Boxes } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 import { FileTree } from './FileTree';
 import { EditorToolbar } from './EditorToolbar';
 import { DeveloperUnlockGate } from './DeveloperUnlockGate';
@@ -10,6 +13,14 @@ import { FileInfo } from '../../api/types';
 import { codeEditorApi } from '../../api/codeEditor';
 import { CodeEditorSafetyBanner } from './CodeEditorSafetyBanner';
 import { CodeEditorFileActions } from './CodeEditorFileActions';
+import {
+  buildPlaygroundBridge,
+  clearPlaygroundExport,
+  consumePlaygroundExport,
+  isPlaygroundBridgePath,
+  readPlaygroundExport,
+  writePlaygroundBridge,
+} from '../../utils/playgroundBridge';
 import './CodeEditor.css';
 
 interface CodeEditorProps {
@@ -18,6 +29,8 @@ interface CodeEditorProps {
 
 const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const { lock, locking } = useDeveloperUnlockGate();
+  const { t } = useI18n();
+  const navigate = useNavigate();
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [allowedRoots, setAllowedRoots] = useState<string[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
@@ -26,12 +39,14 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const [originalContent, setOriginalContent] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [loadingFile, setLoadingFile] = useState(false);
+  const [loadedFilePath, setLoadedFilePath] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [language, setLanguage] = useState<string>('plaintext');
   const [wordWrap, setWordWrap] = useState(false);
   const monacoRef = useRef<MonacoCodeEditorHandle>(null);
+  const pendingPlaygroundImportRef = useRef<{ path: string; content: string } | null>(null);
   const toast = useToast();
   const confirmDestructive = useAdminConfirm();
 
@@ -54,14 +69,24 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
 
   const loadFile = useCallback(async (path: string) => {
     setLoadingFile(true);
+    const pendingImport = pendingPlaygroundImportRef.current;
+    const overlay = pendingImport?.path === path ? pendingImport.content : null;
     try {
       setError(null);
       const data = await codeEditorApi.getFile(path);
       if (data) {
-        setContent(data.content || '');
+        const body = overlay ?? data.content ?? '';
+        setContent(body);
         setOriginalContent(data.content || '');
         setLanguage(data.language || 'plaintext');
-        setIsDirty(false);
+        setLoadedFilePath(path);
+        setIsDirty(overlay !== null && overlay !== (data.content || ''));
+        if (overlay !== null) {
+          pendingPlaygroundImportRef.current = null;
+          consumePlaygroundExport();
+          clearPlaygroundExport();
+          toast.success(t('playground.imported'));
+        }
       } else {
         setError('Nepodarilo sa načítať súbor');
       }
@@ -73,11 +98,42 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     } finally {
       setLoadingFile(false);
     }
-  }, [toast]);
+  }, [t, toast]);
 
   useEffect(() => {
     void loadFiles();
   }, [loadFiles]);
+
+  useEffect(() => {
+    const incoming = readPlaygroundExport();
+    if (incoming === null || incoming.source !== 'code-editor') {
+      return;
+    }
+    if (!isPlaygroundBridgePath(incoming.path)) {
+      consumePlaygroundExport();
+      return;
+    }
+    pendingPlaygroundImportRef.current = {
+      path: incoming.path,
+      content: incoming.content,
+    };
+    if (incoming.path === currentFile && loadedFilePath === currentFile) {
+      setContent(incoming.content);
+      setIsDirty(incoming.content !== originalContent);
+      pendingPlaygroundImportRef.current = null;
+      consumePlaygroundExport();
+      clearPlaygroundExport();
+      toast.success(t('playground.imported'));
+      return;
+    }
+    if (incoming.path === currentFile && currentFile !== '') {
+      void loadFile(incoming.path);
+      return;
+    }
+    setCurrentFile(incoming.path);
+    // Mount-only: overlay the returning snippet once after unlock.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (currentFile) {
@@ -118,6 +174,25 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleOpenPlayground = () => {
+    if (currentFile === '' || !isPlaygroundBridgePath(currentFile)) {
+      toast.info(t('playground.unsupportedPath'));
+      navigate('/playground');
+      return;
+    }
+    const payload = buildPlaygroundBridge({
+      source: 'code-editor',
+      path: currentFile,
+      content,
+      returnTo: '/code-editor',
+    });
+    if (payload === null || !writePlaygroundBridge(payload)) {
+      toast.error(t('playground.tooLarge'));
+      return;
+    }
+    navigate('/playground');
   };
 
   const handleContentChange = (newContent: string) => {
@@ -175,6 +250,21 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
                 Unsaved changes
               </span>
             )}
+            <button
+              type="button"
+              onClick={handleOpenPlayground}
+              disabled={!currentFile}
+              className="px-3 py-1.5 text-sm text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded disabled:opacity-50 inline-flex items-center gap-1"
+              title={
+                currentFile !== '' && !isPlaygroundBridgePath(currentFile)
+                  ? t('playground.unsupportedPath')
+                  : t('playground.openFromEditor')
+              }
+              data-testid="code-editor-open-playground"
+            >
+              <Boxes className="h-4 w-4" />
+              {t('playground.openFromEditor')}
+            </button>
             <button
               type="button"
               onClick={() => void handleLockEditor()}

@@ -88,6 +88,7 @@ export const settingsEn: MessageTree = {
     "systemUpdate": "System update (deploy)",
     "codePolicy": "Code policy",
     "playground": "Component playground",
+    "teamChat": "Team chat history",
     "engine": "Hybrid Engine",
     "translation": "Assisted translation",
     "agent": "CMS AI assistant",
@@ -1875,6 +1876,24 @@ export const settingsEn: MessageTree = {
         "tooltip": "When enabled, rules below are evaluated before content read/write APIs. Paths use glob semantics under content/pages and content/articles. SUPER_ADMIN bypasses path ACL."
       }
     },
+    "teamChat": {
+      "retentionDays": {
+        "label": "Keep messages (days)",
+        "help": "Messages older than this are removed from disk when the room is pruned. Export before lowering retention."
+      },
+      "maxStoredMessages": {
+        "label": "Max messages per room",
+        "help": "Hard cap per team after retention. Oldest messages drop first."
+      },
+      "liveWindowMessages": {
+        "label": "Live window in UI",
+        "help": "Newest messages shown in /team-chat. Search and export use the full retained history."
+      },
+      "searchMaxResults": {
+        "label": "Search result limit",
+        "help": "Maximum matches returned by team chat history search per request."
+      }
+    },
     "playground": {
       "enabled": {
         "label": "Enable Sandpack playground",
@@ -1887,6 +1906,18 @@ export const settingsEn: MessageTree = {
       "enabledPacks": {
         "label": "Enabled component packs",
         "help": "Comma-separated pack IDs from the bundled or imported registry. This is not npm install on the server."
+      },
+      "gitRepoUrl": {
+        "label": "Private pack Git URL",
+        "help": "HTTPS GitHub/GitLab repo or a direct .zip URL. Import is an explicit admin action — never a background pull."
+      },
+      "gitRef": {
+        "label": "Pack Git ref",
+        "help": "Branch, tag, or commit pin. No auto-update cron."
+      },
+      "gitToken": {
+        "label": "Pack Git token",
+        "help": "Optional deploy token for a private repo. Encrypted at rest. Never returned after save."
       }
     },
     "codePolicy": {

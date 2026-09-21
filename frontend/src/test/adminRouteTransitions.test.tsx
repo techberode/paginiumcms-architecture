@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { ResponsiveLayout } from '../components/layout/ResponsiveLayout';
-import { renderWithProviders } from './renderWithProviders';
+import { renderWithRouter } from './renderWithRouter';
 
 vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
@@ -56,21 +56,20 @@ describe('admin route transitions (It.53)', () => {
       defaultOptions: { queries: { retry: false } },
     });
 
-    renderWithProviders(
+    renderWithRouter(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={['/pages']}>
-          <Routes>
-            <Route
-              path="/*"
-              element={
-                <ResponsiveLayout>
-                  <div data-testid="route-content">Pages</div>
-                </ResponsiveLayout>
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      </QueryClientProvider>
+        <Routes>
+          <Route
+            path="/*"
+            element={
+              <ResponsiveLayout>
+                <div data-testid="route-content">Pages</div>
+              </ResponsiveLayout>
+            }
+          />
+        </Routes>
+      </QueryClientProvider>,
+      { routerProps: { initialEntries: ['/pages'] } }
     );
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument();

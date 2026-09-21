@@ -37,6 +37,9 @@ final class TeamRepository
     public const MAX_TEAMS = 80;
     public const MAX_MEMBERS = 40;
     public const MAX_NAME = 80;
+    public const MAX_TEAM_CHAT_SHARE_TARGETS = 8;
+
+    public const MAX_TEAM_LEADERS = 5;
 
     public function __construct(
         private FileReaderInterface $reader,
@@ -90,6 +93,35 @@ final class TeamRepository
     /**
      * Unique member user ids across teams of the given type (Support desk pool).
      *
+     * @return list<string>
+     */
+    /**
+     * Team ids the user belongs to (any type).
+     *
+     * @return list<string>
+     */
+    public function idsForMember(string $userId): array
+    {
+        $userId = trim($userId);
+        if ($userId === '') {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($this->list() as $team) {
+            $members = $team['memberUserIds'] ?? [];
+            if (!is_array($members) || !in_array($userId, $members, true)) {
+                continue;
+            }
+            $ids[] = (string) $team['id'];
+        }
+
+        sort($ids);
+
+        return $ids;
+    }
+
+    /**
      * @return list<string>
      */
     public function memberIdsForType(string $type): array
@@ -176,8 +208,29 @@ final class TeamRepository
             $raw = $payload['memberUserIds'];
             $existing['memberUserIds'] = $this->normalizeMemberIds(is_array($raw) ? $raw : []);
         }
+        if (array_key_exists('teamLeaderUserIds', $payload)) {
+            $leaderMembers = is_array($existing['memberUserIds'] ?? null)
+                ? $this->normalizeMemberIds($existing['memberUserIds'])
+                : [];
+            $existing['teamLeaderUserIds'] = $this->normalizeTeamLeaderIds(
+                is_array($payload['teamLeaderUserIds']) ? $payload['teamLeaderUserIds'] : [],
+                $leaderMembers
+            );
+        }
         if (array_key_exists('chatEnabled', $payload)) {
             $existing['chatEnabled'] = (bool) $payload['chatEnabled'];
+        }
+        if (array_key_exists('teamChatEnabled', $payload)) {
+            $existing['teamChatEnabled'] = (bool) $payload['teamChatEnabled'];
+        }
+        if (array_key_exists('teamChatShareEnabled', $payload)) {
+            $existing['teamChatShareEnabled'] = (bool) $payload['teamChatShareEnabled'];
+        }
+        if (array_key_exists('teamChatShareWithTeamIds', $payload)) {
+            $existing['teamChatShareWithTeamIds'] = $this->normalizeTeamChatShareWithTeamIds(
+                (string) $existing['id'],
+                is_array($payload['teamChatShareWithTeamIds']) ? $payload['teamChatShareWithTeamIds'] : []
+            );
         }
         if (array_key_exists('replyMailEnabled', $payload)) {
             $existing['replyMailEnabled'] = (bool) $payload['replyMailEnabled'];
@@ -187,6 +240,9 @@ final class TeamRepository
         }
         if (array_key_exists('color', $payload)) {
             $existing['color'] = $this->normalizeColor((string) $payload['color']);
+        }
+        if (array_key_exists('kanbanEnabled', $payload)) {
+            $existing['kanbanEnabled'] = (bool) $payload['kanbanEnabled'];
         }
         $existing['updatedAt'] = time();
 
@@ -225,7 +281,17 @@ final class TeamRepository
                     $kept[] = $memberId;
                 }
             }
-            $this->update((string) $team['id'], ['memberUserIds' => $kept]);
+            $leaders = is_array($team['teamLeaderUserIds'] ?? null) ? $team['teamLeaderUserIds'] : [];
+            $keptLeaders = [];
+            foreach ($leaders as $leaderId) {
+                if (is_string($leaderId) && $leaderId !== $userId && in_array($leaderId, $kept, true)) {
+                    $keptLeaders[] = $leaderId;
+                }
+            }
+            $this->update((string) $team['id'], [
+                'memberUserIds' => $kept,
+                'teamLeaderUserIds' => $keptLeaders,
+            ]);
         }
     }
 
@@ -236,20 +302,36 @@ final class TeamRepository
     private function writeRecord(array $record): array
     {
         $id = $this->normalizeId((string) ($record['id'] ?? ''));
+        $memberUserIds = $this->normalizeMemberIds(
+            is_array($record['memberUserIds'] ?? null) ? $record['memberUserIds'] : []
+        );
         $canonical = [
             'schema' => self::SCHEMA,
             'id' => $id,
             'name' => $this->normalizeName((string) ($record['name'] ?? '')),
             'type' => $this->normalizeType((string) ($record['type'] ?? '')),
-            'memberUserIds' => $this->normalizeMemberIds(
-                is_array($record['memberUserIds'] ?? null) ? $record['memberUserIds'] : []
+            'memberUserIds' => $memberUserIds,
+            'teamLeaderUserIds' => $this->normalizeTeamLeaderIds(
+                is_array($record['teamLeaderUserIds'] ?? null) ? $record['teamLeaderUserIds'] : [],
+                $memberUserIds
             ),
             'chatEnabled' => array_key_exists('chatEnabled', $record)
                 ? (bool) $record['chatEnabled']
                 : ($this->normalizeType((string) ($record['type'] ?? '')) === self::TYPE_SUPPORT),
+            'teamChatEnabled' => array_key_exists('teamChatEnabled', $record)
+                ? (bool) $record['teamChatEnabled']
+                : $this->defaultTeamChatEnabled($this->normalizeType((string) ($record['type'] ?? ''))),
+            'teamChatShareEnabled' => (bool) ($record['teamChatShareEnabled'] ?? false),
+            'teamChatShareWithTeamIds' => $this->normalizeTeamChatShareWithTeamIds(
+                $id,
+                is_array($record['teamChatShareWithTeamIds'] ?? null) ? $record['teamChatShareWithTeamIds'] : []
+            ),
             'replyMailEnabled' => (bool) ($record['replyMailEnabled'] ?? false),
             'replyMail' => $this->normalizeReplyMail((string) ($record['replyMail'] ?? '')),
             'color' => $this->normalizeColor((string) ($record['color'] ?? '')),
+            'kanbanEnabled' => array_key_exists('kanbanEnabled', $record)
+                ? (bool) $record['kanbanEnabled']
+                : ($this->normalizeType((string) ($record['type'] ?? '')) === self::TYPE_SUPPORT),
             'createdAt' => is_int($record['createdAt'] ?? null) ? $record['createdAt'] : time(),
             'updatedAt' => is_int($record['updatedAt'] ?? null) ? $record['updatedAt'] : time(),
         ];
@@ -294,18 +376,37 @@ final class TeamRepository
         $members = is_array($rawMembers) ? $rawMembers : [];
 
         try {
+            $memberUserIds = $this->normalizeMemberIds($members);
+
             return [
                 'schema' => self::SCHEMA,
                 'id' => $id,
                 'name' => $this->normalizeName(is_string($data['name'] ?? null) ? $data['name'] : ''),
                 'type' => $this->normalizeType(is_string($data['type'] ?? null) ? $data['type'] : self::TYPE_CUSTOM),
-                'memberUserIds' => $this->normalizeMemberIds($members),
+                'memberUserIds' => $memberUserIds,
+                'teamLeaderUserIds' => $this->normalizeTeamLeaderIds(
+                    is_array($data['teamLeaderUserIds'] ?? null) ? $data['teamLeaderUserIds'] : [],
+                    $memberUserIds
+                ),
                 'chatEnabled' => array_key_exists('chatEnabled', $data)
                     ? (bool) $data['chatEnabled']
                     : ($this->normalizeType(is_string($data['type'] ?? null) ? $data['type'] : self::TYPE_CUSTOM) === self::TYPE_SUPPORT),
+                'teamChatEnabled' => array_key_exists('teamChatEnabled', $data)
+                    ? (bool) $data['teamChatEnabled']
+                    : $this->defaultTeamChatEnabled(
+                        $this->normalizeType(is_string($data['type'] ?? null) ? $data['type'] : self::TYPE_CUSTOM)
+                    ),
+                'teamChatShareEnabled' => (bool) ($data['teamChatShareEnabled'] ?? false),
+                'teamChatShareWithTeamIds' => $this->normalizeTeamChatShareWithTeamIds(
+                    $id,
+                    is_array($data['teamChatShareWithTeamIds'] ?? null) ? $data['teamChatShareWithTeamIds'] : []
+                ),
                 'replyMailEnabled' => (bool) ($data['replyMailEnabled'] ?? false),
                 'replyMail' => $this->normalizeReplyMail(is_string($data['replyMail'] ?? null) ? $data['replyMail'] : ''),
                 'color' => $this->normalizeColor(is_string($data['color'] ?? null) ? $data['color'] : ''),
+                'kanbanEnabled' => array_key_exists('kanbanEnabled', $data)
+                    ? (bool) $data['kanbanEnabled']
+                    : ($this->normalizeType(is_string($data['type'] ?? null) ? $data['type'] : self::TYPE_CUSTOM) === self::TYPE_SUPPORT),
                 'createdAt' => is_int($data['createdAt'] ?? null) ? $data['createdAt'] : 0,
                 'updatedAt' => is_int($data['updatedAt'] ?? null) ? $data['updatedAt'] : 0,
             ];
@@ -333,6 +434,43 @@ final class TeamRepository
         }
 
         return $names;
+    }
+
+    private function defaultTeamChatEnabled(string $type): bool
+    {
+        return $type === self::TYPE_EXTERNAL;
+    }
+
+    /**
+     * @param array<int|string, mixed> $raw
+     * @return list<string>
+     */
+    private function normalizeTeamChatShareWithTeamIds(string $ownerTeamId, array $raw): array
+    {
+        $ownerTeamId = $this->normalizeId($ownerTeamId);
+        $ids = [];
+        foreach ($raw as $entry) {
+            if (!is_string($entry) || $entry === '') {
+                continue;
+            }
+            try {
+                $id = $this->normalizeId($entry);
+            } catch (InvalidArgumentException) {
+                continue;
+            }
+            if ($id === $ownerTeamId || $this->get($id) === null) {
+                continue;
+            }
+            $ids[$id] = true;
+            if (count($ids) >= self::MAX_TEAM_CHAT_SHARE_TARGETS) {
+                break;
+            }
+        }
+
+        $list = array_keys($ids);
+        sort($list);
+
+        return $list;
     }
 
     private function normalizeColor(string $color): string
@@ -415,6 +553,35 @@ final class TeamRepository
         }
 
         return $type;
+    }
+
+    /**
+     * @param array<int|string, mixed> $raw
+     * @param list<string> $memberUserIds
+     * @return list<string>
+     */
+    private function normalizeTeamLeaderIds(array $raw, array $memberUserIds): array
+    {
+        $memberSet = array_fill_keys($memberUserIds, true);
+        $ids = [];
+        foreach ($raw as $value) {
+            if (!is_string($value)) {
+                continue;
+            }
+            $id = trim($value);
+            if ($id === '' || !isset($memberSet[$id])) {
+                continue;
+            }
+            $ids[$id] = true;
+            if (count($ids) >= self::MAX_TEAM_LEADERS) {
+                break;
+            }
+        }
+
+        $list = array_keys($ids);
+        sort($list);
+
+        return $list;
     }
 
     /**

@@ -15,7 +15,12 @@ return function (App $app): void {
 
     $app->group('/api/team-chat', function (RouteCollectorProxy $group) use ($container): void {
         $controller = $container->get(TeamChatController::class);
+        $group->get('/inbox', [$controller, 'inbox']);
         $group->get('', [$controller, 'rooms']);
+        $group->get('/{teamId}/search', [$controller, 'search']);
+        $group->get('/{teamId}/export', [$controller, 'exportArchive']);
+        $group->post('/{teamId}/import', [$controller, 'importArchive']);
+        $group->post('/{teamId}/clear-history', [$controller, 'clearHistory']);
         $group->get('/{teamId}', [$controller, 'messages']);
         $group->post('/{teamId}', [$controller, 'post'])
             ->add($container->get(TeamChatRateLimitMiddleware::class));

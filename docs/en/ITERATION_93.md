@@ -1,6 +1,6 @@
 # Iteration 93 — Admin chrome + daily apps
 
-> **Status:** ✅ complete (Wave 1–5 shipped in tree; **93l-2** canned replies / SLA notes remain as a listed remainder, not a new iteration)  
+> **Status:** ✅ complete (Wave 1–5 shipped in tree, including **93l-2** canned replies / SLA notes)
 > **Priority:** 🟡 **P1 operator UX** — after [It.58f](ITERATION_58f.md) publishing blocks  
 > **Wave:** Admin chrome, then daily **apps** on our data  
 > **Depends on:** `ResponsiveLayout`, dashboard/analytics APIs, users/roles (It.84), project planner (It.87), comments/messages, SMTP settings  
@@ -169,9 +169,9 @@ Entries in `data/time-entries/{id}.json`: `userId`, `target` (`planItem`  `event
 - Admin list + detail (status chips, assignee).
 - Add/remove Support team members = Teams UI with `type=support` (user, role, active, avatar — not a second HRIS).
 
-**93l-2 later (same iteration if time, else explicit remainder in this spec)**
+**93l-2 (same iteration — no new number)**
 
-- Internal notes, canned replies, tags, SLA dueAt.
+- ✅ Internal notes, canned replies, tags on the card, SLA `dueAt` UI. Store: `data/support-canned.json` (`support-canned@1`) + `internalNotes[]` on the ticket. Notes are staff-only and append-only (`POST …/tickets/{id}/notes`).
 
 Comments and contact **messages** stay. A ticket may *link* a message id; do not merge stores.
 
@@ -238,6 +238,7 @@ v1: list folders + message list + read pane. Send/reply reuse the existing SMTP 
 | **93v** | Coming-soon countdown linked to a page/article and published as part of that page                         | ✅                                                              |     |
 | **93w** | Viewport audit: header/side/hamburger never overlap; grids adapt with side column                         | ✅                                                              |     |
 | **93l** | Support desk foundation (tickets + agents)                                                                | ✅ Kanban board + settings (our tickets)                       |
+| **93l-2** | Internal notes, canned replies, tags, SLA dueAt                                                          | ✅ staff notes + `data/support-canned.json` + dueAt UI          |
 | **93m** | Domain IMAP inbox (rules above)                                                                           | ✅ folders / tags / Junk / SMTP send+reply; two-pane inbox chrome; UTF-8 HTML; own `@site` mailbox only |
 | **93d** | Settings / navigation form chrome                                                                         | ✅                                                              |     |
 | **93e** | Content editor shell chrome                                                                               | ✅                                                              |     |
@@ -250,7 +251,7 @@ v1: list folders + message list + read pane. Send/reply reuse the existing SMTP 
 
 Order: **Wave 1** `a → q → f → g` · **Wave 2** `b → j → c → d → e` · **Wave 3** `k → o → n → p` · **Wave 4–5** `l → m` · `h` with each wave.
 
-`93l` foundation is the Kanban board (columns/labels + tickets assigned to the Support team). **93l-2** (internal notes, canned replies, SLA dueAt UI) stays listed here; no new iteration number.
+`93l` foundation is the Kanban board (columns/labels + tickets assigned to the Support team). **93l-2** (internal notes, canned replies, SLA dueAt UI) is shipped in the same iteration; no new iteration number.
 
 **93m-2** — `MailHtmlSanitizer` now decodes libxml numeric/named entities to UTF-8 after `saveHTML`, while keeping `&lt;` / `&amp;` escaped so markup stays inert.
 

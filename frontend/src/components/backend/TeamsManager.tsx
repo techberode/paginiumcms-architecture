@@ -5,6 +5,7 @@ import { TEAM_COLOR_SWATCHES, teamsApi, type Team, type TeamMember, type TeamTyp
 import { resolveUserAvatarUrl } from '../../api/users';
 import { RegistrationInvitesPanel } from './RegistrationInvitesPanel';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
@@ -28,8 +29,13 @@ const EMPTY_DRAFT = {
   name: '',
   type: 'editorial' as TeamType,
   memberUserIds: [] as string[],
+  teamLeaderUserIds: [] as string[],
   color: '',
   chatEnabled: false,
+  teamChatEnabled: false,
+  kanbanEnabled: false,
+  teamChatShareEnabled: false,
+  teamChatShareWithTeamIds: [] as string[],
   replyMailEnabled: false,
   replyMail: '',
 };
@@ -38,8 +44,10 @@ const namedTypes: TeamType[] = ['custom', 'external'];
 
 export const TeamsManager: React.FC = () => {
   const { t } = useI18n();
+  const { user } = useAuth();
   const confirmDestructive = useAdminConfirm();
   const toast = useToast();
+  const canManageTeams = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -48,6 +56,7 @@ export const TeamsManager: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [memberSortDir, setMemberSortDir] = useState<'asc' | 'desc'>('asc');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -100,6 +109,8 @@ export const TeamsManager: React.FC = () => {
       type: next,
       name: namedTypes.includes(next) && isPresetName(current.name) ? '' : current.name,
       chatEnabled: creating ? next === 'support' : current.chatEnabled,
+      teamChatEnabled: creating ? next === 'external' : current.teamChatEnabled,
+      kanbanEnabled: creating ? next === 'support' : current.kanbanEnabled,
     }));
   };
 
@@ -110,8 +121,13 @@ export const TeamsManager: React.FC = () => {
       name: namedTypes.includes(team.type) ? team.name : '',
       type: team.type,
       memberUserIds: [...team.memberUserIds],
+      teamLeaderUserIds: [...(team.teamLeaderUserIds ?? [])],
       color: team.color ?? '',
       chatEnabled: team.chatEnabled ?? team.type === 'support',
+      teamChatEnabled: team.teamChatEnabled ?? team.type === 'external',
+      kanbanEnabled: team.kanbanEnabled ?? team.type === 'support',
+      teamChatShareEnabled: Boolean(team.teamChatShareEnabled),
+      teamChatShareWithTeamIds: [...(team.teamChatShareWithTeamIds ?? [])].filter((id) => id !== team.id),
       replyMailEnabled: Boolean(team.replyMailEnabled),
       replyMail: team.replyMail ?? '',
     });
@@ -125,6 +141,24 @@ export const TeamsManager: React.FC = () => {
         memberUserIds: has
           ? current.memberUserIds.filter((id) => id !== userId)
           : [...current.memberUserIds, userId],
+        teamLeaderUserIds: has
+          ? current.teamLeaderUserIds.filter((id) => id !== userId)
+          : current.teamLeaderUserIds,
+      };
+    });
+  };
+
+  const toggleTeamLeader = (userId: string) => {
+    setDraft((current) => {
+      if (!current.memberUserIds.includes(userId)) {
+        return current;
+      }
+      const has = current.teamLeaderUserIds.includes(userId);
+      return {
+        ...current,
+        teamLeaderUserIds: has
+          ? current.teamLeaderUserIds.filter((id) => id !== userId)
+          : [...current.teamLeaderUserIds, userId],
       };
     });
   };
@@ -145,8 +179,15 @@ export const TeamsManager: React.FC = () => {
         name: namedTypes.includes(draft.type) ? draft.name.trim() : '',
         type: draft.type,
         memberUserIds: draft.memberUserIds,
+        teamLeaderUserIds: draft.teamLeaderUserIds,
         color: draft.color,
         chatEnabled: draft.chatEnabled,
+        teamChatEnabled: draft.teamChatEnabled,
+        kanbanEnabled: draft.kanbanEnabled,
+        teamChatShareEnabled: draft.teamChatShareEnabled,
+        teamChatShareWithTeamIds: draft.teamChatShareWithTeamIds.filter(
+          (id) => id !== selected?.id && id !== selectedId
+        ),
         replyMailEnabled: draft.replyMailEnabled,
         replyMail: draft.replyMail.trim().toLowerCase(),
       };
@@ -191,6 +232,39 @@ export const TeamsManager: React.FC = () => {
     namedTypes.includes(team.type) ? team.name || typeLabel(team.type) : typeLabel(team.type);
   const editing = creating || selected !== null;
 
+  const editingTeamId = creating ? null : selectedId;
+
+  const shareTargetTeams = useMemo(() => {
+    return teams
+      .filter((team) => editingTeamId === null || team.id !== editingTeamId)
+      .slice()
+      .sort((a, b) => teamTitle(a).localeCompare(teamTitle(b), undefined, { sensitivity: 'base' }));
+  }, [teams, editingTeamId, t]);
+
+  const sortedUsers = useMemo(() => {
+    const label = (user: TeamMember) => (user.name.trim() || user.email.trim() || user.username).toLowerCase();
+    const cmp = (a: TeamMember, b: TeamMember) =>
+      label(a).localeCompare(label(b), undefined, { sensitivity: 'base' });
+    const sorted = users.slice().sort(cmp);
+
+    return memberSortDir === 'asc' ? sorted : sorted.reverse();
+  }, [users, memberSortDir]);
+
+  const toggleShareTarget = (teamId: string) => {
+    if (editingTeamId !== null && teamId === editingTeamId) {
+      return;
+    }
+    setDraft((current) => {
+      const has = current.teamChatShareWithTeamIds.includes(teamId);
+      return {
+        ...current,
+        teamChatShareWithTeamIds: has
+          ? current.teamChatShareWithTeamIds.filter((id) => id !== teamId)
+          : [...current.teamChatShareWithTeamIds, teamId],
+      };
+    });
+  };
+
   return (
     <div className="p-6 space-y-6" data-testid="teams-manager">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -210,18 +284,22 @@ export const TeamsManager: React.FC = () => {
             <RefreshCw className="w-4 h-4" />
             {t('platform.teams.refresh')}
           </button>
-          <button
-            type="button"
-            onClick={startCreate}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-admin-primary text-white text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            {t('platform.teams.create')}
-          </button>
+          {canManageTeams ? (
+            <button
+              type="button"
+              onClick={startCreate}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-admin-primary text-white text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              {t('platform.teams.create')}
+            </button>
+          ) : null}
         </div>
       </div>
 
-      <AdminHintCard title={t('platform.teams.hintTitle')}>{t('platform.teams.hint')}</AdminHintCard>
+      <AdminHintCard title={t('platform.teams.hintTitle')}>
+        {canManageTeams ? t('platform.teams.hint') : t('platform.teams.superAdminOnlyHint')}
+      </AdminHintCard>
 
       <AdminTabs
         ariaLabel={t('platform.teams.filterAll')}
@@ -236,7 +314,7 @@ export const TeamsManager: React.FC = () => {
         ]}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] items-start">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)] items-start">
         <div className="grid gap-3 sm:grid-cols-2">
           {loading ? (
             <p className="text-sm text-admin-muted sm:col-span-2">{t('platform.teams.loading')}</p>
@@ -259,17 +337,19 @@ export const TeamsManager: React.FC = () => {
                 testId={`team-card-${team.id}`}
                 onSelect={() => openTeam(team)}
                 action={
-                  <button
-                    type="button"
-                    className="p-1 rounded text-admin-muted hover:text-rose-600"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      void handleDelete(team);
-                    }}
-                    aria-label={t('platform.teams.delete')}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  canManageTeams ? (
+                    <button
+                      type="button"
+                      className="p-1 rounded text-admin-muted hover:text-rose-600"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleDelete(team);
+                      }}
+                      aria-label={t('platform.teams.delete')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  ) : undefined
                 }
               />
             ))
@@ -277,9 +357,18 @@ export const TeamsManager: React.FC = () => {
         </div>
 
         {editing ? (
-          <div className="space-y-4">
-          <AdminWidgetCard title={creating ? t('platform.teams.create') : t('platform.teams.edit')}>
-            <div className="space-y-4">
+          <div className="min-h-0 space-y-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-5rem)] min-w-0">
+          <AdminWidgetCard
+            title={creating ? t('platform.teams.create') : t('platform.teams.edit')}
+            padded={false}
+            className="flex max-h-[min(85vh,56rem)] min-h-0 min-w-0 flex-col"
+            bodyClassName="flex min-h-0 flex-1 flex-col px-5 pb-5"
+          >
+            <div
+              className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pt-5 pr-1 [-webkit-overflow-scrolling:touch]"
+              data-testid="team-edit-scroll"
+            >
+              <fieldset className="m-0 min-w-0 space-y-4 border-0 p-0 disabled:opacity-100" disabled={!canManageTeams}>
               <label className="block text-sm">
                 <span className="text-admin-muted">{t('platform.teams.type')}</span>
                 <select
@@ -351,27 +440,206 @@ export const TeamsManager: React.FC = () => {
                   ) : null}
                 </div>
               </fieldset>
-              {draft.type === 'external' ? (
-                <p className="text-sm text-admin-muted">
-                  {t('platform.teams.externalHint')}{' '}
-                  <a href="/team-chat" className="text-admin-primary hover:underline">
-                    {t('platform.teams.openTeamChat')}
-                  </a>
-                </p>
-              ) : (
+              <fieldset>
+                <legend className="mb-2 flex w-full flex-wrap items-center justify-between gap-2 text-sm text-admin-muted">
+                  <span>{t('platform.teams.members')}</span>
+                  <span
+                    className="inline-flex rounded-lg border border-admin-border p-0.5 text-xs font-normal"
+                    role="group"
+                    aria-label={t('platform.teams.membersSortLabel')}
+                  >
+                    <button
+                      type="button"
+                      data-testid="team-members-sort-asc"
+                      aria-pressed={memberSortDir === 'asc'}
+                      className={`rounded-md px-2.5 py-1 ${
+                        memberSortDir === 'asc'
+                          ? 'bg-admin-primary text-white'
+                          : 'text-admin-muted hover:text-admin-text'
+                      }`}
+                      onClick={() => setMemberSortDir('asc')}
+                    >
+                      {t('platform.teams.membersSortAz')}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="team-members-sort-desc"
+                      aria-pressed={memberSortDir === 'desc'}
+                      className={`rounded-md px-2.5 py-1 ${
+                        memberSortDir === 'desc'
+                          ? 'bg-admin-primary text-white'
+                          : 'text-admin-muted hover:text-admin-text'
+                      }`}
+                      onClick={() => setMemberSortDir('desc')}
+                    >
+                      {t('platform.teams.membersSortZa')}
+                    </button>
+                  </span>
+                </legend>
+                <p className="text-xs text-admin-muted mb-2">{t('platform.teams.teamLeaderHint')}</p>
+                {sortedUsers.length === 0 ? (
+                  <p className="text-sm text-admin-muted">{t('platform.teams.noUsers')}</p>
+                ) : (
+                  <ul
+                    className="space-y-2 rounded-xl border border-admin-border bg-admin-card p-2"
+                    data-testid="team-members-list"
+                  >
+                    {sortedUsers.map((user) => {
+                      const isMember = draft.memberUserIds.includes(user.id);
+                      const isLeader = draft.teamLeaderUserIds.includes(user.id);
+                      return (
+                        <li key={user.id}>
+                          <div className="flex flex-col gap-1.5 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 text-sm text-admin-text">
+                            <label className="flex items-start gap-2.5">
+                              <input
+                                type="checkbox"
+                                className="mt-1 shrink-0"
+                                data-testid={`team-member-${user.id}`}
+                                checked={isMember}
+                                onChange={() => toggleMember(user.id)}
+                              />
+                              <span className="min-w-0 flex-1">
+                                <span className="block font-medium break-words">{user.name}</span>
+                                <span className="mt-0.5 block text-xs text-admin-muted break-all">{user.email}</span>
+                                {!user.active ? (
+                                  <span className="mt-1 inline-block text-xs font-medium text-amber-700 dark:text-amber-400">
+                                    {t('platform.teams.inactive')}
+                                  </span>
+                                ) : null}
+                              </span>
+                            </label>
+                            {isMember ? (
+                              <label className="flex items-center gap-2 pl-6 text-xs text-admin-muted">
+                                <input
+                                  type="checkbox"
+                                  data-testid={`team-leader-${user.id}`}
+                                  checked={isLeader}
+                                  onChange={() => toggleTeamLeader(user.id)}
+                                />
+                                {t('platform.teams.teamLeader')}
+                              </label>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </fieldset>
               <label className="flex items-start gap-2 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 text-sm text-admin-text">
                 <input
                   type="checkbox"
                   className="mt-0.5"
-                  data-testid="team-chat-enabled"
-                  checked={draft.chatEnabled}
-                  onChange={(event) => setDraft((current) => ({ ...current, chatEnabled: event.target.checked }))}
+                  data-testid="team-kanban-enabled"
+                  checked={draft.kanbanEnabled}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, kanbanEnabled: event.target.checked }))
+                  }
                 />
                 <span>
-                  {t('platform.teams.chatEnabled')}
-                  <span className="block text-xs text-admin-muted">{t('platform.teams.chatHint')}</span>
+                  {t('platform.teams.kanbanEnabled')}
+                  <span className="block text-xs text-admin-muted">
+                    {t('platform.teams.kanbanHint')}{' '}
+                    <a href="/kanban" className="text-admin-primary hover:underline">
+                      Kanban
+                    </a>
+                  </span>
                 </span>
               </label>
+              <label className="flex items-start gap-2 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 text-sm text-admin-text">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  data-testid="team-room-enabled"
+                  checked={draft.teamChatEnabled}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, teamChatEnabled: event.target.checked }))
+                  }
+                />
+                <span>
+                  {t('platform.teams.teamChatEnabled')}
+                  <span className="block text-xs text-admin-muted">
+                    {t('platform.teams.teamChatHint')}{' '}
+                    <a href="/team-chat" className="text-admin-primary hover:underline">
+                      {t('platform.teams.openTeamChat')}
+                    </a>
+                  </span>
+                </span>
+              </label>
+              {draft.teamChatEnabled ? (
+                creating ? (
+                  <p className="text-sm text-admin-muted">{t('platform.teams.teamChatShareSaveFirst')}</p>
+                ) : (
+                  <fieldset className="rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 space-y-2">
+                    <label className="flex items-start gap-2 text-sm text-admin-text">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        data-testid="team-room-share-enabled"
+                        checked={draft.teamChatShareEnabled}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            teamChatShareEnabled: event.target.checked,
+                          }))
+                        }
+                      />
+                      <span>
+                        {t('platform.teams.teamChatShareEnabled')}
+                        <span className="block text-xs text-admin-muted">
+                          {t('platform.teams.teamChatShareHint')}
+                        </span>
+                      </span>
+                    </label>
+                    {draft.teamChatShareEnabled ? (
+                      shareTargetTeams.length === 0 ? (
+                        <p className="text-xs text-admin-muted">{t('platform.teams.teamChatShareEmpty')}</p>
+                      ) : (
+                        <div className="space-y-1">
+                          <p className="text-xs text-admin-muted">
+                            {t('platform.teams.teamChatSharePick', { count: String(shareTargetTeams.length) })}
+                          </p>
+                          <ul className="space-y-1 rounded-lg border border-admin-border bg-admin-card p-2">
+                            {shareTargetTeams.map((team) => (
+                              <li key={team.id}>
+                                <label className="flex items-start gap-2 rounded-md px-1 py-1 text-sm text-admin-text hover:bg-admin-canvas">
+                                  <input
+                                    type="checkbox"
+                                    className="mt-0.5 shrink-0"
+                                    data-testid={`team-room-share-${team.id}`}
+                                    checked={draft.teamChatShareWithTeamIds.includes(team.id)}
+                                    onChange={() => toggleShareTarget(team.id)}
+                                  />
+                                  <span className="min-w-0">
+                                    <span className="block font-medium">{teamTitle(team)}</span>
+                                    <span className="text-xs text-admin-muted">{typeLabel(team.type)}</span>
+                                  </span>
+                                </label>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )
+                    ) : null}
+                  </fieldset>
+                )
+              ) : null}
+              {draft.type === 'external' ? (
+                <p className="text-sm text-admin-muted">{t('platform.teams.externalHint')}</p>
+              ) : (
+                <label className="flex items-start gap-2 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 text-sm text-admin-text">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    data-testid="team-chat-enabled"
+                    checked={draft.chatEnabled}
+                    onChange={(event) => setDraft((current) => ({ ...current, chatEnabled: event.target.checked }))}
+                  />
+                  <span>
+                    {t('platform.teams.chatEnabled')}
+                    <span className="block text-xs text-admin-muted">{t('platform.teams.chatHint')}</span>
+                  </span>
+                </label>
               )}
               <label className="flex items-start gap-2 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2.5 text-sm text-admin-text">
                 <input
@@ -399,38 +667,13 @@ export const TeamsManager: React.FC = () => {
                   />
                 </label>
               ) : null}
-              <fieldset>
-                <legend className="text-sm text-admin-muted mb-2">{t('platform.teams.members')}</legend>
-                {users.length === 0 ? (
-                  <p className="text-sm text-admin-muted">{t('platform.teams.noUsers')}</p>
-                ) : (
-                  <ul className="max-h-64 overflow-y-auto space-y-1">
-                    {users.map((user) => (
-                      <li key={user.id}>
-                        <label className="flex items-center gap-2 rounded-lg border border-admin-border bg-admin-canvas px-3 py-2 text-sm text-admin-text">
-                          <input
-                            type="checkbox"
-                            data-testid={`team-member-${user.id}`}
-                            checked={draft.memberUserIds.includes(user.id)}
-                            onChange={() => toggleMember(user.id)}
-                          />
-                          <span>
-                            {user.name}
-                            <span className="text-admin-muted"> · {user.email}</span>
-                            {!user.active ? (
-                              <span className="ml-1 text-xs text-amber-700">{t('platform.teams.inactive')}</span>
-                            ) : null}
-                          </span>
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </fieldset>
+            </div>
+            <div className="mt-4 shrink-0 border-t border-admin-border bg-admin-card pt-4">
               <AdminFormActions
                 onSave={() => void handleSave()}
                 saveLabel={saving ? t('platform.teams.saving') : t('platform.teams.save')}
-                saveDisabled={saving}
+                saveDisabled={saving || !canManageTeams}
                 saveBusy={saving}
                 saveTestId="team-save"
                 extra={

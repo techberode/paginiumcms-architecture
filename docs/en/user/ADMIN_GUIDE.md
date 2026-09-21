@@ -87,7 +87,7 @@ Same first-segment URLs as the rest of the admin ([ADMIN_DEEP_LINKS.md](../archi
 | Support Kanban | `/kanban` |
 | Newsletter | `/newsletter` |
 
-Bookmarks under `/platform/mail` or `/platform/kanban` redirect to the paths above. IMAP settings: `/settings?group=imap` (including **Messages fetched from server** — how many newest messages load per folder, default 40; **Append copy to Sent (IMAP)** — disable for faster send when SMTP alone is enough).
+Bookmarks under `/platform/mail` or `/platform/kanban` redirect to the paths above. On a Kanban card you can set **tags**, an **SLA due** date, insert a **canned reply** into the ticket body, and add **internal notes** that stay staff-only (Settings tab stores the reply templates). IMAP settings: `/settings?group=imap` (including **Messages fetched from server** — how many newest messages load per folder, default 40; **Append copy to Sent (IMAP)** — disable for faster send when SMTP alone is enough).
 
 **Mail labels and local trash (`beta.79`):** Sidebar **Labels** — create names and colors, edit/delete (including tags that exist only on IMAP). On an open message, click a label chip (**×**) to remove it; bulk-select rows and use **Remove from selected**. **Local trash** holds messages hidden in this client only; **Empty local trash** permanently dismisses them (they will not reappear in INBOX or trash here; IMAP copies stay on the server). Use **Refresh** to reload folders after external changes (no automatic polling).
 

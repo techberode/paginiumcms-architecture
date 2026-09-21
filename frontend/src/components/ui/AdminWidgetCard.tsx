@@ -7,6 +7,7 @@ export interface AdminWidgetCardProps {
   action?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
+  bodyClassName?: string;
   padded?: boolean;
 }
 
@@ -16,11 +17,12 @@ export const AdminWidgetCard: React.FC<AdminWidgetCardProps> = ({
   action,
   children,
   className = '',
+  bodyClassName = '',
   padded = true,
 }) => (
   <section className={`${ADMIN_CARD} overflow-hidden ${className}`.trim()}>
     {(title || action || description) && (
-      <header className="flex items-start justify-between gap-3 border-b border-admin-border px-5 py-3.5">
+      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-admin-border px-5 py-3.5">
         <div className="min-w-0">
           {title ? <h2 className="text-sm font-semibold tracking-tight text-admin-text">{title}</h2> : null}
           {description ? <p className="text-xs text-admin-muted mt-1 leading-relaxed">{description}</p> : null}
@@ -28,7 +30,9 @@ export const AdminWidgetCard: React.FC<AdminWidgetCardProps> = ({
         {action ? <div className="shrink-0">{action}</div> : null}
       </header>
     )}
-    {children ? <div className={padded ? 'p-5' : ''}>{children}</div> : null}
+    {children ? (
+      <div className={`${padded ? 'p-5' : ''} ${bodyClassName}`.trim()}>{children}</div>
+    ) : null}
   </section>
 );
 

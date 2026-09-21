@@ -109,6 +109,7 @@ import { logsApi } from './logs';
 import { mailApi } from './mail';
 import { messagesApi } from './messages';
 import { originApi } from './origin';
+import { playgroundApi } from './playground';
 import { registrationInvitesApi } from './registrationInvites';
 import { registrationOptionsApi } from './registrationOptions';
 import { projectPlannerApi } from './projectPlanner';
@@ -117,7 +118,7 @@ import { rolesApi } from './roles';
 import { securityApi } from './security';
 import { shortcodesApi } from './shortcodes';
 import { snippetsApi } from './snippets';
-import { supportKanbanApi } from './kanban';
+import { supportKanbanApi, teamKanbanApi } from './kanban';
 import { translationsApi } from './translations';
 import { teamChatApi } from './teamChat';
 import { teamsApi } from './teams';
@@ -154,6 +155,7 @@ export const api = {
   mail: mailApi,
   messages: messagesApi,
   origin: originApi,
+  playground: playgroundApi,
   registrationInvites: registrationInvitesApi,
   registrationOptions: registrationOptionsApi,
   projectPlanner: projectPlannerApi,
@@ -163,6 +165,7 @@ export const api = {
   shortcodes: shortcodesApi,
   snippets: snippetsApi,
   supportKanban: supportKanbanApi,
+  teamKanban: teamKanbanApi,
   teamChat: teamChatApi,
   teams: teamsApi,
   themes: themesApi,

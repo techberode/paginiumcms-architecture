@@ -48,7 +48,7 @@ final class OriginCatalogLabelResolverTest extends TestCase
             $resolver->resolve('origin.probes.it86_bulk_selection')
         );
         $this->assertSame(
-            'State as of 19 September 2026',
+            'State as of 20 September 2026',
             $resolver->resolve('origin.snapshot.headline')
         );
         $this->assertSame(

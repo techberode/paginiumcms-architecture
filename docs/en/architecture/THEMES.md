@@ -284,7 +284,7 @@ It will be switchable from **Build → Themes**. Admins still use **Settings →
 
 Read-only authoring shell (88a): `GET /api/admin/themes/{id}/files` and `GET …/file?path=` under the theme directory (`realpath` + prefix). Admin UI: `/themes/:id/edit` with `MonacoCodeEditor`.
 
-**Validate (88b):** `POST /api/admin/themes/validate` uses `CodePolicyEngine::validateUntrusted` plus `UntrustedMarkupScanner` (HTML/CSS) so Monaco is not a weaker write path than ZIP import.
+**Validate (88b):** `POST /api/admin/themes/validate` uses `CodePolicyEngine::validateUntrusted` plus `UntrustedMarkupScanner` (HTML/CSS) so Monaco is not a weaker write path than ZIP import. **It.95b** can open the current CSS/HTML/JS/TSX/JSX buffer in `/playground`; export runs the same validate (and HTML normalize) and returns to the Monaco buffer — playground never writes the theme package.
 
 **Preview (88d):** `POST /api/admin/themes/preview` reuses those validators on HTML/CSS/JS buffers, sanitizes layout HTML, and returns a CSP srcdoc. The admin UI paints it in an iframe with `sandbox=""` (no `allow-scripts` / no `allow-same-origin`).
 

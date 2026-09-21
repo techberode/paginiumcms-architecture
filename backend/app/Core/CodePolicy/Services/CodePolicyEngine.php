@@ -57,6 +57,7 @@ final class CodePolicyEngine implements CodePolicyEngineInterface
         'data/shortcodes/',
         'data/widgets/',
         'data/plugins/',
+        'data/playground-packs/',
         'untrusted://',
     ];
 

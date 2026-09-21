@@ -52,6 +52,61 @@ final class TeamRepositoryTest extends TestCase
         $this->assertSame(['user_b', 'user_c'], $this->repository->memberIdsForType(TeamRepository::TYPE_SUPPORT));
         $this->assertFalse($editorial['chatEnabled'] ?? true);
         $this->assertTrue($support['chatEnabled'] ?? false);
+        $this->assertFalse($editorial['teamChatEnabled'] ?? true);
+        $this->assertFalse($support['teamChatEnabled'] ?? true);
+    }
+
+    public function testIdsForMember(): void
+    {
+        $a = $this->repository->create('A', TeamRepository::TYPE_EDITORIAL, ['user_1']);
+        $b = $this->repository->create('B', TeamRepository::TYPE_OPS, ['user_2']);
+        $this->repository->update($a['id'], ['memberUserIds' => ['user_1', 'user_2']]);
+
+        $this->assertSame([$a['id']], $this->repository->idsForMember('user_1'));
+        $expected = [$a['id'], $b['id']];
+        sort($expected);
+        $this->assertSame($expected, $this->repository->idsForMember('user_2'));
+        $this->assertSame([], $this->repository->idsForMember('user_none'));
+    }
+
+    public function testTeamChatShareTargetsPersist(): void
+    {
+        $owner = $this->repository->create('Desk', TeamRepository::TYPE_SUPPORT, []);
+        $guest = $this->repository->create('Devs', TeamRepository::TYPE_EXTERNAL, ['user_1']);
+
+        $updated = $this->repository->update($owner['id'], [
+            'teamChatShareEnabled' => true,
+            'teamChatShareWithTeamIds' => [$guest['id'], $owner['id'], 'team_invalid000'],
+        ]);
+        $this->assertTrue($updated['teamChatShareEnabled'] ?? false);
+        $this->assertSame([$guest['id']], $updated['teamChatShareWithTeamIds'] ?? []);
+    }
+
+    public function testTeamLeadersMustBeMembers(): void
+    {
+        $team = $this->repository->create('Devs', TeamRepository::TYPE_EXTERNAL, ['user_a', 'user_b']);
+        $updated = $this->repository->update($team['id'], [
+            'teamLeaderUserIds' => ['user_b', 'user_outside', 'user_a'],
+        ]);
+        $this->assertSame(['user_a', 'user_b'], $updated['teamLeaderUserIds'] ?? []);
+
+        $trimmed = $this->repository->update($team['id'], ['memberUserIds' => ['user_a']]);
+        $this->assertSame(['user_a'], $trimmed['teamLeaderUserIds'] ?? []);
+    }
+
+    public function testTeamChatEnabledDefaultsAndUpdate(): void
+    {
+        $external = $this->repository->create('Partners', TeamRepository::TYPE_EXTERNAL, []);
+        $this->assertTrue($external['teamChatEnabled'] ?? false);
+
+        $support = $this->repository->create('Desk', TeamRepository::TYPE_SUPPORT, []);
+        $this->assertFalse($support['teamChatEnabled'] ?? true);
+
+        $enabled = $this->repository->update($support['id'], ['teamChatEnabled' => true]);
+        $this->assertTrue($enabled['teamChatEnabled'] ?? false);
+
+        $disabled = $this->repository->update($external['id'], ['teamChatEnabled' => false]);
+        $this->assertFalse($disabled['teamChatEnabled'] ?? true);
     }
 
     public function testUpdateAndDelete(): void

@@ -92,7 +92,7 @@ Pri cache alebo statickom publish profile môže byť potrebná invalidácia/reb
 
 Inštalované balíky: **Build → Témy** (`/themes`) — ZIP import, aktivácia, rollback.
 
-**Theme Studio:** **Upraviť** / **Nová** — Monaco (HTML/CSS), politika ako pri ZIP (žiadny `<script>` v layoute). **Normalizovať** z vloženého HTML spraví bezpečný balík, **nie** pixel-perfect kópiu TemplateMo. **Náhľad** je sandbox bez skriptov.
+**Theme Studio:** **Upraviť** / **Nová** — Monaco (HTML/CSS), politika ako pri ZIP (žiadny `<script>` v layoute). **Otvoriť playground** (95b) pošle aktuálny CSS/HTML/JS buffer do Sandpacku; export sa vráti do Monaco až po validácii a **sám na disk nezapisuje**. **Normalizovať** z vloženého HTML spraví bezpečný balík, **nie** pixel-perfect kópiu TemplateMo. **Náhľad** je sandbox bez skriptov.
 
 ### Ako nahraviť voľnú HTML šablónu (bez programovania)
 

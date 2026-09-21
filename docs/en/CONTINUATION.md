@@ -29,8 +29,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.89` — It.48 static compile + `/static-html` · ISS-173 gitleaks · ISS-174 desk role · AppVersion floor |
-| Unreleased | **58f-h** canvas · **It.95a/c** playground · production deploy of `v2.1.0-beta.89` |
-| Origin Panel | Today snapshot as of 2026-09-20 · latest tag `2.1.0-beta.89` · remaining: 95b/95d, 93l-2, It.69 Redis cache driver |
+| Unreleased | **58f-h** canvas · **It.95** playground (a/c/b/d) · **93l-2** · production deploy of `v2.1.0-beta.89` |
+| Origin Panel | Today snapshot as of 2026-09-20 · latest tag `2.1.0-beta.89` · remaining: It.69 Redis cache driver, It.82d |
 | Previous tag | `v2.1.0-beta.88` — It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount |
 | It.48 | ✅ compile + public HTML serve in `beta.89` |
 | It.92 | ✅ SQLite **derived catalog index only** (`beta.83`–`85`) — not SSOT; Classic default stays `content.json` |
@@ -52,10 +52,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **95b** Monaco bridge | Remainder of [ITERATION_95.md](ITERATION_95.md) |
-| 2 | **95d** private Git import | Same iteration; OutboundUrlGuard + scan |
-| 3 | **93l-2** canned replies / SLA notes | Remainder of It.93 — no new number |
-| — | **It.69 Redis driver** | Optional cache only; Classic must keep working without Redis |
+| 1 | **It.69 Redis driver** | Optional cache only; Classic must keep working without Redis |
 | — | **It.82d** Origin host metrics | Optional maintainer hook |
 
 Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
@@ -101,8 +98,8 @@ Frontend Vite: **`:3025`** (not 3026). White screen on the wrong port is not a C
 | [ITERATION_92.md](ITERATION_92.md) | SQLite derived query index |
 | [ITERATION_70.md](ITERATION_70.md) | Git publish (`local` + `github_api`) |
 | [ITERATION_75.md](ITERATION_75.md) | CMS AI assistant (`beta.88`) |
-| [ITERATION_93.md](ITERATION_93.md) | Admin chrome + desk; **93l-2** later |
-| [ITERATION_95.md](ITERATION_95.md) | Sandpack playground; **95a/c** shipped, **95b/d** remain |
+| [ITERATION_93.md](ITERATION_93.md) | Admin chrome + desk; **93l-2** shipped |
+| [ITERATION_95.md](ITERATION_95.md) | Sandpack playground **95a/c/b/d** shipped |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Full remaining scope |
 | [ISSUES.md](ISSUES.md#iss-173) | ISS-173 gitleaks · ISS-174 desk role |
 

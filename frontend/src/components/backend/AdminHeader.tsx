@@ -8,6 +8,7 @@ import { useI18n } from '../../context/I18nContext';
 import { AdminThemeToggle } from './AdminThemeToggle';
 import { AdminAccountMenu } from './AdminAccountMenu';
 import { DeskNotificationBeacon } from './DeskNotificationBeacon';
+import { TeamChatNotificationBeacon } from './TeamChatNotificationBeacon';
 
 interface AdminHeaderProps {
   onGoToWebsite: () => void;
@@ -140,6 +141,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <span className="hidden sm:inline">{t('admin.header.viewWebsite')}</span>
         </button>
 
+        <TeamChatNotificationBeacon variant="header" />
         <DeskNotificationBeacon variant="header" />
         <AdminAccountMenu variant="header" onOpenChangePassword={onOpenChangePassword} />
 

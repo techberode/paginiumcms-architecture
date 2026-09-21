@@ -21,6 +21,7 @@ final class PlaygroundSettingsSchemaTest extends TestCase
             static fn (array $field): string => (string) $field['key'],
             SettingsSchema::groups()['playground']['fields']
         );
-        $this->assertSame(['enabled', 'template', 'enabledPacks'], $keys);
+        $this->assertSame(['enabled', 'template', 'enabledPacks', 'gitRepoUrl', 'gitRef', 'gitToken'], $keys);
+        $this->assertSame('password', SettingsSchema::groups()['playground']['fields'][5]['type'] ?? '');
     }
 }

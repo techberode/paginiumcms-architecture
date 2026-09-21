@@ -137,6 +137,8 @@ A policy failure typically returns `422` with grouped errors. Do not remove secu
 
 Untrusted paths must use enforced `validateUntrusted` policy even when the general Code Editor policy switch is relaxed for internal development. Import, Monaco, and future scaffold must not provide parallel weaker write paths.
 
+**Open in playground** (It.95b) is available for `.tsx`, `.jsx`, `.css`, `.html`, and `.js`. Export returns the snippet to this Monaco buffer after Theme Studio validate when the file came from a theme, or to this editor buffer for Code Editor paths. Saving still uses the existing Code Editor save (policy + backup). PHP is never sent to Sandpack.
+
 ---
 
 ## 8. Create a file

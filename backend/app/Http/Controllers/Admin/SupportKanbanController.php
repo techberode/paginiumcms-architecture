@@ -15,7 +15,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Support Kanban (It.93l): board settings + tickets. Permission `support-ticket:manage`.
+ * Support Kanban (It.93l / 93l-2): board, tickets, canned replies, internal notes.
+ * Permission `support-ticket:manage`.
  */
 final class SupportKanbanController
 {
@@ -29,11 +30,32 @@ final class SupportKanbanController
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json->success($response, [
-            'board' => $this->kanban->getBoard(),
-            'tickets' => $this->kanban->listTickets(),
+        $scope = SupportKanbanRepository::LEGACY_SCOPE;
+        $board = $this->kanban->getBoard($scope);
+        $payload = [
+            'board' => $board,
+            'tickets' => $this->kanban->listTickets($scope),
             'agents' => $this->agents(),
-        ]);
+            'cannedReplies' => $this->kanban->getCannedReplies($scope)['replies'],
+        ];
+        if (($board['statsEnabled'] ?? false) === true) {
+            $payload['stats'] = $this->kanban->stats($scope);
+        }
+
+        return $this->json->success($response, $payload);
+    }
+
+    public function saveCanned(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $body = RequestJsonBody::decode($request) ?? [];
+
+        try {
+            $canned = $this->kanban->saveCannedReplies(SupportKanbanRepository::LEGACY_SCOPE, $body);
+        } catch (InvalidArgumentException $exception) {
+            return $this->json->validation($response, 'Validation failed', ['canned' => $exception->getMessage()]);
+        }
+
+        return $this->json->success($response, ['cannedReplies' => $canned['replies']]);
     }
 
     public function saveBoard(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -41,7 +63,7 @@ final class SupportKanbanController
         $body = RequestJsonBody::decode($request) ?? [];
 
         try {
-            $board = $this->kanban->saveBoard($body);
+            $board = $this->kanban->saveBoard(SupportKanbanRepository::LEGACY_SCOPE, $body);
         } catch (InvalidArgumentException $exception) {
             return $this->json->validation($response, 'Validation failed', ['board' => $exception->getMessage()]);
         }
@@ -54,7 +76,7 @@ final class SupportKanbanController
         $body = RequestJsonBody::decode($request) ?? [];
 
         try {
-            $ticket = $this->kanban->createTicket($body, $this->agentIds());
+            $ticket = $this->kanban->createTicket(SupportKanbanRepository::LEGACY_SCOPE, $body, $this->agentIds());
         } catch (InvalidArgumentException $exception) {
             return $this->json->validation($response, 'Validation failed', ['ticket' => $exception->getMessage()]);
         }
@@ -70,7 +92,12 @@ final class SupportKanbanController
         $body = RequestJsonBody::decode($request) ?? [];
 
         try {
-            $ticket = $this->kanban->updateTicket((string) ($args['id'] ?? ''), $body, $this->agentIds());
+            $ticket = $this->kanban->updateTicket(
+                SupportKanbanRepository::LEGACY_SCOPE,
+                (string) ($args['id'] ?? ''),
+                $body,
+                $this->agentIds()
+            );
         } catch (InvalidArgumentException $exception) {
             if ($exception->getMessage() === 'Ticket not found') {
                 return $this->json->error($response, $exception->getMessage(), 404);
@@ -88,12 +115,43 @@ final class SupportKanbanController
     public function destroyTicket(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $this->kanban->deleteTicket((string) ($args['id'] ?? ''));
+            $this->kanban->deleteTicket(SupportKanbanRepository::LEGACY_SCOPE, (string) ($args['id'] ?? ''));
         } catch (InvalidArgumentException $exception) {
             return $this->json->error($response, $exception->getMessage(), 404);
         }
 
         return $this->json->success($response, ['removed' => true]);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function addNote(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $request->getAttribute('user');
+        if (!$user instanceof User) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $body = RequestJsonBody::decode($request) ?? [];
+        $text = is_string($body['body'] ?? null) ? $body['body'] : '';
+
+        try {
+            $ticket = $this->kanban->addInternalNote(
+                SupportKanbanRepository::LEGACY_SCOPE,
+                (string) ($args['id'] ?? ''),
+                $text,
+                $user->getId()
+            );
+        } catch (InvalidArgumentException $exception) {
+            if ($exception->getMessage() === 'Ticket not found') {
+                return $this->json->error($response, $exception->getMessage(), 404);
+            }
+
+            return $this->json->validation($response, 'Validation failed', ['note' => $exception->getMessage()]);
+        }
+
+        return $this->json->success($response, ['ticket' => $ticket], 201);
     }
 
     /**

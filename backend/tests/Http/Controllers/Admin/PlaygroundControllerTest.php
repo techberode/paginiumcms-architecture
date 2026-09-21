@@ -36,6 +36,8 @@ final class PlaygroundControllerTest extends TestCase
         $this->assertContains('react-ts', $payload['data']['templates']);
         $ids = array_map(static fn (array $pack): string => (string) $pack['packId'], $payload['data']['packs']);
         $this->assertContains('paginium-starter', $ids);
+        $this->assertFalse($payload['data']['gitConfigured']);
+        $this->assertSame('', $payload['data']['gitRepoUrl']);
     }
 
     public function testAssetRequiresEnabledPlayground(): void
@@ -77,5 +79,22 @@ final class PlaygroundControllerTest extends TestCase
             $this->createJsonRequest('GET', '/api/admin/playground/assets/paginium-starter/../PlaygroundSettings.php')
         );
         $this->assertContains($response->getStatusCode(), [400, 404]);
+    }
+
+    public function testImportGitRequiresSuperAdmin(): void
+    {
+        $user = $this->createTestUser();
+        $this->loginTestUser($user['email'], $user['password']);
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/playground/import-git', []));
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testImportGitFailsWhenRepoIsNotConfigured(): void
+    {
+        $this->loginAsSuperAdminUser();
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/playground/import-git', []));
+        $this->assertSame(400, $response->getStatusCode());
+        $payload = $this->getJsonResponse($response);
+        $this->assertSame('playground_git_not_configured', $payload['error'] ?? '');
     }
 }

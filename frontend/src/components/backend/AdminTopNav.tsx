@@ -7,6 +7,7 @@ import type { AdminNavItemDef } from '../../config/adminNavTypes';
 import { ADMIN_NAV_ACTIVE, ADMIN_NAV_IDLE } from '../../theme/adminUiClasses';
 import { AdminAccountMenu } from './AdminAccountMenu';
 import { DeskNotificationBeacon } from './DeskNotificationBeacon';
+import { TeamChatNotificationBeacon } from './TeamChatNotificationBeacon';
 
 interface AdminTopNavProps {
   mobileOpen: boolean;
@@ -110,6 +111,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({ mobileOpen, onNavigate
   const desktopBar = (
     <div data-testid="admin-topnav-desktop" className="admin-topnav-bar hidden lg:flex items-center gap-1 px-4 sm:px-6 py-2 flex-wrap">
       <AdminAccountMenu variant="topnav" onNavigate={onNavigate} />
+      <TeamChatNotificationBeacon variant="topnav" />
       <DeskNotificationBeacon variant="topnav" />
       {primaryItems.map((item) => renderItem(item, false))}
       {visibleSections.map((section) => {
@@ -144,6 +146,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({ mobileOpen, onNavigate
     >
       <div className="flex items-center gap-2">
         <AdminAccountMenu variant="topnav" onNavigate={onNavigate} />
+        <TeamChatNotificationBeacon variant="topnav" />
         <DeskNotificationBeacon variant="topnav" />
       </div>
       {primaryItems.map((item) => renderItem(item, false))}

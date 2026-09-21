@@ -48,10 +48,43 @@ final class PlaygroundPackRegistryTest extends TestCase
         $this->assertStringContainsString('StatCard', $file['content']);
     }
 
+    public function testImportedPacksStayUnderDedicatedRootAndRespectFileLimit(): void
+    {
+        $base = sys_get_temp_dir() . '/paginium-playground-registry-' . uniqid('', true);
+        $packRoot = $base . '/playground-packs/large-pack';
+        $outsideRoot = $base . '-outside';
+        mkdir($packRoot, 0777, true);
+        mkdir($outsideRoot, 0777, true);
+        file_put_contents($packRoot . '/App.tsx', str_repeat('x', 400_001));
+        file_put_contents($outsideRoot . '/App.tsx', 'export default null;');
+        $registryPath = $base . '/playground-packs.json';
+        file_put_contents($registryPath, json_encode([
+            'packs' => [
+                ['packId' => 'large-pack', 'title' => 'Large', 'root' => $packRoot],
+                ['packId' => 'outside-pack', 'title' => 'Outside', 'root' => $outsideRoot],
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        try {
+            $packs = $this->registry(['large-pack', 'outside-pack'], $registryPath)->list(true);
+            $ids = array_map(static fn (array $pack): string => (string) $pack['packId'], $packs);
+            $this->assertContains('large-pack', $ids);
+            $this->assertNotContains('outside-pack', $ids);
+            $this->assertSame([], $this->packById($packs, 'large-pack')['files'] ?? null);
+        } finally {
+            @unlink($packRoot . '/App.tsx');
+            @unlink($registryPath);
+            @rmdir($packRoot);
+            @rmdir(dirname($packRoot));
+            @rmdir($outsideRoot);
+            @rmdir($base);
+        }
+    }
+
     /**
      * @param list<string> $enabledPacks
      */
-    private function registry(array $enabledPacks): PlaygroundPackRegistry
+    private function registry(array $enabledPacks, ?string $importedRegistryPath = null): PlaygroundPackRegistry
     {
         $settingsRepo = $this->createMock(SettingsRepositoryInterface::class);
         $settingsRepo->method('get')->willReturnCallback(
@@ -68,7 +101,7 @@ final class PlaygroundPackRegistryTest extends TestCase
 
         return new PlaygroundPackRegistry(
             dirname(__DIR__, 3) . '/app/Modules/Playground/Resources/packs',
-            sys_get_temp_dir() . '/paginium-missing-playground-packs.json',
+            $importedRegistryPath ?? sys_get_temp_dir() . '/paginium-missing-playground-packs.json',
             $settings
         );
     }

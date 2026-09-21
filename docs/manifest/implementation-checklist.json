@@ -73,17 +73,17 @@
         {
           "id": "95-monaco",
           "labelKey": "origin.catalog.it95_monaco",
-          "phase": "pending"
+          "phase": "shipped"
         },
         {
           "id": "95-git",
           "labelKey": "origin.catalog.it95_git",
-          "phase": "pending"
+          "phase": "shipped"
         },
         {
           "id": "93l-2",
           "labelKey": "origin.catalog.it93_canned",
-          "phase": "pending"
+          "phase": "shipped"
         },
         {
           "id": "69-redis",

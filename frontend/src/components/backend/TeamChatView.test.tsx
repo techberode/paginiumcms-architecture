@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { TeamChatView } from './TeamChatView';
-import { renderWithProviders } from '../../test/renderWithProviders';
+import { renderWithRouter } from '../../test/renderWithRouter';
 import { teamChatApi } from '../../api/teamChat';
 
 vi.mock('../../hooks/useToast', () => {
@@ -31,7 +31,7 @@ vi.mock('../../api/teamChat', () => ({
 
 describe('TeamChatView', () => {
   it('lists rooms and posts markdown', async () => {
-    renderWithProviders(<TeamChatView />);
+    renderWithRouter(<TeamChatView />);
 
     expect(await screen.findByTestId('team-chat')).toBeInTheDocument();
     expect(await screen.findByTestId('team-chat-room-team_aabbccddee')).toHaveTextContent('Developers');

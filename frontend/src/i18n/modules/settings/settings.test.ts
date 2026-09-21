@@ -127,7 +127,7 @@ describe('settings i18n module', () => {
     expect(translate('en', 'settings.enum.chromeGradientDirection.to-right')).toBe('Right');
     expect(translate('en', 'settings.helpTooltip.toggle')).toBe('Show detailed help');
     expect(translate('sk', 'settings.helpTooltip.toggle')).toBe('Zobraziť podrobnú nápovedu');
-    expect(translate('en', 'settings.layout.builders.outline.help')).toContain('block palette');
+    expect(translate('en', 'settings.layout.builders.outline.help')).toContain('visual canvas');
     expect(translate('sk', 'settings.layout.pagesOnlyHint')).toContain('Články');
     expect(translate('en', 'settings.fields.layout.builderMode.label')).toBe('Default layout builder');
     expect(translate('sk', 'settings.enum.builderMode.outline')).toBe('Outline blokov');

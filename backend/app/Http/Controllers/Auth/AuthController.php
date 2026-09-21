@@ -482,8 +482,7 @@ class AuthController
 
         $payload = $user->jsonSerialize();
         $payload['permissions'] = $this->authorization->permissionsFor($user);
-        $payload['hasTeamChat'] = $user->isAdmin()
-            || ($this->teamChat !== null && $this->teamChat->roomsFor($user) !== []);
+        $payload['hasTeamChat'] = $this->teamChat !== null && $this->teamChat->roomsFor($user) !== [];
 
         return $this->json->respond($response, [
             'success' => true,

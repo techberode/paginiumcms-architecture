@@ -4,6 +4,12 @@ import { TeamsManager } from './TeamsManager';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { teamsApi } from '../../api/teams';
 
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'user_1', roles: ['SUPER_ADMIN'], name: 'Super', email: 'super@example.com' },
+  }),
+}));
+
 vi.mock('../../hooks/useToast', () => {
   const toast = {
     success: vi.fn(),
@@ -68,6 +74,7 @@ describe('TeamsManager', () => {
     expect(screen.queryByTestId('team-name')).not.toBeInTheDocument();
     expect(screen.getByTestId('team-member-user_1')).toBeChecked();
     expect(screen.getByTestId('team-member-user_2')).not.toBeChecked();
+    expect(screen.getByTestId('team-room-enabled')).not.toBeChecked();
     expect(screen.getByTestId('team-chat-enabled')).toBeChecked();
     expect(screen.getByTestId('team-reply-mail-enabled')).not.toBeChecked();
     fireEvent.click(screen.getByTestId('team-reply-mail-enabled'));

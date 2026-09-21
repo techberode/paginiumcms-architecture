@@ -310,6 +310,15 @@ final class SettingsSchema
                     ['key' => 'forbiddenPhpFunctions', 'type' => 'text', 'label' => 'Forbidden PHP functions', 'default' => 'eval,exec,shell_exec,system,passthru,proc_open,popen,assert,create_function', 'rules' => ['string', 'max:2000'], 'help' => 'Comma-separated list scanned before save. Untrusted trees also block include/require/unserialize/extract/call_user_func* and indirect calls ($fn(), $$, array_map(\'system\')).'],
                 ],
             ],
+            'teamChat' => [
+                'label' => 'Team chat history',
+                'fields' => [
+                    ['key' => 'retentionDays', 'type' => 'int', 'label' => 'Keep messages (days)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Older messages are deleted from disk during prune (export before lowering). Default 30 days.'],
+                    ['key' => 'maxStoredMessages', 'type' => 'int', 'label' => 'Max messages per room', 'default' => 800, 'rules' => ['required', 'int', 'min:100', 'max:5000'], 'help' => 'Hard cap per team room after retention. Oldest entries drop first.'],
+                    ['key' => 'liveWindowMessages', 'type' => 'int', 'label' => 'Live window in UI', 'default' => 80, 'rules' => ['required', 'int', 'min:20', 'max:500'], 'help' => 'How many newest messages load in /team-chat. Search and export use the full retained history.'],
+                    ['key' => 'searchMaxResults', 'type' => 'int', 'label' => 'Search result limit', 'default' => 100, 'rules' => ['required', 'int', 'min:10', 'max:500'], 'help' => 'Max matches returned by GET …/search?q=… per request.'],
+                ],
+            ],
             'playground' => [
                 'label' => 'Component playground',
                 'superAdminOnly' => true,
@@ -317,6 +326,9 @@ final class SettingsSchema
                     ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable Sandpack playground', 'default' => false, 'rules' => ['bool'], 'help' => 'SUPER_ADMIN only. Off in DEMO_MODE. Enabling adds CodeSandbox CDN hosts to admin CSP so the live preview iframe can load. Preview code is untrusted and never runs on PHP.'],
                     ['key' => 'template', 'type' => 'enum', 'label' => 'Default playground template', 'default' => 'react-ts', 'options' => ['react-ts', 'vanilla', 'vue'], 'rules' => ['required', 'in:react-ts,vanilla,vue'], 'help' => 'Allow-listed Sandpack templates only. No arbitrary npm search.'],
                     ['key' => 'enabledPacks', 'type' => 'string', 'label' => 'Enabled component packs', 'default' => 'paginium-starter', 'rules' => ['string', 'max:500'], 'help' => 'Comma-separated pack IDs from the bundled/imported registry. Toggle modules here — this is not npm install on the server.'],
+                    ['key' => 'gitRepoUrl', 'type' => 'string', 'label' => 'Private pack Git URL', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'HTTPS GitHub/GitLab repo or a direct .zip URL. Import is an explicit admin action — never a background pull. Must pass OutboundUrlGuard.'],
+                    ['key' => 'gitRef', 'type' => 'string', 'label' => 'Pack Git ref', 'default' => 'main', 'rules' => ['string', 'max:200'], 'help' => 'Branch, tag, or commit pin. No auto-update cron.'],
+                    ['key' => 'gitToken', 'type' => 'password', 'label' => 'Pack Git token', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Optional deploy token for a private repo. Encrypted at rest. Never returned after save. Not used for silent pulls.'],
                 ],
             ],
             'engine' => [

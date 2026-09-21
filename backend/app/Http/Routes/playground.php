@@ -7,6 +7,7 @@ declare(strict_types=1);
  *
  *  - GET /api/admin/playground
  *  - GET /api/admin/playground/assets/{packId}/{path:.*}
+ *  - POST /api/admin/playground/import-git
  */
 
 use PaginiumCMS\Http\Controllers\Admin\PlaygroundController;
@@ -25,6 +26,7 @@ return function (App $app): void {
         $controller = $container->get(PlaygroundController::class);
         $group->get('', [$controller, 'show']);
         $group->get('/assets/{packId}/{path:.*}', [$controller, 'asset']);
+        $group->post('/import-git', [$controller, 'importGit']);
     })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));

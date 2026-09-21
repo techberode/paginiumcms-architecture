@@ -1,6 +1,6 @@
 # Iterácia 95 — Component playground a vlastná knižnica komponentov
 
-> **Stav:** 🟡 partial — **95a/c** hotové (Unreleased); **95b/d** ostávajú.  
+> **Stav:** ✅ hotové (Unreleased) — **95a/c/b/d**.
 > **EN špecifikácia:** [../en/ITERATION_95.md](../en/ITERATION_95.md)
 
 ## Zhrnutie
@@ -19,9 +19,9 @@ Vlastný repozitár = buď **import ZIP/tarball** cez admin (95d), alebo **organ
 | ID | Obsah |
 |----|--------|
 | **95a** | Sandpack playground + live preview |
-| **95b** | Prepojenie s Monacom (otvoriť / exportovať s validáciou) |
+| **95b** | ✅ Prepojenie s Monacom (otvoriť / exportovať s validáciou) |
 | **95c** | Registr komponentov + prepínače v Settings |
-| **95d** | Import z privátneho Git (pin ref, OutboundUrlGuard) |
+| **95d** | ✅ Import z privátneho Git (pin ref, OutboundUrlGuard) |
 
 ## Väzby
 

@@ -137,6 +137,8 @@ Policy failure typicky vráti `422` s kategóriami chýb. Neodstraňuj bezpečno
 
 Pre untrusted paths musí platiť vynútená `validateUntrusted` politika aj vtedy, keď je všeobecný Code Editor policy switch pre interný vývoj voľnejší. Import, Monaco a budúci scaffold nesmú mať paralelnú slabšiu write cestu.
 
+**Otvoriť v playgrounde** (It.95b) je pre `.tsx`, `.jsx`, `.css`, `.html` a `.js`. Export vráti úryvok do Monaco buffera; uloženie na disk ostáva existujúcim Save (politika + záloha). PHP sa do Sandpacku neposiela.
+
 ---
 
 ## 8. Vytvorenie súboru

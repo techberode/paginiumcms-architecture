@@ -89,7 +89,7 @@ Rovnaký tvar URL ako zvyšok administrácie ([ADMIN_DEEP_LINKS.md](../architect
 | Support Kanban | `/kanban` |
 | Newsletter | `/newsletter` |
 
-Záložky `/platform/mail` a `/platform/kanban` presmerujú na cesty vyššie. IMAP nastavenia: `/settings?group=imap` (vrátane **Počet správ zo servera**; **Append copy to Sent (IMAP)** — vypni pre rýchlejšie odoslanie len cez SMTP).
+Záložky `/platform/mail` a `/platform/kanban` presmerujú na cesty vyššie. Na karte ticketu nastavíte **štítky**, **SLA termín**, vložíte **hotovú odpoveď** do textu a pridáte **interné poznámky** (len pre tím; šablóny sú v Nastaveniach tabule). IMAP nastavenia: `/settings?group=imap` (vrátane **Počet správ zo servera**; **Append copy to Sent (IMAP)** — vypni pre rýchlejšie odoslanie len cez SMTP).
 
 **Štítky a lokálny kôš (`beta.79`):** V sidebari **Štítky** — názov a farba, úprava/mazanie. Na správe klikni na chip (**×**) alebo hromadne **Odstrániť z vybraných**. **Lokálny kôš** = skryté v tomto klientovi; **Vysypať lokálny kôš** ich natrvalo odstráni z klienta (IMAP kópie na serveri ostávajú). **Obnoviť** načíta priečinky nanovo (bez automatického pollingu).
 

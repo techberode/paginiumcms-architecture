@@ -126,7 +126,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         labelKey: 'admin.nav.teams',
         href: '/teams',
         icon: Users2,
-        adminOnly: true,
+        superAdminOnly: true,
       },
       {
         id: 'events',

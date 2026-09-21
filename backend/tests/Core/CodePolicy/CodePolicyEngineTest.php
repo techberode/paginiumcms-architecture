@@ -95,6 +95,7 @@ final class CodePolicyEngineTest extends TestCase
         self::assertTrue($engine->isUntrustedPath('data/shortcodes/foo.json'));
         self::assertTrue($engine->isUntrustedPath('data/widgets/definitions/promo.json'));
         self::assertTrue($engine->isUntrustedPath('themes/acme/layout.php'));
+        self::assertTrue($engine->isUntrustedPath('data/playground-packs/acme/App.tsx'));
         self::assertFalse($engine->isUntrustedPath('backend/app/Modules/Gallery/Services/GalleryRepository.php'));
     }
 

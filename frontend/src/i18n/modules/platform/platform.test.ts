@@ -31,7 +31,7 @@ describe('platform i18n module', () => {
     expect(translate('en', 'platform.teams.types.support')).toBe('Support');
     expect(translate('sk', 'platform.teams.types.external')).toBe('Externý tím');
     expect(translate('sk', 'platform.teams.externalBadge')).toBe('Externý');
-    expect(translate('en', 'platform.teamChat.title')).toBe('External team chat');
+    expect(translate('en', 'platform.teamChat.title')).toBe('Team chat');
     expect(translate('sk', 'platform.registrationOptions.title')).toBe('Typy registrácie');
     expect(translate('sk', 'platform.registrationInvites.title')).toBe('Jednorazová registrácia');
     expect(translate('sk', 'platform.teams.namePlaceholder')).toBe('napr. Marketing');

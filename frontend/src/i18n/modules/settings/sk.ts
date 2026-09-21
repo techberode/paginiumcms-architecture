@@ -88,6 +88,7 @@ export const settingsSk: MessageTree = {
     "systemUpdate": "Aktualizácia systému (deploy)",
     "codePolicy": "Politika kódu",
     "playground": "Playground komponentov",
+    "teamChat": "História tímového chatu",
     "engine": "Hybridný engine",
     "translation": "Asistovaný preklad",
     "agent": "CMS AI asistent",
@@ -1264,6 +1265,24 @@ export const settingsSk: MessageTree = {
         "tooltip": "Po zapnutí sa pravidlá vyhodnocujú pred read/write API obsahu. Cesty používajú glob pod content/pages a content/articles. SUPER_ADMIN path ACL obíde."
       }
     },
+    "teamChat": {
+      "retentionDays": {
+        "label": "Uchovať správy (dní)",
+        "help": "Staršie správy sa pri prune zmažú z disku. Pred skrátením retention odporúčame export."
+      },
+      "maxStoredMessages": {
+        "label": "Max. správ na miestnosť",
+        "help": "Tvrdý strop po retention — najprv padajú najstaršie."
+      },
+      "liveWindowMessages": {
+        "label": "Okno v UI",
+        "help": "Koľko najnovších správ načíta /team-chat. Vyhľadávanie a export idú cez celú uchovanú históriu."
+      },
+      "searchMaxResults": {
+        "label": "Limit výsledkov vyhľadávania",
+        "help": "Max. počet zhôd na jeden dopyt history search."
+      }
+    },
     "playground": {
       "enabled": {
         "label": "Zapnúť Sandpack playground",
@@ -1276,6 +1295,18 @@ export const settingsSk: MessageTree = {
       "enabledPacks": {
         "label": "Zapnuté balíky komponentov",
         "help": "ID balíkov oddelené čiarkou z bundled/importovaného registry. Toto nie je npm install na serveri."
+      },
+      "gitRepoUrl": {
+        "label": "Git URL privátneho balíka",
+        "help": "HTTPS GitHub/GitLab repo alebo priame .zip URL. Import je explicitná admin akcia — nikdy tiché sťahovanie."
+      },
+      "gitRef": {
+        "label": "Git ref balíka",
+        "help": "Branch, tag alebo commit pin. Žiadny auto-update cron."
+      },
+      "gitToken": {
+        "label": "Git token balíka",
+        "help": "Voliteľný deploy token pre privátne repo. Šifrovaný at rest. Po uložení sa nevracia."
       }
     },
     "codePolicy": {

@@ -7,9 +7,9 @@ declare(strict_types=1);
  *
  *  - GET    /api/admin/teams
  *  - GET    /api/admin/teams/{id}
- *  - POST   /api/admin/teams
- *  - PUT    /api/admin/teams/{id}
- *  - DELETE /api/admin/teams/{id}
+ *  - POST   /api/admin/teams          (SUPER_ADMIN only)
+ *  - PUT    /api/admin/teams/{id}     (SUPER_ADMIN only)
+ *  - DELETE /api/admin/teams/{id}     (SUPER_ADMIN only)
  */
 
 use PaginiumCMS\Http\Controllers\Admin\TeamController;
@@ -23,17 +23,25 @@ use Slim\Routing\RouteCollectorProxy;
 
 return function (App $app): void {
     $container = RouteBootstrap::container($app);
+    $auth = $container->get(AuthMiddleware::class);
+    $twoFactor = $container->get(TwoFactorMiddleware::class);
+    $authz = $container->get(AuthorizationInterface::class);
+    $controller = $container->get(TeamController::class);
 
-    $app->group('/api/admin/teams', function (RouteCollectorProxy $group) use ($container) {
-        $controller = $container->get(TeamController::class);
-
+    $app->group('/api/admin/teams', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'index']);
         $group->get('/{id}', [$controller, 'show']);
+    })
+        ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
+        ->add($twoFactor)
+        ->add($auth);
+
+    $app->group('/api/admin/teams', function (RouteCollectorProxy $group) use ($controller) {
         $group->post('', [$controller, 'store']);
         $group->put('/{id}', [$controller, 'update']);
         $group->delete('/{id}', [$controller, 'destroy']);
     })
-        ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
-        ->add($container->get(TwoFactorMiddleware::class))
-        ->add($container->get(AuthMiddleware::class));
+        ->add(new RoleMiddleware($authz, ['SUPER_ADMIN']))
+        ->add($twoFactor)
+        ->add($auth);
 };

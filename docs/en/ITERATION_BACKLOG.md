@@ -47,15 +47,16 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 20 | **It.25** Setup wizard/update UX | 🟡 | ✅ basic + M1+ | shipped `beta.62`–`beta.65`; not a release blocker anymore |
 | 21 | **It.89** Plugin capability model | 🟡 | ✅ | **89a–e** shipped `beta.80`–`82` — [ITERATION_89](ITERATION_89.md) |
 | 22 | **It.92** SQLite query index + Guard advisor | 🟡 | ✅ done | [ITERATION_92](ITERATION_92.md) · [QUERY_INDEX.md](architecture/QUERY_INDEX.md) — tag on next beta release |
-| 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome in `beta.77`; **93l** Kanban + **93m** IMAP in `beta.78`; **93m-5** mail polish in `beta.79`; **93o-2–8** staff/desk/external team in `beta.86` — [ITERATION_93](ITERATION_93.md); **93l-2** notes/SLA later |
+| 23 | **It.93** Admin chrome + daily apps | 🟡 P1 | ✅ shipped | chrome in `beta.77`; **93l** Kanban + **93m** IMAP in `beta.78`; **93m-5** mail polish in `beta.79`; **93o-2–8** staff/desk/external team in `beta.86`; **93l-2** notes/SLA shipped — [ITERATION_93](ITERATION_93.md) |
 | 24 | **It.76/77** Translation providers | 🔵 | 🟡 partial | **It.76** LibreTranslate + **It.77** DeepL/Google API-key drivers in tree; Google service-account JSON later |
 | 25 | **It.75** AI agent | 🔵 | ✅ `beta.88` | proposals only, human Apply, default off |
 | 26 | **It.83** Theme runtime + Terminal Breach | 🟡 | ✅ | shipped `beta.59` — [ITERATION_83](ITERATION_83.md) |
 | 27 | **It.84** Categories, blog sidebar, landing, roles, nav | 🟡 | ✅ | **84a–84e** complete — [ITERATION_84](ITERATION_84.md) |
 | 28 | **It.86** Admin UX polish (search, print, bulk) | 🟡 | ✅ | shipped **2.1.0-beta.60** — ISS-158/159; 86d → It.87 |
 | 29 | **It.94** Admin self-service UX (toast, checklist, tooltips, shortcuts) | 🟡 P1 | ✅ | shipped in tree — [ITERATION_94](en/ITERATION_94.md); visual canvas shipped as **58f-h** |
-| 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | 🟡 partial | **95a/c** shipped; **95b/d** remain — [ITERATION_95](ITERATION_95.md) |
+| 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | ✅ | **95a/c/b/d** shipped — [ITERATION_95](ITERATION_95.md) |
 | 31 | **It.96** Document library & file manager (PDF, Office, text) | 🟡 P1 | ✅ | Upload policy `documents`, text edit, PDF preview, bulk ZIP, `[document-link]` — [ITERATION_96](ITERATION_96.md) · shipped `beta.86` |
+| 32 | **It.93l-3** Kanban WIP + stats; team-chat **topics** (forum threads) | 🟡 P1 | 🟡 partial | **WIP limits**, assignee/tag filters, cycle-time stats shipped in tree; **topics** (import from ticket, idle auto-close, leader archive, desktop notify) — ⏳ next slice |
 
 ---
 

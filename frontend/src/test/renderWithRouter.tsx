@@ -1,19 +1,30 @@
 // frontend/src/test/renderWithRouter.tsx
+import { render, type RenderOptions } from '@testing-library/react';
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom';
-import { renderWithProviders, type RenderWithProvidersOptions } from './renderWithProviders';
+import { TestI18nProvider } from '../context/I18nContext';
+import { TestSettingsProvider } from '../context/SettingsContext';
+import { ConfirmProvider } from '../context/ConfirmContext';
+import type { Locale } from '../i18n';
 
-type RenderWithRouterOptions = RenderWithProvidersOptions & {
+type RenderWithRouterOptions = Omit<RenderOptions, 'wrapper'> & {
+  locale?: Locale;
   routerProps?: Omit<MemoryRouterProps, 'children'>;
 };
 
 export function renderWithRouter(
   ui: React.ReactElement,
-  { routerProps, locale, ...options }: RenderWithRouterOptions = {}
+  { routerProps, locale = 'sk', ...options }: RenderWithRouterOptions = {}
 ) {
-  return renderWithProviders(
-    <MemoryRouter {...routerProps}>
-      {ui}
-    </MemoryRouter>,
-    { locale, ...options }
-  );
+  return render(ui, {
+    ...options,
+    wrapper: ({ children }) => (
+      <MemoryRouter {...routerProps}>
+        <TestI18nProvider locale={locale}>
+          <TestSettingsProvider>
+            <ConfirmProvider>{children}</ConfirmProvider>
+          </TestSettingsProvider>
+        </TestI18nProvider>
+      </MemoryRouter>
+    ),
+  });
 }

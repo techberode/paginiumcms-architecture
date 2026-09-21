@@ -66,17 +66,35 @@ fi
 # 3) PHPUnit (full suite — regression guard)
 echo
 echo "--- PHPUnit ---"
-php vendor/bin/phpunit --no-output 2>/dev/null && ok "PHPUnit full suite passed" || {
-  warn "Full suite slow/failed — running notification module subset"
-  php vendor/bin/phpunit backend/tests/Core/Notification/ --no-output && ok "PHPUnit notification subset passed"
-}
+if php vendor/bin/phpunit --no-output; then
+  ok "PHPUnit full suite passed"
+else
+  fail "PHPUnit full suite failed — fix every regression before commit"
+fi
 
 # 4) Frontend type-check + lint
 echo
 echo "--- Frontend type-check + ESLint ---"
-(cd frontend && npm run type-check) && ok "tsc --noEmit clean"
-(cd frontend && npm run lint) && ok "ESLint within baseline"
-(cd frontend && npm run lint:api-barrel) && ok "API barrel lint clean"
+if (cd frontend && npm run type-check); then
+  ok "tsc --noEmit clean"
+else
+  fail "tsc --noEmit reported errors — fix before commit"
+fi
+if (cd frontend && npm run lint); then
+  ok "ESLint within baseline"
+else
+  fail "ESLint reported errors or exceeded the warning baseline"
+fi
+if (cd frontend && npm run lint:api-barrel); then
+  ok "API barrel lint clean"
+else
+  fail "API barrel lint failed"
+fi
+if (cd frontend && npm test); then
+  ok "Vitest full suite passed"
+else
+  fail "Vitest full suite failed — fix every regression before commit"
+fi
 
 # 5) Integrity heuristics (grep-based, no external deps)
 echo

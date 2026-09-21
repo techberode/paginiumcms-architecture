@@ -5,12 +5,13 @@ import { MonacoCodeEditor, type MonacoCodeEditorHandle, type MonacoEditorMarker 
 import { shortcodesApi, type ShortcodeListItem } from '../../api/shortcodes';
 import { themesApi, themeThumbnailUrl, type ThemeFileListItem } from '../../api/themes';
 import { useI18n } from '../../context/I18nContext';
+import { useAuthContext } from '../../context/AuthContext';
 import { useToast } from '../../hooks/useToast';
 import { AdminListSkeleton } from '../ui/AdminListSkeleton';
 import { AdminFormActions } from './AdminFormActions';
 import { THEME_STUDIO_DRAFT_ID, themeStudioDraftFiles } from '../../utils/themeStudioDraft';
 import { persistThemeId } from '../../utils/themeStudioPersist';
-import { isThemeStudioTab, type ThemeStudioTab } from '../../utils/themeStudioFiles';
+import { isThemeStudioTab, tabForThemePath, type ThemeStudioTab } from '../../utils/themeStudioFiles';
 import {
   previewTemplateForPath,
   THEME_STUDIO_PREVIEW_REFERRER,
@@ -19,6 +20,15 @@ import {
 import { applyNormalizedThemeFiles } from '../../utils/themeStudioNormalize';
 import { detectThemeStudioSlots, insertIntoMainContent } from '../../utils/themeStudioSlots';
 import { buildShortcodeSampleMarkup } from '../../utils/shortcodeSampleMarkup';
+import {
+  buildPlaygroundBridge,
+  clearPlaygroundBridge,
+  clearPlaygroundExport,
+  consumePlaygroundExport,
+  isPlaygroundBridgePath,
+  readPlaygroundExport,
+  writePlaygroundBridge,
+} from '../../utils/playgroundBridge';
 
 const EDITOR_HEIGHT = 520;
 const VALIDATE_DEBOUNCE_MS = 450;
@@ -28,6 +38,7 @@ const TAB_ORDER: ThemeStudioTab[] = ['html', 'css', 'js', 'manifest', 'other'];
 
 export const ThemeStudioShell: React.FC = () => {
   const { t } = useI18n();
+  const { user } = useAuthContext();
   const toast = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,6 +78,13 @@ export const ThemeStudioShell: React.FC = () => {
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
   const [shortcodes, setShortcodes] = useState<ShortcodeListItem[]>([]);
   const [selectedShortcode, setSelectedShortcode] = useState('');
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
+  const filesRef = useRef(files);
+  filesRef.current = files;
+  const buffersRef = useRef(buffers);
+  buffersRef.current = buffers;
+  const originalsRef = useRef(originals);
+  originalsRef.current = originals;
 
   const loadCatalog = useCallback(async () => {
     if (isDraft) {
@@ -137,6 +155,30 @@ export const ThemeStudioShell: React.FC = () => {
   }, [loadCatalog]);
 
   useEffect(() => {
+    if (loading) {
+      return;
+    }
+    const incoming = readPlaygroundExport();
+    if (incoming === null || incoming.source !== 'theme-studio') {
+      return;
+    }
+    if (incoming.themeId !== themeId) {
+      return;
+    }
+    if (!isPlaygroundBridgePath(incoming.path)) {
+      consumePlaygroundExport();
+      return;
+    }
+    consumePlaygroundExport();
+    setTab(tabForThemePath(incoming.path));
+    setCurrentPath(incoming.path);
+    buffersRef.current = { ...buffersRef.current, [incoming.path]: incoming.content };
+    setBuffers(buffersRef.current);
+    clearPlaygroundExport();
+    toast.success(t('platform.themes.studio.playgroundImported'));
+  }, [loading, t, themeId, toast]);
+
+  useEffect(() => {
     void (async () => {
       const items = await shortcodesApi.list();
       const enabled = items.filter((item) => item.enabled);
@@ -145,14 +187,12 @@ export const ThemeStudioShell: React.FC = () => {
     })();
   }, []);
 
-  const filesRef = useRef(files);
-  filesRef.current = files;
-  const buffersRef = useRef(buffers);
-  buffersRef.current = buffers;
-
   const openFile = useCallback(async (relativePath: string) => {
     setFileError(null);
-    if (buffersRef.current[relativePath] !== undefined) {
+    if (
+      buffersRef.current[relativePath] !== undefined
+      && (isDraft || originalsRef.current[relativePath] !== undefined)
+    ) {
       return;
     }
 
@@ -175,8 +215,10 @@ export const ThemeStudioShell: React.FC = () => {
     }
 
     const body = response.data.content;
-    setBuffers((prev) => ({ ...prev, [relativePath]: body }));
     setOriginals((prev) => ({ ...prev, [relativePath]: body }));
+    if (buffersRef.current[relativePath] === undefined) {
+      setBuffers((prev) => ({ ...prev, [relativePath]: body }));
+    }
     setLoadingFile(false);
   }, [isDraft, t, themeId]);
 
@@ -439,6 +481,31 @@ export const ThemeStudioShell: React.FC = () => {
     }
   }, [activateAfterSave, collectAllBuffers, isDraft, navigate, t, themeId, toast]);
 
+  const handleOpenPlayground = () => {
+    if (currentPath === '' || !isPlaygroundBridgePath(currentPath)) {
+      toast.info(t('platform.themes.studio.playgroundUnsupported'));
+      return;
+    }
+    const currentBuffer = buffers[currentPath];
+    if (loadingFile || currentBuffer === undefined) {
+      toast.info(t('platform.themes.studio.loadFileFailed'));
+      return;
+    }
+    const payload = buildPlaygroundBridge({
+      source: 'theme-studio',
+      path: currentPath,
+      content: currentBuffer,
+      returnTo: `${location.pathname}${location.search}`,
+      themeId,
+    });
+    if (payload === null || !writePlaygroundBridge(payload)) {
+      clearPlaygroundBridge();
+      toast.error(t('platform.themes.studio.playgroundTooLarge'));
+      return;
+    }
+    navigate('/playground');
+  };
+
   const handleThumbnailUpload = useCallback(async (file: File | undefined) => {
     if (!file) {
       return;
@@ -547,14 +614,23 @@ export const ThemeStudioShell: React.FC = () => {
             />
             {t('platform.themes.studio.activateAfterSave')}
           </label>
-          <Link
-            to="/playground"
-            className="btn btn-secondary inline-flex items-center gap-2"
-            data-testid="theme-studio-open-playground"
-          >
-            <Boxes className="h-4 w-4" />
-            {t('platform.themes.studio.openPlayground')}
-          </Link>
+          {isSuperAdmin ? (
+            <button
+              type="button"
+              className="btn btn-secondary inline-flex items-center gap-2"
+              data-testid="theme-studio-open-playground"
+              title={
+                currentPath !== '' && !isPlaygroundBridgePath(currentPath)
+                  ? t('platform.themes.studio.playgroundUnsupported')
+                  : t('platform.themes.studio.openPlaygroundHint')
+              }
+              disabled={loadingFile || currentPath === '' || buffers[currentPath] === undefined}
+              onClick={handleOpenPlayground}
+            >
+              <Boxes className="h-4 w-4" />
+              {t('platform.themes.studio.openPlayground')}
+            </button>
+          ) : null}
           <button
             type="button"
             className="btn btn-secondary inline-flex items-center gap-2"

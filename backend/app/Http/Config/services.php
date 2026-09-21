@@ -286,7 +286,9 @@ use PaginiumCMS\Core\TimeTracking\Services\TimeEntryRepository;
 use PaginiumCMS\Core\ComingSoon\Services\ComingSoonRepository;
 use PaginiumCMS\Http\Controllers\Admin\ComingSoonController;
 use PaginiumCMS\Core\Support\Services\SupportKanbanRepository;
+use PaginiumCMS\Core\Support\Services\TeamKanbanAccess;
 use PaginiumCMS\Http\Controllers\Admin\SupportKanbanController;
+use PaginiumCMS\Http\Controllers\Admin\TeamKanbanController;
 use PaginiumCMS\Core\Mail\Services\MailboxSecretRepository;
 use PaginiumCMS\Core\Mail\Services\MailClientStateRepository;
 use PaginiumCMS\Core\Mail\Services\DomainMailService;
@@ -375,6 +377,9 @@ use PaginiumCMS\Http\Security\CspDirectiveContributorInterface;
 use PaginiumCMS\Http\Security\CspScriptSrcContributorInterface;
 use PaginiumCMS\Modules\Playground\PlaygroundPackRegistry;
 use PaginiumCMS\Modules\Playground\PlaygroundSettings;
+use PaginiumCMS\Modules\Playground\PlaygroundArchiveDownloader;
+use PaginiumCMS\Modules\Playground\PlaygroundPackGitImporter;
+use PaginiumCMS\Modules\Playground\Contracts\PlaygroundArchiveDownloaderInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Locking\LockController;
 use PaginiumCMS\Http\Controllers\Media\MediaController;
@@ -1825,6 +1830,15 @@ return [
             get(UserRepository::class),
             get(JsonResponder::class)
         ),
+    TeamKanbanAccess::class => create(TeamKanbanAccess::class)
+        ->constructor(get(TeamRepository::class)),
+    TeamKanbanController::class => create(TeamKanbanController::class)
+        ->constructor(
+            get(SupportKanbanRepository::class),
+            get(TeamKanbanAccess::class),
+            get(UserRepository::class),
+            get(JsonResponder::class)
+        ),
     MailboxSecretRepository::class => create(MailboxSecretRepository::class)
         ->constructor(
             get(FileReaderInterface::class),
@@ -1904,7 +1918,8 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
             get(TeamRepository::class),
-            get(UploadPolicyEngine::class)
+            get(UploadPolicyEngine::class),
+            get(SettingsRepositoryInterface::class)
         ),
     TeamChatRateLimitMiddleware::class => create(TeamChatRateLimitMiddleware::class)
         ->constructor(get(CacheManager::class), ClientIpResolver::trustedProxiesFromEnv()),
@@ -1993,10 +2008,22 @@ return [
             dirname(__DIR__, 4) . '/data/playground-packs.json',
             get(PlaygroundSettings::class)
         ),
+    PlaygroundArchiveDownloaderInterface::class => create(PlaygroundArchiveDownloader::class)
+        ->constructor(get(OutboundUrlGuard::class)),
+    PlaygroundPackGitImporter::class => create(PlaygroundPackGitImporter::class)
+        ->constructor(
+            get(PlaygroundSettings::class),
+            get(PlaygroundPackRegistry::class),
+            get(PlaygroundArchiveDownloaderInterface::class),
+            get(ZipEntryGuard::class),
+            get(UntrustedPolicyScanner::class),
+            get(SettingsRepositoryInterface::class)
+        ),
     PlaygroundController::class => create(PlaygroundController::class)
         ->constructor(
             get(PlaygroundSettings::class),
             get(PlaygroundPackRegistry::class),
+            get(PlaygroundPackGitImporter::class),
             get(JsonResponder::class)
         ),
     ThemeAssetController::class => create(ThemeAssetController::class)
