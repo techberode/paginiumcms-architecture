@@ -19,6 +19,7 @@ import { AdminTopNav } from '../backend/AdminTopNav';
 import { KeyboardShortcutsModal } from '../admin/KeyboardShortcutsModal';
 import { adminChromeCssVars, resolveAdminChrome } from '../../theme/adminChrome';
 import { SupportChatPresenceBubble } from '../backend/SupportChatPresenceBubble';
+import { DeskInboxProvider } from '../../context/DeskInboxContext';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -115,6 +116,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
     (typeof window !== 'undefined' ? window.location.origin : '/');
 
   return (
+    <DeskInboxProvider>
     <div
       data-testid="admin-shell"
       data-admin-nav={chrome.navPlacement}
@@ -186,6 +188,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) 
       <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <SupportChatPresenceBubble />
     </div>
+    </DeskInboxProvider>
   );
 };
 

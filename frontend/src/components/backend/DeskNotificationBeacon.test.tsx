@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { DeskNotificationBeacon } from './DeskNotificationBeacon';
+import { DeskInboxProvider } from '../../context/DeskInboxContext';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { authApi } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
@@ -43,7 +44,9 @@ function renderBeacon() {
       }}
     >
       <MemoryRouter>
-        <DeskNotificationBeacon variant="header" />
+        <DeskInboxProvider>
+          <DeskNotificationBeacon variant="header" />
+        </DeskInboxProvider>
       </MemoryRouter>
     </AuthContext.Provider>,
     { locale: 'en' }

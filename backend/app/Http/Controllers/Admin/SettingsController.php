@@ -377,6 +377,9 @@ final class SettingsController
             'firewall' => [
                 'enabled' => (bool) ($all['firewall']['enabled'] ?? true),
             ],
+            'systemUpdate' => [
+                'remoteCheckIntervalHours' => max(0, min(168, (int) ($all['systemUpdate']['remoteCheckIntervalHours'] ?? 0))),
+            ],
             'cmsInfo' => [
                 'version' => AppVersion::VERSION,
             ],

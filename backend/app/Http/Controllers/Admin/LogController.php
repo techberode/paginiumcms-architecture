@@ -189,26 +189,36 @@ final class LogController
         $records = $this->logExport->extendedRecords($raw);
         $stamp = date('Y-m-d_His');
 
-        return match ($format) {
-            'pdf' => $this->binaryResponse(
+        try {
+            return match ($format) {
+                'pdf' => $this->binaryResponse(
+                    $response,
+                    $this->logExport->toPdfBinary($records),
+                    'application/pdf',
+                    "paginium-logs-$stamp.pdf"
+                ),
+                'zip' => $this->binaryResponse(
+                    $response,
+                    $this->logExport->toZipBinary($records),
+                    'application/zip',
+                    "paginium-logs-$stamp.zip"
+                ),
+                default => $this->binaryResponse(
+                    $response,
+                    $this->logExport->toPlainText($records),
+                    'text/plain; charset=utf-8',
+                    "paginium-logs-$stamp.txt"
+                ),
+            };
+        } catch (\Throwable $e) {
+            error_log('Log export failed (' . $format . '): ' . $e->getMessage());
+
+            return $this->json->error(
                 $response,
-                $this->logExport->toPdfBinary($records),
-                'application/pdf',
-                "paginium-logs-$stamp.pdf"
-            ),
-            'zip' => $this->binaryResponse(
-                $response,
-                $this->logExport->toZipBinary($records),
-                'application/zip',
-                "paginium-logs-$stamp.zip"
-            ),
-            default => $this->binaryResponse(
-                $response,
-                $this->logExport->toPlainText($records),
-                'text/plain; charset=utf-8',
-                "paginium-logs-$stamp.txt"
-            ),
-        };
+                'Export logov zlyhal. Skontrolujte PHP rozšírenie zip a oprávnenia temp adresára.',
+                503
+            );
+        }
     }
 
     private function binaryResponse(

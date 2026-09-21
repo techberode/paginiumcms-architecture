@@ -2046,6 +2046,10 @@ export const settingsEn: MessageTree = {
       "githubWebhookSecret": {
         "label": "GitHub webhook secret",
         "help": "Same secret as configured in GitHub → Settings → Webhooks. Never logged."
+      },
+      "remoteCheckIntervalHours": {
+        "label": "Remote version check interval (hours)",
+        "help": "0 = manual only (banner Recheck and System update → Check remote). When > 0, the dashboard shows a stale hint after this many hours — no automatic GitHub call. Maximum 168 (one week)."
       }
     }
   },

@@ -24,6 +24,10 @@ import {
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { DeployBlockersList } from '../dashboard/DeployBlockersList';
 import { interpretDeployRunResult } from '../../utils/deployRunResult';
+import {
+  readSystemUpdateCheckCache,
+  writeSystemUpdateCheckCache,
+} from '../../utils/systemUpdateCheckCache';
 
 export const SystemUpdateView: React.FC = () => {
   const { t } = useI18n();
@@ -107,11 +111,15 @@ export const SystemUpdateView: React.FC = () => {
 
   useEffect(() => {
     void load();
+    const cached = readSystemUpdateCheckCache();
+    if (cached?.check) {
+      setRemoteCheck(cached.check);
+      if (cached.status) {
+        setData(cached.status);
+        applyDefaultRef(cached.status, cached.check.remote);
+      }
+    }
   }, [load]);
-
-  useEffect(() => {
-    void runCredentialsVerify({ notify: false });
-  }, [runCredentialsVerify]);
 
   if (!isSuperAdmin) {
     return (
@@ -132,13 +140,24 @@ export const SystemUpdateView: React.FC = () => {
   const handleCheck = async () => {
     setChecking(true);
     try {
-      const { data: result, error } = await checkSystemUpdate();
+      const [{ data: result, error }, statusSnapshot] = await Promise.all([
+        checkSystemUpdate(),
+        getSystemUpdateStatus(),
+      ]);
       if (!result) {
         toastError(error ?? t('platform.systemUpdate.toast.checkFailed'));
         return;
       }
+      if (statusSnapshot) {
+        setData(statusSnapshot);
+      }
       setRemoteCheck(result);
-      applyDefaultRef(data, result.remote);
+      applyDefaultRef(statusSnapshot ?? data, result.remote);
+      writeSystemUpdateCheckCache({
+        checkedAt: Date.now(),
+        check: result,
+        status: statusSnapshot ?? data,
+      });
       const newLatestTag =
         result.update?.latest_tag ?? result.remote.latest_release_tag ?? null;
       if (result.update?.status === 'current') {

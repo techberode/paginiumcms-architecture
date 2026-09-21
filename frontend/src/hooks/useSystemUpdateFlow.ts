@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   checkSystemUpdate,
   getSystemUpdateStatus,
@@ -8,6 +8,12 @@ import {
   type SystemUpdateStatus,
 } from '../api/systemUpdate';
 import { interpretDeployRunResult } from '../utils/deployRunResult';
+import {
+  hasSystemUpdateSessionAutoCheck,
+  markSystemUpdateSessionAutoCheck,
+  readSystemUpdateCheckCache,
+  writeSystemUpdateCheckCache,
+} from '../utils/systemUpdateCheckCache';
 
 export interface SystemUpdateFlowState {
   status: SystemUpdateStatus | null;
@@ -19,17 +25,20 @@ export interface SystemUpdateFlowState {
   latestTag: string | null;
   updateStatus: 'current' | 'update_available' | 'unknown' | null;
   canDeploy: boolean;
+  lastCheckedAt: number | null;
   refreshStatus: () => Promise<void>;
-  refreshCheck: () => Promise<{ data: SystemUpdateCheckResult | null; error?: string }>;
+  refreshCheck: (options?: { force?: boolean }) => Promise<{ data: SystemUpdateCheckResult | null; error?: string }>;
   deployLatest: (tag: string) => Promise<{ ok: boolean; skipped?: boolean; error?: string }>;
 }
 
 export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
   const [status, setStatus] = useState<SystemUpdateStatus | null>(null);
   const [check, setCheck] = useState<SystemUpdateCheckResult | null>(null);
+  const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
   const [deploying, setDeploying] = useState(false);
+  const autoRanRef = useRef(false);
 
   const readiness = check?.deploy_readiness ?? status?.deploy_readiness ?? null;
 
@@ -47,6 +56,19 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
     status?.config?.deployEnabled === true &&
     status?.job_registered === true;
 
+  const persistSnapshot = useCallback(
+    (nextCheck: SystemUpdateCheckResult, nextStatus: SystemUpdateStatus | null) => {
+      const checkedAt = Date.now();
+      setLastCheckedAt(checkedAt);
+      writeSystemUpdateCheckCache({
+        checkedAt,
+        check: nextCheck,
+        status: nextStatus,
+      });
+    },
+    []
+  );
+
   const refreshStatus = useCallback(async () => {
     if (!enabled) {
       return;
@@ -60,25 +82,43 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
     }
   }, [enabled]);
 
-  const refreshCheck = useCallback(async () => {
-    if (!enabled) {
-      return { data: null };
-    }
-    setChecking(true);
-    try {
-      const result = await checkSystemUpdate();
-      setCheck(result.data);
-      const readinessUpdate = result.data?.deploy_readiness;
-      if (readinessUpdate) {
-        setStatus((prev) =>
-          prev ? { ...prev, deploy_readiness: readinessUpdate } : prev
-        );
+  const refreshCheck = useCallback(
+    async (callOptions?: { force?: boolean }) => {
+      if (!enabled) {
+        return { data: null };
       }
-      return result;
-    } finally {
-      setChecking(false);
-    }
-  }, [enabled]);
+      if (callOptions?.force !== true) {
+        return { data: check };
+      }
+
+      setChecking(true);
+      try {
+        const [checkResult, statusResult] = await Promise.all([
+          checkSystemUpdate(),
+          getSystemUpdateStatus(),
+        ]);
+        const nextCheck = checkResult.data;
+        if (nextCheck) {
+          setCheck(nextCheck);
+          const readinessUpdate = nextCheck.deploy_readiness;
+          if (statusResult) {
+            setStatus(
+              readinessUpdate
+                ? { ...statusResult, deploy_readiness: readinessUpdate }
+                : statusResult
+            );
+          }
+          persistSnapshot(nextCheck, statusResult);
+        } else if (statusResult) {
+          setStatus(statusResult);
+        }
+        return checkResult;
+      } finally {
+        setChecking(false);
+      }
+    },
+    [check, enabled, persistSnapshot]
+  );
 
   const deployLatest = useCallback(
     async (tag: string) => {
@@ -95,23 +135,38 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
         if (!outcome.ok) {
           return { ok: false, error: outcome.error ?? error ?? 'deploy_failed' };
         }
-        await refreshStatus();
-        await refreshCheck();
+        await refreshCheck({ force: true });
         return { ok: true, skipped: outcome.skipped };
       } finally {
         setDeploying(false);
       }
     },
-    [enabled, refreshCheck, refreshStatus]
+    [enabled, refreshCheck]
   );
 
   useEffect(() => {
     if (!enabled) {
       return;
     }
-    void refreshStatus();
-    void refreshCheck();
-  }, [enabled, refreshCheck, refreshStatus]);
+    if (autoRanRef.current) {
+      return;
+    }
+    autoRanRef.current = true;
+
+    const cached = readSystemUpdateCheckCache();
+    if (cached) {
+      setCheck(cached.check);
+      if (cached.status) {
+        setStatus(cached.status);
+      }
+      setLastCheckedAt(cached.checkedAt);
+    }
+
+    if (!hasSystemUpdateSessionAutoCheck()) {
+      markSystemUpdateSessionAutoCheck();
+      void refreshCheck({ force: true });
+    }
+  }, [enabled, refreshCheck]);
 
   return {
     status,
@@ -123,6 +178,7 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
     latestTag,
     updateStatus,
     canDeploy,
+    lastCheckedAt,
     refreshStatus,
     refreshCheck,
     deployLatest,

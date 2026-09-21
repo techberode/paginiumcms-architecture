@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User } from '../api/types';
 import { authApi, LoginResult, RegisterResult } from '../api/auth';
 import { debugLogProvider } from '../utils/debugLog';
+import { clearSystemUpdateSessionAutoCheck } from '../utils/systemUpdateCheckCache';
 
 export interface LoginOutcome {
   success: boolean;
@@ -191,6 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async () => {
     debugLogProvider('auth', 'logout.start', { userId: user?.id ?? null });
     await authApi.logout();
+    clearSystemUpdateSessionAutoCheck();
     setUser(null);
     setPendingTwoFactor(false);
     setTwoFactorSetupPending(false);

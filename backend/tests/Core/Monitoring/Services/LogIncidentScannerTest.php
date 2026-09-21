@@ -88,6 +88,114 @@ final class LogIncidentScannerTest extends TestCase
         $this->assertSame(1, $result['scanned']);
     }
 
+    public function testScanDedupesRepeatedHttpAccessErrorsByFingerprint(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturnCallback(static function (string $group): array {
+            if ($group === 'monitoring') {
+                return [
+                    'notifyLogErrors' => true,
+                    'notifyLogWarnings' => false,
+                    'logIncidentConnector' => 'email',
+                ];
+            }
+
+            return ['adminEmail' => 'admin@example.com'];
+        });
+
+        $writer = $this->createMock(LogWriterInterface::class);
+        $writer->expects($this->once())
+            ->method('readSince')
+            ->willReturn([
+                [
+                    'id' => 'log-desk-1',
+                    'severity' => LogSeverity::ERROR,
+                    'message' => 'GET /api/auth/me/desk 500',
+                    'category' => 'http_access',
+                    'timestamp' => date('c'),
+                    'context' => ['path' => '/api/auth/me/desk', 'status' => 500],
+                ],
+                [
+                    'id' => 'log-desk-2',
+                    'severity' => LogSeverity::ERROR,
+                    'message' => 'GET /api/auth/me/desk 500',
+                    'category' => 'http_access',
+                    'timestamp' => date('c'),
+                    'context' => ['path' => '/api/auth/me/desk', 'status' => 500],
+                ],
+            ]);
+
+        $notifications = $this->createMock(NotificationService::class);
+        $notifications->method('getAdapters')->willReturn(['email']);
+        $notifications->expects($this->once())->method('send')->willReturn(true);
+
+        $reader = $this->createMock(FileReaderInterface::class);
+        $reader->method('exists')->willReturn(false);
+        $fileWriter = $this->createMock(FileWriterInterface::class);
+        $fileWriter->expects($this->atLeastOnce())->method('write');
+
+        $scanner = new LogIncidentScanner(
+            $settings,
+            $writer,
+            IncidentNotifierTestFactory::create($settings, $notifications),
+            new SchedulerStateStore($reader, $fileWriter)
+        );
+
+        $result = $scanner->scan();
+
+        $this->assertSame(1, $result['notified']);
+        $this->assertSame(2, $result['scanned']);
+    }
+
+    public function testScanSkipsEmailForStaleEntriesButMarksNotified(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturnCallback(static function (string $group): array {
+            if ($group === 'monitoring') {
+                return [
+                    'notifyLogErrors' => true,
+                    'notifyLogWarnings' => false,
+                    'logIncidentConnector' => 'email',
+                ];
+            }
+
+            return ['adminEmail' => 'admin@example.com'];
+        });
+
+        $writer = $this->createMock(LogWriterInterface::class);
+        $writer->expects($this->once())
+            ->method('readSince')
+            ->willReturn([
+                [
+                    'id' => 'log-stale-desk',
+                    'severity' => LogSeverity::ERROR,
+                    'message' => 'GET /api/auth/me/desk 500',
+                    'category' => 'http_access',
+                    'timestamp' => date('Y-m-d H:i:s', strtotime('-5 days')),
+                ],
+            ]);
+
+        $notifications = $this->createMock(NotificationService::class);
+        $notifications->expects($this->never())->method('send');
+
+        $reader = $this->createMock(FileReaderInterface::class);
+        $reader->method('exists')->willReturn(false);
+        $fileWriter = $this->createMock(FileWriterInterface::class);
+        $fileWriter->expects($this->atLeastOnce())->method('write');
+
+        $scanner = new LogIncidentScanner(
+            $settings,
+            $writer,
+            IncidentNotifierTestFactory::create($settings, $notifications),
+            new SchedulerStateStore($reader, $fileWriter)
+        );
+
+        $result = $scanner->scan();
+
+        $this->assertSame(0, $result['notified']);
+        $this->assertSame(1, $result['scanned']);
+    }
+
     private function makeStateStore(): SchedulerStateStore
     {
         $reader = $this->createMock(FileReaderInterface::class);

@@ -683,6 +683,7 @@ final class SettingsSchema
                     ['key' => 'backendPort', 'type' => 'string', 'label' => 'Backend health port', 'default' => '8089', 'rules' => ['string', 'max:8'], 'help' => 'Port for post-deploy health check (default 8089). Falls back to BACKEND_PORT env.'],
                     ['key' => 'webhookDeployEnabled', 'type' => 'bool', 'label' => 'Enable GitHub release webhook deploy', 'default' => false, 'rules' => ['bool'], 'help' => 'When enabled, POST /api/webhooks/github/release queues deploy on release published (HMAC secret required). When disabled, GitHub deliveries are acknowledged and ignored — use Check remote in admin to see new tags.'],
                     ['key' => 'githubWebhookSecret', 'type' => 'password', 'label' => 'GitHub webhook secret', 'default' => '', 'rules' => ['string', 'max:255'], 'help' => 'Same secret as configured in GitHub → Settings → Webhooks → Secret. Never logged.'],
+                    ['key' => 'remoteCheckIntervalHours', 'type' => 'int', 'label' => 'Remote version check interval (hours)', 'default' => 0, 'rules' => ['required', 'int', 'min:0', 'max:168'], 'help' => '0 = manual only (dashboard banner Recheck and System update → Check remote). When > 0, the banner shows a stale hint after this many hours since the last check — it does not call GitHub automatically. Max 168.'],
                 ],
             ],
         ];

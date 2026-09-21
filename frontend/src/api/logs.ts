@@ -38,6 +38,10 @@ export interface LogListResponse {
   sources: string[];
 }
 
+export type LogExportDownloadResult =
+  | { ok: true; blob: Blob }
+  | { ok: false; message: string };
+
 export const logsApi = {
   stats: async (hours = 24): Promise<LogStats | null> => {
     const res = await apiClient.get<LogStats>(`/api/admin/logs/stats?hours=${hours}`);
@@ -93,7 +97,7 @@ export const logsApi = {
       search?: string;
       archived?: LogArchivedFilter;
     };
-  }): Promise<Blob | null> => {
+  }): Promise<LogExportDownloadResult> => {
     try {
       const csrf = typeof localStorage !== 'undefined' ? localStorage.getItem('csrf_token') ?? '' : '';
       const response = await fetch(`${resolveApiBaseUrl()}/api/admin/logs/export`, {
@@ -107,11 +111,23 @@ export const logsApi = {
         body: JSON.stringify(params),
       });
       if (!response.ok) {
-        return null;
+        const contentType = response.headers.get('content-type') ?? '';
+        if (contentType.includes('application/json')) {
+          const body = (await response.json()) as { error?: string; message?: string };
+          return {
+            ok: false,
+            message: body.error ?? body.message ?? `HTTP ${response.status}`,
+          };
+        }
+        return { ok: false, message: `HTTP ${response.status}` };
       }
-      return await response.blob();
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        return { ok: false, message: 'Empty export response' };
+      }
+      return { ok: true, blob };
     } catch {
-      return null;
+      return { ok: false, message: 'Network error' };
     }
   },
 };

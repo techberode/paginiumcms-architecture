@@ -275,6 +275,9 @@ export interface PublicSettings {
     passwordRequireNumbers?: boolean;
     passwordRequireSpecialChars?: boolean;
   };
+  systemUpdate?: {
+    remoteCheckIntervalHours?: number;
+  };
   cmsInfo?: {
     version?: string;
   };

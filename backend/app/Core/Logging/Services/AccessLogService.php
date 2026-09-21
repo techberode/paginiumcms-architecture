@@ -36,6 +36,16 @@ final class AccessLogService
         '/api/admin/logs',
     ];
 
+    /**
+     * Admin ops that routinely wait on git/GitHub (seconds). Still logged; slow 2xx stays INFO
+     * so log-incident email is not spammed on every version check.
+     *
+     * @var list<string>
+     */
+    private const EXPECTED_SLOW_PATH_PREFIXES = [
+        '/api/admin/system/update',
+    ];
+
     public function __construct(
         private LogWriterInterface $writer,
         private SettingsRepositoryInterface $settings
@@ -73,7 +83,7 @@ final class AccessLogService
         $minSeverity = (string) ($logging['minSeverity'] ?? LogSeverity::DEBUG);
         $slowMs = max(0, (int) ($logging['slowRequestMs'] ?? 2000));
 
-        $severity = $this->severityForStatus($status, $durationMs, $slowMs);
+        $severity = $this->severityForStatus($status, $durationMs, $slowMs, $path);
         if (!$this->passesMinSeverity($severity, $minSeverity)) {
             return;
         }
@@ -142,19 +152,19 @@ final class AccessLogService
         return $this->writer->clearOld($days);
     }
 
-    private function severityForStatus(int $status, float $durationMs, int $slowMs): string
+    private function severityForStatus(int $status, float $durationMs, int $slowMs, string $path = ''): string
     {
         if ($status >= 500) {
             return LogSeverity::ERROR;
         }
         // Expected "not found" / anonymous auth probe — operational noise as WARNING.
-        if ($status === 404 || $status === 401) {
+        if ($status === 404 || $status === 401 || $status === 429) {
             return LogSeverity::INFO;
         }
         if ($status >= 400) {
             return LogSeverity::WARNING;
         }
-        if ($slowMs > 0 && $durationMs >= $slowMs) {
+        if ($slowMs > 0 && $durationMs >= $slowMs && !$this->isExpectedSlowPath($path)) {
             return LogSeverity::WARNING;
         }
         if ($status >= 300) {
@@ -195,6 +205,17 @@ final class AccessLogService
     private function isExcludedPath(string $path): bool
     {
         foreach (self::EXCLUDED_PATH_PREFIXES as $prefix) {
+            if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isExpectedSlowPath(string $path): bool
+    {
+        foreach (self::EXPECTED_SLOW_PATH_PREFIXES as $prefix) {
             if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return true;
             }

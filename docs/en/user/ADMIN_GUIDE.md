@@ -46,6 +46,19 @@ It.43 admin search lets staff jump to pages, articles, media, and admin modules.
 
 Requires an active admin session. If search returns nothing, check the browser network tab for `GET /api/search?scope=admin` (must be **200**, not 401). See [ISS-158](../ISSUES.md#iss-158) for the historical 401 bug.
 
+### System update banner (SUPER_ADMIN only)
+
+On **Dashboard → Overview**, SUPER_ADMIN sees an indigo **system update** card when the instance is not in demo mode.
+
+| Behavior | Detail |
+|----------|--------|
+| **Automatic compare** | **Once per browser session** after login (first time the banner mounts). Not on every dashboard visit. **Logout** resets this so the next session can compare again. |
+| **Recheck** | Always runs a fresh GitHub compare (`GET /api/admin/system/update/check`). |
+| **Settings → System update → Remote version check interval** | Default **`0`** = no background polling. Values **> 0** only show a **stale** hint when the last compare is older than that many hours — they do **not** auto-call GitHub on a timer. |
+| **Deploy** | Available only when an update is reported **and** deploy readiness is green (stack path, token/key, job registered). Same rules as **Platform → System update**. |
+
+Operator checklist: [DEPLOY.md §12.5](../deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner). Common failures: [§12.6](../deploy/DEPLOY.md#126-common-production-symptoms-ops), [ISS-161](../ISSUES.md#iss-161), [ISS-177](../ISSUES.md#iss-177).
+
 ## 4. Pages
 
 **Pages** manage public site pages.

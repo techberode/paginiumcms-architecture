@@ -6,6 +6,7 @@ import { authApi, type DeskItem } from '../../api/auth';
 import { claimComment, replyToComment } from '../../api/comments';
 import { messagesApi } from '../../api/messages';
 import { useAuth } from '../../hooks/useAuth';
+import { useDeskInbox } from '../../hooks/useDeskInbox';
 import { useI18n } from '../../context/I18nContext';
 import {
   canOpenDocumentPip,
@@ -34,17 +35,15 @@ export const SupportChatPresenceBubble: React.FC<{ variant?: 'admin' | 'public' 
   variant = 'admin',
 }) => {
   const { user, updateUser } = useAuth();
+  const { data: deskData, items, refresh } = useDeskInbox();
   const { t } = useI18n();
   const navigate = useNavigate();
-  const [visible, setVisible] = useState(false);
-  const [online, setOnline] = useState(false);
-  const [chatEnabled, setChatEnabled] = useState(false);
+  const [onlineOverride, setOnlineOverride] = useState<boolean | null>(null);
+  const [chatEnabledOverride, setChatEnabledOverride] = useState<boolean | null>(null);
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<DeskItem[]>([]);
   const [selected, setSelected] = useState<DeskItem | null>(null);
   const [reply, setReply] = useState('');
   const [busy, setBusy] = useState(false);
-  const [inSupportTeam, setInSupportTeam] = useState(false);
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
   const [anchor, setAnchor] = useState<DeskBubbleAnchor>('right');
   const [posX, setPosX] = useState(92);
@@ -54,39 +53,33 @@ export const SupportChatPresenceBubble: React.FC<{ variant?: 'admin' | 'public' 
   const posRef = useRef({ x: 92, y: 50 });
   const canPip = canOpenDocumentPip();
 
-  const refresh = useCallback(async () => {
-    if (!user) {
-      setVisible(false);
+  const bubbleEnabled =
+    deskData && user
+      ? typeof deskData.deskBubbleEnabled === 'boolean'
+        ? deskData.deskBubbleEnabled
+        : user.deskBubbleEnabled !== false
+      : false;
+  const inSupportTeam = deskData?.inSupportTeam ?? false;
+  const online = onlineOverride ?? deskData?.online ?? false;
+  const chatEnabled = chatEnabledOverride ?? deskData?.chatEnabled ?? false;
+  const visible = Boolean(
+    user &&
+      deskData &&
+      bubbleEnabled &&
+      (deskData.hasDesk || deskData.inSupportTeam || deskData.canReplyComments)
+  );
+
+  useEffect(() => {
+    if (!deskData || !user || dragRef.current) {
       return;
     }
-    const res = await authApi.desk().catch(() => null);
-    if (!res?.success || !res.data) {
-      return;
-    }
-    const enabled =
-      typeof res.data.deskBubbleEnabled === 'boolean'
-        ? res.data.deskBubbleEnabled
-        : user.deskBubbleEnabled !== false;
-    setVisible(enabled && (res.data.hasDesk || res.data.inSupportTeam || res.data.canReplyComments));
-    setOnline(res.data.online);
-    setChatEnabled(res.data.chatEnabled);
-    setInSupportTeam(res.data.inSupportTeam);
-    setItems(res.data.items ?? []);
-    setAnchor(normalizeDeskBubbleAnchor(res.data.deskBubbleAnchor ?? user.deskBubbleAnchor));
-    const nextX = clampDeskBubblePercent(res.data.deskBubbleX ?? user.deskBubbleX ?? 92);
-    const nextY = clampDeskBubblePercent(res.data.deskBubbleY ?? user.deskBubbleY ?? 50);
+    setAnchor(normalizeDeskBubbleAnchor(deskData.deskBubbleAnchor ?? user.deskBubbleAnchor));
+    const nextX = clampDeskBubblePercent(deskData.deskBubbleX ?? user.deskBubbleX ?? 92);
+    const nextY = clampDeskBubblePercent(deskData.deskBubbleY ?? user.deskBubbleY ?? 50);
     setPosX(nextX);
     setPosY(nextY);
     posRef.current = { x: nextX, y: nextY };
-  }, [user]);
-
-  useEffect(() => {
-    void refresh();
-    const id = window.setInterval(() => {
-      void refresh();
-    }, 30_000);
-    return () => window.clearInterval(id);
-  }, [refresh]);
+  }, [deskData, user]);
 
   useEffect(() => {
     if (!visible || !online || !inSupportTeam) {
@@ -219,14 +212,15 @@ export const SupportChatPresenceBubble: React.FC<{ variant?: 'admin' | 'public' 
     if (!chatEnabled) {
       const saved = await authApi.updateProfile({ chatEnabled: true });
       if (saved.success) {
-        setChatEnabled(true);
+        setChatEnabledOverride(true);
       }
     }
     const res = await authApi.updatePresence(!online);
     setBusy(false);
     if (res.success && res.data) {
-      setOnline(res.data.online);
-      setChatEnabled(res.data.chatEnabled);
+      setOnlineOverride(res.data.online);
+      setChatEnabledOverride(res.data.chatEnabled);
+      void refresh();
     }
   };
 

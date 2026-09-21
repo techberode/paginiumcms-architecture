@@ -46,6 +46,19 @@ It.43 admin search umožňuje skoky na stránky, články, médiá a admin modul
 
 Vyžaduje aktívnu admin session. Pri 401 na `GET /api/search?scope=admin` pozri [ISS-158](../ISSUES.md#iss-158).
 
+### Banner systémovej aktualizácie (len SUPER_ADMIN)
+
+Na **Dashboarde → Prehľad** SUPER_ADMIN vidí indigo kartu **system update** (nie v demo režime).
+
+| Správanie | Detail |
+|-----------|--------|
+| **Automatické porovnanie** | **Raz za reláciu prehliadača** po prihlásení (prvý mount banneru). Nie pri každom otvorení dashboardu. **Odhlásenie** resetuje flag — ďalšie prihlásenie môže znova porovnať. |
+| **Recheck** | Vždy spustí nové porovnanie s GitHub (`GET /api/admin/system/update/check`). |
+| **Nastavenia → System update → Remote version check interval** | Predvolene **`0`** = žiadne periodické volanie GitHubu. Hodnota **> 0** len zobrazí **stale** hint, ak posledný check je starší — **nie** cron polling. |
+| **Deploy** | Len keď je dostupná novšia verzia **a** deploy readiness je zelená. Rovnaké pravidlá ako **Platform → System update**. |
+
+Operátorsky: [DEPLOY.md §12.5](../deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner), [§12.6](../deploy/DEPLOY.md#126-common-production-symptoms-ops), [ISS-161](../ISSUES.md#iss-161), [ISS-177](../ISSUES.md#iss-177).
+
 ## 4. Stránky
 
 **Stránky** spravujú podstránky verejného webu.

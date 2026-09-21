@@ -14,6 +14,12 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
  */
 final class LogIncidentScanner
 {
+    /** Do not email log rows older than this; mark them notified so scans do not loop. */
+    private const INCIDENT_EMAIL_MAX_AGE_SEC = 172800;
+
+    /** Same route/severity (e.g. desk 500 every 30s) → at most one email per cooldown window. */
+    private const INCIDENT_FINGERPRINT_COOLDOWN_SEC = 86400;
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private LogWriterInterface $logWriter,
@@ -41,11 +47,20 @@ final class LogIncidentScanner
         $connector = (string) ($monitoring['logIncidentConnector'] ?? 'all');
 
         $notifiedIds = [];
+        $notifiedFingerprints = [];
+        /** @var array<string, true> */
+        $fingerprintsSeenThisScan = [];
         $notifiedCount = 0;
 
         foreach ($entries as $entry) {
             $id = (string) ($entry['id'] ?? '');
             if ($id === '' || isset($alreadyNotified[$id])) {
+                continue;
+            }
+
+            $entryTs = strtotime((string) ($entry['timestamp'] ?? ''));
+            if ($entryTs !== false && $entryTs < time() - self::INCIDENT_EMAIL_MAX_AGE_SEC) {
+                $notifiedIds[] = $id;
                 continue;
             }
 
@@ -59,6 +74,16 @@ final class LogIncidentScanner
             if (!in_array($severity, [LogSeverity::WARNING, LogSeverity::ERROR, LogSeverity::CRITICAL], true)) {
                 continue;
             }
+
+            $fingerprint = $this->entryFingerprint($entry, $severity);
+            if (
+                isset($fingerprintsSeenThisScan[$fingerprint])
+                || $this->state->isLogFingerprintInCooldown($fingerprint, self::INCIDENT_FINGERPRINT_COOLDOWN_SEC)
+            ) {
+                $notifiedIds[] = $id;
+                continue;
+            }
+            $fingerprintsSeenThisScan[$fingerprint] = true;
 
             $message = (string) ($entry['message'] ?? 'Log event');
             $category = (string) ($entry['category'] ?? 'app');
@@ -81,6 +106,7 @@ final class LogIncidentScanner
 
             if ($sent) {
                 $notifiedIds[] = $id;
+                $notifiedFingerprints[] = $fingerprint;
                 ++$notifiedCount;
             }
         }
@@ -89,6 +115,9 @@ final class LogIncidentScanner
         try {
             if ($notifiedIds !== []) {
                 $this->state->addNotifiedLogIds($notifiedIds);
+            }
+            if ($notifiedFingerprints !== []) {
+                $this->state->markLogFingerprints($notifiedFingerprints);
             }
 
             $this->state->setLastLogScanAt(date('Y-m-d H:i:s'));
@@ -103,5 +132,26 @@ final class LogIncidentScanner
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     */
+    private function entryFingerprint(array $entry, string $severity): string
+    {
+        $category = (string) ($entry['category'] ?? 'app');
+        $context = is_array($entry['context'] ?? null) ? $entry['context'] : [];
+        $path = (string) ($context['path'] ?? '');
+        $status = (string) ($context['status'] ?? '');
+
+        $message = (string) ($entry['message'] ?? '');
+        if ($path === '' && preg_match('#\s(/api/\S+)\s+(\d{3})\s*$#', $message, $matches) === 1) {
+            $path = $matches[1];
+            if ($status === '') {
+                $status = $matches[2];
+            }
+        }
+
+        return hash('sha256', $category . '|' . $path . '|' . $severity . '|' . $status);
     }
 }

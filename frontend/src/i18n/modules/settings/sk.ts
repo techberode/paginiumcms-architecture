@@ -2046,6 +2046,10 @@ export const settingsSk: MessageTree = {
       "githubWebhookSecret": {
         "label": "GitHub webhook secret",
         "help": "Rovnaký secret ako v GitHub → Settings → Webhooks. Nikdy sa neloguje."
+      },
+      "remoteCheckIntervalHours": {
+        "label": "Interval kontroly verzie na GitHube (hodiny)",
+        "help": "0 = len manuálne (Skontrolovať znova / Kontrola vzdialenej verzie). Pri hodnote > 0 banner po uplynutí intervalu zobrazí upozornenie na zastaralú kontrolu — GitHub sa automaticky nevolá. Maximum 168 (týždeň)."
       }
     }
   },

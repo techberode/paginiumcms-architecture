@@ -9,6 +9,10 @@ import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useSystemUpdateFlow } from '../../hooks/useSystemUpdateFlow';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { DeployBlockersList } from './DeployBlockersList';
+import {
+  isSystemUpdateCacheFresh,
+  normalizeRemoteCheckIntervalHours,
+} from '../../utils/systemUpdateCheckCache';
 
 export const SystemUpdateBanner: React.FC = () => {
   const { t } = useI18n();
@@ -21,16 +25,19 @@ export const SystemUpdateBanner: React.FC = () => {
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
   const isDemoInstance = settings.demo?.enabled === true;
   const enabled = isSuperAdmin && !isDemoInstance;
+  const intervalHours = normalizeRemoteCheckIntervalHours(
+    settings.systemUpdate?.remoteCheckIntervalHours
+  );
 
   const {
     check,
     readiness,
-    loading,
     checking,
     deploying,
     latestTag,
     updateStatus,
     canDeploy,
+    lastCheckedAt,
     refreshCheck,
     deployLatest,
   } = useSystemUpdateFlow(enabled);
@@ -39,7 +46,12 @@ export const SystemUpdateBanner: React.FC = () => {
     return null;
   }
 
-  const showLoading = (loading || checking) && !check;
+  const showLoading = checking && !check;
+  const manualOnly = intervalHours === 0;
+  const cacheStale =
+    lastCheckedAt !== null &&
+    intervalHours > 0 &&
+    !isSystemUpdateCacheFresh(lastCheckedAt, intervalHours);
   const showCurrent =
     check !== null && updateStatus === 'current' && !checking;
   const showUpdateAvailable =
@@ -47,7 +59,7 @@ export const SystemUpdateBanner: React.FC = () => {
   const showUnknown = check !== null && updateStatus === 'unknown' && !checking;
 
   const handleCheck = async () => {
-    const result = await refreshCheck();
+    const result = await refreshCheck({ force: true });
     if (!result.data) {
       toastError(result.error ?? t('platform.systemUpdate.toast.checkFailed'));
       return;
@@ -121,6 +133,23 @@ export const SystemUpdateBanner: React.FC = () => {
             <div className="min-w-0">
               <p className="font-bold text-indigo-950 dark:text-indigo-100">{title}</p>
               <p className="text-sm text-indigo-900/80 dark:text-indigo-200/80 mt-1">{message}</p>
+              {(manualOnly || check === null) && !checking ? (
+                <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70 mt-1">
+                  {t('dashboard.updateBanner.manualOnlyHint')}
+                </p>
+              ) : null}
+              {cacheStale && !checking ? (
+                <p className="text-xs text-amber-800/80 dark:text-amber-200/80 mt-1">
+                  {t('dashboard.updateBanner.staleHint')}
+                </p>
+              ) : null}
+              {lastCheckedAt !== null && check !== null ? (
+                <p className="text-xs text-indigo-800/60 dark:text-indigo-200/60 mt-1">
+                  {t('dashboard.updateBanner.lastChecked', {
+                    time: new Date(lastCheckedAt).toLocaleString(),
+                  })}
+                </p>
+              ) : null}
             </div>
             <button
               type="button"

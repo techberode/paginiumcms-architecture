@@ -108,6 +108,10 @@ final class ApplicationLogExportService
      */
     public function toZipBinary(array $records): string
     {
+        if (!class_exists(ZipArchive::class)) {
+            throw new \RuntimeException('PHP ext-zip (ZipArchive) is not installed');
+        }
+
         $tmp = tempnam(sys_get_temp_dir(), 'pg_log_zip_');
         if ($tmp === false) {
             throw new \RuntimeException('Cannot create temp file for log export');

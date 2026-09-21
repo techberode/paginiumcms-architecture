@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 20 September 2026 · register **ISS-001–ISS-174** · ISS-173/174 shipped in **2.1.0-beta.89**
+> **Last updated:** 21 September 2026 · register **ISS-001–ISS-177** · ISS-175/176 in **2.1.0-beta.90** follow-up
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -197,6 +197,9 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-172](#iss-172) | Public `GET /api/test` probe + dead Auth controller file | Low (hygiene) | ✅ Fixed · **[Unreleased]** |
 | [ISS-173](#iss-173) | Unencrypted GitHub deploy private key committed then deleted from HEAD only | Critical | ✅ Revoked + rotated + history rewritten · CI gitleaks · **2.1.0-beta.89** |
 | [ISS-174](#iss-174) | `/api/admin/messages` allowed any authenticated USER (no role gate) | Low (hygiene) | ✅ Fixed · **2.1.0-beta.89** |
+| [ISS-175](#iss-175) | Duplicate desk polling → 429 and log/monitor noise | Medium (ops) | ✅ Fixed · **2.1.0-beta.90** follow-up |
+| [ISS-176](#iss-176) | Admin log export failed (ZIP/ext-zip, silent FE) | Medium (admin ops) | ✅ Fixed · **2.1.0-beta.90** follow-up |
+| [ISS-177](#iss-177) | Health version OK but admin SPA still old build | Medium (ops) | ℹ️ Informational — full deploy incl. `build:prod` |
 
 ## CI failures (GitHub Actions)
 
@@ -4962,7 +4965,7 @@ Dashboard or Platform → System update showed **update available**, but deploy 
 
 - Settings fields **`stackDir`** + **`backendPort`** (fallback to env).
 - **`SystemDeployReadinessService`** — machine-readable blockers on status/check APIs.
-- **Dashboard banner** — auto-check on load, deploy latest tag when ready, configure link when blocked.
+- **Dashboard banner** — remote compare on load (later refined: **one auto-check per browser session** + manual Recheck; see DEPLOY.md §12.5), deploy latest tag when ready, configure link when blocked.
 - **DEPLOY.md §12.5** — admin UI deploy checklist.
 
 ### Verification
@@ -5414,6 +5417,108 @@ An unencrypted ed25519 SSH **private** key used as a GitHub deploy key was pushe
 ### Audit remainder (It.70 / It.93o / It.96)
 
 No critical or high findings. It.70: token is `password` + `engine` SUPER_ADMIN-only; publish is `git:publish` + 2FA; `OutboundUrlGuard`; `api.github.com` host fixed; paths `pages/`/`blog/` only; local git is `proc_open` argv. It.93o public staff is opt-in, honeypot + rate-limit; team-chat files are download-only with ID allow-list. It.96 documents use a MIME allow-list (no legacy OLE), dedicated upload surface, public/admin serve as `attachment` (PDF admin preview + CSP sandbox only).
+
+---
+
+<a id="iss-175"></a>
+
+## ISS-175 – Duplicate desk polling caused 429 and log/monitor noise
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (ops) |
+| **Status** | ✅ Fixed · **2.1.0-beta.90** follow-up |
+| **Area** | It.93o desk · admin chrome · rate limiting |
+
+### Symptom
+
+Production SUPER_ADMIN saw many **WARNING** application access logs for `GET /api/auth/me/desk` with **429 Rate limit** (~1 ms). Log incident scanner and mail alerts fired every few minutes. Dev/staging looked quieter with fewer open admin chrome instances.
+
+### Root cause
+
+Multiple React trees each ran **`useDeskPolling`** (desk beacon in header/sidebar/top nav, `CommentsManager`, `SupportChatPresenceBubble`). The global **`RateLimitMiddleware`** budget is per IP + path (default 60/min), so parallel polls exhausted the limit immediately.
+
+### Resolution
+
+- **`DeskInboxProvider`** in `ResponsiveLayout` — single shared poll; consumers use `useDeskInbox()`.
+- Exclude **`/api/auth/me/desk`** from global rate limit (session-authenticated operational endpoint).
+- Log **429** as **INFO** in `AccessLogService` (expected throttle noise, not WARNING).
+
+### Verification
+
+- Vitest: `DeskNotificationBeacon`, `SupportChatPresenceBubble` with provider.
+- Ops: one desk request per ~30s per logged-in admin session; 429 warnings stop after deploy.
+
+### Related docs
+
+- [DEPLOY.md §12.6](../deploy/DEPLOY.md#126-common-production-symptoms-ops)
+
+---
+
+<a id="iss-176"></a>
+
+## ISS-176 – Admin log export failed without clear error (txt/zip/pdf)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (admin ops) |
+| **Status** | ✅ Fixed · **2.1.0-beta.90** follow-up |
+| **Area** | Logging · admin UI |
+
+### Symptom
+
+**Platform → Logs** export to `.txt`, `.zip`, or `.pdf` failed on production; UI showed a generic failure toast. ZIP export on hosts without **`ext-zip`** threw inside `ApplicationLogExportService`.
+
+### Root cause
+
+- Uncaught `RuntimeException` from ZIP/PDF path → **500 JSON** response.
+- Frontend `exportDownload` treated non-OK responses as `null` without parsing JSON `error`.
+
+### Resolution
+
+- `LogController::exportDownload` try/catch → **503** + operator message.
+- Explicit `ZipArchive` class check with clear error.
+- FE returns `{ ok, message }` and surfaces API text in toast.
+- Docker PHP image includes **`docker-php-ext-install zip`** (`docker/php/Dockerfile`).
+
+### Verification
+
+- `LogControllerTest::testAdminCanExportLogsAsTxt`
+- Manual: export with SUPER_ADMIN; missing zip shows 503 message on current builds.
+
+---
+
+<a id="iss-177"></a>
+
+## ISS-177 – Health version matched tag but admin UI stayed on old build
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (ops) |
+| **Status** | ℹ️ Informational — process |
+| **Area** | Deploy · frontend build |
+
+### Symptom
+
+After admin or SSH deploy, `/api/health` reported the new semver tag, but Kanban/team chat/menu items from the latest release were missing in the browser.
+
+### Root cause
+
+Checkout/composer ran without **`npm run build:prod`**, or nginx still served an older `frontend/dist` artifact. Backend-only deploy does not refresh the SPA bundle.
+
+### Resolution
+
+Always run the full **`scripts/deploy-instance-update.sh`** path (includes frontend production build) or manually `cd frontend && npm ci && npm run build:prod` before recreating nginx/static serve.
+
+### Related docs
+
+- [DEPLOY.md §12.5 verify](../deploy/DEPLOY.md#verify-after-admin-deploy) step 5
 
 ---
 

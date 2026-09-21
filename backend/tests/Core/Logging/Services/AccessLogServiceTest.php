@@ -95,12 +95,36 @@ final class AccessLogServiceTest extends TestCase
         $this->assertSame(LogSeverity::INFO, $entries[0]['severity'] ?? null);
     }
 
+    public function testRateLimitIsInfoNotWarning(): void
+    {
+        $this->service->logRequest('127.0.0.1', 'GET', '/api/auth/me/desk', 429, 1.0);
+        $entries = $this->readEntries();
+        $this->assertCount(1, $entries);
+        $this->assertSame(LogSeverity::INFO, $entries[0]['severity'] ?? null);
+    }
+
     public function testServerErrorIsError(): void
     {
         $this->service->logRequest('127.0.0.1', 'GET', '/api/seo/article/x', 500, 2.0);
         $entries = $this->readEntries();
         $this->assertCount(1, $entries);
         $this->assertSame(LogSeverity::ERROR, $entries[0]['severity'] ?? null);
+    }
+
+    public function testSlowSystemUpdateCheckIsInfoNotWarning(): void
+    {
+        $this->service->logRequest('127.0.0.1', 'GET', '/api/admin/system/update/check', 200, 4500.0);
+        $entries = $this->readEntries();
+        $this->assertCount(1, $entries);
+        $this->assertSame(LogSeverity::INFO, $entries[0]['severity'] ?? null);
+    }
+
+    public function testSlowGenericApiStillWarning(): void
+    {
+        $this->service->logRequest('127.0.0.1', 'GET', '/api/pages', 200, 4500.0);
+        $entries = $this->readEntries();
+        $this->assertCount(1, $entries);
+        $this->assertSame(LogSeverity::WARNING, $entries[0]['severity'] ?? null);
     }
 
     public function testStoresResponseSizeBytesWhenProvided(): void

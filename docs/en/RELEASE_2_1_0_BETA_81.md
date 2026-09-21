@@ -16,7 +16,7 @@ Checking for a new CMS version is a GET (no CSRF); a GitHub release ping is ackn
 
 | Area | Change |
 |------|--------|
-| **Check remote** | `GET /api/admin/system/update/check` (POST kept). SUPER_ADMIN still required. Toast shows the API error text on failure. |
+| **Check remote** | `GET /api/admin/system/update/check` (POST kept). SUPER_ADMIN still required. Toast shows the API error text on failure. **Dashboard UX (beta.90+):** one automatic compare per browser session on first banner mount; see [DEPLOY.md §12.5](deploy/DEPLOY.md#125-admin-ui-deploy-platform--system-update--dashboard-banner). |
 | **GitHub webhook** | `webhookDeployEnabled=false` → **200** `{ ignored: true, reason: "webhook_disabled" }` instead of 403. Enable the setting only if you want auto-deploy on *Release published*. |
 | **Logs** | `http_access` 4xx lines append JSON `error` or plain WAF body. |
 

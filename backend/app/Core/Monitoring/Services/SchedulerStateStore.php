@@ -82,6 +82,73 @@ final class SchedulerStateStore
         $this->save($state);
     }
 
+    public function isLogFingerprintInCooldown(string $fingerprint, int $cooldownSec): bool
+    {
+        if ($fingerprint === '' || $cooldownSec <= 0) {
+            return false;
+        }
+
+        $at = $this->getNotifiedLogFingerprints()[$fingerprint] ?? null;
+        if (!is_string($at) || $at === '') {
+            return false;
+        }
+
+        $ts = strtotime($at);
+
+        return $ts !== false && $ts >= time() - $cooldownSec;
+    }
+
+    /**
+     * @param list<string> $fingerprints
+     */
+    public function markLogFingerprints(array $fingerprints): void
+    {
+        if ($fingerprints === []) {
+            return;
+        }
+
+        $state = $this->load();
+        $map = $this->getNotifiedLogFingerprints();
+        $now = date('Y-m-d H:i:s');
+        foreach ($fingerprints as $fingerprint) {
+            if ($fingerprint !== '') {
+                $map[$fingerprint] = $now;
+            }
+        }
+
+        $cutoff = time() - (7 * 86400);
+        foreach ($map as $key => $at) {
+            $ts = strtotime($at);
+            if ($ts === false || $ts < $cutoff) {
+                unset($map[$key]);
+            }
+        }
+
+        $state['notifiedLogFingerprints'] = $map;
+        $this->save($state);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function getNotifiedLogFingerprints(): array
+    {
+        $state = $this->load();
+        $map = $state['notifiedLogFingerprints'] ?? [];
+        if (!is_array($map)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($map as $key => $value) {
+            if (is_string($key) && is_string($value) && $value !== '') {
+                $out[$key] = $value;
+            }
+        }
+
+        return $out;
+    }
+
     /**
      * @return array<string, mixed>
      */

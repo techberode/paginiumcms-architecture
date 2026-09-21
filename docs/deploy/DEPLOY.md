@@ -302,6 +302,7 @@ Admin deploy uses the same `scripts/deploy-instance-update.sh` as SSH, but PHP m
 | **GitHub owner/repo** | `techberode/paginiumcms-architecture` | Remote release compare (API) |
 | **GitHub deploy key (recommended)** | see below | **`git fetch` for admin UI** without PAT in CMS settings |
 | **GitHub token** (settings or env) | optional if deploy key works | API release check; HTTPS git when no deploy key |
+| **Remote version check interval (hours)** | `0` (default) | **Does not schedule background GitHub polling.** `0` = manual **Recheck** only (dashboard banner + Platform → System update). When **> 0**, the banner shows a **stale** hint after that many hours since the last successful compare — it still does **not** auto-call GitHub on a timer. Max **168**. |
 | **`GITHUB_DEPLOY_TOKEN` in php `.env`** | `ghp_…` | Alternative to settings token |
 | **`GITHUB_DEPLOY_SSH_KEY_PATH` in php service** | `/run/secrets/github_deploy_key` | Private key file mounted read-only into PHP container |
 
@@ -370,11 +371,28 @@ Readiness blockers:
 
 ### Dashboard banner (SUPER_ADMIN)
 
-On load, the dashboard **automatically checks GitHub** for a newer release. When an update is available:
+The **Dashboard → Overview** banner (`SystemUpdateBanner`) is shown only for **SUPER_ADMIN** on non-demo instances. It shares the same check/deploy flow as **Platform → System update** (`useSystemUpdateFlow`).
 
-- shows version + **Deploy {tag}** when all blockers are green,
-- shows **Configure deploy** with a blocker list when something is missing,
-- links to **Platform → System update** for details.
+#### How remote version discovery works (since **2.1.0-beta.90** follow-up)
+
+| Layer | Behavior |
+|-------|----------|
+| **Once per browser session** | On the **first** mount of the banner in that tab session, the UI calls `GET /api/admin/system/update/check` (plus status). Tracked in `sessionStorage` (`paginium:system-update-session-auto:v1`). **Logout clears** the session flag so the next login can run one auto-check again. |
+| **localStorage cache** | Last successful compare is stored (`paginium:system-update-check-cache:v1`) so revisiting the dashboard within the same browser shows the previous result without waiting. |
+| **Manual Recheck** | **Recheck** always forces a new GitHub compare (respects SUPER_ADMIN + 2FA on the API). |
+| **`remoteCheckIntervalHours`** | Default **`0`** = no periodic auto polling. Values **> 0** only control when the banner shows a **“last check is older than your interval”** hint — **not** a cron-like GitHub poll. |
+| **Dismiss (X)** | Hides the banner until the next full page load (session auto-check does not re-run in the same session). |
+
+When compare data is available:
+
+- **Update available** — shows tag + **Deploy {tag}** when deploy readiness is green and admin deploy is enabled,
+- **Blockers** — **Configure deploy** links to Settings with `DeployBlockersList`,
+- **Current / unknown** — copy explains outcome; unknown usually means GitHub token, owner, or repo misconfiguration.
+
+#### Logging and monitoring noise
+
+- Slow but successful **`/api/admin/system/update/check`** responses are logged as **INFO** in application access logs (not WARNING), so log scanners should not treat a long GitHub compare as an incident by default.
+- Do not point uptime monitors at the check endpoint unless you accept GitHub rate limits and intentional SUPER_ADMIN-only auth.
 
 ### Verify after admin deploy
 
@@ -388,6 +406,16 @@ If version is stale but files updated:
 2. Inside PHP as **www-data**, if `git -C /var/www/html describe` prints **dubious ownership**, health/API version falls back to `AppVersion::VERSION` even on the correct tag. Set `GIT_CONFIG_*` → `safe.directory=/var/www/html` on the **php** service (see `docs/deploy/docker-compose.prod.yml`) **and** rebuild PHP so FPM passes env (`docker/php/zz-paginium-fpm.env.conf`, `clear_env = no`). Compose env alone is **not** enough on stock `php-fpm` (`clear_env=yes` strips `GIT_CONFIG_*` from workers). Do **not** use `git config --global` as www-data — `HOME=/var/www` is not writable. **beta.80+** also passes `safe.directory` on the git CLI (`GitCli`), so version works even without FPM env.
 3. If `curl …/api/health | jq` fails with **parse error**, print raw output first (`curl -sS -D- …`) — often **502** for ~30s after recreate; retry after nginx health is green.
 4. Otherwise check **stack directory** in settings and redeploy, or SSH deploy with `STACK_DIR=…`.
+5. If **health/version** matches the tag but the **admin UI looks like an older build** (missing menu items, old Kanban/chat), the deploy likely updated PHP/git only. Run the full deploy path including **`cd frontend && npm ci && npm run build:prod`** (see `scripts/deploy-instance-update.sh`). See [ISS-175](../ISSUES.md#iss-175).
+
+## 12.6 Common production symptoms (ops)
+
+| Symptom | Likely cause | What to do |
+|---------|----------------|------------|
+| Many **WARNING** access logs: `GET /api/auth/me/desk` **429** | Several UI components polled desk independently; global rate limit (60/min/IP/path) on older builds | Deploy **beta.90+** desk inbox fix (`DeskInboxProvider`, single poll). Until then, reduce open admin tabs. |
+| Monitor e-mails for desk **500/429** | Same as above + scanner treating WARNING as incidents | Deploy fix; tune log incident scanner; 429 is INFO on current builds. |
+| **Log export** (txt/zip/pdf) fails silently or toast only | Uncaught export error (often **missing `ext-zip`** on non-Docker PHP), or JSON error body parsed as blob on older FE | `docker compose exec php php -m \| grep -i zip` or host `php -m`; rebuild PHP image from `docker/php/Dockerfile`. Admin UI should return **503** with message on current builds ([ISS-176](../ISSUES.md#iss-176)). |
+| Dashboard banner hammers GitHub every navigation | Misread of old docs — current UI is **one check per session** + manual Recheck | Set **Remote version check interval** to `0` unless you want stale hints only. |
 
 ## 13. Upgrade, backup, and rollback
 
@@ -423,20 +451,18 @@ systemctl is-enabled docker
 
 This covers the operational part of [ISS-119](../ISSUES.md#iss-119). `depends_on` does not prove application readiness; readiness is established by health and smoke checks.
 
-## 15. Admin “System update”
+## 15. Admin “System update” (current vs future)
 
-Admin-triggered application updates remain a planned capability, not a current safe production mechanism. They must not reuse the content `GitHubService` or execute as an unrestricted web shell.
+**Shipped today (It.63, §12.5):** SUPER_ADMIN can **compare** GitHub releases and **enqueue** tag deploy via `POST /api/admin/system/update/run` when **Enable admin deploy** is on, readiness is green, and the privileged `system-deploy` job is registered. Execution is the allow-listed **`scripts/deploy-instance-update.sh`** bridge — not arbitrary shell from the web request thread.
 
-The future contract requires:
+**Still required for safe production use:**
 
-- a production-only feature flag,
-- SUPER_ADMIN plus fresh 2FA confirmation,
-- repository allow-list and branch/tag policy,
-- an out-of-process privileged deploy runner,
-- backup, maintenance mode, locking, and audit,
-- a sanitized log stream,
-- immutable release reference and checksum,
-- automatic health/smoke checks and a rollback boundary.
+- backup before deploy (banner confirms destructively),
+- correct **`stackDir`** / deploy key / token,
+- post-deploy health and smoke (§12.5 verify),
+- rollback plan (§13).
+
+**Not in scope / deferred (It.63 v4):** Grav-like onboarding wizard, live progress stream, and fully unattended customer self-update without operator review. Admin deploy must not reuse the content **`GitHubService`** sync path or become an unrestricted web shell.
 
 ## 16. Deployment evidence
 

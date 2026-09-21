@@ -191,15 +191,16 @@ export const LogsManager: React.FC = () => {
     ids?: string[],
     useFilters = false
   ) => {
-    const blob = await logsApi.exportDownload({
+    const result = await logsApi.exportDownload({
       format,
       ids: ids && ids.length > 0 ? ids : undefined,
       filters: useFilters ? buildFilters() : undefined,
     });
-    if (!blob || blob.size === 0) {
-      toast.error(t('logs.toast.exportFailed'));
+    if (!result.ok) {
+      toast.error(result.message || t('logs.toast.exportFailed'));
       return;
     }
+    const blob = result.blob;
     const ext = format === 'pdf' ? 'pdf' : format === 'zip' ? 'zip' : 'txt';
     saveLogsExportBlob(blob, `paginium-logs-${Date.now()}.${ext}`);
     toast.success(t('logs.toast.exportSuccess'));

@@ -19,6 +19,8 @@ export interface SystemUpdateConfig {
   allowDeployTags?: boolean;
   stackDir?: string;
   backendPort?: string;
+  /** 0 = manual remote checks only; default 24 when unset. */
+  remoteCheckIntervalHours?: number;
 }
 
 export interface SystemUpdateDeployReadiness {

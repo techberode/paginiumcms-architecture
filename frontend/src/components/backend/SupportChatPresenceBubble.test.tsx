@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { SupportChatPresenceBubble } from './SupportChatPresenceBubble';
+import { DeskInboxProvider } from '../../context/DeskInboxContext';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { authApi } from '../../api/auth';
 
@@ -60,7 +61,9 @@ describe('SupportChatPresenceBubble', () => {
   it('shows the desk count and opens the queue', async () => {
     renderWithProviders(
       <MemoryRouter>
-        <SupportChatPresenceBubble />
+        <DeskInboxProvider>
+          <SupportChatPresenceBubble />
+        </DeskInboxProvider>
       </MemoryRouter>,
       { locale: 'en' }
     );
@@ -98,7 +101,9 @@ describe('SupportChatPresenceBubble', () => {
 
     renderWithProviders(
       <MemoryRouter>
-        <SupportChatPresenceBubble />
+        <DeskInboxProvider>
+          <SupportChatPresenceBubble />
+        </DeskInboxProvider>
       </MemoryRouter>,
       { locale: 'en' }
     );

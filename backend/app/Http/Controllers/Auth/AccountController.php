@@ -95,47 +95,11 @@ final class AccountController
         }
 
         try {
-            $status = $this->deskInbox->status($user);
-
-            return $this->json->success($response, array_merge(
-                $this->directory->chatStatus($user),
-                $status,
-                [
-                    'items' => $this->deskInbox->items($user),
-                    'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
-                    'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
-                    'deskBubbleX' => $user->getDeskBubbleX(),
-                    'deskBubbleY' => $user->getDeskBubbleY(),
-                ]
-            ));
+            return $this->json->success($response, $this->composeDeskPayload($user));
         } catch (\Throwable $exception) {
-            error_log('desk_inbox_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+            error_log('desk_compose_failed ' . LogSanitizer::value($exception->getMessage(), 240));
 
-            try {
-                $chat = $this->directory->chatStatus($user);
-            } catch (\Throwable) {
-                $chat = [
-                    'chatEnabled' => false,
-                    'online' => false,
-                    'lastSeen' => 0,
-                    'inSupportTeam' => false,
-                    'canPublicChat' => false,
-                ];
-            }
-
-            return $this->json->success($response, array_merge(
-                $chat,
-                [
-                    'hasDesk' => false,
-                    'canReplyComments' => false,
-                    'deskCount' => 0,
-                    'items' => [],
-                    'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
-                    'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
-                    'deskBubbleX' => $user->getDeskBubbleX(),
-                    'deskBubbleY' => $user->getDeskBubbleY(),
-                ]
-            ));
+            return $this->json->success($response, $this->emptyDeskPayload($user));
         }
     }
 
@@ -285,6 +249,92 @@ final class AccountController
         return $this->json->success($response, [
             'user' => $this->present($user),
         ], 200, 'Avatar bol odstránený');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function composeDeskPayload(User $user): array
+    {
+        $chat = $this->deskChatDefaults();
+        try {
+            $chat = $this->directory->chatStatus($user);
+        } catch (\Throwable $exception) {
+            error_log('desk_chat_status_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+        }
+
+        $status = [
+            'hasDesk' => false,
+            'canReplyComments' => false,
+            'deskCount' => 0,
+        ];
+        try {
+            $status = $this->deskInbox->status($user);
+        } catch (\Throwable $exception) {
+            error_log('desk_inbox_status_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+        }
+
+        $items = [];
+        try {
+            $items = $this->deskInbox->items($user);
+        } catch (\Throwable $exception) {
+            error_log('desk_inbox_items_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+        }
+
+        return array_merge($chat, $status, ['items' => $items], $this->deskBubbleFields($user));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function emptyDeskPayload(User $user): array
+    {
+        return array_merge(
+            $this->deskChatDefaults(),
+            [
+                'hasDesk' => false,
+                'canReplyComments' => false,
+                'deskCount' => 0,
+                'items' => [],
+            ],
+            $this->deskBubbleFields($user)
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function deskChatDefaults(): array
+    {
+        return [
+            'chatEnabled' => false,
+            'online' => false,
+            'lastSeen' => 0,
+            'inSupportTeam' => false,
+            'canPublicChat' => false,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function deskBubbleFields(User $user): array
+    {
+        try {
+            return [
+                'deskBubbleEnabled' => $user->isDeskBubbleEnabled(),
+                'deskBubbleAnchor' => $user->getDeskBubbleAnchor(),
+                'deskBubbleX' => $user->getDeskBubbleX(),
+                'deskBubbleY' => $user->getDeskBubbleY(),
+            ];
+        } catch (\Throwable) {
+            return [
+                'deskBubbleEnabled' => true,
+                'deskBubbleAnchor' => 'right',
+                'deskBubbleX' => 92,
+                'deskBubbleY' => 50,
+            ];
+        }
     }
 
     private function actor(ServerRequestInterface $request): ?User

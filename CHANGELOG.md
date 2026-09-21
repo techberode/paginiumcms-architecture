@@ -195,6 +195,9 @@ Docs: [ITERATION_93.md](docs/en/ITERATION_93.md) · [ITERATION_95.md](docs/en/IT
 
 - **PHPStan L8** — `PublishedStaffDirectory`, team/Kanban typings, and `TeamChatStoreTest` static-analysis-safe assertions.
 - **Vitest** — single-router test harness (`renderWithRouter` / providers split); Kanban and team chat suites green.
+- **Desk polling / rate limit** — single shared `DeskInboxProvider` poll (header + sidebar + top nav + bubble + comments); `/api/auth/me/desk` excluded from global rate limit; HTTP 429 logged as INFO in access logs.
+- **Log export** — try/catch on admin export (503 + message when ZIP/PDF fails); frontend surfaces JSON error text; explicit check for missing `ext-zip`.
+- **Docs** — [DEPLOY.md](docs/deploy/DEPLOY.md) §12.5–12.6 (dashboard remote check: once per session + Recheck; `remoteCheckIntervalHours`); [ISS-175](docs/ISSUES.md#iss-175)–[ISS-177](docs/ISSUES.md#iss-177); admin guide dashboard banner.
 
 ---
 
