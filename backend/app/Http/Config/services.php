@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PaginiumCMS\Core\Admin\Services\AdminCountsService;
+use PaginiumCMS\Core\Admin\Services\GettingStartedStatusService;
 use PaginiumCMS\Core\Admin\Services\ContentStorageStatsService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Blueprint\Services\BlueprintRepository;
@@ -978,6 +979,9 @@ return [
             get(OtpWorkflowService::class),
             get(JsonResponder::class)
         ),
+
+    GettingStartedStatusService::class => create(GettingStartedStatusService::class)
+        ->constructor(get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class)),
 
     AdminCountsService::class => create(AdminCountsService::class)
         ->constructor(
@@ -2202,6 +2206,7 @@ return [
             get(ApplicationLogReader::class),
             get(AdminCountsService::class),
             get(ContentStorageStatsService::class),
+            get(GettingStartedStatusService::class),
             get(JsonResponder::class)
         ),
 

@@ -44,9 +44,9 @@ Production merge file `docs/deploy/docker-compose.prod.yml` adds:
 
 After upgrading to a release with Redis support:
 
-1. Copy updated `docker-compose.prod.yml` to the host stack directory.
+1. Copy updated `docker-compose.prod.yml` to **`$STACK_DIR`** (not only under `docs/` in git). It must include **`profiles: !reset []`** on the `redis` service.
 2. Rebuild PHP (ext-redis): `"$STACK_DIR/stack.sh" build php`.
-3. Recreate stack: `"$STACK_DIR/stack.sh" up -d --build`.
+3. Recreate stack: `"$STACK_DIR/stack.sh" up -d --build` (starts **redis** + **php** + **nginx**).
 4. Admin → Settings → Hybrid Engine → confirm cache probe shows **redisCache: available** and active driver **redis** or **auto**.
 5. Leave `engine.cacheDriver` at **`auto`** unless you require Redis-only persistence (`redis`).
 
@@ -81,6 +81,22 @@ Use the **exact** `ETag` value from the first response — not a placeholder.
 Content is always read from flat files on cache miss. No data loss when Redis is stopped — only colder cache and higher disk I/O.
 
 **Triage**
+
+**Symptom:** *Redis extension loaded but connection to redis:6379 failed* and **`stack.sh ps` shows no redis container**.
+
+- Merged compose still has `profiles: [cache]` on redis → prod override missing `profiles: !reset []`. Fix the stack copy, then `"$STACK_DIR/stack.sh" up -d`.
+- Confirm: `"$STACK_DIR/stack.sh" config` → redis service has **no** `profiles`, and `"$STACK_DIR/stack.sh" ps` lists `redis` **running**.
+- **`undefined volume redis-data`:** prod Redis uses **`./redis-data:/data`** under `STACK_DIR` (not a named volume). Ensure `STACK_DIR/docker-compose.prod.yml` matches the repo file; `stack.sh` creates `redis-data/` automatically.
+- From PHP: `"$STACK_DIR/stack.sh" exec -T php php -r '$r=new Redis(); var_dump($r->connect(getenv("REDIS_HOST")?:\"redis\",(int)(getenv("REDIS_PORT")?:6379),1.5));'`
+
+**Symptom:** Redis container **`Status: created`** / **`address already in use`** on **`0.0.0.0:6379`**.
+
+- Merged compose still publishes **`6379:6379`** from base `docker-compose.yml`. Prod override needs **`ports: !reset []`** on `redis` (internal `redis:6379` only — no host bind).
+- Check: `"$STACK_DIR/stack.sh" config" | grep -A6 'redis:'` — must **not** list host port 6379.
+- Remove broken container: `docker rm -f "${COMPOSE_PROJECT_NAME}-redis-1"` then `"$STACK_DIR/stack.sh" up -d`.
+- `ss -ltnp | grep 6379` — if a **host** Redis owns the port, stop/disable it or keep CMS Redis off the host port (preferred).
+
+**Symptom:** redis running but probe still fails — check `REDIS_PASSWORD` matches `requirepass`, firewall between containers (same compose network), or wrong `COMPOSE_PROJECT_NAME` (stale container from another project). PHP must use hostname **`redis`**, not `127.0.0.1` (that is the PHP container itself).
 
 1. `docker compose ps redis` — container healthy?
 2. From PHP container: `php -r 'echo extension_loaded("redis")?"yes":"no";'`
@@ -121,6 +137,16 @@ Safe on Classic: deleting `data/cache/*.cache` does **not** lose content. Redis 
 | Invalidation fails | Generation bump + tag delete are best-effort; purge content scope |
 | Redis timeout | ~1.5s connect timeout; `auto`/`redis` fall back to file chain |
 | Corrupt cache file | Miss → rebuild from SSOT; delete offending `.cache` file |
+
+---
+
+## Media upload compression (disk, not HTTP cache)
+
+Raster uploads (JPEG/PNG/WebP) can be **re-encoded on upload** via PHP GD when **Settings → Media / DAM → Auto-compress images on upload** is enabled (default on). The server keeps the original file only when GD cannot produce a smaller binary. Manual **Optimize** in Media Library uses the same engine.
+
+Optional **max edge (px)** downscales oversized photos before storage. Tune **JPEG/WebP quality** (60–95) for space vs. visual fidelity.
+
+For **HTTP transfer** compression (JSON/API, static assets), enable **gzip/brotli on the reverse proxy** (nginx/Caddy) — PHP flat-file responses do not replace proxy-level compression.
 
 ---
 

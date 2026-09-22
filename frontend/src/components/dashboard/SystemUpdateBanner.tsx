@@ -9,6 +9,7 @@ import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useSystemUpdateFlow } from '../../hooks/useSystemUpdateFlow';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { DeployBlockersList } from './DeployBlockersList';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
 import {
   isSystemUpdateCacheFresh,
   normalizeRemoteCheckIntervalHours,
@@ -38,6 +39,7 @@ export const SystemUpdateBanner: React.FC = () => {
     updateStatus,
     canDeploy,
     lastCheckedAt,
+    currentVersion,
     refreshCheck,
     deployLatest,
   } = useSystemUpdateFlow(enabled);
@@ -117,10 +119,12 @@ export const SystemUpdateBanner: React.FC = () => {
   const message = showUpdateAvailable
     ? t('dashboard.updateBanner.message', { version: latestTag ?? '?' })
     : showCurrent
-      ? t('dashboard.updateBanner.messageCurrent')
+      ? t('dashboard.updateBanner.messageCurrent', { version: currentVersion ?? '?' })
       : showUnknown
         ? t('dashboard.updateBanner.messageUnknown')
         : t('dashboard.updateBanner.messageCheck');
+
+  const showVersionChip = Boolean(currentVersion && check !== null && !checking);
 
   return (
     <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50 dark:bg-indigo-950/40 p-4 sm:p-5 flex flex-col gap-4">
@@ -131,7 +135,15 @@ export const SystemUpdateBanner: React.FC = () => {
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-bold text-indigo-950 dark:text-indigo-100">{title}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-bold text-indigo-950 dark:text-indigo-100">{title}</p>
+                {showVersionChip ? (
+                  <AdminStatusBadge
+                    tone={showCurrent ? 'active' : showUpdateAvailable ? 'available' : 'neutral'}
+                    label={t('admin.status.installedVersion', { version: currentVersion ?? '' })}
+                  />
+                ) : null}
+              </div>
               <p className="text-sm text-indigo-900/80 dark:text-indigo-200/80 mt-1">{message}</p>
               {(manualOnly || check === null) && !checking ? (
                 <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70 mt-1">

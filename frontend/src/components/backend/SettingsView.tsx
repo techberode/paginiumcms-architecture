@@ -61,6 +61,8 @@ import { PrivacyCookieSettingsPanel } from './PrivacyCookieSettingsPanel';
 import { ContactRoutingPanel } from './ContactRoutingPanel';
 import { TranslationSettingsPanel } from './TranslationSettingsPanel';
 import { AgentSettingsPanel } from './AgentSettingsPanel';
+import { MediaSettingsPanel } from './MediaSettingsPanel';
+import type { MediaSettingsMeta } from '../../api/settings';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
 import { AdminChromeColorField } from './AdminChromeColorField';
@@ -117,6 +119,7 @@ export const SettingsView: React.FC = () => {
   const [permissionsCatalog, setPermissionsCatalog] = useState<string[]>([]);
   const [cmsInfoMeta, setCmsInfoMeta] = useState<CmsInfoMeta | null>(null);
   const [engineMeta, setEngineMeta] = useState<EngineSettingsMeta | null>(null);
+  const [mediaMeta, setMediaMeta] = useState<MediaSettingsMeta | null>(null);
   const [editorComponents, setEditorComponents] = useState<EditorComponentMeta[]>([]);
   const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') ?? false;
 
@@ -158,6 +161,7 @@ export const SettingsView: React.FC = () => {
         setPermissionsCatalog(payload.meta?.permissions ?? []);
         setCmsInfoMeta(payload.meta?.cmsInfo ?? null);
         setEngineMeta(payload.meta?.engine ?? null);
+        setMediaMeta(payload.meta?.media ?? null);
         setEditorComponents((payload.meta?.editorComponents as EditorComponentMeta[] | undefined) ?? []);
       } else {
         toastError(t('settings.page.loadFailed'));
@@ -477,6 +481,24 @@ export const SettingsView: React.FC = () => {
                       />
                     ))}
                     <AgentSettingsPanel />
+                  </>
+                ) : activeGroup === 'media' ? (
+                  <>
+                    {group.fields.map((field) => (
+                      <SettingFieldRow
+                        key={field.key}
+                        groupKey={activeGroup}
+                        field={field}
+                        register={register}
+                        watch={watch}
+                        setValue={setValue}
+                        error={errors[field.key]?.message as string | undefined}
+                      />
+                    ))}
+                    <MediaSettingsPanel
+                      meta={mediaMeta}
+                      autoOptimizeOnUpload={watch('autoOptimizeOnUpload') !== false}
+                    />
                   </>
                 ) : activeGroup === 'contact' ? (
                   <>

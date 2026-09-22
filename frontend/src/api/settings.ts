@@ -38,6 +38,30 @@ export interface EngineCapabilityRow {
   message: string;
 }
 
+export interface MediaStorageProbeMeta {
+  storageDriver: { configured: string; active: string; status: string };
+  capabilities: {
+    localStorage: { status: string; message: string };
+    s3Storage: { status: string; message: string; summary?: string | null };
+  };
+  health?: { ok: boolean; driver: string; message?: string };
+}
+
+export interface MediaSettingsMeta {
+  storageProbe: MediaStorageProbeMeta;
+  imageOptimization: {
+    available: boolean;
+    jpeg: boolean;
+    png: boolean;
+    webp: boolean;
+  };
+  uploadOptimization?: {
+    enabled: boolean;
+    maxEdgePx: number;
+  };
+  documentationUrl?: string;
+}
+
 export interface EngineSettingsMeta {
   capabilityProbe: {
     deploymentMode: { configured: string; active: string; status: string };
@@ -92,6 +116,7 @@ export interface SettingsPayload {
     configurableRoles?: string[];
     cmsInfo?: CmsInfoMeta;
     engine?: EngineSettingsMeta;
+    media?: MediaSettingsMeta;
     editorComponents?: Array<{ id: string; label: string; pluginId: string }>;
   };
 }

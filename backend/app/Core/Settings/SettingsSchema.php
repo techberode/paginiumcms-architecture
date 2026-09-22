@@ -650,6 +650,10 @@ final class SettingsSchema
                     ['key' => 'documentsEnabled', 'type' => 'bool', 'label' => 'Povoliť dokumenty (It.96)', 'default' => true, 'rules' => ['bool'], 'help' => 'PDF, Office Open XML, OpenDocument a editovateľný text (.txt, .md) v Media Library.'],
                     ['key' => 'maxDocumentUploadSizeKb', 'type' => 'int', 'label' => 'Max. veľkosť dokumentu (KB)', 'default' => 20480, 'rules' => ['required', 'int', 'min:64', 'max:524288'], 'help' => '20480 KB = 20 MB. Samostatný limit oproti obrázkom.'],
                     ['key' => 'documentMimeTypes', 'type' => 'text', 'label' => 'Povolené MIME typy dokumentov', 'default' => 'application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.presentation', 'rules' => ['string', 'max:2000'], 'help' => 'Oddeľte čiarkou. Legacy .doc/.xls/.ppt nie sú podporované.'],
+                    ['key' => 'autoOptimizeOnUpload', 'type' => 'bool', 'label' => 'Auto-kompresia obrázkov pri upload-e', 'default' => true, 'rules' => ['bool'], 'help' => 'JPEG/PNG/WebP sa pri nahrávaní prekódujú cez GD (ak je menšia veľkosť). SVG a PDF sa nemenia.'],
+                    ['key' => 'autoOptimizeMaxEdgePx', 'type' => 'int', 'label' => 'Max. hrana obrázka pri upload-e (px)', 'default' => 3840, 'rules' => ['int', 'min:0', 'max:8192'], 'help' => '0 = len kompresia bez zmenšenia rozmeru. Inak sa zachová pomer strán.'],
+                    ['key' => 'jpegQuality', 'type' => 'int', 'label' => 'JPEG kvalita pri upload-e', 'default' => 82, 'rules' => ['int', 'min:60', 'max:95']],
+                    ['key' => 'webpQuality', 'type' => 'int', 'label' => 'WebP kvalita pri upload-e', 'default' => 82, 'rules' => ['int', 'min:60', 'max:95']],
                 ],
             ],
             'sso' => [

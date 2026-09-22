@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Controllers\Media;
 
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Tests\Http\TestCase;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
@@ -12,6 +13,16 @@ use Slim\Psr7\UploadedFile;
 class MediaControllerTest extends TestCase
 {
     private const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $settings->setGroup('media', array_merge($settings->group('media'), [
+            'autoOptimizeOnUpload' => false,
+        ]));
+    }
 
     private function pngBytes(): string
     {

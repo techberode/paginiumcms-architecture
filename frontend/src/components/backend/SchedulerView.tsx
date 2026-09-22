@@ -18,6 +18,8 @@ import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { useI18n } from '../../context/I18nContext';
 import { interpretJobRunOutcome, outcomeBadgeClass, type JobOutcome } from '../../utils/jobRunOutcome';
 import { translateJobRunMessage } from '../../utils/jobRunMessage';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import { toneFromEnabled } from '../../utils/adminStatusKind';
 
 export const SchedulerView: React.FC = () => {
   const { t } = useI18n();
@@ -157,11 +159,14 @@ export const SchedulerView: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
               {t('platform.scheduler.masterSwitch')}
             </p>
-            <p className="text-sm font-medium">
-              {t('platform.scheduler.schedulerLabel')}{' '}
-              <span className={data?.enabled ? 'text-emerald-600' : 'text-amber-600'}>
-                {data?.enabled ? t('platform.scheduler.enabled') : t('platform.scheduler.disabled')}
-              </span>
+            <p className="text-sm font-medium flex flex-wrap items-center gap-2">
+              {t('platform.scheduler.schedulerLabel')}
+              <AdminStatusBadge
+                tone={toneFromEnabled(data?.enabled === true)}
+                label={
+                  data?.enabled ? t('platform.scheduler.enabled') : t('platform.scheduler.disabled')
+                }
+              />
             </p>
           </div>
           <Link

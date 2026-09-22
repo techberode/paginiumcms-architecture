@@ -103,7 +103,8 @@ final class MediaImageOptimizer
      *     beforeWidth: int,
      *     beforeHeight: int,
      *     width: int,
-     *     height: int
+     *     height: int,
+     *     applied: bool
      * }
      */
     public function optimize(
@@ -111,6 +112,9 @@ final class MediaImageOptimizer
         string $mimeType,
         ?int $targetWidth = null,
         ?int $targetHeight = null,
+        ?int $jpegQuality = null,
+        ?int $webpQuality = null,
+        bool $allowUnchanged = false,
     ): array {
         $this->assertGdAvailable();
 
@@ -159,7 +163,9 @@ final class MediaImageOptimizer
             $beforeHeight,
             $targetW,
             $targetH,
-            $detectedMime
+            $detectedMime,
+            $jpegQuality,
+            $webpQuality
         );
 
         if ($encoded === '') {
@@ -170,10 +176,18 @@ final class MediaImageOptimizer
         $resized = $targetW < $beforeWidth || $targetH < $beforeHeight;
 
         if (!$resized && $afterBytes >= $beforeBytes) {
+            if ($allowUnchanged) {
+                return $this->unchangedResult($binary, $detectedMime, $beforeBytes, $beforeWidth, $beforeHeight);
+            }
+
             throw new FlatFileException(Lang::get('optimize_no_reduction', [], 'media'));
         }
 
         if ($resized && $afterBytes >= $beforeBytes) {
+            if ($allowUnchanged) {
+                return $this->unchangedResult($binary, $detectedMime, $beforeBytes, $beforeWidth, $beforeHeight);
+            }
+
             throw new FlatFileException(Lang::get('optimize_no_reduction', [], 'media'));
         }
 
@@ -191,6 +205,94 @@ final class MediaImageOptimizer
             'beforeHeight' => $beforeHeight,
             'width' => $targetW,
             'height' => $targetH,
+            'applied' => true,
+        ];
+    }
+
+    /**
+     * Lossless-enough recompress / optional downscale for uploads. Keeps original when GD cannot shrink further.
+     *
+     * @return array{
+     *     binary: string,
+     *     mimeType: string,
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int,
+     *     applied: bool
+     * }
+     */
+    public function compressForUpload(
+        string $binary,
+        string $mimeType,
+        int $maxEdgePx = 0,
+        int $jpegQuality = self::JPEG_QUALITY,
+        int $webpQuality = self::WEBP_QUALITY,
+    ): array {
+        $jpegQuality = max(60, min(95, $jpegQuality));
+        $webpQuality = max(60, min(95, $webpQuality));
+
+        $info = $this->inspect($binary);
+        $targetWidth = null;
+        $targetHeight = null;
+
+        if ($maxEdgePx > 0 && ($info['width'] > $maxEdgePx || $info['height'] > $maxEdgePx)) {
+            if ($info['width'] >= $info['height']) {
+                $targetWidth = $maxEdgePx;
+            } else {
+                $targetHeight = $maxEdgePx;
+            }
+        }
+
+        return $this->optimize(
+            $binary,
+            $mimeType,
+            $targetWidth,
+            $targetHeight,
+            $jpegQuality,
+            $webpQuality,
+            true
+        );
+    }
+
+    /**
+     * @return array{
+     *     binary: string,
+     *     mimeType: string,
+     *     beforeBytes: int,
+     *     afterBytes: int,
+     *     savedBytes: int,
+     *     savedPercent: float,
+     *     beforeWidth: int,
+     *     beforeHeight: int,
+     *     width: int,
+     *     height: int,
+     *     applied: bool
+     * }
+     */
+    private function unchangedResult(
+        string $binary,
+        string $mimeType,
+        int $beforeBytes,
+        int $width,
+        int $height,
+    ): array {
+        return [
+            'binary' => $binary,
+            'mimeType' => $this->normalizeMime($mimeType),
+            'beforeBytes' => $beforeBytes,
+            'afterBytes' => $beforeBytes,
+            'savedBytes' => 0,
+            'savedPercent' => 0.0,
+            'beforeWidth' => $width,
+            'beforeHeight' => $height,
+            'width' => $width,
+            'height' => $height,
+            'applied' => false,
         ];
     }
 
@@ -311,7 +413,11 @@ final class MediaImageOptimizer
         int $targetW,
         int $targetH,
         string $mimeType,
+        ?int $jpegQuality = null,
+        ?int $webpQuality = null,
     ): string {
+        $jpegQuality = max(60, min(95, $jpegQuality ?? self::JPEG_QUALITY));
+        $webpQuality = max(60, min(95, $webpQuality ?? self::WEBP_QUALITY));
         if ($srcW < 1 || $srcH < 1 || $targetW < 1 || $targetH < 1) {
             throw new FlatFileException(Lang::get('optimize_invalid_dimensions', [], 'media'));
         }
@@ -345,9 +451,9 @@ final class MediaImageOptimizer
 
         ob_start();
         $saved = match ($mimeType) {
-            'image/jpeg', 'image/jpg' => imagejpeg($canvas, null, self::JPEG_QUALITY),
+            'image/jpeg', 'image/jpg' => imagejpeg($canvas, null, $jpegQuality),
             'image/png' => imagepng($canvas, null, self::PNG_COMPRESSION),
-            'image/webp' => imagewebp($canvas, null, self::WEBP_QUALITY),
+            'image/webp' => imagewebp($canvas, null, $webpQuality),
             default => false,
         };
 

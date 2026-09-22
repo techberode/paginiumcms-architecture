@@ -23,6 +23,7 @@ use PaginiumCMS\Core\Editor\Services\EditorProfileService;
 use PaginiumCMS\Http\Support\HttpConditionalResponse;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Demo\Data\DemoFixtures;
+use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -100,6 +101,12 @@ final class SettingsController
             /** @var array<string, mixed> $engineValues */
             $engineValues = $values['engine'] ?? SettingsSchema::defaults()['engine'] ?? [];
             $meta['engine'] = $this->buildEngineMeta($engineValues);
+        }
+
+        if (isset($schema['media'])) {
+            /** @var array<string, mixed> $mediaValues */
+            $mediaValues = $values['media'] ?? SettingsSchema::defaults()['media'] ?? [];
+            $meta['media'] = $this->buildMediaMeta($mediaValues);
         }
 
         return $this->json->success($response, [
@@ -766,6 +773,11 @@ final class SettingsController
 
         return [
             'storageProbe' => $this->mediaStorageProbe->probe($driver, $mediaValues),
+            'imageOptimization' => MediaImageOptimizer::capabilities(),
+            'uploadOptimization' => [
+                'enabled' => ($mediaValues['autoOptimizeOnUpload'] ?? true) === true,
+                'maxEdgePx' => max(0, (int) ($mediaValues['autoOptimizeMaxEdgePx'] ?? 3840)),
+            ],
             'documentationUrl' => $this->repositoryDocsBlob('docs/en/ITERATION_72.md'),
         ];
     }

@@ -3,6 +3,8 @@ import { gitApi, type GitPublishPreview, type GitPublishStatus } from '../../api
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { useConfirm } from '../../hooks/useConfirm';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import { toneFromEnabled } from '../../utils/adminStatusKind';
 
 export const GitPublishPanel: React.FC = () => {
   const { t } = useI18n();
@@ -86,7 +88,10 @@ export const GitPublishPanel: React.FC = () => {
 
   return (
     <div className="mt-4 rounded-md border border-gray-200 p-3 dark:border-gray-700" data-testid="git-publish-panel">
-      <h6 className="text-sm font-semibold text-gray-900 dark:text-white">{t('settings.engine.gitPublishTitle')}</h6>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h6 className="text-sm font-semibold text-gray-900 dark:text-white">{t('settings.engine.gitPublishTitle')}</h6>
+        <AdminStatusBadge tone={toneFromEnabled(true)} />
+      </div>
       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('settings.engine.gitPublishIntro')}</p>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
         <div>

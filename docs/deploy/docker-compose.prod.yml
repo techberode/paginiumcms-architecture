@@ -5,6 +5,12 @@
 
 services:
   redis:
+    # Base docker-compose.yml sets profiles: [cache] for local dev only.
+    # Without !reset, production `stack.sh up -d` never starts Redis (PHP then fails redis:6379).
+    profiles: !reset []
+    # Base docker-compose.yml publishes 6379:6379 for local dev — prod must not bind host :6379
+    # (conflicts with host Redis / leaves container in State "created"; PHP cannot reach service "redis").
+    ports: !reset []
     image: redis:7.4-alpine
     restart: unless-stopped
     command:
@@ -15,8 +21,10 @@ services:
       - 256mb
       - --maxmemory-policy
       - allkeys-lru
+    # Bind mount under STACK_DIR (no top-level `volumes:` block required — avoids merge errors
+    # when operators paste only the `services:` section into STACK_DIR/docker-compose.prod.yml).
     volumes:
-      - redis-data:/data
+      - ${STACK_DIR}/redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -67,6 +75,3 @@ services:
       - ${APP_ROOT}:/var/www/html:ro
       - ${APP_ROOT}/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ${APP_ROOT}/docker/nginx/security-headers.conf:/etc/nginx/conf.d/security-headers.conf:ro
-
-volumes:
-  redis-data:

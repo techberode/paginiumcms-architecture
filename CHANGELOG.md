@@ -17,6 +17,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.92`](#release-2-1-0-beta-92) | 2026-09-22 | Admin status badges · getting-started SSOT · media upload compression · prod Redis compose follow-up |
 | [`2.1.0-beta.91`](#release-2-1-0-beta-91) | 2026-09-22 | It.69 Redis cache · latest-articles · breadcrumbs · media folders · Origin probes · AI/translation ops docs |
 | [`2.1.0-beta.90`](#release-2-1-0-beta-90) | 2026-09-21 | Team Kanban per team · team chat history/inbox · Kanban WIP/stats · Playground git import · 58f-h · It.95a/c |
 | [`2.1.0-beta.89`](#release-2-1-0-beta-89) | 2026-09-20 | It.48 static compile + `/static-html` serve · ISS-173 gitleaks · ISS-174 desk role gate · AppVersion floor |
@@ -175,6 +176,30 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Queue:** It.69 Redis driver (optional). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 
 ---
+
+<a id="release-2-1-0-beta-92"></a>
+
+## [2.1.0-beta.92] – 2026-09-22
+
+Admin status indicators, dashboard getting-started probes backed by settings SSOT, GD auto-compress on media upload, and production Redis/stack documentation fixes.
+
+Release notes: [RELEASE_2_1_0_BETA_92.md](docs/en/RELEASE_2_1_0_BETA_92.md)
+
+### Added
+
+- **`AdminStatusBadge` / `AdminProbeRow`** — shared FE components; used on Engine, Agent, Translation, Git publish, static rebuild, system update banner, health/APM panels, scheduler, notifications, webhooks, media library, and getting-started checklist.
+- **`GettingStartedStatusService`** — dashboard overview `getting_started` probes (`siteName`, `mail`) from `SettingsRepository`.
+- **Media upload compression** — settings `autoOptimizeOnUpload`, `autoOptimizeMaxEdgePx`, `jpegQuality`, `webpQuality`; `MediaImageOptimizer::compressForUpload()`; `MediaSettingsPanel` with GD/storage probes.
+
+### Fixed
+
+- **Getting started checklist** — site-name step aligned with **General → Site name**; reload public settings on mount; SMTP step uses admin probes.
+- **Prod Redis compose** — `profiles`/`ports` reset, `redis-data` bind mount, `stack.sh` bootstrap (follow-up to beta.91).
+
+### Documentation
+
+- [CACHE_OPERATIONS.md](docs/en/runbooks/CACHE_OPERATIONS.md) — media upload compression vs HTTP gzip.
+- [RELEASE_2_1_0_BETA_92.md](docs/en/RELEASE_2_1_0_BETA_92.md) — deploy and smoke test plan.
 
 <a id="release-2-1-0-beta-91"></a>
 

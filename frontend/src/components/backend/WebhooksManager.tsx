@@ -9,6 +9,8 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
 import { useI18n } from '../../context/I18nContext';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import { toneFromEnabled } from '../../utils/adminStatusKind';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
@@ -374,7 +376,13 @@ export const WebhooksManager: React.FC = () => {
                     aria-label={webhook.label}
                   />
                   <div className="min-w-0">
-                    <div className="font-bold text-slate-900 dark:text-white">{webhook.label}</div>
+                    <div className="font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-2">
+                      {webhook.label}
+                      <AdminStatusBadge
+                        tone={toneFromEnabled(webhook.enabled)}
+                        label={webhook.enabled ? t('platform.webhooks.on') : t('platform.webhooks.off')}
+                      />
+                    </div>
                     <div className="text-xs text-slate-500 break-all">{webhook.url}</div>
                     <div className="text-xs mt-1 text-slate-600 dark:text-slate-300">
                       {webhook.events.map(eventLabel).join(' · ')}

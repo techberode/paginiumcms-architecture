@@ -5,6 +5,12 @@ export const mediaEn: MessageTree = {
     title: 'Media library',
     subtitle: 'Upload, browse folders, and manage site assets.',
   },
+  status: {
+    gdReady: 'GD optimization',
+    gdOff: 'GD unavailable',
+    autoCompressOn: 'Auto-compress on upload',
+    autoCompressOff: 'Auto-compress off',
+  },
   folder: {
     all: 'All media',
   },

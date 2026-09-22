@@ -45,6 +45,12 @@ export interface MediaFormatsPayload {
   textEditableMimeTypes?: string[];
   adminPdfPreviewMimeTypes?: string[];
   imageOptimization?: ImageOptimizationCapabilities;
+  uploadOptimization?: {
+    enabled: boolean;
+    maxEdgePx: number;
+    jpegQuality: number;
+    webpQuality: number;
+  };
 }
 
 export interface ImageOptimizationCapabilities {

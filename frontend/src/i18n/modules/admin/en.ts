@@ -165,7 +165,7 @@ export const adminEn: MessageTree = {
     showAgain: 'Show getting-started checklist',
     items: {
       content: 'Publish a page or article',
-      siteName: 'Set your site name in Settings',
+      siteName: 'Set site name (General → Site name)',
       media: 'Upload media to the library',
       twoFactor: 'Enable two-factor authentication',
       mail: 'Send a test email (SMTP configured)',
@@ -181,5 +181,13 @@ export const adminEn: MessageTree = {
   contextHelp: {
     title: 'Field help',
     readDocs: 'Read documentation',
+  },
+  status: {
+    active: 'Active',
+    inactive: 'Inactive',
+    available: 'Available',
+    unavailable: 'Unavailable',
+    neutral: 'Unknown',
+    installedVersion: 'Installed {version}',
   },
 };

@@ -6,6 +6,8 @@ import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { useToast } from '../../hooks/useToast';
 import { clearApmSamples, type ApmOverview } from '../../api/metrics';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import { toneFromEnabled } from '../../utils/adminStatusKind';
 
 interface Props {
   overview: ApmOverview | null;
@@ -45,13 +47,23 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
   return (
     <div className="card">
       <div className="card-body">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {t('dashboard.panels.apm.title')}
           </h2>
-          <Link to={settingsGroupPath('engine')} className="text-sm text-indigo-600 hover:underline">
-            {t('dashboard.panels.apm.settingsLink')}
-          </Link>
+          <div className="flex items-center gap-2">
+            {overview ? (
+              <AdminStatusBadge
+                tone={toneFromEnabled(overview.config.enabled === true)}
+                label={
+                  overview.config.enabled ? t('admin.status.active') : t('admin.status.inactive')
+                }
+              />
+            ) : null}
+            <Link to={settingsGroupPath('engine')} className="text-sm text-indigo-600 hover:underline">
+              {t('dashboard.panels.apm.settingsLink')}
+            </Link>
+          </div>
         </div>
 
         {loading || !overview ? (

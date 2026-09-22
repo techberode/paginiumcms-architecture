@@ -121,7 +121,7 @@ cd ..
 "$STACK_DIR/stack.sh" up -d --build
 ```
 
-The production compose merge (`docs/deploy/docker-compose.prod.yml`) includes a **Redis** service and sets `REDIS_HOST=redis` on PHP. After the first upgrade that ships ext-redis, run **`stack.sh build php`** (not recreate alone) so the PHP image includes `pecl redis`. Verify **Settings → Hybrid Engine → cache probe** (`redisCache: available`). See [CACHE_OPERATIONS.md](../en/runbooks/CACHE_OPERATIONS.md).
+The production compose merge (`docs/deploy/docker-compose.prod.yml`) includes a **Redis** service and sets `REDIS_HOST=redis` on PHP. The prod file must **`profiles: !reset []`** on `redis` — the base `docker-compose.yml` tags Redis with profile `cache` for local dev; without reset, **`stack.sh up -d` never starts Redis** and the admin probe reports *extension loaded but connection to redis:6379 failed*. After copying the prod override, run **`stack.sh build php`** (ext-redis), then **`stack.sh up -d`**. Verify **Settings → Hybrid Engine → cache probe** (`redisCache: available`). See [CACHE_OPERATIONS.md](../en/runbooks/CACHE_OPERATIONS.md).
 
 `npm ci` and the Composer lockfile must belong to the same tag. A server must not repair dependencies using ad-hoc `npm update` or `composer update`.
 

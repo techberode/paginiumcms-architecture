@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Admin\Services\AdminCountsService;
 use PaginiumCMS\Core\Admin\Services\ContentStorageStatsService;
+use PaginiumCMS\Core\Admin\Services\GettingStartedStatusService;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Analytics\Services\RealtimeTracker;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
@@ -33,6 +34,7 @@ final class DashboardController
         private ApplicationLogReader $logReader,
         private AdminCountsService $counts,
         private ContentStorageStatsService $contentStorageStats,
+        private GettingStartedStatusService $gettingStarted,
         private JsonResponder $json
     ) {
     }
@@ -85,6 +87,7 @@ final class DashboardController
                 'hours' => 24,
                 'by_severity' => $this->logReader->severityStats(24),
             ],
+            'getting_started' => $this->gettingStarted->probes(),
         ]);
     }
 

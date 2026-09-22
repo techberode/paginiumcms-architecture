@@ -15,6 +15,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { useI18n } from '../../context/I18nContext';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
 
 export const NotificationsOverview: React.FC = () => {
   const { t } = useI18n();
@@ -75,16 +76,20 @@ export const NotificationsOverview: React.FC = () => {
     }
     if (connector.authenticated === false) {
       return (
-        <span className="ml-2 text-xs font-medium text-amber-700 dark:text-amber-300">
-          {t('platform.notifications.authMissing')}
-        </span>
+        <AdminStatusBadge
+          tone="unavailable"
+          label={t('platform.notifications.authMissing')}
+          className="ml-2"
+        />
       );
     }
     if (connector.authenticated) {
       return (
-        <span className="ml-2 text-xs font-medium text-green-700 dark:text-green-400">
-          {t('platform.notifications.authOk')}
-        </span>
+        <AdminStatusBadge
+          tone="available"
+          label={t('platform.notifications.authOk')}
+          className="ml-2"
+        />
       );
     }
     return null;
@@ -291,11 +296,12 @@ export const NotificationsOverview: React.FC = () => {
             <ul className="space-y-2">
               {data.connectors.map((c) => (
                 <li key={c.name} className="flex items-center justify-between gap-3 flex-wrap">
-                  <span className="min-w-0">
-                    <span
-                      className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                        c.enabled ? 'bg-green-500' : c.configured ? 'bg-amber-400' : 'bg-gray-300'
-                      }`}
+                  <span className="min-w-0 flex flex-wrap items-center gap-2">
+                    <AdminStatusBadge
+                      tone={
+                        c.enabled ? 'active' : c.configured ? 'neutral' : 'inactive'
+                      }
+                      dotOnly
                     />
                     {c.label}
                     {authBadge(c)}

@@ -207,6 +207,7 @@ export const settingsSk: MessageTree = {
     "staticRebuildPublic": "Verejné HTML",
     "staticRebuildPublicOn": "Zapnuté — {prefix}/pages/<slug> a {prefix}/blog/<slug>",
     "staticRebuildPublicOff": "Vypnuté (dynamic — len SPA + API)",
+    "staticRebuildWritable": "Zápis do compile výstupu",
     "staticRebuildRun": "Rebuild statického stromu",
     "staticRebuildWorking": "Kompilujem…",
     "staticRebuildLoading": "Načítavam stav statického compile…",
@@ -233,6 +234,18 @@ export const settingsSk: MessageTree = {
     "queryIndexActivateSqliteSuccess": "SQLite query index zapnutý.",
     "queryIndexActivateJsonSuccess": "Query index nastavený na JSON.",
     "queryIndexActionFailed": "Akcia zlyhala. Skontrolujte probe a skúste rebuild."
+  },
+  "mediaPanel": {
+    "panelTitle": "Optimalizácia obrázkov a úložisko",
+    "panelIntro": "Kompresia pri upload-e používa PHP GD. Manuálne „Optimalizovať“ v Médiách ide rovnakým motorom.",
+    "autoCompressOn": "Auto-kompresia pri upload-e",
+    "autoCompressOff": "Auto-kompresia vypnutá",
+    "gdUnavailable": "GD nedostupné",
+    "gdRuntime": "Rozšírenie GD",
+    "gdReady": "Dostupné pre JPEG/PNG/WebP",
+    "gdMissing": "Nie je dostupné — nainštalujte/zapnite PHP GD",
+    "storageDriver": "Ovládač úložiska",
+    "localStorage": "Stav lokálneho úložiska"
   },
   "appearance": {
     "defaultBadge": "Predvolená",
@@ -1962,6 +1975,22 @@ export const settingsSk: MessageTree = {
         "help": "Allow-list oddelený čiarkou. Legacy .doc/.xls/.ppt nie sú podporované.",
         "tooltip": "Upload musí prejsť magic-byte kontrolou. Verejné URL servírujú dokumenty ako prílohy.",
         "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_96.md#upload-allow-list-initial"
+      },
+      "autoOptimizeOnUpload": {
+        "label": "Auto-kompresia obrázkov pri upload-e",
+        "help": "JPEG/PNG/WebP sa prekódujú cez GD, ak je výsledok menší. SVG a PDF sa nemenia."
+      },
+      "autoOptimizeMaxEdgePx": {
+        "label": "Max. hrana obrázka pri upload-e (px)",
+        "help": "0 = len kompresia bez zmenšenia. Inak sa obmedzí dlhšia hrana pri zachovaní pomeru strán."
+      },
+      "jpegQuality": {
+        "label": "JPEG kvalita pri upload-e",
+        "help": "60–95. Nižšie hodnoty = menej miesta."
+      },
+      "webpQuality": {
+        "label": "WebP kvalita pri upload-e",
+        "help": "60–95. Nižšie hodnoty = menej miesta."
       }
     },
     "sso": {

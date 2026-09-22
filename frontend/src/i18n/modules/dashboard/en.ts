@@ -68,7 +68,9 @@ export const dashboardEn: MessageTree = {
     titleUnknown: 'Could not verify remote version',
     titleCheck: 'Check for system updates',
     message: 'Version {version} is available. Review release notes and create a backup before deploying.',
-    messageCurrent: 'Automatic check found no newer release. You can re-check after a new tag is published.',
+    messageCurrent:
+      'This instance runs {version}. No newer release was found — re-check after a new tag is published.',
+    currentVersionLabel: 'CMS version',
     messageUnknown: 'Verify GitHub token, owner, and repository in Settings → System update.',
     messageCheck: 'Use Recheck to compare this instance with GitHub releases (respects the interval in Settings → System update).',
     manualOnlyHint: 'After login, the remote version is checked once per session. Use Recheck anytime for another compare.',

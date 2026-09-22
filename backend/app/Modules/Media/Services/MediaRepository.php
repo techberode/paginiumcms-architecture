@@ -133,6 +133,8 @@ class MediaRepository implements MediaRepositoryInterface
             }
         }
 
+        [$binary, $mimeType] = $this->applyUploadImageCompression($binary, $mimeType);
+
         $storage = $this->storage();
         $storage->put($relativePath, $binary);
 
@@ -805,6 +807,12 @@ class MediaRepository implements MediaRepositoryInterface
             MediaFormats::toApiPayload($this->resolveAllowedMimeTypes()),
             [
                 'imageOptimization' => MediaImageOptimizer::capabilities(),
+                'uploadOptimization' => [
+                    'enabled' => ($media['autoOptimizeOnUpload'] ?? true) === true,
+                    'maxEdgePx' => max(0, (int) ($media['autoOptimizeMaxEdgePx'] ?? 3840)),
+                    'jpegQuality' => max(60, min(95, (int) ($media['jpegQuality'] ?? MediaImageOptimizer::JPEG_QUALITY))),
+                    'webpQuality' => max(60, min(95, (int) ($media['webpQuality'] ?? MediaImageOptimizer::WEBP_QUALITY))),
+                ],
                 'maxVideoUploadSizeKb' => max(1024, (int) ($media['maxVideoUploadSizeKb'] ?? 102400)),
                 'documentsEnabled' => MediaDocumentPolicy::isEnabled($this->settings),
                 'documentMimeTypes' => $documentMimeTypes,
@@ -820,6 +828,39 @@ class MediaRepository implements MediaRepositoryInterface
                 )),
             ]
         );
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function applyUploadImageCompression(string $binary, string $mimeType): array
+    {
+        if (!$this->imageOptimizer->supportsMime($mimeType) || !MediaImageOptimizer::isAvailable()) {
+            return [$binary, $mimeType];
+        }
+
+        $media = $this->settings->group('media');
+        if (($media['autoOptimizeOnUpload'] ?? true) !== true) {
+            return [$binary, $mimeType];
+        }
+
+        try {
+            $result = $this->imageOptimizer->compressForUpload(
+                $binary,
+                $mimeType,
+                max(0, (int) ($media['autoOptimizeMaxEdgePx'] ?? 3840)),
+                max(60, min(95, (int) ($media['jpegQuality'] ?? MediaImageOptimizer::JPEG_QUALITY))),
+                max(60, min(95, (int) ($media['webpQuality'] ?? MediaImageOptimizer::WEBP_QUALITY))),
+            );
+        } catch (FlatFileException) {
+            return [$binary, $mimeType];
+        }
+
+        if ($result['applied'] !== true) {
+            return [$binary, $mimeType];
+        }
+
+        return [$result['binary'], $result['mimeType']];
     }
 
     /**

@@ -212,6 +212,7 @@ export const DashboardView: React.FC = () => {
         totalPages={stats.totalPages}
         totalArticles={stats.totalArticles}
         totalMedia={counts?.media ?? stats.totalMedia}
+        probes={data?.overview?.getting_started}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">

@@ -2,16 +2,18 @@
 import React from 'react';
 import { HealthReport } from '../../api/types';
 import { useI18n } from '../../context/I18nContext';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import type { AdminStatusTone } from '../../utils/adminStatusKind';
 
 interface HealthPanelProps {
   health: HealthReport | null;
   loading?: boolean;
 }
 
-const statusColor: Record<string, string> = {
-  pass: 'text-green-600 dark:text-green-400',
-  warn: 'text-yellow-600 dark:text-yellow-400',
-  fail: 'text-red-600 dark:text-red-400',
+const healthTone: Record<string, AdminStatusTone> = {
+  pass: 'available',
+  warn: 'neutral',
+  fail: 'unavailable',
 };
 
 export const HealthPanel: React.FC<HealthPanelProps> = ({ health, loading }) => {
@@ -24,11 +26,12 @@ export const HealthPanel: React.FC<HealthPanelProps> = ({ health, loading }) => 
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {t('dashboard.panels.health.title')}
           </h2>
-          {health && (
-            <span className={`text-sm font-medium uppercase ${statusColor[health.status] ?? 'text-gray-500'}`}>
-              {health.status}
-            </span>
-          )}
+          {health ? (
+            <AdminStatusBadge
+              tone={healthTone[health.status] ?? 'neutral'}
+              label={health.status.toUpperCase()}
+            />
+          ) : null}
         </div>
 
         {loading || !health ? (
@@ -59,9 +62,11 @@ export const HealthPanel: React.FC<HealthPanelProps> = ({ health, loading }) => 
               {health.checks.map((check) => (
                 <li key={check.name} className="flex items-start justify-between gap-2 text-sm">
                   <span className="text-gray-700 dark:text-gray-200">{check.name}</span>
-                  <span className={`uppercase text-xs font-medium ${statusColor[check.status] ?? ''}`}>
-                    {check.status}
-                  </span>
+                  <AdminStatusBadge
+                    tone={healthTone[check.status] ?? 'neutral'}
+                    label={check.status}
+                    dotOnly
+                  />
                 </li>
               ))}
             </ul>

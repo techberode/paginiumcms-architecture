@@ -3,6 +3,7 @@ import { staticSiteApi, type StaticSiteStatus } from '../../api/staticSite';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { useConfirm } from '../../hooks/useConfirm';
+import { AdminProbeRow } from '../admin/AdminProbeRow';
 
 export const StaticRebuildPanel: React.FC = () => {
   const { t } = useI18n();
@@ -80,26 +81,32 @@ export const StaticRebuildPanel: React.FC = () => {
     <div className="mt-4 rounded-md border border-gray-200 p-3 dark:border-gray-700" data-testid="static-rebuild-panel">
       <h6 className="text-sm font-semibold text-gray-900 dark:text-white">{t('settings.engine.staticRebuildTitle')}</h6>
       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('settings.engine.staticRebuildIntro')}</p>
-      <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-        <div>
-          <dt className="text-gray-500 dark:text-gray-400">{t('settings.engine.staticRebuildMode')}</dt>
-          <dd className="font-medium text-gray-800 dark:text-gray-100">{status.renderMode}</dd>
-        </div>
-        <div>
-          <dt className="text-gray-500 dark:text-gray-400">{t('settings.engine.staticRebuildCounts')}</dt>
-          <dd className="font-medium text-gray-800 dark:text-gray-100">
-            {status.pageCount} / {status.articleCount}
-          </dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="text-gray-500 dark:text-gray-400">{t('settings.engine.staticRebuildPublic')}</dt>
-          <dd className="font-medium text-gray-800 dark:text-gray-100">
-            {status.publicServe
+      <ul className="mt-3">
+        <AdminProbeRow
+          label={t('settings.engine.staticRebuildMode')}
+          detail={status.renderMode}
+          status={status.renderMode !== 'dynamic' ? 'available' : 'inactive'}
+        />
+        <AdminProbeRow
+          label={t('settings.engine.staticRebuildCounts')}
+          detail={`${status.pageCount} / ${status.articleCount}`}
+          tone="neutral"
+        />
+        <AdminProbeRow
+          label={t('settings.engine.staticRebuildPublic')}
+          detail={
+            status.publicServe
               ? t('settings.engine.staticRebuildPublicOn', { prefix: status.publicPrefix })
-              : t('settings.engine.staticRebuildPublicOff')}
-          </dd>
-        </div>
-      </dl>
+              : t('settings.engine.staticRebuildPublicOff')
+          }
+          status={status.publicServe}
+        />
+        <AdminProbeRow
+          label={t('settings.engine.staticRebuildWritable')}
+          detail={status.writable ? t('admin.status.available') : t('admin.status.unavailable')}
+          status={status.writable}
+        />
+      </ul>
       <button
         type="button"
         className="btn btn-secondary mt-3 text-sm"

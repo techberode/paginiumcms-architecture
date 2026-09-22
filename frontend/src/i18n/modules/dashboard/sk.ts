@@ -68,7 +68,9 @@ export const dashboardSk: MessageTree = {
     titleUnknown: 'Nepodarilo sa overiť vzdialenú verziu',
     titleCheck: 'Skontrolovať aktualizácie',
     message: 'Verzia {version} je dostupná. Prečítajte si release notes a pred deployom vytvorte zálohu.',
-    messageCurrent: 'Automatická kontrola nenašla novší release. Po publikovaní tagu môžete skontrolovať znova.',
+    messageCurrent:
+      'Táto inštancia beží na {version}. Novší release sa nenašiel — po publikovaní tagu môžete skontrolovať znova.',
+    currentVersionLabel: 'Verzia CMS',
     messageUnknown: 'Overte GitHub token, owner a repozitár v Nastavenia → Aktualizácia systému.',
     messageCheck: 'Kliknite na Skontrolovať znova pre porovnanie s GitHub release (podľa intervalu v Nastavenia → Aktualizácia systému).',
     manualOnlyHint: 'Po prihlásení sa verzia skontroluje raz za reláciu. Ďalšie porovnanie len cez Skontrolovať znova.',

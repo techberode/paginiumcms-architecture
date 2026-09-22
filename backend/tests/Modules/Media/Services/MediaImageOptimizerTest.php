@@ -118,4 +118,23 @@ final class MediaImageOptimizerTest extends TestCase
         $this->expectException(FlatFileException::class);
         $optimizer->optimize($png, 'image/png');
     }
+
+    public function testCompressForUploadKeepsOriginalWhenAlreadySmall(): void
+    {
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('GD extension not available.');
+        }
+
+        $png = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            true
+        );
+        $this->assertIsString($png);
+
+        $optimizer = new MediaImageOptimizer();
+        $result = $optimizer->compressForUpload($png, 'image/png');
+
+        $this->assertFalse($result['applied']);
+        $this->assertSame(strlen($png), $result['afterBytes']);
+    }
 }

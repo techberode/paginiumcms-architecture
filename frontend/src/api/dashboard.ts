@@ -43,6 +43,10 @@ export interface DashboardOverview {
     | 'stale_content',
     number
   >>;
+  getting_started?: {
+    siteName: boolean;
+    mail: boolean;
+  };
   storage?: {
     free_space?: string | null;
     free_space_bytes?: number | null;

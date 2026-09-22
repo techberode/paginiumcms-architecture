@@ -61,6 +61,7 @@ class MediaRepositoryTest extends TestCase
                     'documentsEnabled' => true,
                     'documentMimeTypes' => 'application/pdf,text/plain,text/markdown',
                     'maxDocumentUploadSizeKb' => 20480,
+                    'autoOptimizeOnUpload' => false,
                 ];
             }
 

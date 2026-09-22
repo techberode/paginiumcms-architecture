@@ -14,9 +14,9 @@ Optional It.69 Redis derived cache in Docker prod stack, `[latest-articles]` tic
 
 ## Production — Redis (first time on this host)
 
-1. Deploy this tag so `docs/deploy/docker-compose.prod.yml` on the server includes the **redis** service and PHP `REDIS_HOST=redis`.
+1. Copy **`docs/deploy/docker-compose.prod.yml`** to **`$STACK_DIR/docker-compose.prod.yml`**. The `redis` service must include **`profiles: !reset []`** (base repo `docker-compose.yml` uses profile `cache` for local dev — without reset, Redis never starts in prod).
 2. Rebuild PHP (ext-redis): `stack.sh build php` — not `up` alone.
-3. Start stack: `stack.sh up -d` (redis + php with healthcheck dependency).
+3. Start stack: `stack.sh up -d` — confirm `stack.sh ps` shows **redis** running.
 4. Admin: **Settings → Hybrid Engine** — cache probe should show Redis **available**; `engine.cacheDriver=auto` uses Redis when reachable (SSOT stays flat-file).
 
 Classic installs without Docker can ignore Redis; file/memory cache remains the fallback.

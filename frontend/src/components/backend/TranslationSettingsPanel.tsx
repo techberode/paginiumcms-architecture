@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { contentTranslationsApi, type ContentTranslationStatus } from '../../api/contentTranslations';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import { toneFromConnectionOk, toneFromEnabled } from '../../utils/adminStatusKind';
 
 export const TranslationSettingsPanel: React.FC = () => {
   const { t } = useI18n();
@@ -9,6 +11,7 @@ export const TranslationSettingsPanel: React.FC = () => {
   const [status, setStatus] = useState<ContentTranslationStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState(false);
+  const [connectionOk, setConnectionOk] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -19,9 +22,16 @@ export const TranslationSettingsPanel: React.FC = () => {
       if (!res.success || !res.data) {
         setError(res.error || res.message || t('settings.translation.loadFailed'));
         setStatus(null);
+        setConnectionOk(null);
         return;
       }
       setStatus(res.data);
+      if (res.data.enabled && res.data.provider !== 'none') {
+        const probe = await contentTranslationsApi.testConnection();
+        setConnectionOk(Boolean(probe.success && probe.data?.ok));
+      } else {
+        setConnectionOk(null);
+      }
     } catch {
       setError(t('settings.translation.loadFailed'));
     } finally {
@@ -37,7 +47,9 @@ export const TranslationSettingsPanel: React.FC = () => {
     setTesting(true);
     try {
       const res = await contentTranslationsApi.testConnection();
-      if (res.success && res.data?.ok) {
+      const ok = Boolean(res.success && res.data?.ok);
+      setConnectionOk(ok);
+      if (ok) {
         toast.success(t('settings.translation.testOk'));
       } else {
         toast.error(res.data?.error || res.error || res.message || t('settings.translation.testFailed'));
@@ -56,8 +68,20 @@ export const TranslationSettingsPanel: React.FC = () => {
         })
     : '';
 
+  const providerActive = Boolean(status?.enabled && status.provider !== 'none');
+
   return (
     <div className="mt-4 space-y-3 rounded-md border border-admin-border bg-admin-canvas p-4" data-testid="translation-settings-panel">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {status ? (
+          <>
+            <AdminStatusBadge tone={toneFromEnabled(status.enabled)} />
+            {providerActive ? (
+              <AdminStatusBadge tone={toneFromConnectionOk(connectionOk)} />
+            ) : null}
+          </>
+        ) : null}
+      </div>
       <p className="text-sm text-admin-muted">{t('settings.translation.instanceRequired')}</p>
       <p className="text-sm text-admin-muted">{t('settings.translation.nginxProxyHint')}</p>
       <p className="text-sm">
@@ -84,7 +108,7 @@ export const TranslationSettingsPanel: React.FC = () => {
       <button
         type="button"
         onClick={() => void runTest()}
-        disabled={testing}
+        disabled={testing || !providerActive}
         className="rounded-md bg-admin-sidebar-active px-3 py-1.5 text-sm font-semibold text-admin-sidebar-active-text disabled:opacity-60"
       >
         {testing ? t('settings.translation.testing') : t('settings.translation.testConnection')}

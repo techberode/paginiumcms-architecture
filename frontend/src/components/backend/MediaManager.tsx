@@ -75,6 +75,8 @@ import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { MediaTextEditorModal } from './MediaTextEditorModal';
 import { MediaPdfPreviewModal } from './MediaPdfPreviewModal';
+import { AdminStatusBadge } from '../admin/AdminStatusBadge';
+import { toneFromEnabled } from '../../utils/adminStatusKind';
 
 export const MediaManager: React.FC = () => {
   const toast = useToast();
@@ -129,6 +131,7 @@ export const MediaManager: React.FC = () => {
     png: false,
     webp: false,
   });
+  const [uploadOptimizationEnabled, setUploadOptimizationEnabled] = useState(true);
   const [pageSize, setStoredPageSize] = useAdminListPageSize('media');
   const setPageSize = useCallback(
     (value: number) => {
@@ -168,6 +171,9 @@ export const MediaManager: React.FC = () => {
       setTextEditableMimeTypes(formats.textEditableMimeTypes ?? []);
       if (formats.imageOptimization) {
         setImageOptimization(formats.imageOptimization);
+      }
+      if (formats.uploadOptimization) {
+        setUploadOptimizationEnabled(formats.uploadOptimization.enabled);
       }
     })();
   }, []);
@@ -598,6 +604,24 @@ export const MediaManager: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {t('media.page.subtitle')}
           </p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <AdminStatusBadge
+              tone={toneFromEnabled(imageOptimization.available)}
+              label={
+                imageOptimization.available
+                  ? t('media.status.gdReady')
+                  : t('media.status.gdOff')
+              }
+            />
+            <AdminStatusBadge
+              tone={toneFromEnabled(imageOptimization.available && uploadOptimizationEnabled)}
+              label={
+                uploadOptimizationEnabled && imageOptimization.available
+                  ? t('media.status.autoCompressOn')
+                  : t('media.status.autoCompressOff')
+              }
+            />
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-secondary" onClick={() => void handleCreateFolder()}>

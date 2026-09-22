@@ -165,7 +165,7 @@ export const adminSk: MessageTree = {
     showAgain: 'Znova zobraziť úvodné kroky',
     items: {
       content: 'Publikovať stránku alebo článok',
-      siteName: 'Nastaviť názov webu v Nastaveniach',
+      siteName: 'Nastaviť názov stránky (Všeobecné → Názov stránky)',
       media: 'Nahrať súbor do knižnice médií',
       twoFactor: 'Zapnúť dvojfaktorové overenie',
       mail: 'Odoslať testovací e-mail (nastavené SMTP)',
@@ -181,5 +181,13 @@ export const adminSk: MessageTree = {
   contextHelp: {
     title: 'Nápoveda k poľu',
     readDocs: 'Dokumentácia v repozitári',
+  },
+  status: {
+    active: 'Aktívne',
+    inactive: 'Neaktívne',
+    available: 'Dostupné',
+    unavailable: 'Nedostupné',
+    neutral: 'Neznáme',
+    installedVersion: 'Nainštalované {version}',
   },
 };

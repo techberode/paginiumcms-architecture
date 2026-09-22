@@ -39,38 +39,16 @@ if [[ ! -f "$OVERRIDE" ]]; then
   exit 1
 fi
 
+mkdir -p "$STACK_DIR/redis-data"
+chmod 750 "$STACK_DIR/redis-data" 2>/dev/null || true
+export STACK_DIR
+
 COMPOSE=(
   docker compose
   -f "$BASE"
   -f "$OVERRIDE"
   --project-name "$COMPOSE_PROJECT_NAME"
 )
-
-DEPLOY_KEY_FILE="${GITHUB_DEPLOY_KEY_FILE:-/var/lib/paginiumcms/secrets/github_deploy_key}"
-if [[ -f "$DEPLOY_KEY_FILE" ]]; then
-  KEY_OVERLAY=""
-  if [[ -f "$STACK_DIR/docker-compose.deploy-key.yml" ]]; then
-    KEY_OVERLAY="$STACK_DIR/docker-compose.deploy-key.yml"
-  elif [[ -f "$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml" ]]; then
-    KEY_OVERLAY="$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml"
-  fi
-  if [[ -n "$KEY_OVERLAY" ]]; then
-    COMPOSE+=(-f "$KEY_OVERLAY")
-  fi
-fi
-
-DEPLOY_KEY_FILE="${GITHUB_DEPLOY_KEY_FILE:-/var/lib/paginiumcms/secrets/github_deploy_key}"
-if [[ -f "$DEPLOY_KEY_FILE" ]]; then
-  KEY_OVERLAY=""
-  if [[ -f "$STACK_DIR/docker-compose.deploy-key.yml" ]]; then
-    KEY_OVERLAY="$STACK_DIR/docker-compose.deploy-key.yml"
-  elif [[ -f "$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml" ]]; then
-    KEY_OVERLAY="$APP_ROOT/docs/deploy/docker-compose.deploy-key.yml"
-  fi
-  if [[ -n "$KEY_OVERLAY" ]]; then
-    COMPOSE+=(-f "$KEY_OVERLAY")
-  fi
-fi
 
 DEPLOY_KEY_FILE="${GITHUB_DEPLOY_KEY_FILE:-/var/lib/paginiumcms/secrets/github_deploy_key}"
 if [[ -f "$DEPLOY_KEY_FILE" ]]; then

@@ -208,6 +208,7 @@ export const settingsEn: MessageTree = {
     "staticRebuildPublic": "Public HTML serve",
     "staticRebuildPublicOn": "On — {prefix}/pages/<slug> and {prefix}/blog/<slug>",
     "staticRebuildPublicOff": "Off (dynamic mode — SPA + API only)",
+    "staticRebuildWritable": "Compile output writable",
     "staticRebuildRun": "Rebuild static tree",
     "staticRebuildWorking": "Compiling…",
     "staticRebuildLoading": "Loading static compile status…",
@@ -233,6 +234,18 @@ export const settingsEn: MessageTree = {
     "queryIndexActivateSqliteSuccess": "SQLite query index driver enabled.",
     "queryIndexActivateJsonSuccess": "Query index driver set to JSON.",
     "queryIndexActionFailed": "Query index action failed. Check probe status and try rebuild first."
+  },
+  "mediaPanel": {
+    "panelTitle": "Image optimization & storage",
+    "panelIntro": "Upload compression uses PHP GD. Manual “Optimize” in Media Library uses the same engine.",
+    "autoCompressOn": "Auto-compress on upload",
+    "autoCompressOff": "Auto-compress disabled",
+    "gdUnavailable": "GD unavailable",
+    "gdRuntime": "GD extension",
+    "gdReady": "Available for JPEG/PNG/WebP",
+    "gdMissing": "Not available — install/enable PHP GD",
+    "storageDriver": "Storage driver",
+    "localStorage": "Local storage health"
   },
   "appearance": {
     "defaultBadge": "Default",
@@ -1404,6 +1417,22 @@ export const settingsEn: MessageTree = {
         "help": "Comma-separated allow-list. Legacy .doc/.xls/.ppt are not supported.",
         "tooltip": "Upload magic-byte verification must match these types. Public URLs serve documents as attachments.",
         "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/ITERATION_96.md#upload-allow-list-initial"
+      },
+      "autoOptimizeOnUpload": {
+        "label": "Auto-compress images on upload",
+        "help": "JPEG/PNG/WebP are re-encoded via GD when the result is smaller. SVG and PDF are unchanged."
+      },
+      "autoOptimizeMaxEdgePx": {
+        "label": "Max image edge on upload (px)",
+        "help": "0 = compress only, no downscale. Otherwise the longest edge is capped while keeping aspect ratio."
+      },
+      "jpegQuality": {
+        "label": "JPEG quality on upload",
+        "help": "60–95. Lower values save more space."
+      },
+      "webpQuality": {
+        "label": "WebP quality on upload",
+        "help": "60–95. Lower values save more space."
       }
     },
     "sso": {

@@ -26,6 +26,7 @@ export interface SystemUpdateFlowState {
   updateStatus: 'current' | 'update_available' | 'unknown' | null;
   canDeploy: boolean;
   lastCheckedAt: number | null;
+  currentVersion: string | null;
   refreshStatus: () => Promise<void>;
   refreshCheck: (options?: { force?: boolean }) => Promise<{ data: SystemUpdateCheckResult | null; error?: string }>;
   deployLatest: (tag: string) => Promise<{ ok: boolean; skipped?: boolean; error?: string }>;
@@ -48,6 +49,12 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
     null;
 
   const updateStatus = check?.update?.status ?? null;
+
+  const currentVersion =
+    check?.update?.current_version?.trim() ||
+    check?.update?.current_tag?.trim() ||
+    status?.app_version?.trim() ||
+    null;
 
   const canDeploy =
     Boolean(latestTag) &&
@@ -179,6 +186,7 @@ export function useSystemUpdateFlow(enabled: boolean): SystemUpdateFlowState {
     updateStatus,
     canDeploy,
     lastCheckedAt,
+    currentVersion,
     refreshStatus,
     refreshCheck,
     deployLatest,

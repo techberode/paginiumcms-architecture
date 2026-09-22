@@ -5,6 +5,12 @@ export const mediaSk: MessageTree = {
     title: 'Knižnica médií',
     subtitle: 'Nahrávanie, priečinky a správa súborov webu.',
   },
+  status: {
+    gdReady: 'GD optimalizácia',
+    gdOff: 'GD nedostupné',
+    autoCompressOn: 'Auto-kompresia pri upload-e',
+    autoCompressOff: 'Auto-kompresia vypnutá',
+  },
   folder: {
     all: 'Všetky médiá',
   },
