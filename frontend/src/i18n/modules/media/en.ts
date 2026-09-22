@@ -10,6 +10,11 @@ export const mediaEn: MessageTree = {
   },
   actions: {
     newFolder: 'New folder',
+    renameFolder: 'Rename',
+    moveFolder: 'Move',
+    copyFolder: 'Copy',
+    deleteFolder: 'Delete folder',
+    folderMenu: 'Folder actions',
     upload: 'Upload files',
     uploading: 'Uploading…',
     generateStock: 'Generate from library',
@@ -52,7 +57,10 @@ export const mediaEn: MessageTree = {
     topicTitle: 'Topic for generated stock images',
     importTitle: 'Import a random stock image matching the site topic',
   },
-  folderPrompt: 'New folder name (letters, numbers, dash, underscore):',
+  folderPrompt: 'New folder name (spaces become hyphens):',
+  folderRenamePrompt: 'New folder name:',
+  folderMovePrompt: 'Destination path (e.g. campaigns/2026 or archive):',
+  folderCopyPrompt: 'Path for the folder copy:',
   table: {
     name: 'Name',
     title: 'Title',
@@ -131,6 +139,8 @@ export const mediaEn: MessageTree = {
   confirm: {
     deleteOne: 'Delete ":name"? This cannot be undone.',
     deleteBulk: 'Delete :count selected file(s)? This cannot be undone.',
+    deleteFolderRecursive:
+      'Delete folder ":name" including all files and subfolders? This cannot be undone.',
     optimize: 'Optimize ":name"? Pixel dimensions stay the same; only file size may decrease.',
   },
   toast: {
@@ -141,7 +151,14 @@ export const mediaEn: MessageTree = {
     stockImported: 'Stock image imported (:label).',
     stockFailed: 'Stock import failed',
     folderCreated: 'Folder created.',
+    folderCreatedAs: 'Folder created as ":name".',
     folderFailed: 'Failed to create folder.',
+    folderDeleted: 'Folder deleted.',
+    folderDeleteFailed: 'Failed to delete folder.',
+    folderMoved: 'Folder moved.',
+    folderMoveFailed: 'Failed to move folder.',
+    folderCopied: 'Folder copied.',
+    folderCopyFailed: 'Failed to copy folder.',
     urlCopied: 'URL copied to clipboard.',
     downloadStarted: 'Download started.',
     downloadFailed: 'Download failed.',

@@ -246,6 +246,16 @@ final class ShortcodeCatalogSeeder
                 ],
                 'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}"></section>',
             ],
+            'latest-articles' => [
+                'name' => 'latest-articles',
+                'version' => 1,
+                'attrs' => [
+                    'label' => ['type' => 'string'],
+                    'count' => ['type' => 'string'],
+                    'speed' => ['type' => 'enum', 'options' => ['slow', 'normal', 'fast']],
+                ],
+                'expand' => '<aside class="pg-news-ticker" data-dynamic="latest-articles"></aside>',
+            ],
             'staff-card' => [
                 'name' => 'staff-card',
                 'version' => 1,

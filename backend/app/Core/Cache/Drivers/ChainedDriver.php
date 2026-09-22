@@ -19,7 +19,8 @@ class ChainedDriver implements CacheDriverInterface
 {
     public function __construct(
         private MemoryDriver $memory,
-        private FileDriver $file
+        private CacheDriverInterface $persistent,
+        private string $driverLabel = 'auto',
     ) {
     }
 
@@ -29,7 +30,7 @@ class ChainedDriver implements CacheDriverInterface
             return $this->memory->get($key, $default);
         }
 
-        $value = $this->file->get($key, $default);
+        $value = $this->persistent->get($key, $default);
         if ($value !== $default) {
             // Propagácia do RAM bez TTL (file drží expiráciu)
             $this->memory->set($key, $value);
@@ -42,32 +43,38 @@ class ChainedDriver implements CacheDriverInterface
     {
         $this->memory->set($key, $value, $ttl);
 
-        return $this->file->set($key, $value, $ttl);
+        return $this->persistent->set($key, $value, $ttl);
     }
 
     public function delete(string $key): bool
     {
         $this->memory->delete($key);
 
-        return $this->file->delete($key);
+        return $this->persistent->delete($key);
     }
 
     public function clear(): bool
     {
         $this->memory->clear();
 
-        return $this->file->clear();
+        return $this->persistent->clear();
     }
 
     public function has(string $key): bool
     {
-        return $this->memory->has($key) || $this->file->has($key);
+        return $this->memory->has($key) || $this->persistent->has($key);
     }
 
     public function increment(string $key, int $step = 1, ?int $ttl = null): int
     {
         // File je autoritatívny zdroj – RAM môže mať zastaranú generáciu.
-        $new = $this->file->increment($key, $step, $ttl);
+        if (method_exists($this->persistent, 'increment')) {
+            $new = $this->persistent->increment($key, $step, $ttl);
+        } else {
+            $current = (int) $this->persistent->get($key, 0);
+            $new = $current + $step;
+            $this->persistent->set($key, $new, $ttl);
+        }
         $this->memory->set($key, $new, $ttl);
 
         return $new;
@@ -76,13 +83,13 @@ class ChainedDriver implements CacheDriverInterface
     public function health(): array
     {
         $memory = $this->memory->health();
-        $file = $this->file->health();
+        $persistent = $this->persistent->health();
 
         return [
-            'ok' => $memory['ok'] && $file['ok'],
-            'driver' => 'auto',
-            'latencyMs' => $memory['latencyMs'] + $file['latencyMs'],
-            'message' => 'Chained memory + file cache.',
+            'ok' => $memory['ok'] && $persistent['ok'],
+            'driver' => $this->driverLabel,
+            'latencyMs' => $memory['latencyMs'] + $persistent['latencyMs'],
+            'message' => 'Chained memory + ' . $persistent['driver'] . ' cache.',
         ];
     }
 
@@ -91,7 +98,7 @@ class ChainedDriver implements CacheDriverInterface
      */
     public function invalidateTags(array $tags): int
     {
-        return $this->memory->invalidateTags($tags) + $this->file->invalidateTags($tags);
+        return $this->memory->invalidateTags($tags) + $this->persistent->invalidateTags($tags);
     }
 
     /**
@@ -100,6 +107,6 @@ class ChainedDriver implements CacheDriverInterface
     public function tagKey(string $key, array $tags): void
     {
         $this->memory->tagKey($key, $tags);
-        $this->file->tagKey($key, $tags);
+        $this->persistent->tagKey($key, $tags);
     }
 }

@@ -105,13 +105,22 @@ abstract class TestCase extends BaseTestCase
             'allowRegistration' => true,
         ]));
 
-        $settings->setGroup('workflows', [
+        $settings->setGroup('workflows', $this->defaultWorkflowSettings());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function defaultWorkflowSettings(): array
+    {
+        return [
             'registrationOtpEnabled' => false,
             'commentApprovalOtpEnabled' => false,
             'publishApprovalOtpEnabled' => false,
             'otpTtlMinutes' => 15,
             'otpMaxAttempts' => 5,
-        ]);
+            'otpMaxResends' => 3,
+        ];
     }
 
     protected function tearDown(): void
@@ -168,13 +177,10 @@ abstract class TestCase extends BaseTestCase
      */
     private function restoreWorkflows(array $workflows): void
     {
-        $this->container()->get(SettingsRepositoryInterface::class)->setGroup('workflows', [
-            'registrationOtpEnabled' => (bool) ($workflows['registrationOtpEnabled'] ?? false),
-            'commentApprovalOtpEnabled' => (bool) ($workflows['commentApprovalOtpEnabled'] ?? false),
-            'publishApprovalOtpEnabled' => (bool) ($workflows['publishApprovalOtpEnabled'] ?? false),
-            'otpTtlMinutes' => (int) ($workflows['otpTtlMinutes'] ?? 15),
-            'otpMaxAttempts' => (int) ($workflows['otpMaxAttempts'] ?? 5),
-        ]);
+        $this->container()->get(SettingsRepositoryInterface::class)->setGroup(
+            'workflows',
+            array_merge($this->defaultWorkflowSettings(), $workflows)
+        );
     }
 
     /**

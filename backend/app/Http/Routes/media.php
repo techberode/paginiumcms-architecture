@@ -31,6 +31,8 @@ return function (App $app): void {
         ->add($auth);
 
     $app->group('/api/media', function (RouteCollectorProxy $group) use ($controller) {
+        $group->post('/folders/move', [$controller, 'moveFolder']);
+        $group->post('/folders/copy', [$controller, 'copyFolder']);
         $group->post('/folders', [$controller, 'createFolder']);
         $group->post('/upload', [$controller, 'uploadMedia']);
         $group->post('/bulk-delete', [$controller, 'bulkDeleteMedia']);
@@ -46,6 +48,7 @@ return function (App $app): void {
         ->add($auth);
 
     $app->group('/api/media', function (RouteCollectorProxy $group) use ($controller) {
+        $group->post('/folders/delete', [$controller, 'deleteFolder']);
         $group->delete('/{path:.+}', [$controller, 'deleteMedia']);
     })
         ->add(new PermissionMiddleware($authz, 'media:delete'))

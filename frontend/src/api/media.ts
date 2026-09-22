@@ -317,9 +317,50 @@ export async function listMediaFolders(): Promise<string[]> {
 }
 
 /** Create a nested folder path (e.g. `campaigns/2026`). */
-export async function createMediaFolder(folder: string): Promise<boolean> {
+export async function createMediaFolder(
+  folder: string
+): Promise<{ ok: true; folder: string } | { ok: false; error: string }> {
   const res = await apiClient.post<{ folder: string }>('/api/media/folders', { folder });
-  return res.success;
+  if (res.success && res.data?.folder) {
+    return { ok: true, folder: res.data.folder };
+  }
+  return { ok: false, error: res.error ?? 'Failed to create folder.' };
+}
+
+export async function deleteMediaFolder(
+  folder: string,
+  recursive = false
+): Promise<{ ok: true; deletedFiles: number } | { ok: false; error: string }> {
+  const res = await apiClient.post<{ deletedFiles: number }>('/api/media/folders/delete', {
+    folder,
+    recursive,
+  });
+  if (res.success) {
+    return { ok: true, deletedFiles: res.data?.deletedFiles ?? 0 };
+  }
+  return { ok: false, error: res.error ?? 'Failed to delete folder.' };
+}
+
+export async function moveMediaFolder(
+  from: string,
+  to: string
+): Promise<{ ok: true; folder: string } | { ok: false; error: string }> {
+  const res = await apiClient.post<{ folder: string }>('/api/media/folders/move', { from, to });
+  if (res.success && res.data?.folder) {
+    return { ok: true, folder: res.data.folder };
+  }
+  return { ok: false, error: res.error ?? 'Failed to move folder.' };
+}
+
+export async function copyMediaFolder(
+  from: string,
+  to: string
+): Promise<{ ok: true; folder: string } | { ok: false; error: string }> {
+  const res = await apiClient.post<{ folder: string }>('/api/media/folders/copy', { from, to });
+  if (res.success && res.data?.folder) {
+    return { ok: true, folder: res.data.folder };
+  }
+  return { ok: false, error: res.error ?? 'Failed to copy folder.' };
 }
 
 /**

@@ -32,6 +32,9 @@ export const publicEn: MessageTree = {
   layout: {
     noHomePage: 'No home page has been published yet (slug: home).',
   },
+  breadcrumbs: {
+    ariaLabel: 'Breadcrumb navigation',
+  },
   demo: {
     stripTitle: 'PaginiumCMS demo sandbox',
     stripBody: 'Try the full CMS — changes reset periodically; production data stays isolated.',

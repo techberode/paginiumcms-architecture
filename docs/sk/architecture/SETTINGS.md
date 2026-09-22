@@ -104,6 +104,9 @@ Public endpoint môže zverejniť iba allow-list polí. Nesmie serializovať cel
 | `firewall` | WAF rules a thresholds | ADMIN+ |
 | `logging` | severity, retention, request logging | ADMIN+ |
 | `marketing` | demo footer link a URL | ADMIN+ |
+| `translation` | asistovaný preklad (It.76/77), kvóty, LibreTranslate URL | ADMIN+, tajné API kľúče |
+| `agent` | CMS AI asistent (It.75), LLM URL, allow-list toolov | ADMIN+, tajný `apiKey` |
+| `engine` | Hybrid Engine cache/storage/probes (It.68+) | ADMIN+ / SUPER_ADMIN |
 
 ### Plánované Hybrid Engine skupiny
 
@@ -148,7 +151,8 @@ Cross-field príklady:
 
 - `engine.cache.driver=redis` vyžaduje platný Redis config a úspešný capability probe,
 - Git publish nemožno aktivovať bez repository/branch/credential policy,
-- cloud translation provider vyžaduje šifrovaný credential a outbound allow-list,
+- self-hosted LibreTranslate alebo lokálny LLM používa HTTPS `baseUrl` cez SSRF politiku (typicky nginx na tom istom hoste → localhost; [AGENT_OPERATIONS.md](../runbooks/AGENT_OPERATIONS.md)),
+- cloud preklad (DeepL/Google) vyžaduje šifrovaný credential a pevné vendor HTTPS hosty,
 - `pathAclEnabled=true` vyžaduje validné rules JSON.
 
 ---

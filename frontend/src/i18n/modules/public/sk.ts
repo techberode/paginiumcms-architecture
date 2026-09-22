@@ -32,6 +32,9 @@ export const publicSk: MessageTree = {
   layout: {
     noHomePage: 'Zatiaľ nie je publikovaná domovská stránka (slug: home).',
   },
+  breadcrumbs: {
+    ariaLabel: 'Drobčeková navigácia',
+  },
   demo: {
     stripTitle: 'Demo sandbox PaginiumCMS',
     stripBody: 'Vyskúšajte plný CMS — zmeny sa periodicky resetujú, produkcia zostáva izolovaná.',

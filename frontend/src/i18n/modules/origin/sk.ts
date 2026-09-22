@@ -18,7 +18,7 @@ export const originSk = {
     shipped: 'Už vydané',
   },
   snapshot: {
-    headline: 'Stav k 20. septembru 2026',
+    headline: 'Stav k 22. septembru 2026',
     asOf: 'K dátumu',
     latestTag: 'Najnovší tag',
     live: 'Na najnovšom produkčnom tagu',
@@ -294,7 +294,8 @@ export const originSk = {
     it93: 'Admin chrome (denné sekcie; verejná téma bez zmeny)',
     it70: 'GitHub API publisher + Publish release',
     it48: 'It.48 statický compile + /static-html',
-    it69: 'Unified cache (file/memory); Redis driver odložený',
+    it69: 'Unified cache (memory/file/auto + HTTP validátory)',
+    it69_redis: 'Redis odvodená cache + Docker prod stack (voliteľné na shared hostingu)',
     it75: 'CMS AI asistent (len návrhy)',
     it76: 'Asistovaný preklad LibreTranslate + DeepL/Google',
     it72_s3: 'It.72 S3 driver + migration CLI',

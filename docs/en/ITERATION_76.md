@@ -88,8 +88,8 @@ translation:
 
 - **Own instance required:** PaginiumCMS does not ship or host LibreTranslate. Active `libretranslate` translation needs an administrator-operated (or compatible) HTTP instance and its `baseUrl`. The official hosted LibreTranslate.com API is a third-party service (typically paid) and is not included.
 - The API key is encrypted and write-only in frontend responses.
-- `baseUrl` passes `OutboundUrlGuard`.
-- A provider on a LAN/private range requires explicit administrator approval in the outbound allow-list; general private-IP access is prohibited.
+- `baseUrl` passes `OutboundUrlGuard` (HTTPS to a public-resolving host in production).
+- A LAN/private LibreTranslate port must **not** be set directly in settings in production. Use nginx on the CMS host: proxy `/internal/translate/` → localhost LibreTranslate, then `baseUrl` = `https://<cms-host>/internal/translate`. See [AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) §2.
 - Deployment documentation uses a pinned image version/digest rather than an uncontrolled `latest` tag.
 
 ---
@@ -148,8 +148,8 @@ Settings → Translation provides URL, write-only credential field, connection t
 
 - mocked provider returns an SK→EN proposal,
 - Markdown/HTML/Tiptap placeholders are preserved,
-- private SSRF target without allow-list is blocked,
-- explicitly allowed LAN provider works,
+- private SSRF target (direct LAN URL in production) is blocked,
+- same-host HTTPS nginx proxy to localhost provider works,
 - quota/rate limit and concurrent counter writes,
 - source-revision conflict during Apply,
 - invalid schema response is rejected,

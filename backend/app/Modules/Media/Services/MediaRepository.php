@@ -455,11 +455,11 @@ class MediaRepository implements MediaRepositoryInterface
         return array_values(array_unique($folders));
     }
 
-    public function createFolder(string $folder): void
+    public function createFolder(string $folder): string
     {
         $folder = $this->normalizeFolder($folder);
         if ($folder === '') {
-            throw new FlatFileException('Neplatný názov priečinka');
+            throw new FlatFileException(Lang::get('folder_invalid', [], 'media'));
         }
 
         $marker = self::MEDIA_DIR . '/' . $folder . '/' . self::FOLDER_MARKER;
@@ -474,6 +474,121 @@ class MediaRepository implements MediaRepositoryInterface
             sort($folders);
             $this->saveFolderIndex($folders);
         }
+
+        return $folder;
+    }
+
+    public function deleteFolder(string $folder, bool $recursive = false): int
+    {
+        $folder = $this->normalizeFolder($folder);
+        if ($folder === '') {
+            throw new FlatFileException(Lang::get('folder_invalid', [], 'media'));
+        }
+
+        if (!$recursive && $this->folderHasChildren($folder)) {
+            throw new FlatFileException(Lang::get('folder_not_empty', [], 'media'));
+        }
+
+        $deleted = 0;
+        foreach ($this->listFilesInFolderTree($folder) as $file) {
+            $this->delete($file->getPath());
+            ++$deleted;
+        }
+
+        $this->removeFolderTreeFromIndexAndMarkers($folder);
+
+        return $deleted;
+    }
+
+    public function moveFolder(string $from, string $to): string
+    {
+        $from = $this->normalizeFolder($from);
+        $to = $this->normalizeFolder($to);
+
+        if ($from === '') {
+            throw new FlatFileException(Lang::get('folder_invalid', [], 'media'));
+        }
+
+        if ($from === $to) {
+            return $from;
+        }
+
+        if ($to !== '' && str_starts_with($to, $from . '/')) {
+            throw new FlatFileException(Lang::get('folder_move_into_self', [], 'media'));
+        }
+
+        if ($this->folderIndexed($to) && !str_starts_with($to, $from . '/')) {
+            throw new FlatFileException(Lang::get('folder_exists', [], 'media'));
+        }
+
+        $parent = str_contains($to, '/')
+            ? substr($to, 0, (int) strrpos($to, '/'))
+            : '';
+        if ($parent !== '') {
+            $this->createFolder($parent);
+        }
+
+        foreach ($this->listFilesInFolderTree($from) as $file) {
+            $newFolder = $this->remapFolderPrefix($file->getFolder(), $from, $to);
+            $this->relocateMediaFile($file, $newFolder);
+        }
+
+        $this->moveFolderMarkers($from, $to);
+        $this->remapFolderIndex($from, $to);
+        $this->createFolder($to);
+
+        return $to;
+    }
+
+    public function copyFolder(string $from, string $to): string
+    {
+        $from = $this->normalizeFolder($from);
+        $to = $this->normalizeFolder($to);
+
+        if ($from === '') {
+            throw new FlatFileException(Lang::get('folder_invalid', [], 'media'));
+        }
+
+        if ($from === $to) {
+            throw new FlatFileException(Lang::get('folder_exists', [], 'media'));
+        }
+
+        if ($to !== '' && str_starts_with($to, $from . '/')) {
+            throw new FlatFileException(Lang::get('folder_move_into_self', [], 'media'));
+        }
+
+        if ($this->folderIndexed($to)) {
+            throw new FlatFileException(Lang::get('folder_exists', [], 'media'));
+        }
+
+        $this->createFolder($to);
+
+        foreach ($this->listFilesInFolderTree($from) as $file) {
+            $newFolder = $this->remapFolderPrefix($file->getFolder(), $from, $to);
+            $binary = $this->readBinary($file->getPath());
+            $copy = $this->saveUpload(
+                $file->getFileName(),
+                $binary,
+                $file->getMimeType(),
+                $file->getAltText(),
+                $newFolder
+            );
+            $title = $file->getTitle();
+            if ($title !== '') {
+                $copy->setTitle($title);
+                $this->update($copy);
+            }
+        }
+
+        $nestedFolders = array_values(array_filter(
+            $this->loadFolderIndex(),
+            static fn (string $indexed): bool => $indexed !== $from && str_starts_with($indexed, $from . '/')
+        ));
+        foreach ($nestedFolders as $indexed) {
+            $this->createFolder($this->remapFolderPrefix($indexed, $from, $to));
+        }
+
+        return $to;
     }
 
     /**
@@ -1001,11 +1116,233 @@ class MediaRepository implements MediaRepositoryInterface
             return '';
         }
 
-        if (!preg_match('#^[a-zA-Z0-9][a-zA-Z0-9/_-]*$#', $folder)) {
-            throw new FlatFileException('Neplatná cesta priečinka');
+        $segments = [];
+        foreach (explode('/', $folder) as $segment) {
+            $slug = $this->slugifyFolderSegment($segment);
+            if ($slug === '') {
+                throw new FlatFileException(Lang::get('folder_invalid', [], 'media'));
+            }
+
+            if (!preg_match('#^[\p{L}\p{N}][\p{L}\p{N}_-]*$#u', $slug)) {
+                throw new FlatFileException(Lang::get('folder_invalid', [], 'media'));
+            }
+
+            $segments[] = $slug;
         }
 
-        return $folder;
+        return implode('/', $segments);
+    }
+
+    private function slugifyFolderSegment(string $segment): string
+    {
+        $segment = trim($segment);
+        if ($segment === '') {
+            return '';
+        }
+
+        $segment = preg_replace('/[\s_]+/u', '-', $segment) ?? $segment;
+        $segment = preg_replace('/-+/u', '-', $segment) ?? $segment;
+
+        return trim($segment, '-');
+    }
+
+    /**
+     * @return list<MediaFile>
+     */
+    private function listFilesInFolderTree(string $folder): array
+    {
+        $files = [];
+        foreach ($this->findAll() as $file) {
+            $fileFolder = $file->getFolder();
+            if ($fileFolder === $folder || ($folder !== '' && str_starts_with($fileFolder, $folder . '/'))) {
+                $files[] = $file;
+            }
+        }
+
+        return $files;
+    }
+
+    private function folderHasChildren(string $folder): bool
+    {
+        if ($this->listFilesInFolderTree($folder) !== []) {
+            return true;
+        }
+
+        foreach ($this->loadFolderIndex() as $indexed) {
+            if ($indexed !== $folder && str_starts_with($indexed, $folder . '/')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function folderIndexed(string $folder): bool
+    {
+        if ($folder === '') {
+            return false;
+        }
+
+        return in_array($folder, $this->loadFolderIndex(), true);
+    }
+
+    private function removeFolderTreeFromIndexAndMarkers(string $folder): void
+    {
+        $remaining = [];
+        foreach ($this->loadFolderIndex() as $indexed) {
+            if ($indexed === $folder || ($folder !== '' && str_starts_with($indexed, $folder . '/'))) {
+                $marker = self::MEDIA_DIR . '/' . $indexed . '/' . self::FOLDER_MARKER;
+                if ($this->reader->exists($marker)) {
+                    $this->writer->delete($marker, true);
+                }
+
+                continue;
+            }
+
+            $remaining[] = $indexed;
+        }
+
+        sort($remaining);
+        $this->saveFolderIndex($remaining);
+    }
+
+    private function remapFolderPrefix(string $path, string $from, string $to): string
+    {
+        if ($path === $from) {
+            return $to;
+        }
+
+        if ($from !== '' && str_starts_with($path, $from . '/')) {
+            $suffix = substr($path, strlen($from) + 1);
+
+            return $to === '' ? $suffix : $to . '/' . $suffix;
+        }
+
+        return $path;
+    }
+
+    private function relocateMediaFile(MediaFile $file, string $newFolder): void
+    {
+        $newFolder = $this->normalizeFolder($newFolder);
+        $oldPath = $file->getPath();
+        $basename = basename($oldPath);
+        $newPath = self::MEDIA_DIR . ($newFolder !== '' ? '/' . $newFolder : '') . '/' . $basename;
+
+        if ($oldPath === $newPath) {
+            if ($file->getFolder() !== $newFolder) {
+                $file->setFolder($newFolder);
+                $this->update($file);
+            }
+
+            return;
+        }
+
+        $storage = $this->storage();
+        $binary = $storage->read($oldPath);
+        $storage->put($newPath, $binary);
+        $storage->delete($oldPath);
+
+        $oldSidecar = $this->sidecarPath($oldPath);
+        $newSidecar = $this->sidecarPath($newPath);
+        if ($this->reader->exists($oldSidecar)) {
+            try {
+                $payload = json_decode($this->reader->read($oldSidecar), true);
+                if (is_array($payload)) {
+                    $payload['folder'] = $newFolder;
+                    $payload['updatedAt'] = time();
+                    $json = JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    $this->writer->write($newSidecar, $json, true);
+                }
+            } catch (FlatFileException) {
+                // Sidecar is optional metadata.
+            }
+
+            try {
+                $this->writer->delete($oldSidecar, true);
+            } catch (FlatFileException) {
+                // Sidecar may already be gone.
+            }
+        }
+
+        $file->setPath($newPath);
+        $file->setFolder($newFolder);
+        $file->setUrl($storage->publicUrl($newPath));
+        $this->replaceRegistryEntry($oldPath, $file);
+    }
+
+    private function replaceRegistryEntry(string $previousPath, MediaFile $file): void
+    {
+        $registry = $this->loadRegistry();
+        $updated = false;
+
+        foreach ($registry as $index => $entry) {
+            if (($entry['path'] ?? '') !== $previousPath) {
+                continue;
+            }
+
+            $registry[$index] = $file->jsonSerialize();
+            $updated = true;
+            break;
+        }
+
+        if (!$updated) {
+            throw new FlatFileException('Médium nebolo nájdené');
+        }
+
+        $this->saveRegistry($registry);
+    }
+
+    private function moveFolderMarkers(string $from, string $to): void
+    {
+        $paths = [];
+        foreach ($this->loadFolderIndex() as $indexed) {
+            if ($indexed === $from || ($from !== '' && str_starts_with($indexed, $from . '/'))) {
+                $paths[] = $indexed;
+            }
+        }
+
+        usort($paths, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
+
+        foreach ($paths as $oldPath) {
+            $newPath = $this->remapFolderPrefix($oldPath, $from, $to);
+            if ($newPath === '') {
+                continue;
+            }
+
+            $oldMarker = self::MEDIA_DIR . '/' . $oldPath . '/' . self::FOLDER_MARKER;
+            $newMarker = self::MEDIA_DIR . '/' . $newPath . '/' . self::FOLDER_MARKER;
+            if (!$this->reader->exists($oldMarker)) {
+                continue;
+            }
+
+            try {
+                $this->writer->move($oldMarker, $newMarker);
+            } catch (FlatFileException) {
+                $payload = $this->reader->read($oldMarker);
+                $this->writer->write($newMarker, $payload, true);
+                $this->writer->delete($oldMarker, true);
+            }
+        }
+    }
+
+    private function remapFolderIndex(string $from, string $to): void
+    {
+        $updated = [];
+        foreach ($this->loadFolderIndex() as $indexed) {
+            if ($indexed === $from || ($from !== '' && str_starts_with($indexed, $from . '/'))) {
+                $newPath = $this->remapFolderPrefix($indexed, $from, $to);
+                if ($newPath !== '') {
+                    $updated[] = $newPath;
+                }
+
+                continue;
+            }
+
+            $updated[] = $indexed;
+        }
+
+        sort($updated);
+        $this->saveFolderIndex(array_values(array_unique($updated)));
     }
 
     private function storage(): MediaStorageDriverInterface

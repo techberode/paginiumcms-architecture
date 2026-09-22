@@ -158,7 +158,7 @@ return [
     'ops_tag_deploy' => 'Produkčný deploy 2.1.0-beta.89',
 ],
     'snapshot' => [
-    'headline' => 'Stav k 20. septembru 2026',
+    'headline' => 'Stav k 22. septembru 2026',
     'live' => 'Na najnovšom produkčnom tagu',
     'unreleased' => 'V pracovnom strome — čaká tag a deploy',
     'next' => 'Ďalšia plánovaná práca',
@@ -197,7 +197,8 @@ return [
     'it87' => 'Plánovač projektu stránky, UX audit (srcset, skeletony)',
     'it70' => 'GitHub API publisher + Publish release',
     'it48' => 'It.48 statický compile + /static-html',
-    'it69' => 'Unified cache (file/memory); Redis driver odložený',
+    'it69' => 'Unified cache (memory/file/auto + HTTP validátory)',
+    'it69_redis' => 'Redis odvodená cache + Docker prod stack (voliteľné na shared hostingu)',
     'it75' => 'CMS AI asistent (len návrhy)',
     'it76' => 'Asistovaný preklad LibreTranslate + DeepL/Google',
     'it72_s3' => 'It.72 S3 driver + migration CLI',

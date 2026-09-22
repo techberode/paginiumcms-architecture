@@ -490,7 +490,13 @@ final class SettingsController
 
     /**
      * @param array<string, mixed> $layout
-     * @return array{builderMode: string, defaultTemplate: string, developerRequiresAdmin: bool}
+     * @return array{
+     *     builderMode: string,
+     *     defaultTemplate: string,
+     *     developerRequiresAdmin: bool,
+     *     breadcrumbsEnabled: bool,
+     *     breadcrumbsOnHome: bool
+     * }
      */
     private function publicLayoutSettings(array $layout): array
     {
@@ -504,6 +510,8 @@ final class SettingsController
                 (string) ($layout['defaultTemplate'] ?? $defaults['defaultTemplate'] ?? PageLayoutCatalog::DEFAULT_TEMPLATE)
             ),
             'developerRequiresAdmin' => (bool) ($layout['developerRequiresAdmin'] ?? $defaults['developerRequiresAdmin'] ?? true),
+            'breadcrumbsEnabled' => (bool) ($layout['breadcrumbsEnabled'] ?? $defaults['breadcrumbsEnabled'] ?? true),
+            'breadcrumbsOnHome' => (bool) ($layout['breadcrumbsOnHome'] ?? $defaults['breadcrumbsOnHome'] ?? false),
         ];
     }
 
@@ -787,7 +795,11 @@ final class SettingsController
         return [
             'capabilityProbe' => $this->engineProbe->probe($this->storage, $engineValues),
             'cacheProbe' => $this->cacheProbe->probe(
-                $this->cacheFactory->create(CacheDriverFactory::driverFromEngineSettings($engineValues)),
+                $this->cacheFactory->create(
+                    CacheDriverFactory::driverFromEngineSettings($engineValues),
+                    true,
+                    $engineValues
+                ),
                 $engineValues
             ),
             'queryIndexProbe' => $this->buildQueryIndexProbeMeta($engineValues),

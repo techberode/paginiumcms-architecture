@@ -76,6 +76,13 @@
 - [PaginiumCMS — bezpečnostné hlavičky pre HTTP-only LAN/test nginx.](deploy/nginx-security-headers-http.conf) — `docs/deploy/nginx-security-headers-http.conf`
 - [PaginiumCMS — bezpečnostné hlavičky pre host nginx s HTTPS.](deploy/nginx-security-headers-https.conf) — `docs/deploy/nginx-security-headers-https.conf`
 - [Nginx reverse proxy a statický frontend](deploy/NGINX_API.md) — `docs/deploy/NGINX_API.md`
+- [Interný LLM / Ollama nginx snippet (príklad)](deploy/nginx-internal-llm.conf.example) — `docs/deploy/nginx-internal-llm.conf.example`
+
+## Runbooky
+
+- [Cache prevádzka (It.69 Redis/súbor)](../en/runbooks/CACHE_OPERATIONS.md) — `docs/en/runbooks/CACHE_OPERATIONS.md`
+- [CMS AI asistent — Ollama + nginx (It.75)](runbooks/AGENT_OPERATIONS.md) — `docs/sk/runbooks/AGENT_OPERATIONS.md`
+- [Plán MkDocs admin príručky (screenshoty)](meta/MKDOCS_ADMIN_GUIDE_PLAN.md) — `docs/meta/MKDOCS_ADMIN_GUIDE_PLAN.md`
 - [Skopíruj do /var/lib/docker/compose/paginiumcms-demo/.env.](deploy/stack.env.demo.example) — `docs/deploy/stack.env.demo.example`
 - [PaginiumCMS — Docker stack wrapper pre produkciu/demo.](deploy/stack.sh) — `docs/deploy/stack.sh`
 

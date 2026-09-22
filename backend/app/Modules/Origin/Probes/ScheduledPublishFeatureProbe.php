@@ -30,8 +30,8 @@ final class ScheduledPublishFeatureProbe extends AbstractFeatureProbe
             return $this->missing('Scheduled publish service is not registered.');
         }
 
-        if (!$this->support->anyRouteFileContains('scheduledAt')) {
-            return $this->partial('Scheduled publish service exists; scheduledAt exposure should be verified.');
+        if (!$this->support->appSourceContains('Http/Controllers/Content/ContentController.php', 'scheduledAt')) {
+            return $this->partial('Scheduled publish service exists; scheduledAt API should be verified.');
         }
 
         return $this->implemented('Scheduled publishing service and content fields are wired.', '2.0.53');

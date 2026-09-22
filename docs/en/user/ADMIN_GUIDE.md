@@ -178,11 +178,26 @@ Configure email, ntfy, Telegram, or webhook only for allow-listed HTTPS destinat
 
 Distinguish successful configuration save from successful delivery. A provider may be unavailable even when CMS validation passed.
 
+### CMS AI assistant and self-hosted translation (It.75 / It.76)
+
+Both features default **off** and send data only when enabled. They never publish automatically; **Apply** is a separate confirmed write.
+
+| Setting group | Purpose |
+|---------------|---------|
+| **CMS AI assistant** | Ollama or OpenAI-compatible LLM; comma-separated **allowed tools** (empty = no capabilities). |
+| **Translation** | LibreTranslate (your instance URL), or DeepL/Google with vendor API keys. |
+
+**Homelab without new WAN ports:** run Ollama or LibreTranslate on `127.0.0.1` on the CMS host and add an **nginx** `location` on your existing HTTPS vhost (for example `/internal/llm/` → port 11434). Set `baseUrl` to `https://<your-site>/internal/llm` — not `http://192.168.x.x` and not container `127.0.0.1`. Use **Test connection** after save.
+
+Long assistant runs need **`worker:process`** cron (see §12). Runbook: [AGENT_OPERATIONS.md](../runbooks/AGENT_OPERATIONS.md).
+
 ## 12. Scheduler and jobs
 
 The scheduler UI displays defined jobs; actual execution depends on cron/worker processes. Monitor last run, next run, duration, lock, and last error.
 
 Do not trigger a long job repeatedly just because the UI appears unresponsive. Check workers and logs first to avoid duplicate mail, backups, or Git publication.
+
+Queued handlers include **`agent.run`** (CMS AI assistant) and translation jobs — if cron runs only `scheduler:run` but not `worker:process`, assistant runs stay queued.
 
 ## 13. Backups and restore
 

@@ -180,7 +180,7 @@ Every outbound connector, webhook, Git callback, media import, translation, or A
 - send credentials only to the expected host,
 - audit provider/host without secret query values.
 
-A self-hosted provider may require a private LAN address. This is an explicit admin allow-list exception, not a reason to disable SSRF protection globally.
+A self-hosted LLM or LibreTranslate instance should bind to **localhost** on the CMS host (or a private network segment). CMS PHP must not call private IPs directly in production. Terminate **HTTPS on the existing nginx vhost** and `proxy_pass` to the local service (for example `/internal/llm/` → `127.0.0.1:11434`). Settings then use `https://<cms-host>/internal/llm` as `baseUrl`. See [AGENT_OPERATIONS.md](../runbooks/AGENT_OPERATIONS.md).
 
 ---
 

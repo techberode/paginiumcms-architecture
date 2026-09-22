@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Setup\Services;
 
+use PaginiumCMS\Core\Cache\Drivers\RedisDriver;
+use PaginiumCMS\Core\Cache\RedisDriverConfig;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Setup\Models\SetupPreflightCheck;
 use PaginiumCMS\Core\Setup\Models\SetupPreflightSeverity;
@@ -47,6 +49,7 @@ final class SetupPreflightService
             $this->checkComposerCli(),
             $this->checkDockerRuntime(),
             $this->checkAppKeyEncryption(),
+            ...$this->checkOptionalRedisCache(),
         ];
 
         $hardBlockers = 0;
@@ -237,6 +240,111 @@ final class SetupPreflightService
                 'Restart PHP-FPM / the app container so getenv() picks up the key',
             ]),
         );
+    }
+
+    /**
+     * Optional derived cache — Classic installs work with memory + file only (It.69).
+     *
+     * @return list<SetupPreflightCheck>
+     */
+    private function checkOptionalRedisCache(): array
+    {
+        $extLoaded = extension_loaded('redis');
+        $host = trim((string) (getenv('REDIS_HOST') ?: ''));
+
+        $extensionCheck = new SetupPreflightCheck(
+            id: 'cache_redis_extension',
+            status: $extLoaded ? SetupPreflightStatus::Pass : SetupPreflightStatus::Info,
+            severity: SetupPreflightSeverity::Info,
+            current: $extLoaded ? 'loaded' : 'not loaded',
+            required: 'optional (file cache is the Classic fallback)',
+            installSteps: $extLoaded ? [] : $this->redisExtensionInstallSteps(),
+        );
+
+        if ($host === '') {
+            return [
+                $extensionCheck,
+                new SetupPreflightCheck(
+                    id: 'cache_redis_broker',
+                    status: SetupPreflightStatus::Pass,
+                    severity: SetupPreflightSeverity::Info,
+                    current: 'REDIS_HOST not configured',
+                    required: 'optional — engine.cacheDriver=auto uses memory + file',
+                    installSteps: $this->optionalRedisHostingSteps(),
+                ),
+            ];
+        }
+
+        if (!$extLoaded) {
+            return [
+                $extensionCheck,
+                new SetupPreflightCheck(
+                    id: 'cache_redis_broker',
+                    status: SetupPreflightStatus::Warn,
+                    severity: SetupPreflightSeverity::Soft,
+                    current: 'REDIS_HOST=' . $host . ' but php-redis is missing',
+                    required: 'extension + broker for shared Redis cache',
+                    installSteps: $this->redisExtensionInstallSteps(),
+                ),
+            ];
+        }
+
+        $config = RedisDriverConfig::fromEngineAndEnv([]);
+        $driver = $config !== null ? RedisDriver::connect($config) : null;
+        $connected = $driver !== null;
+        $port = $config !== null ? $config->port : 6379;
+
+        return [
+            $extensionCheck,
+            new SetupPreflightCheck(
+                id: 'cache_redis_broker',
+                status: $connected ? SetupPreflightStatus::Pass : SetupPreflightStatus::Warn,
+                severity: SetupPreflightSeverity::Soft,
+                current: $connected
+                    ? 'connected to ' . $host . ':' . $port
+                    : 'REDIS_HOST=' . $host . ' but connection failed',
+                required: 'optional — CMS still runs on file cache when Redis is down',
+                installSteps: $connected ? [] : $this->redisBrokerTroubleshootSteps($host),
+            ),
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function redisExtensionInstallSteps(): array
+    {
+        return $this->debianInstallSteps([
+            '# Docker production: rebuild PHP image (pecl redis) — see docs/deploy/DEPLOY.md',
+            'sudo apt install -y php8.5-redis  # native PHP-FPM on Debian/Ubuntu',
+            'sudo systemctl restart php8.5-fpm',
+            'php -m | grep redis',
+        ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function optionalRedisHostingSteps(): array
+    {
+        return [
+            'Shared hosting without Redis: leave REDIS_HOST empty and engine.cacheDriver=auto (default).',
+            'Self-hosted Docker: use docs/deploy/docker-compose.prod.yml (redis service + REDIS_HOST=redis).',
+            'Managed Redis (Upstash, Elasticache, …): set REDIS_HOST/REDIS_PASSWORD in .env — still optional.',
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function redisBrokerTroubleshootSteps(string $host): array
+    {
+        return [
+            'Verify Redis listens on the compose network (service name "redis" from PHP container).',
+            'From the PHP container: redis-cli -h ' . $host . ' ping  # expect PONG',
+            'Check REDIS_PASSWORD if requirepass is enabled.',
+            'Until fixed, PaginiumCMS falls back to memory + file cache — no SSOT impact.',
+        ];
     }
 
     private function checkDockerRuntime(): SetupPreflightCheck

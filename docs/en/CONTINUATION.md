@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 20, 2026 · `v2.1.0-beta.89`  
+> **Checkpoint:** September 22, 2026 · `v2.1.0-beta.89` (+ `[Unreleased]` Redis cache)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
@@ -29,12 +29,12 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ `v2.1.0-beta.89` — It.48 static compile + `/static-html` · ISS-173 gitleaks · ISS-174 desk role · AppVersion floor |
-| Unreleased | **58f-h** canvas · **It.95** playground (a/c/b/d) · **93l-2** · production deploy of `v2.1.0-beta.89` |
-| Origin Panel | Today snapshot as of 2026-09-20 · latest tag `2.1.0-beta.89` · remaining: It.69 Redis cache driver, It.82d |
+| Unreleased | **58f-h** canvas · **It.95** playground · **93l-2** · **It.69 Redis** (optional cache + prod compose) · desk/log deploy fixes |
+| Origin Panel | Today snapshot as of 2026-09-22 · latest tag `2.1.0-beta.89` · remaining: It.82d host metrics |
 | Previous tag | `v2.1.0-beta.88` — It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount |
 | It.48 | ✅ compile + public HTML serve in `beta.89` |
 | It.92 | ✅ SQLite **derived catalog index only** (`beta.83`–`85`) — not SSOT; Classic default stays `content.json` |
-| It.69 | ✅ file/memory/auto cache + HTTP validators; **Redis cache driver still deferred** (never SSOT) |
+| It.69 | ✅ file/memory/auto + optional **Redis** derived cache + HTTP validators (never SSOT; shared hosting OK without Redis) |
 | It.93o | ✅ **93o-2–8** in `beta.86` — desk/staff/external team |
 | It.96 | ✅ document library in `beta.86` |
 | First stable tag | ⏸️ **not a goal** — continue `v2.1.0-beta.*` as features land |
@@ -42,7 +42,7 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 **Derived layers (do not invent a database):**
 
 - **SQLite** (It.92) — optional query index for lists/search under load. Rebuildable. Files stay SSOT.
-- **Redis** (It.69 remainder) — planned **cache only**. `engine.cacheDriver=redis` currently falls back to `auto`. Guard never enables it.
+- **Redis** (It.69) — optional **derived cache only**. `auto` uses Redis when `REDIS_HOST` connects; otherwise memory + file. Setup wizard reports extension/broker as **info**, not blockers.
 
 ---
 
@@ -52,8 +52,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 1 | **It.69 Redis driver** | Optional cache only; Classic must keep working without Redis |
-| — | **It.82d** Origin host metrics | Optional maintainer hook |
+| 1 | **It.82d** Origin host metrics | Optional maintainer hook |
 
 Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 
@@ -65,7 +64,7 @@ Admin deep-links: `/settings?group=engine` (legacy `/settings/engine` redirects)
 
 | Step | UI | Backend |
 |------|-----|---------|
-| Server | Preflight panel, refresh, block on hard failures | `GET /api/setup/preflight` |
+| Server | Preflight panel, refresh, block on hard failures; **optional Redis** shown as info/warn (not blocking) | `GET /api/setup/preflight` |
 | Administrator | First SUPER_ADMIN | — |
 | Site | Name + locale | — |
 | Infrastructure | `backendPort`, `storageDriver` | saved on `POST /api/setup/complete` |

@@ -183,18 +183,144 @@ class MediaController
         }
 
         try {
+            $user = $this->resolveUser($request);
+            $parent = str_contains($folder, '/')
+                ? substr($folder, 0, (int) strrpos($folder, '/'))
+                : '';
             $this->pathAcl->requireAccess(
-                $this->resolveUser($request),
-                $this->pathAcl->mediaFolderPath($folder),
+                $user,
+                $this->pathAcl->mediaFolderPath($parent),
                 'media:upload'
             );
-            $this->mediaRepository->createFolder($folder);
+            $normalized = $this->mediaRepository->createFolder($folder);
 
             return $this->json->success(
                 $response,
-                ['folder' => $folder],
+                ['folder' => $normalized],
                 201,
                 Lang::get('folder_created', [], 'media')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    public function deleteFolder(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        $folder = trim((string) ($data['folder'] ?? ''));
+        if ($folder === '') {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        $recursive = filter_var($data['recursive'] ?? false, FILTER_VALIDATE_BOOL);
+
+        try {
+            $user = $this->resolveUser($request);
+            $this->pathAcl->requireAccess(
+                $user,
+                $this->pathAcl->mediaFolderPath($folder),
+                'media:delete'
+            );
+            $deletedFiles = $this->mediaRepository->deleteFolder($folder, $recursive);
+
+            return $this->json->success(
+                $response,
+                ['deletedFiles' => $deletedFiles],
+                200,
+                Lang::get('folder_deleted', [], 'media')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    public function moveFolder(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        $from = trim((string) ($data['from'] ?? ''));
+        $to = trim((string) ($data['to'] ?? ''));
+        if ($from === '' || $to === '') {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        try {
+            $user = $this->resolveUser($request);
+            $this->pathAcl->requireAccess(
+                $user,
+                $this->pathAcl->mediaFolderPath($from),
+                'media:delete'
+            );
+            $destParent = str_contains($to, '/')
+                ? substr($to, 0, (int) strrpos($to, '/'))
+                : '';
+            $this->pathAcl->requireAccess(
+                $user,
+                $this->pathAcl->mediaFolderPath($destParent),
+                'media:upload'
+            );
+            $normalized = $this->mediaRepository->moveFolder($from, $to);
+
+            return $this->json->success(
+                $response,
+                ['folder' => $normalized],
+                200,
+                Lang::get('folder_moved', [], 'media')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    public function copyFolder(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        $from = trim((string) ($data['from'] ?? ''));
+        $to = trim((string) ($data['to'] ?? ''));
+        if ($from === '' || $to === '') {
+            return $this->json->error($response, Lang::get('folder_required', [], 'media'), 400);
+        }
+
+        try {
+            $user = $this->resolveUser($request);
+            $this->pathAcl->requireAccess(
+                $user,
+                $this->pathAcl->mediaFolderPath($from),
+                'media:upload'
+            );
+            $destParent = str_contains($to, '/')
+                ? substr($to, 0, (int) strrpos($to, '/'))
+                : '';
+            $this->pathAcl->requireAccess(
+                $user,
+                $this->pathAcl->mediaFolderPath($destParent),
+                'media:upload'
+            );
+            $normalized = $this->mediaRepository->copyFolder($from, $to);
+
+            return $this->json->success(
+                $response,
+                ['folder' => $normalized],
+                201,
+                Lang::get('folder_copied', [], 'media')
             );
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 400);

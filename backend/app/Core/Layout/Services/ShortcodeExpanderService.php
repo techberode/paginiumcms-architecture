@@ -27,6 +27,7 @@ final class ShortcodeExpanderService
         private ?SnippetRepository $snippets = null,
         private ?WidgetCatalog $widgets = null,
         private ?GalleryRepositoryInterface $gallery = null,
+        private ?LatestPublishedArticlesProvider $latestArticles = null,
         private string $definitionsRelativeDir = 'data/shortcodes/definitions',
     ) {
     }
@@ -109,6 +110,28 @@ final class ShortcodeExpanderService
             $items = $this->gallery !== null ? $this->gallery->findPublishedOrdered() : [];
 
             return $this->sanitizer->sanitizeHtml(FeatureGalleryRenderer::render($attrs, $items));
+        }
+
+        if ($name === 'latest-articles') {
+            $parsed = [];
+            if (preg_match_all('/([a-z][a-z0-9_-]*)\s*=\s*"([^"]*)"/', $rawAttrs, $matches, PREG_SET_ORDER) > 0) {
+                foreach ($matches as $match) {
+                    $parsed[$match[1]] = $match[2];
+                }
+            }
+            $count = max(1, min(20, (int) ($parsed['count'] ?? '8')));
+            $speed = strtolower(trim($parsed['speed'] ?? 'normal'));
+            if (!in_array($speed, ['slow', 'normal', 'fast'], true)) {
+                $speed = 'normal';
+            }
+            $attrs = [
+                'label' => trim($parsed['label'] ?? '') !== '' ? trim($parsed['label']) : 'Novinky',
+                'speed' => $speed,
+                'empty' => trim($parsed['empty'] ?? ''),
+            ];
+            $articles = $this->latestArticles !== null ? $this->latestArticles->list($count) : [];
+
+            return $this->sanitizer->sanitizeHtml(LatestArticlesRenderer::render($attrs, $articles));
         }
 
         if ($name === 'staff-card' || $name === 'staff-team') {
@@ -274,4 +297,5 @@ final class ShortcodeExpanderService
 
         return $attrs;
     }
+
 }

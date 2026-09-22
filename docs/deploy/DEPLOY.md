@@ -32,7 +32,7 @@ repository + commit SHA + tag + artifact SHA-256
 |---|---|---|---|---|---|
 | Classic single-node | host nginx + `frontend/dist` | Docker or PHP-FPM | local disk | cron/worker | ✅ current baseline |
 | Demo | separate vhost and stack | separate port | isolated demo storage | automatic reset | ✅ supported |
-| Hybrid | same topology | same API | disk SSOT | Redis, Git publish | ⏳ It.68–70 |
+| Hybrid | same topology | same API | disk SSOT | Redis (It.69), Git publish | ✅ Redis in prod compose; Git publish It.70 |
 | Git-headless | static or API frontend | editor/API node | disk/repository checkout SSOT | queue + build hook | ⏳ target profile |
 
 Profiles are configurations of one product. They do not authorize moving authoritative content into an SQL database.
@@ -120,6 +120,8 @@ cd ..
 "$STACK_DIR/stack.sh" config --quiet
 "$STACK_DIR/stack.sh" up -d --build
 ```
+
+The production compose merge (`docs/deploy/docker-compose.prod.yml`) includes a **Redis** service and sets `REDIS_HOST=redis` on PHP. After the first upgrade that ships ext-redis, run **`stack.sh build php`** (not recreate alone) so the PHP image includes `pecl redis`. Verify **Settings → Hybrid Engine → cache probe** (`redisCache: available`). See [CACHE_OPERATIONS.md](../en/runbooks/CACHE_OPERATIONS.md).
 
 `npm ci` and the Composer lockfile must belong to the same tag. A server must not repair dependencies using ad-hoc `npm update` or `composer update`.
 
@@ -296,7 +298,7 @@ Admin deploy uses the same `scripts/deploy-instance-update.sh` as SSH, but PHP m
 | Setting | Example | Purpose |
 |---------|---------|---------|
 | **Enable admin deploy** | on | Allows `POST /api/admin/system/update/run` |
-| **Allow deploy from semver tags** | on | Tag deploy (`v2.1.0-beta.63`) |
+| **Allow deploy from semver tags** | on | Tag deploy (`v2.1.0-beta.63`, **`v2.1.0-hotfix.1`**, **`v2.1.0-fix.1`**) — see [RELEASE §4.1](../en/developer/RELEASE.md#41-operational-patch-tags-production-ui-deploy-no-main-checkout) |
 | **Docker stack directory** | `/var/lib/docker/compose/paginiumcms` | Passed as `STACK_DIR` — **PHP restart** |
 | **Backend health port** | `8089` | Post-deploy health check |
 | **GitHub owner/repo** | `techberode/paginiumcms-architecture` | Remote release compare (API) |
@@ -416,6 +418,7 @@ If version is stale but files updated:
 | Monitor e-mails for desk **500/429** | Same as above + scanner treating WARNING as incidents | Deploy fix; tune log incident scanner; 429 is INFO on current builds. |
 | **Log export** (txt/zip/pdf) fails silently or toast only | Uncaught export error (often **missing `ext-zip`** on non-Docker PHP), or JSON error body parsed as blob on older FE | `docker compose exec php php -m \| grep -i zip` or host `php -m`; rebuild PHP image from `docker/php/Dockerfile`. Admin UI should return **503** with message on current builds ([ISS-176](../ISSUES.md#iss-176)). |
 | Dashboard banner hammers GitHub every navigation | Misread of old docs — current UI is **one check per session** + manual Recheck | Set **Remote version check interval** to `0` unless you want stale hints only. |
+| Deploy fails: **Need to specify how to reconcile divergent branches** | Local `main` on the server diverged from GitHub; old script used `git pull` | On host: `git fetch origin && git checkout main && git reset --hard origin/main`, then re-run deploy. **`deploy-instance-update.sh`** now uses `git reset --hard origin/<branch>` for `GIT_REF=origin/*` (no merge on server). Prefer release **tags** for production. |
 
 ## 13. Upgrade, backup, and rollback
 

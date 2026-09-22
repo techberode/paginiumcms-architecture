@@ -56,6 +56,7 @@ use PaginiumCMS\Core\CodePolicy\Services\UntrustedMarkupScanner;
 use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
+use PaginiumCMS\Core\Layout\Services\LatestPublishedArticlesProvider;
 use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Layout\Services\ShortcodeRegistry;
 use PaginiumCMS\Core\Layout\Services\WidgetCatalog;
@@ -585,7 +586,11 @@ return [
         $factory = $container->get(CacheDriverFactory::class);
         $settings = $container->get(SettingsRepositoryInterface::class);
         $engine = $settings->group('engine');
-        $driver = $factory->create(CacheDriverFactory::driverFromEngineSettings($engine));
+        $driver = $factory->create(
+            CacheDriverFactory::driverFromEngineSettings($engine),
+            true,
+            $engine
+        );
 
         return new CacheManager(
             $driver,
@@ -1710,6 +1715,8 @@ return [
         ),
     WidgetCatalog::class => create(WidgetCatalog::class)
         ->constructor(get(WidgetDefinitionRepository::class)),
+    LatestPublishedArticlesProvider::class => create(LatestPublishedArticlesProvider::class)
+        ->constructor(get(ContentIndexService::class)),
     ShortcodeExpanderService::class => create(ShortcodeExpanderService::class)
         ->constructor(
             get(ShortcodeRegistry::class),
@@ -1717,7 +1724,8 @@ return [
             get(ContentSecuritySanitizer::class),
             get(SnippetRepository::class),
             get(WidgetCatalog::class),
-            get(GalleryRepositoryInterface::class)
+            get(GalleryRepositoryInterface::class),
+            get(LatestPublishedArticlesProvider::class)
         ),
     SnippetRegistry::class => create(SnippetRegistry::class)
         ->constructor(

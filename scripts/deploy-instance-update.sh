@@ -197,8 +197,13 @@ git fetch origin --tags --prune
 
 if [[ "$GIT_REF" == origin/* ]]; then
   BRANCH="${GIT_REF#origin/}"
-  git checkout "$BRANCH"
-  git pull origin "$BRANCH"
+  if ! git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
+    echo "ERROR: origin/$BRANCH not found after fetch" >&2
+    exit 1
+  fi
+  git checkout "$BRANCH" 2>/dev/null || git checkout -B "$BRANCH" "origin/$BRANCH"
+  # Production must match remote exactly — never merge/rebase on the server (avoids pull strategy + diverged main).
+  git reset --hard "origin/$BRANCH"
 elif git rev-parse "$GIT_REF" >/dev/null 2>&1; then
   prepare_checkout_for_ref "$GIT_REF"
   git checkout -f "$GIT_REF"

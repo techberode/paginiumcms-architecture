@@ -88,16 +88,35 @@ final class ProjectCatalogMergeServiceTest extends TestCase
         $this->assertIsArray($checklist87);
         $this->assertSame(100, $checklist87['percentComplete']);
 
-        $this->assertSame('2026-09-20', $merged['snapshot']['asOf'] ?? '');
-        $this->assertSame('2.1.0-beta.89', $merged['snapshot']['latestTag'] ?? '');
-        $this->assertSame('State as of 20 September 2026', $merged['snapshot']['headlineLabel'] ?? '');
+        $catalog = (new ProjectCatalogReader())->read();
+        $resolver = new OriginCatalogLabelResolver(
+            $this->createConfiguredMock(SettingsRepositoryInterface::class, [
+                'get' => 'en',
+            ])
+        );
+        $this->assertSame((string) ($catalog['snapshot']['asOf'] ?? ''), $merged['snapshot']['asOf'] ?? '');
+        $this->assertSame((string) ($catalog['snapshot']['latestTag'] ?? ''), $merged['snapshot']['latestTag'] ?? '');
+        $this->assertSame(
+            $resolver->resolve('origin.snapshot.headline'),
+            $merged['snapshot']['headlineLabel'] ?? ''
+        );
         $this->assertCount(3, $merged['snapshot']['groups'] ?? []);
         $this->assertSame('On the latest production tag', $merged['snapshot']['groups'][0]['titleLabel'] ?? '');
         $this->assertNotSame('', $merged['snapshot']['groups'][0]['items'][0]['titleLabel'] ?? '');
         $this->assertArrayHasKey('ops.2026-09-20', $byId);
         $this->assertLessThan(100, $byId['ops.2026-09-20']['percentComplete'] ?? 100);
-        $this->assertSame(50, $byId['it.69']['percentComplete'] ?? 0);
-        $this->assertSame('partial', $byId['it.69']['phase'] ?? '');
+        $it69 = null;
+        foreach ($catalog['iterations'] ?? [] as $iteration) {
+            if (($iteration['id'] ?? '') === 'it.69') {
+                $it69 = $iteration;
+                break;
+            }
+        }
+        $this->assertIsArray($it69);
+        $expectedIt69Phase = (string) ($it69['phase'] ?? 'partial');
+        $expectedIt69Percent = $expectedIt69Phase === 'shipped' ? 100 : 50;
+        $this->assertSame($expectedIt69Percent, $byId['it.69']['percentComplete'] ?? 0);
+        $this->assertSame($expectedIt69Phase, $byId['it.69']['phase'] ?? '');
         $this->assertSame($merged['progress']['total'], $merged['progress']['shipped'] + $merged['progress']['partial'] + $merged['progress']['planned']);
     }
 }

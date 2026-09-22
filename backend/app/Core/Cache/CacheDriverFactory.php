@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Cache\Contracts\CacheDriverInterface;
 use PaginiumCMS\Core\Cache\Drivers\ChainedDriver;
 use PaginiumCMS\Core\Cache\Drivers\FileDriver;
 use PaginiumCMS\Core\Cache\Drivers\MemoryDriver;
+use PaginiumCMS\Core\Cache\Drivers\RedisDriver;
 use PaginiumCMS\Core\Cache\Exception\UnknownCacheDriverException;
 
 /**
@@ -19,7 +20,7 @@ final class CacheDriverFactory
     public const ALLOWED_DRIVERS = ['auto', 'memory', 'file', 'redis'];
 
     /** @var list<string> */
-    public const ACTIVE_DRIVERS = ['auto', 'memory', 'file'];
+    public const ACTIVE_DRIVERS = ['auto', 'memory', 'file', 'redis'];
 
     public const DEFAULT_DRIVER = 'auto';
 
@@ -30,38 +31,33 @@ final class CacheDriverFactory
     ) {
     }
 
-    public function create(?string $driver = null, bool $allowFallback = true): CacheDriverInterface
-    {
-        $requested = $driver ?? self::DEFAULT_DRIVER;
+    /**
+     * @param array<string, mixed> $engineSettings
+     */
+    public function create(
+        ?string $driver = null,
+        bool $allowFallback = true,
+        array $engineSettings = [],
+    ): CacheDriverInterface {
+        $requested = self::normalizeConfiguredDriver($driver ?? self::DEFAULT_DRIVER);
 
-        if ($allowFallback) {
-            $normalized = self::normalizeDriver($requested);
-        } elseif (!in_array($requested, self::ACTIVE_DRIVERS, true)) {
-            throw new UnknownCacheDriverException($requested);
-        } else {
-            $normalized = $requested;
-        }
-
-        return match ($normalized) {
+        return match ($requested) {
             'memory' => $this->memoryDriver(),
             'file' => $this->fileDriver(),
-            'auto' => $this->chainedDriver(),
+            'redis' => $this->createRedisStack($engineSettings, $allowFallback),
+            'auto' => $this->createAutoStack($engineSettings),
             default => throw new UnknownCacheDriverException($requested),
         };
     }
 
     /**
-     * Bootstrap-safe driver resolution — unknown values fall back to auto (memory + file).
+     * Validates configured driver name (does not probe Redis).
      */
-    public static function normalizeDriver(string $driver): string
+    public static function normalizeConfiguredDriver(string $driver): string
     {
         $driver = strtolower(trim($driver));
 
-        if ($driver === 'redis') {
-            return self::DEFAULT_DRIVER;
-        }
-
-        if (!in_array($driver, self::ACTIVE_DRIVERS, true)) {
+        if (!in_array($driver, self::ALLOWED_DRIVERS, true)) {
             return self::DEFAULT_DRIVER;
         }
 
@@ -73,9 +69,25 @@ final class CacheDriverFactory
      */
     public static function driverFromEngineSettings(array $engineGroup): string
     {
-        $driver = (string) ($engineGroup['cacheDriver'] ?? self::DEFAULT_DRIVER);
+        return self::normalizeConfiguredDriver((string) ($engineGroup['cacheDriver'] ?? self::DEFAULT_DRIVER));
+    }
 
-        return self::normalizeDriver($driver);
+    /**
+     * Label reported in health/probes for the resolved stack.
+     *
+     * @param array<string, mixed> $engineSettings
+     */
+    public function resolvedDriverName(array $engineSettings): string
+    {
+        $configured = self::driverFromEngineSettings($engineSettings);
+        if ($configured === 'redis') {
+            return $this->tryRedisDriver($engineSettings) !== null ? 'redis' : 'auto';
+        }
+        if ($configured === 'auto') {
+            return $this->tryRedisDriver($engineSettings) !== null ? 'auto' : 'auto';
+        }
+
+        return $configured;
     }
 
     /**
@@ -104,6 +116,54 @@ final class CacheDriverFactory
         return ($engineGroup['httpValidatorsEnabled'] ?? true) !== false;
     }
 
+    /**
+     * @param array<string, mixed> $engineSettings
+     */
+    private function createAutoStack(array $engineSettings): CacheDriverInterface
+    {
+        $redis = $this->tryRedisDriver($engineSettings);
+        if ($redis !== null) {
+            return new ChainedDriver($this->memoryDriver(), $redis, 'auto');
+        }
+
+        return $this->chainedFileStack();
+    }
+
+    /**
+     * @param array<string, mixed> $engineSettings
+     */
+    private function createRedisStack(array $engineSettings, bool $allowFallback): CacheDriverInterface
+    {
+        $redis = $this->tryRedisDriver($engineSettings);
+        if ($redis !== null) {
+            return new ChainedDriver($this->memoryDriver(), $redis, 'redis');
+        }
+
+        if (!$allowFallback) {
+            throw new UnknownCacheDriverException('redis');
+        }
+
+        return $this->chainedFileStack();
+    }
+
+    private function chainedFileStack(): ChainedDriver
+    {
+        return new ChainedDriver($this->memoryDriver(), $this->fileDriver(), 'auto');
+    }
+
+    /**
+     * @param array<string, mixed> $engineSettings
+     */
+    private function tryRedisDriver(array $engineSettings): ?RedisDriver
+    {
+        $config = RedisDriverConfig::fromEngineAndEnv($engineSettings);
+        if ($config === null) {
+            return null;
+        }
+
+        return RedisDriver::connect($config);
+    }
+
     private function memoryDriver(): MemoryDriver
     {
         return new MemoryDriver();
@@ -116,10 +176,5 @@ final class CacheDriverFactory
         }
 
         return new FileDriver($this->cachePath);
-    }
-
-    private function chainedDriver(): ChainedDriver
-    {
-        return new ChainedDriver($this->memoryDriver(), $this->fileDriver());
     }
 }

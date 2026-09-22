@@ -30,10 +30,14 @@ final class UntrustedSurfacesFeatureProbe extends AbstractFeatureProbe
             return $this->missing('Code policy engine is not available.');
         }
 
-        if (!$this->support->anyRouteFileContains('SecurityMiddleware')) {
-            return $this->partial('Code policy exists; security middleware wiring should be verified.');
+        if (!$this->support->classAvailable(\PaginiumCMS\Http\Middleware\SecurityMiddleware::class)) {
+            return $this->missing('Security middleware is not registered.');
         }
 
-        return $this->implemented('Untrusted-surface hardening services are present.', '2.1.0-beta.27');
+        if (!$this->support->appSourceContains('Http/Middleware/SecurityMiddleware.php', 'frame-ancestors')) {
+            return $this->partial('Security middleware exists; CSP hardening should be verified.');
+        }
+
+        return $this->implemented('Untrusted-surface hardening and CSP middleware are wired.', '2.1.0-beta.27');
     }
 }

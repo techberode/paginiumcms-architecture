@@ -99,6 +99,34 @@ git fetch origin --tags --prune
 git tag --list 'v2.1.0-beta.*' --sort=version:refname | tail
 ```
 
+### 4.1 Operational patch tags (production UI deploy, no `main` checkout)
+
+For **fast fixes** after `./scripts/iteration-gate.sh`, tag **every production-bound commit** with an annotated tag (never move an existing tag). Admin deploy accepts the same shape as beta tags (`SystemDeployService::assertAllowedRef`).
+
+| Kind | Tag examples | When |
+|------|----------------|------|
+| **hotfix** | `v2.1.0-hotfix.1`, `v2.1.0-hotfix.2`, … | urgent prod fix (default choice) |
+| **fix** | `v2.1.0-fix.1`, `v2.1.0-fix.2`, … | small corrective patch (same mechanics) |
+
+Rules:
+
+- Increment **N** only; do not reuse a tag name.
+- Always prefix with **`v`** on the server (`2.1.0-hotfix.1` is normalized to `v2.1.0-hotfix.1` in deploy).
+- Tag the **exact commit** that passed the gate (usually `main` tip).
+- Push tag: `git push origin v2.1.0-hotfix.1`.
+- For **Dashboard / Check remote** to offer “update available”, create a matching **[GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)** (body can be one line). Git tag alone is enough for **Platform → System update → Ref → Deploy now**.
+- Milestone betas stay on `v2.1.0-beta.N`; patch tags do not replace the beta line — they pin production between betas.
+
+```bash
+./scripts/iteration-gate.sh
+git push origin main
+git tag -a v2.1.0-hotfix.1 -m "hotfix: desk poll 429, log export, deploy reset"
+git push origin v2.1.0-hotfix.1
+# optional: gh release create v2.1.0-hotfix.1 --notes "…"
+```
+
+Deploy (SSH or admin UI ref field): `GIT_REF=v2.1.0-hotfix.1` with **Allow deploy from semver tags** enabled.
+
 ## 5. Roles and separation of responsibility
 
 Even when one person maintains the project, the process distinguishes logical roles:

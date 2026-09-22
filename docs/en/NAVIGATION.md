@@ -77,6 +77,13 @@ Complete index of the final bilingual PaginiumCMS documentation. Paths are relat
 - [PaginiumCMS — security headers for HTTP-only LAN/test nginx.](deploy/nginx-security-headers-http.conf) — `docs/deploy/nginx-security-headers-http.conf`
 - [PaginiumCMS — security headers for HTTPS host nginx.](deploy/nginx-security-headers-https.conf) — `docs/deploy/nginx-security-headers-https.conf`
 - [Nginx reverse proxy and static frontend](deploy/NGINX_API.md) — `docs/deploy/NGINX_API.md`
+- [Internal LLM / Ollama nginx snippet (example)](deploy/nginx-internal-llm.conf.example) — `docs/deploy/nginx-internal-llm.conf.example`
+
+## Runbooks
+
+- [Cache operations (It.69 Redis/file)](en/runbooks/CACHE_OPERATIONS.md) — `docs/en/runbooks/CACHE_OPERATIONS.md`
+- [CMS AI assistant — Ollama + nginx (It.75)](en/runbooks/AGENT_OPERATIONS.md) — `docs/en/runbooks/AGENT_OPERATIONS.md`
+- [MkDocs admin guide plan (screenshots)](meta/MKDOCS_ADMIN_GUIDE_PLAN.md) — `docs/meta/MKDOCS_ADMIN_GUIDE_PLAN.md`
 - [Copy to /var/lib/docker/compose/paginiumcms-demo/.env.](deploy/stack.env.demo.example) — `docs/deploy/stack.env.demo.example`
 - [PaginiumCMS — Docker stack wrapper for production/demo.](deploy/stack.sh) — `docs/deploy/stack.sh`
 

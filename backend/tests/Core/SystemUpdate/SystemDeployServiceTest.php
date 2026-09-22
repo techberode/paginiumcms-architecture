@@ -39,6 +39,21 @@ final class SystemDeployServiceTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testAssertAllowedRefAcceptsOperationalHotfixAndFixTags(): void
+    {
+        $settings = $this->container()->get(SettingsRepositoryInterface::class);
+        $service = new SystemDeployService($settings);
+
+        foreach (['v2.1.0-hotfix.1', 'v2.1.0-fix.2', '2.1.0-hotfix.3'] as $ref) {
+            $service->assertAllowedRef($ref, [
+                'allowDeployTags' => true,
+                'allowDeployMain' => false,
+            ]);
+        }
+
+        $this->assertSame('v2.1.0-hotfix.3', $service->normalizeDeployRef('2.1.0-hotfix.3'));
+    }
+
     public function testAssertAllowedRefAcceptsSemverTagWithoutVPrefix(): void
     {
         $settings = $this->container()->get(SettingsRepositoryInterface::class);

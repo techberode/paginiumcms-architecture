@@ -1,6 +1,6 @@
 # Iteration 95 — Component playground & private design-system registry
 
-> **Status:** ✅ shipped (Unreleased after `v2.1.0-beta.89`) — **95a/c/b/d** complete.
+> **Status:** ✅ shipped in tree (`v2.1.0-beta.90` changelog) — **95a/c/b/d** complete. **Rollout** on a live instance is operator-driven (Settings + SUPER_ADMIN).
 > **Priority:** 🟡 **P1** for developers/theme authors · 🔵 **P2** for optional admin widgets from private repos  
 > **Depends on:** [It.88](ITERATION_88.md) Theme Studio + sandbox preview · [It.89](ITERATION_89.md) manifest/capabilities · [It.90](ITERATION_90.md) Editor Tool SDK · [Code Policy](architecture/CODE_POLICY.md) · `OutboundUrlGuard`  
 > **Does not replace:** It.58f page outline (amateur blocks), full MDX/React-in-article (out of scope)
@@ -119,6 +119,20 @@ Private repo → Import ZIP/Git (95d) → registry → toggles in Settings
 
 ---
 
+## Production rollout checklist (It.95 on server)
+
+After deploy of a build that includes beta.90+ (tag e.g. `v2.1.0-hotfix.1` per [RELEASE §4.1](developer/RELEASE.md#41-operational-patch-tags-production-ui-deploy-no-main-checkout)):
+
+1. **Settings → Component playground** — enable Sandpack; pick default template; enable bundled **`paginium-starter`** pack if toggles exist.
+2. **SUPER_ADMIN** — open **`/playground`**; confirm live preview loads (CSP allows Sandpack only when playground is enabled).
+3. **95b** — from Theme Studio / Code Editor, **Open in playground** on a small `.tsx` snippet; export back via validate path (no direct disk write from Sandpack).
+4. **95d (optional)** — configure Git import URL + encrypted token; run import once on a test repo; failed scan must block registration.
+5. **Demo** — confirm playground stays off when `DEMO_MODE` is on.
+
+Deploy note: [DEPLOY.md §16.5](../deploy/DEPLOY.md#165-component-playground-it95).
+
+---
+
 ## Queue
 
-**95a/c/b/d shipped.** Next: [It.69 Redis cache driver](ITERATION_69.md) (optional). Do not invent 95e. [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md), [CONTINUATION.md](CONTINUATION.md).
+**95a/c/b/d shipped.** [It.69 Redis cache driver](ITERATION_69.md) is optional derived cache (Docker prod stack + Setup probe). Do not invent 95e. [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md), [CONTINUATION.md](CONTINUATION.md).

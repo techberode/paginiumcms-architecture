@@ -38,7 +38,16 @@ node --version
 npm --version
 ```
 
-No SQL server is required. Redis is an optional future/derived capability, not a condition for baseline local development.
+No SQL server is required. **Redis is optional** (It.69 derived cache only). Baseline local development uses memory + file cache; you do not need a Redis broker on shared hosting or a minimal Docker profile.
+
+Optional local Redis:
+
+```bash
+docker compose --profile cache up -d redis
+export REDIS_HOST=127.0.0.1   # when PHP runs on the host, not inside compose
+```
+
+When PHP runs inside the default `docker compose` stack without the `cache` profile, leave `REDIS_HOST` unset — the app falls back to file cache automatically.
 
 ## 3. Clone and safe first-run
 

@@ -1,0 +1,28 @@
+# Optional: internal Ollama / OpenAI-compatible upstream on the SAME host as CMS.
+# Include inside your existing HTTPS server {} block — do NOT expose port 11434 on WAN.
+#
+# CMS settings:
+#   agent.baseUrl = https://YOUR_CMS_HOST/internal/llm     (no /v1 suffix)
+#   translation.baseUrl (LibreTranslate) = https://YOUR_CMS_HOST/internal/translate
+#
+# Restrict who can call these paths (VPN, admin IP, or auth_request).
+
+location /internal/llm/ {
+    # allow 10.0.0.0/8;   # example: VPN only — adjust to your policy
+    # deny all;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header Connection "";
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    # Ollama default — localhost only
+    proxy_pass http://127.0.0.1:11434/;
+}
+
+# LibreTranslate (It.76) — adjust port to your instance
+# location /internal/translate/ {
+#     proxy_pass http://127.0.0.1:5000/;
+#     proxy_read_timeout 120s;
+# }

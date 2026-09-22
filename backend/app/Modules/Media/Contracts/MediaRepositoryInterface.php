@@ -58,7 +58,22 @@ interface MediaRepositoryInterface
     /**
      * @throws FlatFileException
      */
-    public function createFolder(string $folder): void;
+    public function createFolder(string $folder): string;
+
+    /**
+     * @throws FlatFileException
+     */
+    public function deleteFolder(string $folder, bool $recursive = false): int;
+
+    /**
+     * @throws FlatFileException
+     */
+    public function moveFolder(string $from, string $to): string;
+
+    /**
+     * @throws FlatFileException
+     */
+    public function copyFolder(string $from, string $to): string;
 
     /**
      * @return list<string>

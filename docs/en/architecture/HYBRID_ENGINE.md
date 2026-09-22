@@ -168,7 +168,7 @@ When keys are absent, the system must preserve compatible **Classic** behavior.
 | Content index `content.json` | ✅ Shipped | `ContentIndexService` |
 | Optional SQLite query index | ✅ Shipped | **It.92** — derived listings/search; Guard advisor; runtime watch; never SSOT |
 | File and memory cache | ✅ Shipped | `ChainedDriver`, `ContentCacheService` |
-| Unified Redis cache | ⏳ Planned | It.49 absorbed into **It.69** |
+| Unified Redis cache | ✅ Shipped (optional) | **It.69** — derived cache only; Classic works without Redis |
 | OCC and HTTP 409 conflicts | ✅ Shipped | `ContentRevision`, `ContentConflictException` |
 | Pessimistic editing locks | ✅ Shipped | It.1 `LockManager` |
 | Sensitive-field encryption | ✅ Shipped | `EncryptionService` |

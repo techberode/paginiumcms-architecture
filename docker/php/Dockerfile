@@ -3,6 +3,7 @@ FROM php:8.5-fpm-bookworm
 # mbstring, curl, opcache are compiled into the official image — git, openssh-client, zip, composer, node for admin deploy.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        $PHPIZE_DEPS \
         git \
         openssh-client \
         unzip \
@@ -10,8 +11,11 @@ RUN apt-get update \
         libpng-dev \
         libjpeg62-turbo-dev \
         libwebp-dev \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && docker-php-ext-configure gd --with-jpeg --with-webp \
     && docker-php-ext-install zip gd \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $PHPIZE_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
 # Node 22 for `npm ci && npm run build:prod` inside deploy-instance-update.sh (admin UI deploy).

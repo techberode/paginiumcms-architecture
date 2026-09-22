@@ -1,6 +1,6 @@
 # Cache operations runbook
 
-> **Scope:** Iteration 69 unified cache layer (Classic profile: memory + file).  
+> **Scope:** Iteration 69 unified cache layer (memory + file + optional Redis).  
 > **Source of truth:** flat files under `data/` — cache is always derived and safe to delete.
 
 ---
@@ -10,8 +10,17 @@
 | Layer | Role |
 |-------|------|
 | **Memory** | Per-worker hot layer (zero disk I/O on repeat reads) |
-| **File** | Persistent cache under `data/cache/` (Classic default) |
-| **Redis** | Optional; **not installed in It.69** — `engine.cacheDriver=redis` falls back to `auto` |
+| **File** | Persistent cache under `data/cache/` (Classic fallback) |
+| **Redis** | Shared persistent layer when `REDIS_HOST` / `engine.redisHost` is reachable (production Docker stack) |
+
+**Driver modes**
+
+| `engine.cacheDriver` | Stack |
+|----------------------|--------|
+| `auto` (default) | memory + Redis if connect OK, else memory + file |
+| `file` | file only |
+| `memory` | memory only |
+| `redis` | memory + Redis; falls back to memory + file if Redis is down |
 
 Invalidation uses **generation counters** (lists/feeds) plus **tag registry** (`content:pages:list`, `content:page:{slug}`, …). Writes call `ContentCacheService::invalidatePage()` / `invalidateArticle()` after a successful SSOT save.
 
@@ -22,6 +31,26 @@ HTTP validators (`ETag`, `Last-Modified`, `304`) apply to anonymous public GET r
 - `GET /api/articles`, `GET /api/articles/{slug}`
 
 Authenticated admin reads receive `Cache-Control: private, no-store`.
+
+---
+
+## Production Redis (Docker)
+
+Production merge file `docs/deploy/docker-compose.prod.yml` adds:
+
+- **`redis`** service (`redis:7.4-alpine`, AOF, 256 MB LRU cap)
+- **`php`** `depends_on` Redis healthcheck
+- **`REDIS_HOST=redis`** / **`REDIS_PORT=6379`** on PHP (override password via `REDIS_PASSWORD` in `.env` if you enable `requirepass`)
+
+After upgrading to a release with Redis support:
+
+1. Copy updated `docker-compose.prod.yml` to the host stack directory.
+2. Rebuild PHP (ext-redis): `"$STACK_DIR/stack.sh" build php`.
+3. Recreate stack: `"$STACK_DIR/stack.sh" up -d --build`.
+4. Admin → Settings → Hybrid Engine → confirm cache probe shows **redisCache: available** and active driver **redis** or **auto**.
+5. Leave `engine.cacheDriver` at **`auto`** unless you require Redis-only persistence (`redis`).
+
+Local dev with Redis: `docker compose --profile cache up -d` (see root `docker-compose.yml`).
 
 ---
 
@@ -41,17 +70,22 @@ Use the **exact** `ETag` value from the first response — not a placeholder.
 
 ---
 
-## Redis unavailable / not installed
+## Redis unavailable
 
 | Setting | Behaviour |
 |---------|-----------|
-| `cacheDriver: auto` | Memory + file chain (default) |
-| `cacheDriver: file` | File only |
-| `cacheDriver: redis` | Normalized to `auto`; probe reports Redis as unavailable |
+| `cacheDriver: auto` | memory + file when Redis host unset or connection fails |
+| `cacheDriver: redis` | same fallback to memory + file; probe status **fallback** |
+| `cacheDriver: file` | file only |
 
-**No action required** on Classic hosts without Redis. Content is always read from flat files on cache miss.
+Content is always read from flat files on cache miss. No data loss when Redis is stopped — only colder cache and higher disk I/O.
 
-When Redis is added in a future iteration, explicit `redis` mode with a down broker should surface probe diagnostics; fallback policy will be documented in release notes.
+**Triage**
+
+1. `docker compose ps redis` — container healthy?
+2. From PHP container: `php -r 'echo extension_loaded("redis")?"yes":"no";'`
+3. Env: `REDIS_HOST` must match Docker service name (`redis`) on the compose network.
+4. Optional password: `REDIS_PASSWORD` in `.env` must match Redis `requirepass` if configured.
 
 ---
 
@@ -70,10 +104,10 @@ Generation bump on publish is automatic — manual purge is only needed after in
 
 ## Full cache delete / rebuild
 
-Safe on Classic: deleting `data/cache/*.cache` does **not** lose content.
+Safe on Classic: deleting `data/cache/*.cache` does **not** lose content. Redis keys use prefix `engine.redisKeyPrefix` (default `paginium:`) — safe to `FLUSHDB` only on a dedicated DB index.
 
 1. Stop traffic or accept brief miss storm (stampede protection: `rememberLocked` + flock).
-2. Delete cache files or run admin purge scope `all`.
+2. Delete cache files or run admin purge scope `all`; optionally restart Redis after `FLUSHDB` on the CMS database index only.
 3. Warm critical routes (`/api/settings/public`, `/api/pages`, `/api/articles`).
 4. Monitor hit/miss metrics in admin stats.
 
@@ -85,7 +119,7 @@ Safe on Classic: deleting `data/cache/*.cache` does **not** lose content.
 |----------|-------------------|
 | Cache write fails after SSOT write | Old cache may serve until TTL/invalidation; SSOT remains correct |
 | Invalidation fails | Generation bump + tag delete are best-effort; purge content scope |
-| Redis timeout (future) | Short timeout; fall back to file per engine policy |
+| Redis timeout | ~1.5s connect timeout; `auto`/`redis` fall back to file chain |
 | Corrupt cache file | Miss → rebuild from SSOT; delete offending `.cache` file |
 
 ---
@@ -94,4 +128,4 @@ Safe on Classic: deleting `data/cache/*.cache` does **not** lose content.
 
 - [ITERATION_69.md](../ITERATION_69.md) — Definition of Done
 - [HYBRID_ENGINE.md](../architecture/HYBRID_ENGINE.md) — HE-2 wave
-- It.45 / It.49 — absorbed into It.69 (reference designs only)
+- [DEPLOY.md](../../deploy/DEPLOY.md) — stack rebuild with Redis

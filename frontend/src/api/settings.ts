@@ -219,6 +219,8 @@ export interface PublicSettings {
     builderMode: 'templates' | 'shortcodes' | 'outline' | 'developer';
     defaultTemplate: string;
     developerRequiresAdmin: boolean;
+    breadcrumbsEnabled?: boolean;
+    breadcrumbsOnHome?: boolean;
   };
   company?: {
     showOnContactPage?: boolean;

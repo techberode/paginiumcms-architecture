@@ -125,7 +125,7 @@ describe('MediaManager', () => {
     mocks.uploadMedia.mockResolvedValue({ ok: true, media: sampleFile });
     mocks.deleteMedia.mockResolvedValue(true);
     mocks.bulkDeleteMedia.mockResolvedValue(1);
-    mocks.createMediaFolder.mockResolvedValue(true);
+    mocks.createMediaFolder.mockResolvedValue({ ok: true, folder: 'new-folder' });
     mocks.updateMediaMetadata.mockResolvedValue(true);
     vi.stubGlobal('prompt', vi.fn(() => 'new-folder'));
   });

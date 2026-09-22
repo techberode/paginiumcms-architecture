@@ -59,6 +59,17 @@ export const TranslationSettingsPanel: React.FC = () => {
   return (
     <div className="mt-4 space-y-3 rounded-md border border-admin-border bg-admin-canvas p-4" data-testid="translation-settings-panel">
       <p className="text-sm text-admin-muted">{t('settings.translation.instanceRequired')}</p>
+      <p className="text-sm text-admin-muted">{t('settings.translation.nginxProxyHint')}</p>
+      <p className="text-sm">
+        <a
+          href={t('settings.translation.runbookLinkUrl')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-indigo-600 underline dark:text-indigo-300"
+        >
+          {t('settings.translation.runbookLinkLabel')}
+        </a>
+      </p>
       <p className="text-sm text-admin-muted">{t('settings.translation.cloudWarning')}</p>
       <p className="text-sm text-admin-muted">{t('settings.translation.privacyWarning')}</p>
       {loading ? (

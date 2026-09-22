@@ -180,7 +180,7 @@ Každý outbound connector, webhook, Git callback, media import, translation ale
 - credentials sa posielajú iba očakávanému hostu,
 - audit provider/host bez secret query.
 
-Self-hosted provider môže potrebovať private LAN adresu; táto výnimka musí byť explicitná admin allow-list, nie automatické vypnutie SSRF ochrany.
+Self-hosted LLM alebo LibreTranslate má bežať na **localhost** CMS hosta. PHP v produkcii nevolá priamo privátne IP. Použi **HTTPS na existujúcom nginx vhoste** a `proxy_pass` na lokálnu službu (napr. `/internal/llm/` → `127.0.0.1:11434`). V nastaveniach potom `https://<cms-host>/internal/llm`. [AGENT_OPERATIONS.md](../runbooks/AGENT_OPERATIONS.md).
 
 ---
 

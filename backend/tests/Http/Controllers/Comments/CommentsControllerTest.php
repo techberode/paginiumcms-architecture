@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Http\Controllers\Comments;
 
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
+use PaginiumCMS\Modules\Messages\Services\DeskInboxService;
 use PaginiumCMS\Tests\Http\TestCase;
 use Slim\Psr7\Factory\StreamFactory;
 
@@ -292,6 +293,49 @@ class CommentsControllerTest extends TestCase
         $this->assertSame(201, $submitResponse->getStatusCode());
         $this->assertTrue($submitData['success']);
         $this->assertStringStartsWith('hp_', (string) ($submitData['data']['id'] ?? ''));
+    }
+
+    public function testBulkProcessedMarksHandleStatusDoneAndClearsDeskQueue(): void
+    {
+        $articleSlug = 'bulk-processed-' . uniqid('', true);
+        $submit = $this->handleRequest($this->createJsonRequest('POST', '/api/comments', [
+            'articleSlug' => $articleSlug,
+            'author' => 'Reader',
+            'email' => 'reader@example.com',
+            'content' => 'Needs handling',
+        ]));
+        $commentId = $this->getJsonResponse($submit)['data']['id'] ?? null;
+        $this->assertNotNull($commentId);
+
+        $this->loginAsAdminUser();
+        $this->handleRequest($this->createJsonRequest('PUT', '/api/admin/comments/' . $commentId, [
+            'status' => Comment::STATUS_APPROVED,
+        ]));
+
+        $desk = $this->container()->get(DeskInboxService::class);
+        $admin = $this->currentUser;
+        $this->assertNotNull($admin);
+        $before = $desk->items($admin);
+        $this->assertTrue(
+            array_any($before, static fn (array $row): bool => ($row['kind'] ?? '') === 'comment' && ($row['id'] ?? '') === $commentId)
+        );
+
+        $bulk = $this->handleRequest($this->createJsonRequest('POST', '/api/admin/comments/bulk-workflow', [
+            'ids' => [$commentId],
+            'action' => 'processed',
+        ]));
+        $this->assertSame(200, $bulk->getStatusCode());
+
+        $repo = $this->container()->get(\PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface::class);
+        $saved = $repo->findById($commentId);
+        $this->assertNotNull($saved);
+        $this->assertSame('done', $saved->getHandleStatus());
+        $this->assertTrue($saved->isRead());
+
+        $after = $desk->items($admin);
+        $this->assertFalse(
+            array_any($after, static fn (array $row): bool => ($row['kind'] ?? '') === 'comment' && ($row['id'] ?? '') === $commentId)
+        );
     }
 
     public function testObviousSpamIsRejected(): void

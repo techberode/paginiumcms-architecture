@@ -29,6 +29,7 @@ import { resolveThemeShell } from '../../theme/themeShellRegistry';
 import { ThemeShellBoundary } from './ThemeShellBoundary';
 import { ThemeScriptLoader } from '../frontend/ThemeScriptLoader';
 import { PublicHeaderStack } from './PublicHeaderStack';
+import { PublicBreadcrumbs } from '../frontend/PublicBreadcrumbs';
 import { isAdminAppRoute } from '../../utils/appRoutes';
 
 export function PublicHomePage() {
@@ -240,6 +241,7 @@ export const PublicSiteLayout: React.FC = () => {
     <div className={`flex-1 flex min-h-0 min-w-0 ${sideOnRight ? 'flex-row-reverse' : ''}`}>
       {sideColumn}
       <div className="flex-1 min-w-0 pg-public-content-well">
+        <PublicBreadcrumbs />
         <Outlet />
       </div>
     </div>

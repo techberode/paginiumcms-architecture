@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Zap,
   Expand,
+  MoreVertical,
 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
@@ -24,8 +25,11 @@ import {
   bulkDeleteMedia,
   bulkDownloadMedia,
   saveMediaBulkDownloadBlob,
+  copyMediaFolder,
   createMediaFolder,
   deleteMedia,
+  deleteMediaFolder,
+  moveMediaFolder,
   downloadMediaFile,
   formatMediaSize,
   importStockImage,
@@ -244,13 +248,92 @@ export const MediaManager: React.FC = () => {
     }
 
     const folder = `${base}${name.trim()}`.replace(/^\/+/, '');
-    const ok = await createMediaFolder(folder);
-    if (ok) {
-      toast.success(t('media.toast.folderCreated'));
-      setCurrentFolder(folder);
+    const result = await createMediaFolder(folder);
+    if (result.ok) {
+      toast.success(
+        result.folder !== folder
+          ? t('media.toast.folderCreatedAs', { name: result.folder })
+          : t('media.toast.folderCreated')
+      );
+      setCurrentFolder(result.folder);
       await loadMedia();
     } else {
-      toast.error(t('media.toast.folderFailed'));
+      toast.error(result.error || t('media.toast.folderFailed'));
+    }
+  };
+
+  const folderParentPath = (folderPath: string): string => {
+    const idx = folderPath.lastIndexOf('/');
+    return idx === -1 ? '' : folderPath.slice(0, idx);
+  };
+
+  const leaveFolderIfInside = (folderPath: string) => {
+    if (currentFolder === folderPath || currentFolder.startsWith(`${folderPath}/`)) {
+      setCurrentFolder(folderParentPath(folderPath));
+    }
+  };
+
+  const handleRenameFolder = async (folderPath: string) => {
+    const leaf = folderPath.split('/').pop() ?? folderPath;
+    const nextName = window.prompt(t('media.folderRenamePrompt'), leaf);
+    if (!nextName?.trim()) {
+      return;
+    }
+    const parent = folderParentPath(folderPath);
+    const to = parent === '' ? nextName.trim() : `${parent}/${nextName.trim()}`;
+    const result = await moveMediaFolder(folderPath, to);
+    if (result.ok) {
+      toast.success(t('media.toast.folderMoved'));
+      if (currentFolder === folderPath) {
+        setCurrentFolder(result.folder);
+      }
+      await loadMedia();
+    } else {
+      toast.error(result.error || t('media.toast.folderMoveFailed'));
+    }
+  };
+
+  const handleMoveFolder = async (folderPath: string) => {
+    const to = window.prompt(t('media.folderMovePrompt'), folderPath);
+    if (!to?.trim()) {
+      return;
+    }
+    const result = await moveMediaFolder(folderPath, to.trim());
+    if (result.ok) {
+      toast.success(t('media.toast.folderMoved'));
+      leaveFolderIfInside(folderPath);
+      await loadMedia();
+    } else {
+      toast.error(result.error || t('media.toast.folderMoveFailed'));
+    }
+  };
+
+  const handleCopyFolder = async (folderPath: string) => {
+    const to = window.prompt(t('media.folderCopyPrompt'), `${folderPath}-copy`);
+    if (!to?.trim()) {
+      return;
+    }
+    const result = await copyMediaFolder(folderPath, to.trim());
+    if (result.ok) {
+      toast.success(t('media.toast.folderCopied'));
+      await loadMedia();
+    } else {
+      toast.error(result.error || t('media.toast.folderCopyFailed'));
+    }
+  };
+
+  const handleDeleteFolder = async (folderPath: string) => {
+    const leaf = folderPath.split('/').pop() ?? folderPath;
+    if (!window.confirm(t('media.confirm.deleteFolderRecursive', { name: leaf }))) {
+      return;
+    }
+    const result = await deleteMediaFolder(folderPath, true);
+    if (result.ok) {
+      toast.success(t('media.toast.folderDeleted'));
+      leaveFolderIfInside(folderPath);
+      await loadMedia();
+    } else {
+      toast.error(result.error || t('media.toast.folderDeleteFailed'));
     }
   };
 
@@ -615,15 +698,58 @@ export const MediaManager: React.FC = () => {
       {childFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {childFolders.map((folder) => (
-            <button
+            <div
               key={folder}
-              type="button"
-              className="card card-body flex items-center gap-3 text-left hover:border-indigo-400 transition-colors"
-              onClick={() => setCurrentFolder(folder)}
+              className="card card-body flex items-center gap-2 hover:border-indigo-400 transition-colors"
             >
-              <Folder className="w-8 h-8 text-indigo-500 shrink-0" />
-              <span className="font-medium text-sm truncate">{folder.split('/').pop()}</span>
-            </button>
+              <button
+                type="button"
+                className="flex flex-1 items-center gap-3 text-left min-w-0"
+                onClick={() => setCurrentFolder(folder)}
+              >
+                <Folder className="w-8 h-8 text-indigo-500 shrink-0" />
+                <span className="font-medium text-sm truncate">{folder.split('/').pop()}</span>
+              </button>
+              <details className="relative shrink-0">
+                <summary
+                  className="list-none cursor-pointer p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  aria-label={t('media.actions.folderMenu')}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </summary>
+                <div className="absolute right-0 z-10 mt-1 min-w-[10rem] rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900 py-1 text-sm">
+                  <button
+                    type="button"
+                    className="block w-full px-3 py-1.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                    onClick={() => void handleRenameFolder(folder)}
+                  >
+                    {t('media.actions.renameFolder')}
+                  </button>
+                  <button
+                    type="button"
+                    className="block w-full px-3 py-1.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                    onClick={() => void handleMoveFolder(folder)}
+                  >
+                    {t('media.actions.moveFolder')}
+                  </button>
+                  <button
+                    type="button"
+                    className="block w-full px-3 py-1.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                    onClick={() => void handleCopyFolder(folder)}
+                  >
+                    {t('media.actions.copyFolder')}
+                  </button>
+                  <button
+                    type="button"
+                    className="block w-full px-3 py-1.5 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    onClick={() => void handleDeleteFolder(folder)}
+                  >
+                    {t('media.actions.deleteFolder')}
+                  </button>
+                </div>
+              </details>
+            </div>
           ))}
         </div>
       )}

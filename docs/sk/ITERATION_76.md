@@ -83,8 +83,8 @@ translation:
 ```
 
 - API key je šifrovaný a write-only vo frontend odpovedi.
-- `baseUrl` prechádza `OutboundUrlGuard`.
-- Keď je provider v LAN/private rozsahu, admin ho musí explicitne povoliť v outbound allow-liste; všeobecné povolenie private IP je zakázané.
+- `baseUrl` prechádza `OutboundUrlGuard` (HTTPS na verejne riešiteľný host v produkcii).
+- LAN/private port LibreTranslate **nepatí** priamo do nastavení v produkcii. Použi nginx na CMS hoste: proxy `/internal/translate/` → localhost, potom `baseUrl` = `https://<cms-host>/internal/translate`. [AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) §2.
 - Deploy dokumentácia používa pripnutú verziu/digest image, nie nekontrolovaný `latest`.
 
 ---
@@ -143,8 +143,8 @@ Settings → Translation obsahuje URL, credential write-only field, test connect
 
 - mocked provider vracia SK→EN proposal,
 - Markdown/HTML/Tiptap placeholders sa zachovajú,
-- SSRF private target bez allow-listu je blokovaný,
-- explicitne povolený LAN provider funguje,
+- SSRF pri priamej LAN URL v produkcii je blokovaný,
+- HTTPS nginx proxy na tom istom hoste na localhost provider funguje,
 - quota/rate limit a concurrent counter writes,
 - source revision conflict pri Apply,
 - invalid schema response je odmietnutá,
@@ -156,13 +156,15 @@ Settings → Translation obsahuje URL, credential write-only field, test connect
 
 ## Definition of Done
 
-- [ ] Self-hosted provider vytvorí SK→EN draft proposal v editore.
-- [ ] Apply zapisuje cez It.73 schema/OCC a audit `content.translated`.
-- [ ] Publish nie je súčasť Apply.
-- [ ] Provider URL, tajomstvá, kvóty a logovanie majú bezpečnostné testy.
-- [ ] Shared provider interface je pripravený pre It.77.
-- [ ] Classic/disabled nemá outbound traffic ani povinnú službu.
-- [ ] SK/EN user, security a deploy dokumentácia je aktualizovaná.
+- [x] Self-hosted provider vytvorí SK→EN draft proposal v editore.
+- [x] Apply zapisuje cez It.73 schema/OCC a audit `content.translated`.
+- [x] Publish nie je súčasť Apply.
+- [x] Provider URL, tajomstvá, kvóty a logovanie majú bezpečnostné testy.
+- [x] Shared provider interface je pripravený pre It.77.
+- [x] Classic/disabled nemá outbound traffic ani povinnú službu.
+- [x] SK/EN user, security a deploy dokumentácia je aktualizovaná.
+
+**Zvyšok:** It.29 `content.translate` worker pre dlhé požiadavky; Tiptap JSON text-node allow-list (Markdown/HTML placeholders sú v strome).
 
 ## Nadväzuje
 

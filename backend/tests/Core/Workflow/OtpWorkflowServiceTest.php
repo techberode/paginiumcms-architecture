@@ -76,6 +76,7 @@ class OtpWorkflowServiceTest extends TestCase
         $this->assertTrue($settings->group('workflows')['commentApprovalOtpEnabled'] ?? false);
 
         $login = $this->loginAsAdminUser();
+        $this->enableWorkflows(['commentApprovalOtpEnabled' => true]);
         $editor = $this->app->getContainer()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class)
             ->findByEmail($login['email']);
         $this->assertNotNull($editor);
@@ -104,6 +105,7 @@ class OtpWorkflowServiceTest extends TestCase
         $this->assertTrue($settings->group('workflows')['publishApprovalOtpEnabled'] ?? false);
 
         $login = $this->loginAsAdminUser();
+        $this->enableWorkflows(['publishApprovalOtpEnabled' => true]);
         $editor = $this->app->getContainer()->get(\PaginiumCMS\Modules\Security\Services\UserRepository::class)
             ->findByEmail($login['email']);
         $this->assertNotNull($editor);

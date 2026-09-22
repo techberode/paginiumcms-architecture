@@ -1,6 +1,6 @@
 # Iterácia 69 — jednotná cache a HTTP podmienené požiadavky
 
-> **Stav:** ⏳ plánované  
+> **Stav:** ✅ hotové (Classic + Redis driver v produkčnom Docker stacku) — detailne [en/ITERATION_69.md](../en/ITERATION_69.md)  
 > **Priorita:** 🔴  
 > **Vlna:** [Hybrid Engine HE-2](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Závisí od:** [It.68](ITERATION_68.md)  

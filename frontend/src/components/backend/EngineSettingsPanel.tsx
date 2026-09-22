@@ -11,6 +11,12 @@ interface Props {
   onRefresh?: () => void;
 }
 
+function capabilityLabel(t: (key: string) => string, group: 'cacheCapabilities' | 'queryIndexCapabilities', key: string): string {
+  const i18nKey = `settings.engine.${group}.${key}.label`;
+  const label = t(i18nKey);
+  return label === i18nKey ? key : label;
+}
+
 export const EngineSettingsPanel: React.FC<Props> = ({ meta, onRefresh }) => {
   const { t } = useI18n();
   const toast = useToast();
@@ -107,7 +113,9 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta, onRefresh }) => {
           <ul className="mt-3 space-y-2 text-sm">
             {Object.entries(queryProbe.capabilities).map(([key, row]) => (
               <li key={key} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
-                <span className="font-medium text-gray-800 dark:text-gray-100">{key}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100">
+                  {capabilityLabel(t, 'queryIndexCapabilities', key)}
+                </span>
                 <span className="text-gray-500 dark:text-gray-400">
                   {row.status} — {row.message}
                 </span>
@@ -148,6 +156,7 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta, onRefresh }) => {
           <h5 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
             {t('settings.engine.cacheProbeTitle')}
           </h5>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('settings.engine.cacheProbeIntro')}</p>
           <dl className="mt-2 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="font-medium text-gray-700 dark:text-gray-200">{t('settings.engine.cacheDriver')}</dt>
@@ -167,7 +176,9 @@ export const EngineSettingsPanel: React.FC<Props> = ({ meta, onRefresh }) => {
           <ul className="mt-3 space-y-2 text-sm">
             {Object.entries(meta.cacheProbe.capabilities).map(([key, row]) => (
               <li key={key} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
-                <span className="font-medium text-gray-800 dark:text-gray-100">{key}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100">
+                  {capabilityLabel(t, 'cacheCapabilities', key)}
+                </span>
                 <span className="text-gray-500 dark:text-gray-400">
                   {row.status} — {row.message}
                 </span>

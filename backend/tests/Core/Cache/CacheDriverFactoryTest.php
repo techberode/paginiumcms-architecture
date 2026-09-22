@@ -46,10 +46,21 @@ final class CacheDriverFactoryTest extends TestCase
         $this->assertInstanceOf(FileDriver::class, $driver);
     }
 
-    public function testRedisFallsBackToAuto(): void
+    public function testRedisDriverNameIsPreservedInSettings(): void
     {
-        $this->assertSame('auto', CacheDriverFactory::normalizeDriver('redis'));
-        $this->assertSame('auto', CacheDriverFactory::driverFromEngineSettings(['cacheDriver' => 'redis']));
+        $this->assertSame('redis', CacheDriverFactory::normalizeConfiguredDriver('redis'));
+        $this->assertSame('redis', CacheDriverFactory::driverFromEngineSettings(['cacheDriver' => 'redis']));
+    }
+
+    public function testAutoWithoutRedisHostUsesFileChain(): void
+    {
+        $factory = new CacheDriverFactory($this->cacheDir);
+        $driver = $factory->create('auto', true, []);
+
+        $this->assertInstanceOf(ChainedDriver::class, $driver);
+        $health = $driver->health();
+        $this->assertTrue($health['ok']);
+        $this->assertSame('auto', $health['driver']);
     }
 
     public function testMemoryDriverHealthProbe(): void

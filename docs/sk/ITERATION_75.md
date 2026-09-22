@@ -125,7 +125,7 @@ agent:
   proposalTtlMinutes: 60
 ```
 
-Credentialy sú šifrované. Local provider URL v LAN vyžaduje explicitnú outbound allow-list policy podobne ako It.76. `allowedTools` je prázdny default; enable bez toolov nevytvorí implicitné práva.
+Credentialy sú šifrované. V produkcii `OutboundUrlGuard` povoľuje **HTTPS** na hosty s verejnou IP — nie surové `http://192.168.*` ani localhost z kontajnera. Odporúčaný homelab vzor: **nginx na CMS hoste** proxy `/internal/llm/` → Ollama na `127.0.0.1:11434`, potom `baseUrl` = `https://<cms-host>/internal/llm` (bez `/v1`). Runbook: [AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md). `allowedTools` je prázdny default; enable bez toolov nevytvorí implicitné práva.
 
 ---
 
@@ -206,4 +206,4 @@ Credentialy sú šifrované. Local provider URL v LAN vyžaduje explicitnú outb
 
 ## Súvisiace
 
-[It.76](ITERATION_76.md) · [It.77](ITERATION_77.md) · [It.29](ITERATION_29.md) · [It.66](ITERATION_66.md) · [It.67](ITERATION_67.md)
+[AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) · [It.76](ITERATION_76.md) · [It.77](ITERATION_77.md) · [It.29](ITERATION_29.md) · [It.66](ITERATION_66.md) · [It.67](ITERATION_67.md)

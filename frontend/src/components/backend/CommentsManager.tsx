@@ -65,7 +65,7 @@ export const CommentsManager: React.FC = () => {
   const { t, locale } = useI18n();
   const location = useLocation();
   const { settings } = useSettings();
-  const { inPageChatActive, canReplyComments } = useDeskInbox();
+  const { inPageChatActive, canReplyComments, refresh: refreshDeskInbox } = useDeskInbox();
   const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const statusLabel = (status: CommentStatus): string => t(`comments.status.${status}`);
@@ -199,6 +199,7 @@ export const CommentsManager: React.FC = () => {
       showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
+      await refreshDeskInbox();
     } else {
       showError(t('comments.toast.bulkFailed'));
     }
@@ -216,6 +217,7 @@ export const CommentsManager: React.FC = () => {
       showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
+      await refreshDeskInbox();
     } else {
       showError(t('comments.toast.bulkDeleteFailed'));
     }

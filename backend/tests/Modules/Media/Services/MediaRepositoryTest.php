@@ -128,6 +128,13 @@ class MediaRepositoryTest extends TestCase
         $this->assertSame("\x89PNG\r\n\x1a\n", substr($stored, 0, 8));
     }
 
+    public function testCreateFolderAcceptsUnicodeSegment(): void
+    {
+        $this->repository->createFolder('obrazky-2026');
+        $folders = $this->repository->listFolders();
+        $this->assertContains('obrazky-2026', $folders);
+    }
+
     public function testSaveUploadIntoFolder(): void
     {
         $this->repository->createFolder('campaigns');
@@ -280,5 +287,52 @@ class MediaRepositoryTest extends TestCase
     {
         $this->expectException(FlatFileException::class);
         $this->repository->createFolder('../escape');
+    }
+
+    public function testCreateFolderSlugifiesSpacesInName(): void
+    {
+        $normalized = $this->repository->createFolder('Nove clanky');
+        $this->assertSame('Nove-clanky', $normalized);
+        $this->assertContains('Nove-clanky', $this->repository->listFolders());
+    }
+
+    public function testDeleteFolderRemovesEmptyFolder(): void
+    {
+        $this->repository->createFolder('empty-dir');
+        $deleted = $this->repository->deleteFolder('empty-dir', false);
+        $this->assertSame(0, $deleted);
+        $this->assertNotContains('empty-dir', $this->repository->listFolders());
+    }
+
+    public function testDeleteFolderRecursiveRemovesFiles(): void
+    {
+        $this->repository->createFolder('pack');
+        $media = $this->repository->saveUpload('one.png', $this->pngBytes(), 'image/png', '', 'pack');
+        $deleted = $this->repository->deleteFolder('pack', true);
+        $this->assertSame(1, $deleted);
+        $this->assertNull($this->repository->findByPath($media->getPath()));
+    }
+
+    public function testMoveFolderRelocatesFiles(): void
+    {
+        $this->repository->createFolder('src');
+        $media = $this->repository->saveUpload('logo.png', $this->pngBytes(), 'image/png', '', 'src');
+        $target = $this->repository->moveFolder('src', 'dest');
+        $this->assertSame('dest', $target);
+        $found = $this->repository->findByPath($media->getPath());
+        $this->assertNull($found);
+        $moved = $this->repository->findAll(['folder' => 'dest']);
+        $this->assertCount(1, $moved);
+        $this->assertStringContainsString('logo.png', $moved[0]->getPath());
+    }
+
+    public function testCopyFolderDuplicatesFiles(): void
+    {
+        $this->repository->createFolder('original');
+        $this->repository->saveUpload('pic.png', $this->pngBytes(), 'image/png', '', 'original');
+        $target = $this->repository->copyFolder('original', 'clone');
+        $this->assertSame('clone', $target);
+        $this->assertCount(1, $this->repository->findAll(['folder' => 'original']));
+        $this->assertCount(1, $this->repository->findAll(['folder' => 'clone']));
     }
 }

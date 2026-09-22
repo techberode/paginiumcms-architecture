@@ -1,6 +1,6 @@
 # Iteration 69 — unified cache and HTTP conditional requests
 
-> **Status:** ✅ shipped (Classic scope — Redis driver deferred)  
+> **Status:** ✅ shipped (Classic + Redis driver in Docker production stack)  
 > **Priority:** 🔴  
 > **Wave:** [Hybrid Engine HE-2](ITERATION_WAVE_HYBRID_ENGINE.md)  
 > **Depends on:** [It.68](ITERATION_68.md)  
@@ -82,7 +82,19 @@ Settings → Engine → Cache provides:
 - permission-protected cache purge/rebuild with confirmation,
 - hit/miss and fallback state without exposing credentials.
 
-An optional Docker Compose `cache` profile is documented in `LOCAL_SETUP`/deployment work with a pinned image version. The Classic profile does not require a Redis container.
+An optional Docker Compose `cache` profile is documented in [LOCAL_SETUP.md](developer/LOCAL_SETUP.md). Production Docker merge adds a `redis` service ([DEPLOY.md](../deploy/DEPLOY.md)).
+
+### Shared hosting without Redis
+
+Most budget hosters do **not** offer Redis. That is supported:
+
+| Host profile | Configuration |
+|--------------|----------------|
+| Shared PHP / no Redis | Leave `REDIS_HOST` unset, `engine.cacheDriver=auto` (default). Setup shows Redis checks as **info**, not blockers. |
+| VPS + Docker (Paginium stack) | `docker-compose.prod.yml` + `REDIS_HOST=redis`, rebuild PHP image with ext-redis. |
+| Managed Redis add-on | Set `REDIS_HOST` / `REDIS_PASSWORD` in `.env` or engine settings — still optional derived cache. |
+
+Content always lives in flat files; deleting cache or losing Redis does not destroy SSOT.
 
 ---
 

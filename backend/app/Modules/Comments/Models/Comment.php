@@ -124,6 +124,21 @@ class Comment implements JsonSerializable
         return $this;
     }
 
+    /**
+     * Marks the desk workflow complete (It.93o — removes item from desk/notifications).
+     */
+    public function markProcessed(bool $processed = true): self
+    {
+        if ($processed) {
+            $this->setHandleStatus('done');
+            $this->markRead(true);
+        } else {
+            $this->setHandleStatus('open');
+        }
+
+        return $this;
+    }
+
     public function getParentId(): string
     {
         return $this->parentId;

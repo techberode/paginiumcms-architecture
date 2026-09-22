@@ -244,7 +244,15 @@ curl -sI https://paginiumcms.com/ | \
 | duplicate upstream | backup file in `sites-enabled` | retain only active symlink |
 | Certbot challenge fails | challenge location/root | test HTTP challenge path |
 
-## 15. Related documents
+## 15. Internal LLM and translation upstreams (It.75 / It.76)
+
+When Ollama or LibreTranslate runs on the **same machine** as CMS, bind the service to **127.0.0.1** only and add an internal `location` on the existing HTTPS vhost. CMS settings then use a **public HTTPS URL on that same host** so PHP passes `OutboundUrlGuard` without opening new WAN ports.
+
+Example: [nginx-internal-llm.conf.example](./nginx-internal-llm.conf.example) · Runbook: [AGENT_OPERATIONS.md](../en/runbooks/AGENT_OPERATIONS.md).
+
+Place internal locations **before** the SPA fallback. Restrict access (`allow`/`deny`, VPN, or `auth_request`) if the vhost is internet-facing.
+
+## 16. Related documents
 
 - [DEPLOY.md](./DEPLOY.md)
 - [DEV.md](./DEV.md)

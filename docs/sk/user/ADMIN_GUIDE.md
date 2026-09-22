@@ -182,11 +182,26 @@ Email, ntfy, Telegram alebo webhook konfiguruj iba na allow-listované HTTPS cie
 
 Pri chybe rozlišuj uloženie konfigurácie od úspešného doručenia. Provider môže byť nedostupný aj keď CMS nastavenie prešlo validáciou.
 
+### CMS AI asistent a self-hosted preklad (It.75 / It.76)
+
+Obe funkcie sú predvolene **vypnuté**; dáta odchádzajú len po zapnutí. Nikdy nepublikujú automaticky — **Apply** je samostatný potvrdený zápis.
+
+| Skupina nastavení | Účel |
+|-------------------|------|
+| **CMS AI asistent** | Ollama / OpenAI-compatible LLM; **allowed tools** čiarkou (prázdne = žiadne schopnosti). |
+| **Preklad** | LibreTranslate (vlastná URL) alebo DeepL/Google s API kľúčmi. |
+
+**Homelab bez nových WAN portov:** Ollama/LibreTranslate na `127.0.0.1` na CMS hoste, **nginx** `location` na existujúcom HTTPS vhoste (napr. `/internal/llm/` → 11434). `baseUrl` = `https://<tvoja-stránka>/internal/llm` — nie `http://192.168.x.x`. Po uložení **Otestovať pripojenie**.
+
+Dlhé behy asistenta vyžadujú cron **`worker:process`** (§12). Runbook: [AGENT_OPERATIONS.md](../runbooks/AGENT_OPERATIONS.md).
+
 ## 12. Plánovač a joby
 
 Admin obrazovka plánovača zobrazuje definované úlohy; reálne vykonanie závisí od cron/worker procesu. Sleduj posledný beh, ďalší beh, duration, lock a poslednú chybu.
 
 Nespúšťaj dlhý job opakovane len preto, že UI nereaguje. Najprv over worker a log, aby nevznikli duplicitné e-maily, backupy alebo Git publish.
+
+Vo fronte sú aj **`agent.run`** (CMS AI asistent) a prekladové joby — ak beží len `scheduler:run` bez `worker:process`, behy asistenta ostanú vo fronte.
 
 ## 13. Zálohy a obnova
 

@@ -5,6 +5,17 @@
 # FE build:     docker compose --profile build run --rm frontend-build
 
 services:
+  redis:
+    profiles: ["cache"]
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   php:
     build:
       context: .
@@ -15,6 +26,8 @@ services:
     environment:
       APP_ENV: development
       APP_DEBUG: "true"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

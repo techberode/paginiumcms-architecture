@@ -48,6 +48,12 @@ final class OtpRateLimitMiddlewareTest extends TestCase
         }
         $_ENV['APP_ENV'] = $this->savedEnv['server'];
         $_SERVER['APP_ENV'] = $this->savedEnv['srv'];
+        // Do not leak production into later Http integration tests in the same PHPUnit process.
+        if (($_ENV['APP_ENV'] ?? '') === 'production' || ($_SERVER['APP_ENV'] ?? '') === 'production') {
+            putenv('APP_ENV=testing');
+            $_ENV['APP_ENV'] = 'testing';
+            $_SERVER['APP_ENV'] = 'testing';
+        }
         parent::tearDown();
     }
 

@@ -23,13 +23,13 @@ CMS AI assistant that only proposes (human Apply, never publishes), plus contact
 | **System Update** | Credentials probe reports env-set-but-unreadable keys; `stack.sh` remounts the host deploy key; SSH host keys pinned; deploy key wins over a leftover PAT. |
 | **Origin Panel** | Catalog honesty (100% = Shipped). Today snapshot: live / unreleased / next. Roadmap splits focus vs shipped. Ops wave is not a numbered iteration. |
 
-Specs: [ITERATION_75.md](ITERATION_75.md) · [ITERATION_82.md](ITERATION_82.md). Private Ollama/Nginx runbook stays gitignored (`PRIVATE_AI_ASSISTANT.md`).
+Specs: [ITERATION_75.md](ITERATION_75.md) · [ITERATION_82.md](ITERATION_82.md). Operations: [AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) and [nginx-internal-llm.conf.example](../deploy/nginx-internal-llm.conf.example). Optional operator-specific notes may stay in gitignored `PRIVATE_AI_ASSISTANT.md`.
 
 ---
 
 ## Operator notes
 
-- **Assistant is off until you enable it.** Settings → CMS AI assistant. Empty tool allow-list = no outbound. Do not point `baseUrl` at `http://127.0.0.1` from production PHP (that is the container). Use a public HTTPS proxy; `baseUrl` must not already end in `/v1`.
+- **Assistant is off until you enable it.** Settings → CMS AI assistant. Empty tool allow-list = no outbound. Do not point `baseUrl` at `http://127.0.0.1` from production PHP (container localhost ≠ host Ollama). Use **same-host nginx HTTPS** (e.g. `/internal/llm/` → `127.0.0.1:11434`); `baseUrl` must not end in `/v1`. See [AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md).
 - **Apply** writes a draft. Publish remains a separate human action.
 - **Deploy this tag**, not `v2.1.0-beta.87` — the older tag rolls back the deploy-key hotfix and everything in this release.
 

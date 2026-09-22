@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-20",
+  "updatedAt": "2026-09-22",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "snapshot": {
-    "asOf": "2026-09-20",
+    "asOf": "2026-09-22",
     "latestTag": "2.1.0-beta.89",
     "headlineKey": "origin.snapshot.headline",
     "groups": [
@@ -39,14 +39,14 @@
           { "titleKey": "origin.catalog.it95_sandpack", "noteKey": "origin.snapshot.note_tag" },
           { "titleKey": "origin.catalog.it95_git", "noteKey": "origin.snapshot.note_tag" },
           { "titleKey": "origin.catalog.it93_canned", "noteKey": "origin.snapshot.note_tag" },
-          { "titleKey": "origin.catalog.ops_tag_deploy", "noteKey": "origin.snapshot.note_deploy" }
+          { "titleKey": "origin.catalog.ops_tag_deploy", "noteKey": "origin.snapshot.note_deploy" },
+          { "titleKey": "origin.catalog.it69_redis", "noteKey": "origin.snapshot.note_tag" }
         ]
       },
       {
         "id": "next",
         "titleKey": "origin.snapshot.next",
         "items": [
-          { "titleKey": "origin.catalog.it69_redis", "noteKey": "origin.snapshot.note_next" },
           { "titleKey": "origin.catalog.it82_host_metrics", "noteKey": "origin.snapshot.note_next" }
         ]
       }
@@ -217,16 +217,17 @@
     {
       "id": "it.69",
       "titleKey": "origin.catalog.it69",
-      "phase": "partial",
+      "phase": "shipped",
       "since": "2.1.0-beta.26",
       "doc": "docs/en/ITERATION_69.md",
       "priority": "medium",
       "items": [
         { "id": "69a", "titleKey": "origin.catalog.it69_cache", "phase": "shipped", "weight": 1 },
-        { "id": "69b", "titleKey": "origin.catalog.it69_redis", "phase": "planned", "weight": 1 }
+        { "id": "69b", "titleKey": "origin.catalog.it69_redis", "phase": "shipped", "weight": 1 }
       ],
       "history": [
-        { "version": "2.1.0-beta.26", "date": "2026-08-03", "summaryKey": "origin.timeline.it69" }
+        { "version": "2.1.0-beta.26", "date": "2026-08-03", "summaryKey": "origin.timeline.it69" },
+        { "version": "[Unreleased]", "date": "2026-09-22", "summaryKey": "origin.timeline.it69_redis" }
       ]
     },
     {

@@ -9,7 +9,8 @@ export const setupEn: MessageTree = {
   stepInfra: 'Infra',
   stepFinish: 'Finish',
   serverHeading: 'Server check',
-  serverHint: 'We verify PHP, extensions, storage, and recommended tools. Missing packages are not installed automatically — you get exact steps instead.',
+  serverHint:
+    'We verify PHP, extensions, storage, and recommended tools. Redis is optional — shared hosting without Redis is supported (file cache). Missing packages are not installed automatically — you get exact steps instead.',
   adminHeading: 'Create the first administrator',
   adminHint: 'This account receives SUPER_ADMIN rights. Change the password after first login.',
   siteHeading: 'Site identity',
@@ -60,6 +61,9 @@ export const setupEn: MessageTree = {
       cli_git: { label: 'Git CLI' },
       cli_composer: { label: 'Composer CLI' },
       runtime_docker: { label: 'Docker runtime' },
+      app_key_encryption: { label: 'APP_KEY encryption' },
+      cache_redis_extension: { label: 'Optional: PHP Redis extension (derived cache)' },
+      cache_redis_broker: { label: 'Optional: Redis broker (REDIS_HOST)' },
     },
   },
   toast: {

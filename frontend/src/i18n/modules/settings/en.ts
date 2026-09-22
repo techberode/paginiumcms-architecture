@@ -138,7 +138,9 @@ export const settingsEn: MessageTree = {
   },
   "agent": {
     "privacyWarning": "The model sees a minimal authorized slice (title, excerpt, SEO). Prompts and completions are not logged. Apply is a separate confirmed write — the agent never publishes.",
-    "localWarning": "Ollama / OpenAI-compatible URLs must pass outbound policy (same as LibreTranslate). A LAN URL is not implied. Pricing is external and not promised.",
+    "localWarning": "Production: use HTTPS on your CMS host with nginx proxying to localhost Ollama (no new WAN ports). Direct http://192.168.* or container 127.0.0.1 is blocked. See runbook in repository docs/en/runbooks/AGENT_OPERATIONS.md.",
+    "runbookLinkLabel": "AI assistant operations runbook (nginx + Ollama)",
+    "runbookLinkUrl": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/runbooks/AGENT_OPERATIONS.md",
     "testConnection": "Test connection",
     "testing": "Testing…",
     "testOk": "Provider is reachable",
@@ -148,6 +150,9 @@ export const settingsEn: MessageTree = {
   "translation": {
     "privacyWarning": "The provider receives only the selected title, body, and SEO fields — never secrets, logs, or the full admin document. Disabled means zero outbound traffic.",
     "instanceRequired": "LibreTranslate is not bundled. That provider needs your own (or compatible) instance and its base URL. The official hosted LibreTranslate.com API is a third-party paid service — not included.",
+    "nginxProxyHint": "Homelab: bind LibreTranslate to localhost and proxy /internal/translate/ on your CMS nginx vhost (HTTPS, no new WAN port). Set base URL to https://your-site/internal/translate.",
+    "runbookLinkLabel": "Self-hosted LLM and translation runbook",
+    "runbookLinkUrl": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/runbooks/AGENT_OPERATIONS.md",
     "cloudWarning": "DeepL and Google send only the selected title, body, and SEO fields to that vendor. Endpoints are fixed (no custom URL). Pricing and terms are external — the CMS does not promise a free tier. Apply still stores a draft only.",
     "quotaLabel": "Today’s quota",
     "quotaUnlimited": "Unlimited",
@@ -164,8 +169,20 @@ export const settingsEn: MessageTree = {
     "deploymentMode": "Deployment mode",
     "storageDriver": "Storage driver",
     "cacheProbeTitle": "Cache layer probe",
+    "cacheProbeIntro": "Derived cache only — flat files stay the source of truth. Without Redis (typical shared hosting), auto uses memory + file. Docker production can attach Redis via REDIS_HOST.",
     "cacheDriver": "Cache driver",
     "cacheHealth": "Cache health",
+    "cacheCapabilities": {
+      "fileCache": { "label": "File / chained cache" },
+      "redisCache": { "label": "Redis (optional shared layer)" },
+      "httpValidators": { "label": "HTTP validators (ETag / 304)" }
+    },
+    "queryIndexCapabilities": {
+      "pdoSqlite": { "label": "PDO SQLite extension" },
+      "indexDirectory": { "label": "Index directory writable" },
+      "sqliteFile": { "label": "Derived SQLite file" },
+      "integrity": { "label": "SQLite integrity check" }
+    },
     "gitProbeTitle": "Git publish probe",
     "gitProbeStatus": "Git publish status",
     "gitProbeStrategy": "Configured strategy",
@@ -678,11 +695,20 @@ export const settingsEn: MessageTree = {
       },
       "provider": {
         "label": "LLM provider",
-        "help": "none = no model. ollama / openai_compatible = OpenAI-compatible /v1/chat/completions on your allow-listed URL."
+        "help": "none = no model. ollama / openai_compatible = OpenAI-compatible API on your HTTPS base URL (driver adds /v1/chat/completions).",
+        "tooltip": "Homelab: nginx on the CMS host proxies /internal/llm/ to 127.0.0.1:11434 — no extra public port."
       },
       "baseUrl": {
         "label": "Provider base URL",
-        "help": "Must pass outbound URL policy. A LAN URL is not implied."
+        "help": "HTTPS base without /v1. Example: https://your-site.example/internal/llm. Production blocks raw LAN IPs and http://127.0.0.1 from PHP.",
+        "tooltip": "Same-host nginx pattern",
+        "tooltipDetail": "Ollama listens on localhost only. Nginx terminates HTTPS on your existing vhost and forwards to port 11434. CMS sees a public hostname and passes SSRF checks.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/runbooks/AGENT_OPERATIONS.md"
+      },
+      "allowedTools": {
+        "label": "Allowed tools",
+        "help": "Comma-separated allow-list. Empty = no tools (enabled assistant still cannot act). Known: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate.",
+        "tooltip": "Deny by default"
       },
       "apiKey": {
         "label": "Provider API key",
@@ -704,10 +730,6 @@ export const settingsEn: MessageTree = {
         "label": "Daily token budget",
         "help": "0 = unlimited (administrator policy)."
       },
-      "allowedTools": {
-        "label": "Allowed tools",
-        "help": "Comma-separated allow-list. Empty = no tools. Known: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate."
-      },
       "proposalTtlMinutes": {
         "label": "Proposal TTL (minutes)",
         "help": "Expired unused proposals are deleted. Applied ones stay in the audit."
@@ -728,7 +750,9 @@ export const settingsEn: MessageTree = {
       },
       "baseUrl": {
         "label": "LibreTranslate base URL",
-        "help": "Required only for LibreTranslate: URL of your instance (e.g. https://translate.example.com), without /translate. Ignored for DeepL/Google."
+        "help": "LibreTranslate only. HTTPS base without /translate. Homelab: nginx /internal/translate/ → localhost. Ignored for DeepL/Google.",
+        "tooltipDetail": "Same pattern as the CMS AI assistant: proxy on the CMS nginx vhost so PHP uses https://your-site/... instead of a private IP.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/en/runbooks/AGENT_OPERATIONS.md"
       },
       "apiKey": {
         "label": "LibreTranslate API key",
@@ -1669,12 +1693,34 @@ export const settingsEn: MessageTree = {
       },
       "cacheDriver": {
         "label": "Cache driver",
-        "help": "auto = memory + file chain. Redis appears as not installed when unavailable.",
-        "tooltip": "auto picks the best available driver at runtime. file persists across requests; memory is per-process only. Redis requires extension and correct env — probe panel below shows active driver."
+        "help": "auto = memory + Redis when REDIS_HOST/engine.redisHost connects, else memory + file. Shared hosting without Redis: leave auto and ignore broker warnings in Setup.",
+        "tooltip": "file persists across requests; memory is per-process only. Redis is optional derived cache — never SSOT. Probe panel below shows active driver and fallback status."
       },
       "cacheDefaultTtlSeconds": {
         "label": "Default cache TTL (seconds)",
         "help": "Applies to new cache keys when no other TTL is specified (60–86400)."
+      },
+      "redisHost": {
+        "label": "Redis host",
+        "help": "Leave empty to use REDIS_HOST from PHP environment (Docker service name redis). Not required on Classic/file-only hosts.",
+        "tooltip": "Optional. When unset and no env host, Redis layer is skipped — CMS uses file cache."
+      },
+      "redisPort": {
+        "label": "Redis port",
+        "help": "Default 6379. Overridden by REDIS_PORT env when set."
+      },
+      "redisPassword": {
+        "label": "Redis password",
+        "help": "Optional. Encrypted at rest. REDIS_PASSWORD env wins for container deploy.",
+        "tooltip": "Only needed when Redis requirepass is enabled (managed Redis or hardened self-host)."
+      },
+      "redisDatabase": {
+        "label": "Redis database index",
+        "help": "0–15. Use a dedicated DB index on shared Redis instances."
+      },
+      "redisKeyPrefix": {
+        "label": "Redis key prefix",
+        "help": "Namespace for cache keys (default paginium:). Safe on multi-tenant Redis."
       },
       "queryIndexDriver": {
         "label": "Content query index driver",

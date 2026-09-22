@@ -11,10 +11,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - No dedicated source entries exist for `2.0.15` and `2.0.41`; no history is invented.
 - Long implementation narratives are intentionally kept outside this canonical index.
 
+## [Unreleased]
+
 ## Release index
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.91`](#release-2-1-0-beta-91) | 2026-09-22 | It.69 Redis cache · latest-articles · breadcrumbs · media folders · Origin probes · AI/translation ops docs |
 | [`2.1.0-beta.90`](#release-2-1-0-beta-90) | 2026-09-21 | Team Kanban per team · team chat history/inbox · Kanban WIP/stats · Playground git import · 58f-h · It.95a/c |
 | [`2.1.0-beta.89`](#release-2-1-0-beta-89) | 2026-09-20 | It.48 static compile + `/static-html` serve · ISS-173 gitleaks · ISS-174 desk role gate · AppVersion floor |
 | [`2.1.0-beta.88`](#release-2-1-0-beta-88) | 2026-09-19 | It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount · Origin today snapshot |
@@ -172,6 +175,31 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Queue:** It.69 Redis driver (optional). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 
 ---
+
+<a id="release-2-1-0-beta-91"></a>
+
+## [2.1.0-beta.91] – 2026-09-22
+
+Optional Redis derived cache (It.69), public breadcrumbs and news ticker shortcode, media folder management, Origin probe honesty, and operator docs for self-hosted LLM/translation via nginx.
+
+Docs: [CACHE_OPERATIONS.md](docs/en/runbooks/CACHE_OPERATIONS.md) · [AGENT_OPERATIONS.md](docs/en/runbooks/AGENT_OPERATIONS.md) · [ITERATION_69.md](docs/en/ITERATION_69.md)
+
+### Added
+
+- **`[latest-articles]` shortcode** — CSS marquee of published titles with links to `/blog/{slug}`; bundled catalog seed.
+- **Public breadcrumbs** — `layout.breadcrumbsEnabled`, `layout.breadcrumbsOnHome`; component on pages and blog.
+- **It.69 Redis cache** — `RedisDriver`, `engine.cacheDriver` redis/auto, engine Redis settings, capability probe; prod compose `redis:7.4-alpine`, `REDIS_HOST=redis`, `pecl redis` in PHP image.
+- **Media folders** — slugified segments; delete/move/copy folder APIs and admin UI.
+
+### Fixed
+
+- **Shortcode DI** — `LatestPublishedArticlesProvider` breaks `ContentRepository` ↔ `ShortcodeExpanderService` cycle (production 500).
+- **Origin probes** — It.67 / It.73 / scheduled-publish no longer false-`partial`.
+
+### Documentation
+
+- AI assistant + LibreTranslate homelab path (same-host nginx, no WAN ports); settings helpers and runbook links.
+- [MKDOCS_ADMIN_GUIDE_PLAN.md](docs/meta/MKDOCS_ADMIN_GUIDE_PLAN.md); SK [ITERATION_67.md](docs/sk/ITERATION_67.md) aligned.
 
 <a id="release-2-1-0-beta-90"></a>
 

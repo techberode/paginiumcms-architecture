@@ -93,7 +93,11 @@ final class SafeRemediationService
 
         $engine = $this->settingsRepo->group('engine');
         $probe = $this->cacheProbe->probe(
-            $this->cacheFactory->create(CacheDriverFactory::driverFromEngineSettings($engine)),
+            $this->cacheFactory->create(
+                CacheDriverFactory::driverFromEngineSettings($engine),
+                true,
+                $engine
+            ),
             $engine
         );
 

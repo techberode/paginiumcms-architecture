@@ -18,6 +18,15 @@ The retained current profile includes, for example:
 | `monitoring-pipeline` | `monitoring.pipeline` | every minute | monitoring and log scanning |
 | `backup-scheduled` | `backup.scheduled` | daily at 02:00 | scheduled CMS backup |
 
+**Queue handlers (not necessarily on a cron schedule):** when an admin enqueues work, `worker:process` must run so jobs complete. Examples:
+
+| Handler | Trigger | Purpose |
+|---|---|---|
+| `agent.run` | `POST /api/admin/agent/runs` (202) | CMS AI assistant LLM/tool loop (It.75) |
+| `content.translate` | translation enqueue (It.76) | long translation proposals |
+
+Without `worker:process`, agent runs stay **queued** and translation jobs may not finish. See [AGENT_OPERATIONS.md](../en/runbooks/AGENT_OPERATIONS.md).
+
 The authoritative list is the registry and implementation of the exact release tag. The admin UI may enable, disable, and edit job cron expressions.
 
 ## 2. Scheduler versus worker

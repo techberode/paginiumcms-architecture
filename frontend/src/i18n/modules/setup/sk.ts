@@ -9,7 +9,8 @@ export const setupSk: MessageTree = {
   stepInfra: 'Infra',
   stepFinish: 'Hotovo',
   serverHeading: 'Kontrola servera',
-  serverHint: 'Overíme PHP, rozšírenia, úložisko a odporúčané nástroje. Chýbajúce balíky nedoinštalujeme automaticky — dostanete presný postup.',
+  serverHint:
+    'Overíme PHP, rozšírenia, úložisko a odporúčané nástroje. Redis je voliteľný — shared hosting bez Redis je v poriadku (file cache). Balíky nedoinštalujeme automaticky — dostanete presný postup.',
   adminHeading: 'Prvý administrátor',
   adminHint: 'Účet dostane oprávnenie SUPER_ADMIN. Heslo si zmeňte po prvom prihlásení.',
   siteHeading: 'Identita webu',
@@ -60,6 +61,9 @@ export const setupSk: MessageTree = {
       cli_git: { label: 'Git CLI' },
       cli_composer: { label: 'Composer CLI' },
       runtime_docker: { label: 'Docker runtime' },
+      app_key_encryption: { label: 'APP_KEY šifrovanie' },
+      cache_redis_extension: { label: 'Voliteľné: PHP Redis extension (odvodená cache)' },
+      cache_redis_broker: { label: 'Voliteľné: Redis broker (REDIS_HOST)' },
     },
   },
   toast: {

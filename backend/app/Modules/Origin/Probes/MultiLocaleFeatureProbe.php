@@ -29,10 +29,10 @@ final class MultiLocaleFeatureProbe extends AbstractFeatureProbe
             return $this->missing('Translation admin routes are not registered.');
         }
 
-        if (!$this->support->anyRouteFileContains('localizedContent')) {
-            return $this->partial('Locale admin exists; localized content schema usage should be verified.');
+        if (!$this->support->classAvailable(\PaginiumCMS\Core\Content\LocalizedContentWriter::class)) {
+            return $this->partial('Locale admin exists; localized content writer should be verified.');
         }
 
-        return $this->implemented('Multi-locale admin routes and schema hooks are present.', '2.1.0-beta.29');
+        return $this->implemented('Multi-locale admin routes and localized content pipeline are present.', '2.1.0-beta.29');
     }
 }

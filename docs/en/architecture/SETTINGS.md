@@ -105,6 +105,9 @@ The public endpoint uses a field allow-list. It must not serialize a whole group
 | `firewall` | WAF rules and thresholds | ADMIN+ |
 | `logging` | severity, retention, request logging | ADMIN+ |
 | `marketing` | demo footer link and URL | ADMIN+ |
+| `translation` | assisted translation providers (It.76/77), quotas, LibreTranslate URL | ADMIN+, secret API keys |
+| `agent` | CMS AI assistant (It.75), LLM URL, tool allow-list, token limits | ADMIN+, secret `apiKey` |
+| `engine` | Hybrid Engine cache/storage/probes (It.68+) | ADMIN+ / SUPER_ADMIN for some fields |
 
 ### Hybrid Engine groups (It.68+)
 
@@ -154,7 +157,8 @@ Cross-field examples:
 
 - `engine.cache.driver=redis` requires valid Redis configuration and a successful capability probe,
 - Git publishing cannot be enabled without repository/branch/credential policy,
-- a cloud translation provider requires an encrypted credential and outbound allow-list,
+- self-hosted LibreTranslate or a local LLM uses an HTTPS `baseUrl` that passes outbound SSRF policy (typically same-host nginx → localhost; see [AGENT_OPERATIONS.md](../runbooks/AGENT_OPERATIONS.md)),
+- cloud translation (DeepL/Google) requires an encrypted credential and fixed vendor HTTPS hosts,
 - `pathAclEnabled=true` requires valid rules JSON.
 
 ---

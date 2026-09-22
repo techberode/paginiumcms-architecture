@@ -10,8 +10,8 @@ icon: material/history
 
 | Pole | Hodnota |
 |---|---|
-| Stav | ⏳ Plánované |
-| Release / obdobie | bez samostatného release |
+| Stav | ✅ Základ dodaný (2.1.0-beta.27+) |
+| Release / obdobie | 2.1.0-beta.27 — ďalšie 58d/Monaco UI follow-up |
 | Typ záznamu | historický security backlog record |
 
 ## Cieľ
@@ -34,4 +34,4 @@ Zdroj je otvorený plán bez release. Závisí od [It.66](ITERATION_66.md), otvo
 
 ## Aktuálna interpretácia
 
-It.67 zostáva aktívnym bezpečnostným backlogom. Jej časti sa majú dodávať spolu s príslušným produktovým surface, najmä 58d, aby nevznikol funkčný Monaco save bez policy wiring.
+Základ It.67 je v produkcii: Code Policy Engine, untrusted ZIP/import parity, CSP hardening (`SecurityMiddleware`), hostile fixture pack. Origin panel má It.67 označenú ako **shipped**; zostávajúci rozsah je follow-up 58d (Monaco UI, verejný shortcode render) — nie nové číslo iterácie.

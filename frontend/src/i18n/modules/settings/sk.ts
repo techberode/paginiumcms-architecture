@@ -138,7 +138,9 @@ export const settingsSk: MessageTree = {
   },
   "agent": {
     "privacyWarning": "Model vidí len minimálny autorizovaný výrez (titulok, úryvok, SEO). Prompty a odpovede sa nelogujú. Apply je samostatný potvrdený zápis — agent nikdy nepublikuje.",
-    "localWarning": "URL Ollama / OpenAI-compatible musí prejsť outbound politikou (ako LibreTranslate). LAN adresa nie je automaticky povolená. Ceny sú externé a CMS ich nesľubuje.",
+    "localWarning": "Produkcia: HTTPS na tom istom CMS hoste cez nginx proxy na localhost Ollama (bez nových WAN portov). Priame http://192.168.* alebo 127.0.0.1 z kontajnera je blokované. Runbook: docs/sk/runbooks/AGENT_OPERATIONS.md.",
+    "runbookLinkLabel": "Runbook CMS AI asistent (nginx + Ollama)",
+    "runbookLinkUrl": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/sk/runbooks/AGENT_OPERATIONS.md",
     "testConnection": "Otestovať pripojenie",
     "testing": "Testujem…",
     "testOk": "Poskytovateľ je dostupný",
@@ -148,6 +150,9 @@ export const settingsSk: MessageTree = {
   "translation": {
     "privacyWarning": "Poskytovateľ dostane len vybrané polia titulku, tela a SEO — nikdy tajomstvá, logy ani celý admin dokument. Vypnuté = žiadna odchádzajúca prevádzka.",
     "instanceRequired": "LibreTranslate v CMS nie je. Tento provider vyžaduje vlastnú (alebo kompatibilnú) inštanciu a jej základnú URL. Oficiálne hostované LibreTranslate.com je platená služba tretej strany — v CMS nie je.",
+    "nginxProxyHint": "Homelab: LibreTranslate na localhost, nginx proxy /internal/translate/ na existujúcom HTTPS vhoste (bez nového WAN portu). baseUrl = https://tvoja-stránka/internal/translate.",
+    "runbookLinkLabel": "Runbook self-hosted LLM a preklad",
+    "runbookLinkUrl": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/sk/runbooks/AGENT_OPERATIONS.md",
     "cloudWarning": "DeepL a Google pošlú len vybrané polia titulku, tela a SEO danému vendorovi. Endpointy sú pevné (žiadna vlastná URL). Ceny a podmienky sú externé — CMS nesľubuje free tier. Apply stále uloží len koncept.",
     "quotaLabel": "Dnešná kvóta",
     "quotaUnlimited": "Bez limitu",
@@ -164,8 +169,20 @@ export const settingsSk: MessageTree = {
     "deploymentMode": "Režim nasadenia",
     "storageDriver": "Ovládač úložiska",
     "cacheProbeTitle": "Cache vrstva — diagnostika",
+    "cacheProbeIntro": "Iba odvodená cache — flat-file dáta sú SSOT. Bez Redis (typický shared hosting) auto = memory + file. Docker produkcia môže pridať Redis cez REDIS_HOST.",
     "cacheDriver": "Ovládač cache",
     "cacheHealth": "Stav cache",
+    "cacheCapabilities": {
+      "fileCache": { "label": "Súborová / reťazená cache" },
+      "redisCache": { "label": "Redis (voliteľná zdieľaná vrstva)" },
+      "httpValidators": { "label": "HTTP validátory (ETag / 304)" }
+    },
+    "queryIndexCapabilities": {
+      "pdoSqlite": { "label": "PDO SQLite extension" },
+      "indexDirectory": { "label": "Zapisovateľný index adresár" },
+      "sqliteFile": { "label": "Odvodený SQLite súbor" },
+      "integrity": { "label": "Kontrola integrity SQLite" }
+    },
     "gitProbeTitle": "Git publish — diagnostika",
     "gitProbeStatus": "Stav Git publish",
     "gitPublishTitle": "Publish release",
@@ -678,11 +695,15 @@ export const settingsSk: MessageTree = {
       },
       "provider": {
         "label": "LLM poskytovateľ",
-        "help": "none = žiadny model. ollama / openai_compatible = OpenAI-compatible /v1/chat/completions na allow-listnutej URL."
+        "help": "none = žiadny model. ollama / openai_compatible = OpenAI-compatible API na HTTPS base URL (driver doplní /v1/chat/completions).",
+        "tooltip": "Homelab: nginx na CMS hoste proxy /internal/llm/ → 127.0.0.1:11434 — bez nového verejného portu."
       },
       "baseUrl": {
         "label": "Základná URL poskytovateľa",
-        "help": "Musí prejsť outbound politikou. LAN adresa nie je automaticky povolená."
+        "help": "HTTPS základ bez /v1. Napr. https://tvoja-stranka.sk/internal/llm. Produkcia blokuje surové LAN IP a http://127.0.0.1 z PHP.",
+        "tooltip": "Nginx na tom istom hoste",
+        "tooltipDetail": "Ollama počúva len localhost. Nginx ukončí HTTPS na existujúcom vhoste a forwarduje na 11434. CMS vidí verejný hostname a prejde SSRF kontrolou.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/sk/runbooks/AGENT_OPERATIONS.md"
       },
       "apiKey": {
         "label": "API kľúč poskytovateľa",
@@ -706,7 +727,8 @@ export const settingsSk: MessageTree = {
       },
       "allowedTools": {
         "label": "Povolené tooly",
-        "help": "Čiarkou oddelený allow-list. Prázdne = žiadne tooly. Známe: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate."
+        "help": "Čiarkou oddelený allow-list. Prázdne = žiadne tooly (zapnutý asistent nič neurobí). Známe: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate.",
+        "tooltip": "Predvolene zamietnuté"
       },
       "proposalTtlMinutes": {
         "label": "TTL návrhu (minúty)",
@@ -728,7 +750,9 @@ export const settingsSk: MessageTree = {
       },
       "baseUrl": {
         "label": "LibreTranslate — základná URL",
-        "help": "Povinné len pre LibreTranslate: URL tvojej inštancie (napr. https://translate.example.com), bez /translate. Pri DeepL/Google sa ignoruje."
+        "help": "Len LibreTranslate. HTTPS základ bez /translate. Homelab: nginx /internal/translate/ → localhost. Pri DeepL/Google sa ignoruje.",
+        "tooltipDetail": "Rovnaký vzor ako CMS AI asistent: proxy na nginx CMS hoste, PHP volá https://tvoja-stránka/... namiesto privátnej IP.",
+        "docLink": "https://github.com/techberode/paginiumcms-architecture/blob/main/docs/sk/runbooks/AGENT_OPERATIONS.md"
       },
       "apiKey": {
         "label": "LibreTranslate API kľúč",
@@ -1058,12 +1082,34 @@ export const settingsSk: MessageTree = {
       },
       "cacheDriver": {
         "label": "Ovládač cache",
-        "help": "auto = reťazec memory + file. Redis sa zobrazí ako neinštalovaný, ak nie je dostupný.",
-        "tooltip": "auto zvolí najlepší dostupný driver za behu. file prežije medzi requestmi; memory len v rámci procesu. Redis vyžaduje extension a env — panel nižšie ukazuje aktívny driver."
+        "help": "auto = memory + Redis pri dostupnom REDIS_HOST/engine.redisHost, inak memory + file. Shared hosting bez Redis: nechaj auto a ignoruj broker info v Setup.",
+        "tooltip": "file prežije medzi requestmi; memory len v procese. Redis je voliteľná odvodená cache — nikdy SSOT. Panel nižšie ukazuje aktívny driver a fallback."
       },
       "cacheDefaultTtlSeconds": {
         "label": "Predvolená TTL cache (s)",
         "help": "Platí pre nové cache kľúče, ak nie je uvedené inak (60–86400)."
+      },
+      "redisHost": {
+        "label": "Redis host",
+        "help": "Prázdne = REDIS_HOST z PHP env (Docker služba redis). Na Classic/file hostoch netreba.",
+        "tooltip": "Voliteľné. Bez hosta/env sa Redis preskočí — CMS používa file cache."
+      },
+      "redisPort": {
+        "label": "Redis port",
+        "help": "Predvolene 6379. REDIS_PORT z env má prednosť."
+      },
+      "redisPassword": {
+        "label": "Redis heslo",
+        "help": "Voliteľné. Šifrované at-rest. REDIS_PASSWORD z env pre kontajner.",
+        "tooltip": "Len pri requirepass (managed Redis alebo hardenovaný self-host)."
+      },
+      "redisDatabase": {
+        "label": "Redis DB index",
+        "help": "0–15. Na zdieľanom Redis použite vlastný index."
+      },
+      "redisKeyPrefix": {
+        "label": "Prefix Redis kľúčov",
+        "help": "Menný priestor cache kľúčov (predvolene paginium:)."
       },
       "queryIndexDriver": {
         "label": "Ovládač dopytového indexu katalógu",

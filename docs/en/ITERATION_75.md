@@ -125,7 +125,7 @@ agent:
   proposalTtlMinutes: 60
 ```
 
-Credentials are encrypted. A local provider URL on a LAN requires explicit outbound allow-list policy, like It.76. `allowedTools` is empty by default; enabling the agent with no tools grants no implicit capabilities.
+Credentials are encrypted. In production, `OutboundUrlGuard` allows **HTTPS** to hosts that resolve to public IP space — not raw `http://192.168.*` or container localhost. The supported homelab path is **nginx on the CMS host**: proxy `/internal/llm/` → Ollama on `127.0.0.1:11434`, then set `baseUrl` to `https://<cms-host>/internal/llm` (no `/v1` suffix). See [AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md). `allowedTools` is empty by default; enabling the agent with no tools grants no implicit capabilities.
 
 ---
 
@@ -206,4 +206,4 @@ Credentials are encrypted. A local provider URL on a LAN requires explicit outbo
 
 ## Related
 
-[It.76](ITERATION_76.md) · [It.77](ITERATION_77.md) · [It.29](ITERATION_29.md) · [It.66](ITERATION_66.md) · [It.67](ITERATION_67.md)
+[AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) · [It.76](ITERATION_76.md) · [It.77](ITERATION_77.md) · [It.29](ITERATION_29.md) · [It.66](ITERATION_66.md) · [It.67](ITERATION_67.md)

@@ -321,6 +321,14 @@ class CommentsController
             $comment->markArchived((bool) $data['isArchived']);
         }
 
+        if (array_key_exists('handleStatus', $data)) {
+            $comment->setHandleStatus((string) $data['handleStatus']);
+        }
+
+        if (array_key_exists('isProcessed', $data)) {
+            $comment->markProcessed((bool) $data['isProcessed']);
+        }
+
         if (isset($data['content'])) {
             $commentContent = trim((string) $data['content']);
             if ($commentContent === '') {
@@ -474,10 +482,15 @@ class CommentsController
             try {
                 if ($action === 'read') {
                     $comment->markRead(true);
-                } elseif ($action === 'processed' || $action === 'approve') {
+                } elseif ($action === 'processed') {
+                    if ($comment->getStatus() === Comment::STATUS_PENDING) {
+                        $comment->setStatus(Comment::STATUS_APPROVED);
+                    }
+                    $comment->markProcessed(true);
+                } elseif ($action === 'approve') {
                     $comment->setStatus(Comment::STATUS_APPROVED)->markRead(true);
                 } elseif ($action === 'archive') {
-                    $comment->markArchived(true);
+                    $comment->markArchived(true)->markProcessed(true);
                 }
 
                 $this->commentsRepository->update($comment);

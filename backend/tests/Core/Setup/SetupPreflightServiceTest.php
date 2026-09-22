@@ -32,4 +32,17 @@ final class SetupPreflightServiceTest extends TestCase
         $expectedStatus = version_compare(PHP_VERSION, '8.5.0', '>=') ? 'pass' : 'fail';
         $this->assertSame($expectedStatus, $phpCheck['status']);
     }
+
+    public function testRunIncludesOptionalRedisChecksThatDoNotBlockReady(): void
+    {
+        $storage = dirname(__DIR__, 3) . '/storage';
+        $service = new SetupPreflightService($storage, dirname(__DIR__, 4));
+
+        $result = $service->run();
+
+        $ids = array_column($result['checks'], 'id');
+        $this->assertContains('cache_redis_extension', $ids);
+        $this->assertContains('cache_redis_broker', $ids);
+        $this->assertTrue($result['ready'] || $result['hardBlockers'] > 0);
+    }
 }

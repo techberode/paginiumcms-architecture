@@ -1,6 +1,6 @@
 # Iterácia 95 — Component playground a vlastná knižnica komponentov
 
-> **Stav:** ✅ hotové (Unreleased) — **95a/c/b/d**.
+> **Stav:** ✅ v strome (`v2.1.0-beta.90`); nasadenie na serveri = checklist v [EN](../en/ITERATION_95.md#production-rollout-checklist-it95-on-server).
 > **EN špecifikácia:** [../en/ITERATION_95.md](../en/ITERATION_95.md)
 
 ## Zhrnutie

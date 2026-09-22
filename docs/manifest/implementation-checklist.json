@@ -11,7 +11,7 @@
       "catalogIterationIds": ["it.48"],
       "targetVersion": "2.1.0-beta.89",
       "since": "2.1.0-beta.89",
-      "status": "in_progress",
+      "status": "partial_live",
       "issues": ["ISS-173", "ISS-174"],
       "items": [
         {
@@ -53,7 +53,7 @@
     {
       "id": "slice-2026-09-20-remaining",
       "catalogIterationIds": ["it.58f", "it.95", "it.69"],
-      "status": "planned",
+      "status": "partial_live",
       "items": [
         {
           "id": "58f-h-canvas",

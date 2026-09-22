@@ -158,7 +158,7 @@ return [
     'ops_tag_deploy' => 'Production deploy of 2.1.0-beta.89',
 ],
     'snapshot' => [
-    'headline' => 'State as of 20 September 2026',
+    'headline' => 'State as of 22 September 2026',
     'live' => 'On the latest production tag',
     'unreleased' => 'In the working tree — tag and deploy next',
     'next' => 'Next planned work',
@@ -197,7 +197,8 @@ return [
     'it87' => 'Project site planner, UX audit completion (srcset, skeletons)',
     'it70' => 'GitHub API publisher + Publish release',
     'it48' => 'It.48 static compile + /static-html serve',
-    'it69' => 'Unified cache (file/memory); Redis driver deferred',
+    'it69' => 'Unified cache (memory/file/auto + HTTP validators)',
+    'it69_redis' => 'Redis derived cache driver + Docker prod stack (optional on shared hosting)',
     'it75' => 'CMS AI assistant (proposals only)',
     'it76' => 'Assisted translation LibreTranslate + DeepL/Google',
     'it72_s3' => 'It.72 S3 driver + migration CLI',

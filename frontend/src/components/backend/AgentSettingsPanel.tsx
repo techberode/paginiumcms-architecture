@@ -51,6 +51,16 @@ export const AgentSettingsPanel: React.FC = () => {
     <div className="mt-4 space-y-3 rounded-md border border-admin-border bg-admin-canvas p-4" data-testid="agent-settings-panel">
       <p className="text-sm text-admin-muted">{t('settings.agent.privacyWarning')}</p>
       <p className="text-sm text-admin-muted">{t('settings.agent.localWarning')}</p>
+      <p className="text-sm">
+        <a
+          href={t('settings.agent.runbookLinkUrl')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-indigo-600 underline dark:text-indigo-300"
+        >
+          {t('settings.agent.runbookLinkLabel')}
+        </a>
+      </p>
       {loading ? (
         <p className="text-sm text-admin-muted">{t('settings.agent.testing')}</p>
       ) : error ? (
