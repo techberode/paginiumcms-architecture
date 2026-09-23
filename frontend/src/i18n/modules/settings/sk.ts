@@ -1693,7 +1693,7 @@ export const settingsSk: MessageTree = {
     "layout": {
       "builderMode": {
         "label": "Predvolený layout builder",
-        "help": "Ako vyzerá editor stránky: šablóny, shortcody, outline blokov (odporúčané pre landing) alebo developer (Markdown + živý náhľad). Všetky režimy ukladajú to isté Markdown telo. Platí len pre stránky, nie články."
+        "help": "Ako vyzerá editor stránok a článkov: šablóny (len stránky), shortcody, outline blokov (vrátane feature-gallery) alebo developer (Markdown + živý náhľad). Všetky režimy ukladajú to isté Markdown telo."
       },
       "defaultTemplate": {
         "label": "Predvolená layout šablóna",

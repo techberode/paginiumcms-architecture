@@ -197,11 +197,11 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
           />
         </div>
       ) : null}
-      <MarkdownRenderer content={page.content} html={page.html} />
+      <MarkdownRenderer content={page.content} html={page.html} enableImageLightbox />
     </div>
   ) : (
     <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
-      <MarkdownRenderer content={page.content} html={page.html} />
+      <MarkdownRenderer content={page.content} html={page.html} enableImageLightbox />
     </div>
   );
 

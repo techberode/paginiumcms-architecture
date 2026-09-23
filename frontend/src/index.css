@@ -443,6 +443,8 @@
 .paginium-prose code { background-color: #f1f5f9; color: #6366f1; padding: 0.15rem 0.4rem; border-radius: 0.375rem; font-size: 0.9em; font-weight: 500; }
 .paginium-prose pre code { background-color: transparent; color: inherit; padding: 0; font-weight: 400; }
 .paginium-prose img { max-width: 100%; height: auto; border-radius: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); margin: 2rem auto; display: block; }
+.paginium-prose.paginium-prose--lightbox img { cursor: zoom-in; }
+.paginium-prose.paginium-prose--lightbox img:hover { opacity: 0.95; }
 .paginium-prose hr { border: 0; height: 1px; background: #e2e8f0; margin: 2.5rem 0; }
 .paginium-prose a { color: #6366f1; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .paginium-prose a:hover { color: #4338ca; }

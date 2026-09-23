@@ -1116,7 +1116,7 @@ export const settingsEn: MessageTree = {
     "layout": {
       "builderMode": {
         "label": "Default layout builder",
-        "help": "How the page editor looks: templates, shortcodes, block outline (recommended for landings), or developer (Markdown + live preview). All modes store the same Markdown body. Pages only, not articles."
+        "help": "How the content editor looks for pages and articles: templates (pages only), shortcodes, block outline (includes feature-gallery blocks), or developer (Markdown + live preview). All modes store the same Markdown body."
       },
       "defaultTemplate": {
         "label": "Default layout template",

@@ -34,11 +34,13 @@ import { AdminFormActions } from './AdminFormActions';
 import { EditorWorkspaceFrame } from './EditorWorkspaceFrame';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
+import { PAGE_LAYOUT_TEMPLATES } from '../../layout/pageLayoutTemplates';
 import {
-  PAGE_LAYOUT_TEMPLATES,
-  normalizeLayoutBuilderMode,
-  type LayoutBuilderMode,
-} from '../../layout/pageLayoutTemplates';
+  contentEditorShowsLayoutTemplatePicker,
+  contentEditorShowsShortcodePicker,
+  contentEditorUsesOutline,
+  resolveLayoutBuilderMode,
+} from '../../utils/contentEditorBuilder';
 import { LayoutPreviewFrame } from '../admin/LayoutPreviewFrame';
 import { ShortcodeInsertPanel } from './ShortcodeInsertPanel';
 import { WidgetInsertPanel } from './WidgetInsertPanel';
@@ -194,13 +196,15 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   const contextLabel =
     navigationMatches[0]?.label || title.trim() || editSlug || t('editor.shell.newItem');
 
-  const builderMode: LayoutBuilderMode = normalizeLayoutBuilderMode(settings.layout?.builderMode);
+  const builderMode = resolveLayoutBuilderMode(settings.layout?.builderMode);
   const developerRequiresAdmin = settings.layout?.developerRequiresAdmin !== false;
   const isAdmin = user?.roles?.some((role) => role === 'ADMIN' || role === 'SUPER_ADMIN') ?? false;
-  const showLayoutTemplatePicker = type === 'page' && builderMode === 'templates';
-  const showShortcodePicker = type === 'page' && builderMode === 'shortcodes' && Boolean(onInsertShortcode);
-  const showOutlineEditor = type === 'page' && builderMode === 'outline';
+  const showLayoutTemplatePicker = contentEditorShowsLayoutTemplatePicker(type, builderMode);
+  const showShortcodePicker =
+    Boolean(onInsertShortcode) && contentEditorShowsShortcodePicker(type, builderMode);
+  const showOutlineEditor = contentEditorUsesOutline(type, builderMode);
   const showWysiwygToggle = !showOutlineEditor;
+  const showBuilderHelp = type === 'page' || type === 'article';
   const showDeveloperHint =
     type === 'page' && builderMode === 'developer' && developerRequiresAdmin && !isAdmin;
 
@@ -259,6 +263,43 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
       {t('editor.shell.workspace')}
     </button>
   );
+
+  const renderInsertTools = (wrapFormGroup: boolean): React.ReactNode => {
+    if (!onInsertShortcode) {
+      return null;
+    }
+
+    const wrap = (key: string, node: React.ReactNode): React.ReactNode =>
+      wrapFormGroup ? (
+        <div key={key} className="form-group md:col-span-2">
+          {node}
+        </div>
+      ) : (
+        <div key={key}>{node}</div>
+      );
+
+    return (
+      <>
+        {showShortcodePicker
+          ? wrap(
+              'shortcodes',
+              <ShortcodeInsertPanel
+                disabled={!canEdit}
+                onInsert={(snippet) => onInsertShortcode(snippet)}
+              />
+            )
+          : null}
+        {wrap(
+          'widgets',
+          <WidgetInsertPanel disabled={!canEdit} onInsert={(snippet) => onInsertShortcode(snippet)} />
+        )}
+        {wrap(
+          'snippets',
+          <SnippetInsertPanel disabled={!canEdit} onInsert={(snippet) => onInsertShortcode(snippet)} />
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="mx-auto w-full max-w-7xl">
@@ -492,22 +533,9 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               </div>
             )}
 
-            {showShortcodePicker && onInsertShortcode && (
-              <div className="form-group md:col-span-2">
-                <ShortcodeInsertPanel
-                  disabled={!canEdit}
-                  onInsert={(snippet) => onInsertShortcode(snippet)}
-                />
-              </div>
-            )}
+            {renderInsertTools(true)}
 
-            {onInsertShortcode && (
-              <div className="form-group md:col-span-2">
-                <WidgetInsertPanel disabled={!canEdit} onInsert={(snippet) => onInsertShortcode(snippet)} />
-              </div>
-            )}
-
-            {type === 'page' ? (
+            {showBuilderHelp ? (
               <p
                 className="form-group md:col-span-2 text-xs text-slate-500 dark:text-slate-400"
                 data-testid="page-builder-help"
@@ -515,15 +543,6 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 {t(`editor.shell.builderHelp.${builderMode}`)}
               </p>
             ) : null}
-
-            {onInsertShortcode && (
-              <div className="form-group md:col-span-2">
-                <SnippetInsertPanel
-                  disabled={!canEdit}
-                  onInsert={(snippet) => onInsertShortcode(snippet)}
-                />
-              </div>
-            )}
 
             {showDeveloperHint && (
               <div className="form-group md:col-span-2">
@@ -753,6 +772,12 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                   maxLength={300}
                 />
               </div>
+              {renderInsertTools(false)}
+              {showBuilderHelp ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400" data-testid="workspace-builder-help">
+                  {t(`editor.shell.builderHelp.${builderMode}`)}
+                </p>
+              ) : null}
               <p className="text-xs text-slate-500">{t('editor.shell.workspaceDetailsHint')}</p>
             </div>
           }

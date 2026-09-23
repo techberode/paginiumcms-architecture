@@ -15,6 +15,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ### Fixed
 
+- **Inline content images:** Click any `/storage/` image in a published article or page body to open a fullscreen modal (Esc to close; arrow keys when multiple images). No gallery shortcode required.
 - **Scheduler `last_run_at`:** Registry `normalize()` now persists updated `last_run_at` from job runs (was always dropped — UI showed „—“ despite cron).
 - **Scheduled publish (localized content):** Cron job `content.scheduled_publish` now picks up items with `scheduledAt` when any locale is `scheduled`, even if flat `status` stayed `draft` (e.g. default locale EN, SK scheduled). Publish flips scheduled locales to `published` and clears scheduling metadata.
 - **Blog landing page:** Published CMS page with slug **`blog`** renders as editable intro on `/blog` (CMS bar → edit). Route `/blog` remains the article list; the page does not use `/{slug}` to avoid clashing with the SPA blog route.

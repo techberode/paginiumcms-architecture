@@ -90,7 +90,10 @@ import {
   type LocaleEditorState,
 } from '../../utils/contentEditorLocale';
 import { applyDraftEditorSnapshot, buildDraftEditorSnapshot } from '../../utils/draftEditorSnapshot';
-import { normalizeLayoutBuilderMode } from '../../layout/pageLayoutTemplates';
+import {
+  contentEditorUsesOutline,
+  resolveLayoutBuilderMode,
+} from '../../utils/contentEditorBuilder';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -886,8 +889,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             ? t('editor.markdown.autoSave.unsaved')
             : '';
 
-  const builderMode = normalizeLayoutBuilderMode(settings.layout?.builderMode);
-  const useOutlineEditor = type === 'page' && builderMode === 'outline';
+  const builderMode = resolveLayoutBuilderMode(settings.layout?.builderMode);
+  const useOutlineEditor = contentEditorUsesOutline(type, builderMode);
   const showLivePreview = type === 'page' || type === 'article';
   const openSitePreview = useCallback(() => {
     setPreviewHtml(

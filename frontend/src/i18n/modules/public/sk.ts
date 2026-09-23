@@ -87,6 +87,12 @@ export const publicSk: MessageTree = {
     socialTitle: 'Sociálne siete',
     socialAria: 'Sociálne siete',
   },
+  proseImageLightbox: {
+    title: 'Náhľad obrázka',
+    close: 'Zavrieť obrázok',
+    previous: 'Predchádzajúci obrázok',
+    next: 'Ďalší obrázok',
+  },
   gallery: {
     sectionTitle: 'Preskúmajte administráciu',
     sectionSubtitle: 'Screenshoty modulov a workflow PaginiumCMS.',

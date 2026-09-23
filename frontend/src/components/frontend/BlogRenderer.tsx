@@ -478,7 +478,11 @@ export const BlogRenderer: React.FC = () => {
 
             <main className="mt-10">
           <div className={`${PUBLIC_CARD} p-8 sm:p-12 pg-print-body`}>
-            <MarkdownRenderer content={activeArticle.content} html={activeArticle.html} />
+            <MarkdownRenderer
+              content={activeArticle.content}
+              html={activeArticle.html}
+              enableImageLightbox
+            />
           </div>
 
           <ContentShareBar title={activeArticle.title} surface="article" />

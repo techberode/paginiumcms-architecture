@@ -87,6 +87,12 @@ export const publicEn: MessageTree = {
     socialTitle: 'Follow us',
     socialAria: 'Social networks',
   },
+  proseImageLightbox: {
+    title: 'Image preview',
+    close: 'Close image',
+    previous: 'Previous image',
+    next: 'Next image',
+  },
   gallery: {
     sectionTitle: 'Explore the admin',
     sectionSubtitle: 'Screenshots of PaginiumCMS modules and workflows.',

@@ -136,7 +136,7 @@ const ArticlePreviewBody: React.FC<{ article: Article; defaultAuthor: string }> 
       </header>
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-          <MarkdownRenderer content={article.content} html={article.html} />
+          <MarkdownRenderer content={article.content} html={article.html} enableImageLightbox />
         </div>
       </main>
     </div>
