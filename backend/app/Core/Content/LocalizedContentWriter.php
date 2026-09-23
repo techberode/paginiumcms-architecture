@@ -286,6 +286,20 @@ final class LocalizedContentWriter
         $content->setFrontMatter($frontMatter);
     }
 
+    /**
+     * @param array<string, string> $localeStatus
+     */
+    private function anyLocaleHasStatus(array $localeStatus, string $status): bool
+    {
+        foreach ($localeStatus as $state) {
+            if ((string) $state === $status) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function repairEmbeddedMetadataLeaks(Content $content): bool
     {
         $changed = false;
@@ -424,7 +438,11 @@ final class LocalizedContentWriter
             }
         }
 
-        $content->setStatus((string) ($localeStatus[$defaultLocale] ?? $localeStatus[$resolvedLocale] ?? 'draft'));
+        $flatStatus = (string) ($localeStatus[$defaultLocale] ?? $localeStatus[$resolvedLocale] ?? 'draft');
+        if ($flatStatus !== 'scheduled' && $this->anyLocaleHasStatus($localeStatus, 'scheduled')) {
+            $flatStatus = 'scheduled';
+        }
+        $content->setStatus($flatStatus);
 
         $frontMatter = $content->getFrontMatter();
         /** @var array<string, mixed> $seo */

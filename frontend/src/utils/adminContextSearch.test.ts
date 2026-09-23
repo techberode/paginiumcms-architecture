@@ -5,6 +5,8 @@ import { originEn } from '../i18n/modules/origin/en';
 import { platformEn } from '../i18n/modules/platform/en';
 import { projectPlannerEn } from '../i18n/modules/projectPlanner/en';
 import { settingsEn } from '../i18n/modules/settings/en';
+import { mediaEn } from '../i18n/modules/media/en';
+import { publicEn } from '../i18n/modules/public/en';
 import {
   buildAdminContextSearchItems,
   foldAdminSearchText,
@@ -26,6 +28,8 @@ describe('adminContextSearch', () => {
     registerModuleMessages('en', 'admin', adminEn);
     registerModuleMessages('en', 'origin', originEn);
     registerModuleMessages('en', 'projectPlanner', projectPlannerEn);
+    registerModuleMessages('en', 'media', mediaEn);
+    registerModuleMessages('en', 'public', publicEn);
   };
 
   it('folds Slovak diacritics so nastavenia matches nastavenia', () => {
@@ -35,14 +39,14 @@ describe('adminContextSearch', () => {
 
   it('finds a setting by helper text', () => {
     register();
-    const items = buildAdminContextSearchItems(t, 'DST', ['ADMIN']);
+    const items = buildAdminContextSearchItems(t, 'DST', ['ADMIN'], 'en');
     expect(items.some((item) => item.adminPath.includes('timezoneDst'))).toBe(true);
     expect(items.some((item) => item.type === 'help' || item.type === 'setting')).toBe(true);
   });
 
   it('finds SMTP settings from an explanation', () => {
     register();
-    const items = buildAdminContextSearchItems(t, 'SMTP', ['ADMIN']);
+    const items = buildAdminContextSearchItems(t, 'SMTP', ['ADMIN'], 'en');
     expect(items.some((item) => item.adminPath.includes('group=smtp') || item.title.toLowerCase().includes('smtp'))).toBe(
       true
     );
@@ -50,8 +54,15 @@ describe('adminContextSearch', () => {
 
   it('finds the AI assistant group', () => {
     register();
-    const items = buildAdminContextSearchItems(t, 'assistant', ['ADMIN']);
+    const items = buildAdminContextSearchItems(t, 'assistant', ['ADMIN'], 'en');
     expect(items.some((item) => item.adminPath.includes('group=agent'))).toBe(true);
+  });
+
+  it('indexes admin module strings but not public site copy', () => {
+    register();
+    const items = buildAdminContextSearchItems(t, 'Media library', ['ADMIN'], 'en');
+    expect(items.some((item) => item.routeId?.startsWith('i18n:media.'))).toBe(true);
+    expect(items.some((item) => item.routeId?.startsWith('i18n:public.'))).toBe(false);
   });
 
   it('merges context hits with remote content instead of replacing them', () => {

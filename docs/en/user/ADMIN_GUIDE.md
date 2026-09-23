@@ -35,16 +35,18 @@ When a panel fails, inspect its individual API endpoint and logs. Analytics avai
 
 ### Quick search (command palette)
 
-It.43 admin search lets staff jump to pages, articles, media, and admin modules.
+It.43 admin search lets staff jump to pages, articles, media, admin modules, **settings fields**, and **help text** from the admin UI catalogs.
 
 | Action | How |
 |--------|-----|
 | Open palette | **Ctrl+Shift+K** (recommended on Firefox/Linux) or **Ctrl+K** in Chromium; or click **Quick search…** in the admin header |
 | Navigate results | ↑↓ select, **Enter** open, **Esc** close |
 | Empty query | Shows recent jumps + admin module shortcuts (sidebar catalog) |
-| Search | Type ≥2 characters — hits content index, media, and routes you are allowed to open |
+| Search | Type ≥2 characters — merges **server** hits (`scope=admin`: content, media, routes) with **client** index (settings labels/help, checklist, all registered **admin** i18n modules except `public` / `setup`) |
 
-Requires an active admin session. If search returns nothing, check the browser network tab for `GET /api/search?scope=admin` (must be **200**, not 401). See [ISS-158](../ISSUES.md#iss-158) for the historical 401 bug.
+**Admin vs public site:** The command palette is **admin-only**. Public visitors use the site search modal, which calls `GET /api/search?scope=public` (published pages/articles only). The two scopes never mix in one UI.
+
+Requires an active admin session. If server hits are missing, check the browser network tab for `GET /api/search?scope=admin` (must be **200**, not 401). Client-side matches can still appear when the API returns an empty list. See [ISS-158](../ISSUES.md#iss-158) for the historical 401 bug.
 
 ### System update banner (SUPER_ADMIN only)
 
@@ -80,7 +82,9 @@ A slug is part of the URL and file identity. Changing it may require redirects a
 
 ## 5. Articles
 
-Articles use the same editor core and can additionally contain excerpt, tags, featured image, publication time, and comment policy. Scheduled publication requires a functioning scheduler/worker for the concrete release.
+Articles use the same editor core and can additionally contain excerpt, tags, featured image, publication time, and comment policy. Scheduled publication requires host cron **`php backend/bin/console scheduler:run`** every minute (job **`content.scheduled_publish`**) — see [CRON.md](../deploy/CRON.md). If **OTP publish approval** is enabled in Settings → Workflows, scheduled items need a saved schedule (sets `publishApprovedAt`) or cron skips them with `otp_not_approved`. Logged-in admins may preview scheduled articles on `/blog`; anonymous visitors only see **`published`** (or locale **`published`**) items.
+
+**Blog index (`/blog`):** The article list is a dedicated SPA route (not a row under `/pages`). To customize the hero/intro, create a **published page** with slug **`blog`** (Pages → New). Its body renders above the article grid; the CMS bar on `/blog` opens that page for editing. Menu link **`/blog`** still points at the list; do not expect a separate `/{slug}` URL for slug `blog`.
 
 **Bulk actions:** When you select rows, the bulk bar shows **“X of Y selected”** (Y = total records matching current filters). Confirm dialogs for publish, draft, archive, and delete repeat that ratio (e.g. “Publish 3 of 47 selected items?”). Always verify filters before bulk publish or delete.
 

@@ -109,3 +109,20 @@ export function resetI18nModulesForTests(): void {
   moduleCatalog.sk = {};
   moduleCatalog.en = {};
 }
+
+/** Admin command palette — read registered module tree for indexing (locale + en fallback). */
+export function getRegisteredModuleTree(locale: Locale, namespace: string): MessageTree | undefined {
+  const primary = moduleCatalog[locale]?.[namespace];
+  if (primary) {
+    return primary;
+  }
+  return moduleCatalog.en?.[namespace];
+}
+
+export function listRegisteredModuleNamespaces(locale: Locale): string[] {
+  const keys = new Set<string>([
+    ...Object.keys(moduleCatalog[locale] ?? {}),
+    ...Object.keys(moduleCatalog.en ?? {}),
+  ]);
+  return [...keys].sort();
+}

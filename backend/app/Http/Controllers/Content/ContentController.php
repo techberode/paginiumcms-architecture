@@ -1214,10 +1214,20 @@ class ContentController
             }
         }
 
-        if ($status === 'scheduled') {
-            $frontMatter['publishApprovedAt'] = AppTimezone::nowIso8601();
-        } elseif ($status !== 'published') {
-            unset($frontMatter['scheduledAt'], $frontMatter['publishApprovedAt']);
+        $hasScheduledAt = !empty($frontMatter['scheduledAt']);
+
+        if (
+            $status === 'scheduled'
+            || ($hasScheduledAt && !in_array($status, ['published', 'archived'], true))
+        ) {
+            if ($hasScheduledAt) {
+                $frontMatter['publishApprovedAt'] = AppTimezone::nowIso8601();
+                $content->setStatus('scheduled');
+            }
+        } elseif (!in_array($status, ['published', 'archived'], true)) {
+            if (array_key_exists('scheduledAt', $data) && trim((string) ($data['scheduledAt'] ?? '')) === '') {
+                unset($frontMatter['scheduledAt'], $frontMatter['publishApprovedAt']);
+            }
         }
 
         $content->setFrontMatter($frontMatter);

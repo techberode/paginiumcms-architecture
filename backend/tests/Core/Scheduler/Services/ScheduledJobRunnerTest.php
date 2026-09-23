@@ -25,6 +25,7 @@ use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Core\Content\Services\ContentPublishNotificationService;
 use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\Agent\Contracts\AgentRunExecutorInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
@@ -34,6 +35,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
+use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
 use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService;
 use PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryStore;
@@ -114,7 +116,10 @@ final class ScheduledJobRunnerTest extends TestCase
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             $this->makeMaintenanceCleanupHandler($settings, $reader, $writer),
-            new ContentScheduledPublishHandler($scheduledPublish),
+            new ContentScheduledPublishHandler(
+                $scheduledPublish,
+                $this->noopPublishNotifications()
+            ),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
@@ -128,7 +133,8 @@ final class ScheduledJobRunnerTest extends TestCase
             $registry,
             $runs,
             $handlers,
-            new CronExpressionEvaluator()
+            new CronExpressionEvaluator(),
+            $this->createMock(LoggerInterface::class)
         );
 
         $result = $runner->runJobById('backup-scheduled');
@@ -147,14 +153,21 @@ final class ScheduledJobRunnerTest extends TestCase
         $backup ??= $this->createMock(BackupInterface::class);
 
         $scheduledPublish = $this->createMock(ContentScheduledPublishService::class);
-        $scheduledPublish->method('publishDueItems')->willReturn(['published' => [], 'skipped' => []]);
+        $scheduledPublish->method('publishDueItems')->willReturn([
+            'published' => [],
+            'skipped' => [],
+            'diagnostics' => ['now' => '', 'queue_count' => 0, 'inspected' => []],
+        ]);
         $systemDeploy = new SystemDeployHandler(new SystemDeployService($settings));
 
         $handlers = new JobHandlerRegistry(
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             $this->makeMaintenanceCleanupHandler($settings, $reader, $writer),
-            new ContentScheduledPublishHandler($scheduledPublish),
+            new ContentScheduledPublishHandler(
+                $scheduledPublish,
+                $this->noopPublishNotifications()
+            ),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
@@ -168,7 +181,8 @@ final class ScheduledJobRunnerTest extends TestCase
             $registry,
             $runs,
             $handlers,
-            new CronExpressionEvaluator()
+            new CronExpressionEvaluator(),
+            $this->createMock(LoggerInterface::class)
         );
     }
 
@@ -316,6 +330,18 @@ final class ScheduledJobRunnerTest extends TestCase
                 new FileWriter(new FileValidator('/tmp/paginium-maintenance-test')),
                 $settings
             )
+        );
+    }
+
+    private function noopPublishNotifications(): ContentPublishNotificationService
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturn(['contentPublishNotifyEnabled' => false]);
+
+        return new ContentPublishNotificationService(
+            $settings,
+            IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
+            $this->createMock(ContentRepositoryInterface::class)
         );
     }
 }

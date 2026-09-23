@@ -53,7 +53,18 @@ sudo chmod 750 "$STACK_DIR"
 sudo chown "root:$GROUP" "$STACK_SCRIPT"
 sudo chmod 750 "$STACK_SCRIPT"
 
+REDIS_DATA="$STACK_DIR/redis-data"
+sudo mkdir -p "$REDIS_DATA"
+# Official redis:7 image runs as uid 999 (redis). Avoid root-owned dumps blocking container writes.
+if sudo chown 999:999 "$REDIS_DATA" 2>/dev/null; then
+  sudo chmod 750 "$REDIS_DATA"
+else
+  sudo chown root:root "$REDIS_DATA"
+  sudo chmod 777 "$REDIS_DATA"
+fi
+
 echo "→ stack.sh: $(stat -c '%U:%G %a' "$STACK_SCRIPT")"
+echo "→ redis-data: $(stat -c '%U:%G %a' "$REDIS_DATA")"
 echo ""
 echo "→ Verify inside the PHP container (must run as www-data, not root):"
 echo "   cd \"$STACK_DIR\" && ./stack.sh exec -u www-data php test -x \"$STACK_SCRIPT\" && echo OK"

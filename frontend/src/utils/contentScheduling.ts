@@ -16,16 +16,29 @@ export function isoToDatetimeLocalValue(iso: string | undefined | null): string 
 
 /** Converts `datetime-local` input value to ISO 8601 for API payload. */
 export function datetimeLocalToIso(value: string): string {
-  if (!value.trim()) {
+  const trimmed = value.trim();
+  if (!trimmed) {
     return '';
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2})?$/.exec(trimmed);
+  if (!match) {
+    const date = new Date(trimmed);
+    return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+  }
+
+  const probe = new Date(`${match[1]}T${match[2]}:00`);
+  if (Number.isNaN(probe.getTime())) {
     return '';
   }
 
-  return date.toISOString();
+  const offsetMinutes = -probe.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const abs = Math.abs(offsetMinutes);
+  const offsetHours = String(Math.floor(abs / 60)).padStart(2, '0');
+  const offsetMins = String(abs % 60).padStart(2, '0');
+
+  return `${match[1]}T${match[2]}:00${sign}${offsetHours}:${offsetMins}`;
 }
 
 export type ContentEditorStatus = 'draft' | 'published' | 'archived' | 'scheduled';

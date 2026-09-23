@@ -1682,6 +1682,25 @@ export const settingsEn: MessageTree = {
       },
       "logIncidentConnector": {
         "label": "Log incident connector"
+      },
+      "contentPublishNotifyEnabled": {
+        "label": "Alert on content publish",
+        "help": "Send an admin notification when pages or articles are published (uses connector below). Works independently of the incident alerts master switch."
+      },
+      "contentPublishConnector": {
+        "label": "Content publish connector"
+      },
+      "contentPublishOnScheduled": {
+        "label": "Notify on scheduled publish success",
+        "help": "When the scheduler publishes due scheduled pages or articles."
+      },
+      "contentPublishOnManual": {
+        "label": "Notify on manual publish",
+        "help": "When an editor sets status to published in the admin."
+      },
+      "contentPublishOnSkipped": {
+        "label": "Notify when scheduled publish is blocked",
+        "help": "OTP not approved, save failure, missing schedule, or archived item during a scheduler run."
       }
     },
     "analytics": {

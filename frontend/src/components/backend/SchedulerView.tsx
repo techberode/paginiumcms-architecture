@@ -18,8 +18,14 @@ import { settingsGroupPath } from '../../utils/adminDeepLinks';
 import { useI18n } from '../../context/I18nContext';
 import { interpretJobRunOutcome, outcomeBadgeClass, type JobOutcome } from '../../utils/jobRunOutcome';
 import { translateJobRunMessage } from '../../utils/jobRunMessage';
+import {
+  extractPublishedFromRun,
+  extractSkippedFromRun,
+  formatPublishedRunLabel,
+} from '../../utils/jobRunDetails';
 import { AdminStatusBadge } from '../admin/AdminStatusBadge';
 import { toneFromEnabled } from '../../utils/adminStatusKind';
+import { JobRunsLineChart } from './JobRunsLineChart';
 
 export const SchedulerView: React.FC = () => {
   const { t } = useI18n();
@@ -81,6 +87,15 @@ export const SchedulerView: React.FC = () => {
       const runResult = result.result as (JobRunEntry & { run_log_error?: string }) | undefined;
       if (runResult?.run_log_error) {
         warning(`${t('platform.scheduler.runLogWarning')}: ${runResult.run_log_error}`);
+      }
+
+      const diagnostics = extractPublishDiagnostics(runResult);
+      if (diagnostics.length > 0) {
+        const lines = diagnostics
+          .slice(0, 5)
+          .map((row) => `${row.slug}: ${row.blocking_reason}`)
+          .join(' · ');
+        warning(`${t('platform.scheduler.publishDiagnostics.title')}: ${lines}`);
       }
 
       await load();
@@ -194,6 +209,13 @@ export const SchedulerView: React.FC = () => {
         )}
       </section>
 
+      <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+          {t('platform.scheduler.chart.title')}
+        </h2>
+        <JobRunsLineChart runs={data?.recent_runs ?? []} />
+      </section>
+
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
           {t('platform.scheduler.registeredJobs')}
@@ -230,6 +252,27 @@ export const SchedulerView: React.FC = () => {
   );
 };
 
+type PublishDiagnosticRow = {
+  slug: string;
+  blocking_reason: string;
+  type: string;
+};
+
+function extractPublishDiagnostics(run: JobRunEntry | undefined): PublishDiagnosticRow[] {
+  const data = run?.data;
+  if (!data || typeof data !== 'object') {
+    return [];
+  }
+
+  const diagnostics = (data as { diagnostics?: { inspected?: PublishDiagnosticRow[] } }).diagnostics;
+  const inspected = diagnostics?.inspected;
+  if (!Array.isArray(inspected)) {
+    return [];
+  }
+
+  return inspected.filter((row) => row.blocking_reason !== 'ready' && row.blocking_reason !== 'not_due');
+}
+
 function outcomeLabel(outcome: JobOutcome, t: (key: string) => string): string {
   switch (outcome) {
     case 'completed':
@@ -244,17 +287,32 @@ function outcomeLabel(outcome: JobOutcome, t: (key: string) => string): string {
 function RecentRunRow({ run }: { run: JobRunEntry }) {
   const { t } = useI18n();
   const outcome = interpretJobRunOutcome(run);
+  const published = extractPublishedFromRun(run);
+  const skipped = extractSkippedFromRun(run);
 
   return (
-    <li className="px-5 py-2.5 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-      <span className="flex flex-wrap items-center gap-2 min-w-0">
-        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${outcomeBadgeClass(outcome)}`}>
-          {outcomeLabel(outcome, t)}
+    <li className="px-5 py-2.5 text-sm flex flex-col gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <span className="flex flex-wrap items-center gap-2 min-w-0">
+          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${outcomeBadgeClass(outcome)}`}>
+            {outcomeLabel(outcome, t)}
+          </span>
+          <span className="font-mono text-xs text-indigo-600 shrink-0">{run.job_id}</span>
+          <span className="text-slate-600 dark:text-slate-300 truncate">{translateJobRunMessage(run, t)}</span>
         </span>
-        <span className="font-mono text-xs text-indigo-600 shrink-0">{run.job_id}</span>
-        <span className="text-slate-600 dark:text-slate-300 truncate">{translateJobRunMessage(run, t)}</span>
-      </span>
-      <span className="shrink-0 text-xs text-slate-400 font-mono">{run.finished_at?.slice(0, 19) ?? '—'}</span>
+        <span className="shrink-0 text-xs text-slate-400 font-mono">{run.finished_at?.slice(0, 19) ?? '—'}</span>
+      </div>
+      {published.length > 0 ? (
+        <p className="text-xs text-emerald-700 dark:text-emerald-300 font-mono pl-1">
+          {t('platform.scheduler.runMessages.runDetailPublished')}: {formatPublishedRunLabel(published)}
+        </p>
+      ) : null}
+      {skipped.length > 0 ? (
+        <p className="text-xs text-amber-700 dark:text-amber-300 font-mono pl-1">
+          {t('platform.scheduler.runMessages.runDetailSkipped')}:{' '}
+          {skipped.map((row) => `${row.type}/${row.slug} (${row.reason})`).join(' · ')}
+        </p>
+      ) : null}
     </li>
   );
 }
@@ -320,6 +378,23 @@ function JobCard({
         <div>
           <p className="text-xs text-slate-400 uppercase font-bold">{t('platform.scheduler.lastRun')}</p>
           <p className="mt-1 font-medium">{job.last_run_at?.slice(0, 19) ?? '—'}</p>
+          {job.last_outcome ? (
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-slate-400">{t('platform.scheduler.lastOutcome')}:</span>
+              <span
+                className={`font-bold uppercase px-2 py-0.5 rounded-full ${outcomeBadgeClass(
+                  job.last_outcome as JobOutcome
+                )}`}
+              >
+                {outcomeLabel(job.last_outcome as JobOutcome, t)}
+              </span>
+            </p>
+          ) : null}
+          {job.last_message ? (
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+              {translateJobRunMessage({ message: job.last_message, reason: null }, t)}
+            </p>
+          ) : null}
         </div>
         <div>
           <p className="text-xs text-slate-400 uppercase font-bold">{t('platform.scheduler.dueNow')}</p>

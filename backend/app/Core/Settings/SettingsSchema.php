@@ -287,6 +287,11 @@ final class SettingsSchema
                     ['key' => 'notifyLogErrors', 'type' => 'bool', 'label' => 'Alert on log ERROR/CRITICAL', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapnuté = ERROR/CRITICAL v logu spustí alert. Vypnuté = chyby v logu sa nehlásia.'],
                     ['key' => 'notifyLogWarnings', 'type' => 'bool', 'label' => 'Alert on log WARNING', 'default' => false, 'rules' => ['bool'], 'help' => 'Zapnuté = WARNING v logu spustí alert. Vypnuté = varovania sa nehlásia.'],
                     ['key' => 'logIncidentConnector', 'type' => 'enum', 'label' => 'Log incident connector', 'default' => 'all', 'options' => ['email', 'ntfy', 'discord', 'telegram', 'webhook', 'all'], 'rules' => ['required', 'in:email,ntfy,discord,telegram,webhook,all']],
+                    ['key' => 'contentPublishNotifyEnabled', 'type' => 'bool', 'label' => 'Alert on content publish', 'default' => false, 'rules' => ['bool'], 'help' => 'Enabled = admin notification when pages/articles are published via connector below. Does not require incident alerts master switch.'],
+                    ['key' => 'contentPublishConnector', 'type' => 'enum', 'label' => 'Content publish connector', 'default' => 'email', 'options' => ['email', 'ntfy', 'discord', 'telegram', 'webhook', 'all'], 'rules' => ['required', 'in:email,ntfy,discord,telegram,webhook,all']],
+                    ['key' => 'contentPublishOnScheduled', 'type' => 'bool', 'label' => 'Notify on scheduled publish success', 'default' => true, 'rules' => ['bool'], 'help' => 'When cron publishes due scheduled pages/articles.'],
+                    ['key' => 'contentPublishOnManual', 'type' => 'bool', 'label' => 'Notify on manual publish', 'default' => false, 'rules' => ['bool'], 'help' => 'When an editor sets status to published in admin.'],
+                    ['key' => 'contentPublishOnSkipped', 'type' => 'bool', 'label' => 'Notify when scheduled publish is blocked', 'default' => false, 'rules' => ['bool'], 'help' => 'OTP not approved, save failure, missing schedule, or archived item in scheduler run.'],
                 ],
             ],
             'analytics' => [

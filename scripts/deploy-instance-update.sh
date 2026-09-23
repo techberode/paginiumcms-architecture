@@ -130,10 +130,23 @@ git() {
   command git "${GIT_DEPLOY_EXTRA_CONFIG[@]}" "$@"
 }
 
+is_checkout_runtime_data_path() {
+  case "$1" in
+    redis-data|redis-data/*) return 0 ;;
+  esac
+  if git check-ignore -q "$1" 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
 assert_checkout_writable() {
   local path blocked=()
   while IFS= read -r path; do
     [[ -z "$path" ]] && continue
+    if is_checkout_runtime_data_path "$path"; then
+      continue
+    fi
     if [[ -e "$path" && ! -w "$path" ]]; then
       blocked+=("$path")
     fi
@@ -154,6 +167,13 @@ assert_checkout_writable() {
   ls -la "${blocked[0]}" 2>/dev/null | sed 's/^/  /' >&2 || true
   echo "" >&2
   echo "Cause: admin UI deploy (www-data in Docker) or PHP touched files owned by another user." >&2
+  if printf '%s\n' "${blocked[@]}" | grep -q '^redis-data'; then
+    echo "" >&2
+    echo "redis-data/ in APP_ROOT is Docker runtime (RDB/AOF). It belongs under STACK_DIR only:" >&2
+    echo "  sudo rm -rf \"$APP_ROOT/redis-data\"" >&2
+    echo "  # Redis data: \${STACK_DIR}/redis-data (see docs/deploy/stack.sh)" >&2
+  fi
+  echo "" >&2
   echo "Fix once on host (requires sudo), then rerun deploy:" >&2
   echo "  APP_ROOT=$APP_ROOT ./scripts/bootstrap-deploy-permissions.sh" >&2
   echo "  sudo usermod -aG www-data \$(whoami)   # new login if group was added" >&2

@@ -9,11 +9,17 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   CornerDownLeft,
+  Settings2,
+  HelpCircle,
 } from 'lucide-react';
 import { searchAdmin, AdminSearchResultItem } from '../../api/search';
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { buildLocalAdminRouteItems } from '../../utils/adminCommandPaletteRoutes';
+import {
+  buildAdminContextSearchItems,
+  mergeAdminSearchResults,
+} from '../../utils/adminContextSearch';
 
 const RECENT_KEY = 'paginium_admin_search_recent';
 const MAX_RECENT = 8;
@@ -51,6 +57,10 @@ function typeIcon(type: AdminSearchResultItem['type']) {
       return ImageIcon;
     case 'route':
       return LayoutDashboard;
+    case 'setting':
+      return Settings2;
+    case 'help':
+      return HelpCircle;
     default:
       return FileText;
   }
@@ -61,7 +71,7 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
   onClose,
   onOpenShortcuts,
 }) => {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -78,6 +88,10 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
         return t('platform.commandPalette.types.media');
       case 'route':
         return t('platform.commandPalette.types.route');
+      case 'setting':
+        return t('platform.commandPalette.types.setting');
+      case 'help':
+        return t('platform.commandPalette.types.help');
       default:
         return t('platform.commandPalette.types.page');
     }
@@ -108,12 +122,14 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
     const timer = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const payload = await searchAdmin(query.trim(), {
+        const trimmed = query.trim();
+        const contextual = buildAdminContextSearchItems(t, trimmed, user?.roles ?? [], locale);
+        const payload = await searchAdmin(trimmed, {
           types: ['page', 'article', 'media', 'route'],
           limit: 8,
         });
         if (!cancelled) {
-          setResults(payload?.results ?? []);
+          setResults(mergeAdminSearchResults(contextual, payload?.results ?? []));
           setActiveIndex(0);
         }
       } finally {
@@ -127,17 +143,28 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [isOpen, query]);
+  }, [isOpen, query, t, locale, user?.roles]);
 
   const localRoutes = useMemo(
     () => buildLocalAdminRouteItems(t, query, user?.roles ?? []),
     [query, t, user?.roles]
   );
 
+  const contextualItems = useMemo(
+    () => buildAdminContextSearchItems(t, query, user?.roles ?? [], locale),
+    [query, t, locale, user?.roles]
+  );
+
   const visibleItems = useMemo(() => {
     const trimmed = query.trim();
     if (trimmed.length >= 2) {
-      return results.length > 0 ? results : localRoutes;
+      if (results.length > 0) {
+        return results;
+      }
+      if (contextualItems.length > 0) {
+        return contextualItems;
+      }
+      return localRoutes;
     }
 
     if (trimmed.length === 1) {
@@ -151,7 +178,7 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
     }
 
     return localRoutes.slice(0, 12);
-  }, [localRoutes, query, recent, results]);
+  }, [contextualItems, localRoutes, query, recent, results]);
 
   const selectItem = useCallback(
     (item: AdminSearchResultItem) => {

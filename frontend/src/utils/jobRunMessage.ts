@@ -54,9 +54,26 @@ export function translateJobRunMessage(
     return t(exactKey);
   }
 
-  let published = message.match(/^Published (\d+) scheduled item\(s\)$/);
+  let published = message.match(/^Published (\d+) scheduled item\(s\): (.+)$/);
+  if (published) {
+    return t('platform.scheduler.runMessages.publishedScheduledDetail', {
+      count: published[1],
+      items: published[2],
+    });
+  }
+
+  published = message.match(/^Published (\d+) scheduled item\(s\)$/);
   if (published) {
     return t('platform.scheduler.runMessages.publishedScheduled', { count: published[1] });
+  }
+
+  let waiting = message.match(/^(\d+) item\(s\) waiting for scheduled time$/);
+  if (waiting) {
+    return t('platform.scheduler.runMessages.waitingForSchedule', { count: waiting[1] });
+  }
+
+  if (message === 'Scheduled content in queue but nothing due yet') {
+    return t('platform.scheduler.runMessages.queueNotDueYet');
   }
 
   let report = message.match(/^Report: (sent|skipped) · Log notifications: (\d+)$/);

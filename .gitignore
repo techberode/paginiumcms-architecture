@@ -70,6 +70,9 @@ pnpm-debug.log*
 # Runtime
 ###############################################################################
 
+# Docker Redis AOF/RDB — must live under STACK_DIR, never in git checkout (bind mount)
+/redis-data/
+
 /cache/
 /tmp/
 /temp/

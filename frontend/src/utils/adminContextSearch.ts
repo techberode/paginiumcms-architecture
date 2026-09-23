@@ -1,12 +1,21 @@
 import type { AdminSearchResultItem } from '../api/search';
-import type { MessageTree, MessageValue } from '../i18n/types';
+import type { Locale, MessageTree, MessageValue } from '../i18n/types';
+import { getRegisteredModuleTree, listRegisteredModuleNamespaces } from '../i18n';
 import { settingsEn } from '../i18n/modules/settings/en';
 import { SETTINGS_CATEGORIES } from '../i18n/modules/settings/categories';
+import {
+  ADMIN_SEARCH_EXCLUDED_NAMESPACES,
+  ADMIN_SEARCH_SPECIAL_NAMESPACES,
+  resolveAdminPathForI18nKey,
+} from '../config/adminSearchModules';
 import { buildLocalAdminRouteItems } from './adminCommandPaletteRoutes';
 
 export type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
-const MAX_CONTEXT_RESULTS = 24;
+const MAX_CONTEXT_RESULTS = 36;
+const MAX_I18N_FLAT_HITS = 28;
+const MIN_I18N_STRING_LEN = 2;
+const MAX_I18N_STRING_LEN = 180;
 
 const CHECKLIST_PATHS: Record<string, string> = {
   content: '/pages',
@@ -173,6 +182,79 @@ function collectHints(t: TranslateFn, query: string, items: AdminSearchResultIte
   }
 }
 
+function collectAdminModuleStrings(
+  t: TranslateFn,
+  locale: Locale,
+  query: string,
+  items: AdminSearchResultItem[]
+): void {
+  const q = query.trim();
+  if (q === '') {
+    return;
+  }
+
+  let budget = 0;
+
+  const walk = (namespace: string, keyPath: string, node: MessageValue): void => {
+    if (budget >= MAX_I18N_FLAT_HITS) {
+      return;
+    }
+
+    if (isTree(node)) {
+      for (const [childKey, childNode] of Object.entries(node)) {
+        const nextPath = keyPath === '' ? childKey : `${keyPath}.${childKey}`;
+        walk(namespace, nextPath, childNode);
+      }
+      return;
+    }
+
+    if (typeof node !== 'string') {
+      return;
+    }
+
+    const i18nKey = `${namespace}.${keyPath}`;
+    const text = t(i18nKey);
+    if (text === i18nKey || text.trim() === '') {
+      return;
+    }
+    if (text.length < MIN_I18N_STRING_LEN || text.length > MAX_I18N_STRING_LEN) {
+      return;
+    }
+
+    const haystack = `${text} ${i18nKey} ${namespace}`;
+    if (!matches(haystack, q)) {
+      return;
+    }
+
+    const adminPath = resolveAdminPathForI18nKey(namespace, keyPath);
+    pushUnique(items, {
+      type: 'help',
+      title: text,
+      subtitle: namespace,
+      path: adminPath,
+      adminPath,
+      routeId: `i18n:${i18nKey}`,
+    });
+    budget += 1;
+  };
+
+  for (const namespace of listRegisteredModuleNamespaces(locale)) {
+    if (ADMIN_SEARCH_EXCLUDED_NAMESPACES.has(namespace)) {
+      continue;
+    }
+    if (ADMIN_SEARCH_SPECIAL_NAMESPACES.has(namespace)) {
+      continue;
+    }
+
+    const tree = getRegisteredModuleTree(locale, namespace);
+    if (!tree) {
+      continue;
+    }
+
+    walk(namespace, '', tree);
+  }
+}
+
 function collectChecklist(t: TranslateFn, query: string, items: AdminSearchResultItem[]): void {
   for (const [id, path] of Object.entries(CHECKLIST_PATHS)) {
     const title = resolved(t, `admin.checklist.items.${id}`);
@@ -217,7 +299,8 @@ function scoreItem(item: AdminSearchResultItem, query: string): number {
 export function buildAdminContextSearchItems(
   t: TranslateFn,
   query: string,
-  roles: string[]
+  roles: string[],
+  locale: Locale = 'sk'
 ): AdminSearchResultItem[] {
   const items: AdminSearchResultItem[] = [];
   const q = query.trim();
@@ -231,6 +314,7 @@ export function buildAdminContextSearchItems(
   collectSettingCategories(t, q, items);
   collectHints(t, q, items);
   collectChecklist(t, q, items);
+  collectAdminModuleStrings(t, locale, q, items);
 
   const twoFactorTitle = resolved(t, 'settings.twoFactor.title');
   const twoFactorHelp = resolved(t, 'settings.twoFactor.description');

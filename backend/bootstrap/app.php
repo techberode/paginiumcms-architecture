@@ -208,6 +208,17 @@ $containerBuilder->addDefinitions([
         return new Logger($writer, 'app');
     },
 
+    \PaginiumCMS\Core\Scheduler\Services\ScheduledJobRunner::class => function ($container) {
+        return new \PaginiumCMS\Core\Scheduler\Services\ScheduledJobRunner(
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            $container->get(\PaginiumCMS\Core\Scheduler\Services\JobRegistryStore::class),
+            $container->get(\PaginiumCMS\Core\Scheduler\Services\JobRunStore::class),
+            $container->get(\PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry::class),
+            $container->get(\PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator::class),
+            $container->get(LoggerInterface::class)
+        );
+    },
+
     // ============================================
     // 4. SECURITY LOGGER
     // ============================================
@@ -1130,5 +1141,6 @@ $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentIndexService::class)
 $container->get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanHookRegistrar::class)->register();
+$container->get(\PaginiumCMS\Core\Content\Services\ContentPublishNotificationHookRegistrar::class)->register();
 
 return $app;

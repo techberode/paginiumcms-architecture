@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Http\Controllers\Content;
 
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Models\Page;
+use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Tests\Http\TestCase;
 
 class ContentControllerTest extends TestCase
@@ -638,5 +639,39 @@ class ContentControllerTest extends TestCase
         );
 
         $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testLocaleScheduledArticleIsPublishedWhenDue(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'locale-scheduled-article-' . uniqid('', true);
+        $scheduledAt = (new \DateTimeImmutable('-1 minute'))->format('c');
+
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/articles', [
+                'locale' => 'sk',
+                'title' => 'Naplánovaný článok',
+                'slug' => $slug,
+                'status' => 'scheduled',
+                'scheduledAt' => $scheduledAt,
+                'content' => 'Teleso článku',
+            ])
+        );
+        $this->assertSame(201, $create->getStatusCode());
+
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $stored = $repo->findBySlug($slug, 'article');
+        $this->assertNotNull($stored);
+        $this->assertNotNull($stored->getScheduledAt());
+        $this->assertSame('scheduled', $stored->getStatus());
+
+        $service = $this->app->getContainer()->get(ContentScheduledPublishService::class);
+        $result = $service->publishDueItems(new \DateTimeImmutable('now'));
+        $this->assertContains($slug, array_column($result['published'], 'slug'));
+
+        $published = $repo->findBySlug($slug, 'article');
+        $this->assertNotNull($published);
+        $this->assertSame('published', $published->getStatus());
+        $this->assertSame('published', $published->getFrontMatter()['localeStatus']['sk'] ?? null);
     }
 }

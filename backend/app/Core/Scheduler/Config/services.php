@@ -55,7 +55,10 @@ return [
             get(\PaginiumCMS\Core\Logging\Services\LogRetentionService::class)
         ),
     ContentScheduledPublishHandler::class => create(ContentScheduledPublishHandler::class)
-        ->constructor(get(\PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService::class)),
+        ->constructor(
+            get(\PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentPublishNotificationService::class)
+        ),
     SystemDeployHandler::class => create(SystemDeployHandler::class)
         ->constructor(get(\PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService::class)),
     NewsletterWeeklyDigestHandler::class => create(NewsletterWeeklyDigestHandler::class)

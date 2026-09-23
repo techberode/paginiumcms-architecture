@@ -273,6 +273,27 @@ STACK_DIR=/var/lib/docker/compose/paginiumcms APP_ROOT=/var/www/paginiumcms.com 
 | Deploy fails: `mv: … Permission denied` during `pre-checkout-backup` | `ls -la` on the path; `sudo rm` or `sudo chown deploy-user:www-data` on the blocker; re-run deploy |
 | Someone ran `sudo chown root:…` or another user on the checkout | Re-run bootstrap |
 | Repeated orphan files outside `storage/` with owner `www-data` only | Re-run bootstrap; ensure deploy user is in group `www-data` |
+| Deploy fails: `redis-data/dump.rdb` not writable; `git` warns `redis-data/appendonlydir/` | **Remove** `$APP_ROOT/redis-data` — Redis data belongs only under `$STACK_DIR/redis-data` (see `stack.sh`). Re-run `bootstrap-stack-permissions.sh` for stack dir ownership. |
+
+### Quick unblock — misplaced `redis-data/` in git checkout
+
+If compose or a manual `mkdir` created **`/var/www/paginiumcms.com/redis-data`**, deploy treats untracked RDB/AOF files as blockers (often owned by the Redis or another container user, e.g. `ntfy` if the stack was started from the wrong directory).
+
+```bash
+# Data for Redis must live here (not in APP_ROOT):
+ls -la /var/lib/docker/compose/paginiumcms/redis-data
+
+# Remove the wrong copy from the git tree (does not delete STACK_DIR data):
+sudo rm -rf /var/www/paginiumcms.com/redis-data
+
+STACK_DIR=/var/lib/docker/compose/paginiumcms APP_ROOT=/var/www/paginiumcms.com \
+  ./scripts/bootstrap-stack-permissions.sh
+
+# Then rerun deploy (beta.92+ ignores gitignored redis-data if a stray dir remains)
+DEPLOY_FORCE=1 GIT_REF=v2.1.0-beta.92 APP_ROOT=/var/www/paginiumcms.com \
+  STACK_DIR=/var/lib/docker/compose/paginiumcms BACKEND_PORT=8089 \
+  ./scripts/deploy-instance-update.sh
+```
 
 ### Quick unblock (single orphan file)
 

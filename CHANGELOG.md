@@ -13,6 +13,17 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+### Fixed
+
+- **Scheduler `last_run_at`:** Registry `normalize()` now persists updated `last_run_at` from job runs (was always dropped — UI showed „—“ despite cron).
+- **Scheduled publish (localized content):** Cron job `content.scheduled_publish` now picks up items with `scheduledAt` when any locale is `scheduled`, even if flat `status` stayed `draft` (e.g. default locale EN, SK scheduled). Publish flips scheduled locales to `published` and clears scheduling metadata.
+- **Blog landing page:** Published CMS page with slug **`blog`** renders as editable intro on `/blog` (CMS bar → edit). Route `/blog` remains the article list; the page does not use `/{slug}` to avoid clashing with the SPA blog route.
+
+### Added
+
+- **Content publish notifications:** Settings → Monitoring — optional admin alerts via notification connectors when scheduled or manual publish succeeds (pages and articles), plus optional alert when scheduled publish is blocked (OTP, save error, etc.). Independent of the incident alerts master switch.
+- **Scheduler observability:** Job runs logged to app log; `/scheduler` and dashboard show line timeline of outcomes (red markers on failures); `content.scheduled_publish` returns `diagnostics.inspected` for stuck scheduled items; job cards show last outcome badge.
+
 ## Release index
 
 | Release | Date | Scope |

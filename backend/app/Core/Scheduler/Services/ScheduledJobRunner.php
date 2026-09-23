@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Scheduler\Services;
 
+use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
@@ -25,7 +26,8 @@ final class ScheduledJobRunner
         private JobRegistryStore $registry,
         private JobRunStore $runs,
         private JobHandlerRegistry $handlers,
-        private CronExpressionEvaluator $cron
+        private CronExpressionEvaluator $cron,
+        private ?LoggerInterface $logger = null
     ) {
     }
 
@@ -132,6 +134,12 @@ final class ScheduledJobRunner
         try {
             $this->runs->append($id, $entry);
         } catch (\Throwable $e) {
+            $this->logger?->warning('Scheduler job run history not persisted', [
+                'job_id' => $id,
+                'handler' => $handlerKey,
+                'error' => $e->getMessage(),
+            ]);
+
             return array_merge(
                 ['job_id' => $id, 'handler' => $handlerKey],
                 $entry,
@@ -140,6 +148,30 @@ final class ScheduledJobRunner
                     'run_log_error' => $e->getMessage(),
                 ]
             );
+        }
+
+        $outcome = (string) $entry['outcome'];
+        $logContext = [
+            'job_id' => $id,
+            'handler' => $handlerKey,
+            'outcome' => $outcome,
+            'reason' => $entry['reason'] ?? null,
+            'duration_ms' => $entry['duration_ms'] ?? null,
+        ];
+        if ($handlerKey === 'content.scheduled_publish' && is_array($entry['data'] ?? null)) {
+            /** @var array<string, mixed> $payload */
+            $payload = $entry['data'];
+            if (isset($payload['published']) && is_array($payload['published'])) {
+                $logContext['published'] = $payload['published'];
+            }
+            if (isset($payload['skipped']) && is_array($payload['skipped'])) {
+                $logContext['skipped'] = $payload['skipped'];
+            }
+        }
+        if ($outcome === 'failed') {
+            $this->logger?->warning((string) ($entry['message'] ?? 'Scheduler job failed'), $logContext);
+        } else {
+            $this->logger?->info((string) ($entry['message'] ?? 'Scheduler job finished'), $logContext);
         }
 
         return array_merge(['job_id' => $id, 'handler' => $handlerKey], $entry);

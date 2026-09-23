@@ -39,6 +39,8 @@ import { BlogSidebar } from './BlogSidebar';
 import { ContentShareBar } from './ContentShareBar';
 import { ComingSoonCountdown } from './ComingSoonCountdown';
 import { resolveBlogSidebarSettings } from '../../utils/blogSidebarSettings';
+import { usePublicSite } from '../../context/PublicSiteContext';
+import { PageRenderer } from './PageRenderer';
 
 export const BlogRenderer: React.FC = () => {
   const { t, locale } = useI18n();
@@ -56,6 +58,8 @@ export const BlogRenderer: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { settings } = useSettingsContext();
+  const { getPageBySlug } = usePublicSite();
+  const blogLandingPage = useMemo(() => getPageBySlug('blog'), [getPageBySlug]);
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
   const showReadingTime = resolveShowReadingTime(settings.content);
@@ -572,15 +576,23 @@ export const BlogRenderer: React.FC = () => {
     <div className="min-h-screen bg-theme-surface text-theme-text pb-28 transition-colors">
       <div className="bg-theme-surface-elevated border-b border-theme-border pt-16 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-theme-primary/10 flex items-center justify-center text-theme-primary mx-auto mb-4">
-            <BookOpen className="w-6 h-6" />
-          </div>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-theme-text">
-            {t('public.blog.list.title')}
-          </h1>
-          <p className="mt-4 text-base sm:text-lg text-theme-text-muted max-w-2xl mx-auto">
-            {t('public.blog.list.subtitle')}
-          </p>
+          {blogLandingPage ? (
+            <div className="text-left mb-10">
+              <PageRenderer page={blogLandingPage} />
+            </div>
+          ) : (
+            <>
+              <div className="w-12 h-12 rounded-2xl bg-theme-primary/10 flex items-center justify-center text-theme-primary mx-auto mb-4">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-theme-text">
+                {t('public.blog.list.title')}
+              </h1>
+              <p className="mt-4 text-base sm:text-lg text-theme-text-muted max-w-2xl mx-auto">
+                {t('public.blog.list.subtitle')}
+              </p>
+            </>
+          )}
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             <button
               type="button"

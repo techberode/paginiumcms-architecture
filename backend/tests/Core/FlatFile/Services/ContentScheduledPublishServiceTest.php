@@ -123,4 +123,53 @@ final class ContentScheduledPublishServiceTest extends TestCase
             $settings->setGroup('workflows', $originalWorkflows);
         }
     }
+
+    public function testPublishDueItemsPublishesWhenOnlyLocaleIsScheduled(): void
+    {
+        $repo = $this->app->getContainer()->get(ContentRepositoryInterface::class);
+        $slug = 'locale-scheduled-' . uniqid('', true);
+        $dueAt = (new DateTimeImmutable('-1 minute'))->format('c');
+
+        $page = new Page();
+        $page->setSlug($slug);
+        $page->setTitle('Locale scheduled');
+        $page->setContent('# Body');
+        $page->setStatus('draft');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'en',
+            'title' => 'Locale scheduled',
+            'slug' => $slug,
+            'status' => 'draft',
+            'scheduledAt' => $dueAt,
+            'publishApprovedAt' => $dueAt,
+            'localizedContent' => [
+                'en' => [
+                    'title' => 'EN',
+                    'body' => '# EN',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+                'sk' => [
+                    'title' => 'SK',
+                    'body' => '# SK',
+                    'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false],
+                ],
+            ],
+            'localeStatus' => ['en' => 'draft', 'sk' => 'scheduled'],
+        ]);
+        $repo->save($page);
+
+        $service = $this->app->getContainer()->get(ContentScheduledPublishService::class);
+        $result = $service->publishDueItems(new DateTimeImmutable('now'));
+
+        $publishedSlugs = array_column($result['published'], 'slug');
+        $this->assertContains($slug, $publishedSlugs);
+
+        $saved = $repo->findBySlug($slug, 'page');
+        $this->assertNotNull($saved);
+        $this->assertSame('published', $saved->getStatus());
+        $this->assertSame('published', $saved->getFrontMatter()['localeStatus']['sk'] ?? null);
+        $this->assertSame('draft', $saved->getFrontMatter()['localeStatus']['en'] ?? null);
+        $this->assertNull($saved->getScheduledAt());
+    }
 }

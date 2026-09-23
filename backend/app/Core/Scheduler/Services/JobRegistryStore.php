@@ -253,7 +253,9 @@ final class JobRegistryStore
             'payload' => ($existing['system'] ?? false) === true
                 ? (is_array($existing['payload'] ?? null) ? $existing['payload'] : [])
                 : (is_array($job['payload'] ?? null) ? $job['payload'] : ($existing['payload'] ?? [])),
-            'last_run_at' => $existing['last_run_at'] ?? null,
+            'last_run_at' => array_key_exists('last_run_at', $job)
+                ? ($job['last_run_at'] !== null && $job['last_run_at'] !== '' ? (string) $job['last_run_at'] : null)
+                : ($existing['last_run_at'] ?? null),
         ];
     }
 }

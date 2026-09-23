@@ -16,6 +16,8 @@ export interface ScheduledJob {
   system?: boolean;
   payload?: Record<string, unknown>;
   last_run_at?: string | null;
+  last_outcome?: JobOutcome | null;
+  last_message?: string | null;
   next_run?: string | null;
   due_now?: boolean;
 }
@@ -33,6 +35,8 @@ export interface JobRunEntry {
   duration_ms?: number;
   run_log_persisted?: boolean;
   run_log_error?: string;
+  data?: Record<string, unknown>;
+  handler?: string;
 }
 
 export interface JobsOverview {

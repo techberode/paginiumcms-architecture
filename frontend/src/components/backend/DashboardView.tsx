@@ -40,6 +40,8 @@ import { useSettings } from '../../hooks/useSettings';
 import { storageUsedPercent } from '../../utils/adminStorageMeter';
 import { ProgressBar } from './ProgressBar';
 import { GettingStartedChecklist } from '../dashboard/GettingStartedChecklist';
+import { getJobsOverview, type JobsOverview } from '../../api/jobs';
+import { JobRunsLineChart } from './JobRunsLineChart';
 
 interface ContentStats {
   totalPages: number;
@@ -54,6 +56,7 @@ interface DashboardData {
   stats: ContentStats;
   overview: DashboardOverview | null;
   apm: ApmOverview | null;
+  jobs: JobsOverview | null;
 }
 
 function formatStorageQuotaLabel(bytes: number): string {
@@ -79,7 +82,7 @@ export const DashboardView: React.FC = () => {
     queryKey: queryKeys.dashboard.stats,
     queryFn: async () => {
       try {
-        const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring, apm] =
+        const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring, apm, jobs] =
           await Promise.all([
             get('/api/pages'),
             get('/api/articles'),
@@ -89,6 +92,7 @@ export const DashboardView: React.FC = () => {
             get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
             getDashboardOverview(),
             getApmOverview(),
+            getJobsOverview(),
           ]);
 
         return {
@@ -111,6 +115,7 @@ export const DashboardView: React.FC = () => {
           },
           overview: monitoring,
           apm,
+          jobs,
         };
       } catch (error) {
         toast.error(t('dashboard.toast.loadFailed'));
@@ -226,6 +231,19 @@ export const DashboardView: React.FC = () => {
           />
         ))}
       </div>
+
+      {(data?.jobs?.recent_runs?.length ?? 0) > 0 ? (
+        <AdminWidgetCard
+          title={t('platform.scheduler.chart.dashboardTitle')}
+          action={
+            <Link to="/scheduler" className="text-sm font-semibold text-admin-primary hover:underline">
+              {t('platform.scheduler.chart.openScheduler')}
+            </Link>
+          }
+        >
+          <JobRunsLineChart runs={data?.jobs?.recent_runs ?? []} />
+        </AdminWidgetCard>
+      ) : null}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <AdminWidgetCard

@@ -1055,6 +1055,25 @@ export const settingsSk: MessageTree = {
       },
       "logIncidentConnector": {
         "label": "Konektor pre log incidenty"
+      },
+      "contentPublishNotifyEnabled": {
+        "label": "Upozornenie pri publikovaní obsahu",
+        "help": "Odošle admin notifikáciu pri publikovaní stránok alebo článkov (konektor nižšie). Funguje nezávisle od hlavného prepínača incident alertov."
+      },
+      "contentPublishConnector": {
+        "label": "Konektor pre publikovanie obsahu"
+      },
+      "contentPublishOnScheduled": {
+        "label": "Upozorniť pri úspešnom plánovanom publikovaní",
+        "help": "Keď plánovač publikuje stránky alebo články podľa harmonogramu."
+      },
+      "contentPublishOnManual": {
+        "label": "Upozorniť pri manuálnom publikovaní",
+        "help": "Keď editor v admin rozhraní nastaví stav na publikované."
+      },
+      "contentPublishOnSkipped": {
+        "label": "Upozorniť keď plánované publikovanie zlyhá",
+        "help": "Chýbajúce OTP, chyba uloženia, chýbajúci termín alebo archivovaná položka počas behu plánovača."
       }
     },
     "analytics": {

@@ -12,6 +12,36 @@ use PHPUnit\Framework\TestCase;
 
 final class LocalizedContentWriterTest extends TestCase
 {
+    public function testNonDefaultLocaleScheduledPromotesFlatStatus(): void
+    {
+        $page = new Page();
+        $page->setPath('pages/post.json');
+        $page->setFrontMatter([
+            'schemaVersion' => 2,
+            'defaultLocale' => 'en',
+            'localizedContent' => [
+                'en' => ['title' => 'EN', 'body' => 'EN body', 'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false]],
+                'sk' => ['title' => 'SK', 'body' => 'SK body', 'seo' => ['title' => '', 'description' => '', 'canonical' => '', 'ogImage' => '', 'noIndex' => false]],
+            ],
+            'localeStatus' => ['en' => 'draft', 'sk' => 'draft'],
+            'slug' => 'post',
+            'status' => 'draft',
+        ]);
+        $page->setContent('EN body');
+
+        $writer = new LocalizedContentWriter(new LocalizedContentNormalizer($this->settingsMock()));
+        $writer->applyLocalePayload($page, [
+            'locale' => 'sk',
+            'title' => 'SK',
+            'content' => 'SK body',
+            'status' => 'scheduled',
+        ], 'post');
+
+        $this->assertSame('scheduled', $page->getStatus());
+        $this->assertSame('scheduled', $page->getFrontMatter()['localeStatus']['sk']);
+        $this->assertSame('draft', $page->getFrontMatter()['localeStatus']['en']);
+    }
+
     public function testMergeEnglishPreservesSlovakSlice(): void
     {
         $page = new Page();

@@ -164,7 +164,12 @@ export const PublicSiteLayout: React.FC = () => {
       if (home) {
         return { type: 'page', slug: home.slug, title: home.title };
       }
-    } else if (pathname !== '/blog' && !isAdminAppRoute(pathname)) {
+    } else if (pathname === '/blog') {
+      const blogLanding = getPageBySlug('blog');
+      if (blogLanding) {
+        return { type: 'page', slug: blogLanding.slug, title: blogLanding.title };
+      }
+    } else if (!isAdminAppRoute(pathname)) {
       const slug = pathname.slice(1);
       const page = getPageBySlug(slug);
       if (page) {

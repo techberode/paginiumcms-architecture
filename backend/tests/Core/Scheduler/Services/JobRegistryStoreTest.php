@@ -33,6 +33,34 @@ final class JobRegistryStoreTest extends TestCase
         $this->assertSame([], $job['payload']);
     }
 
+    public function testLastRunAtIsUpdatedOnSave(): void
+    {
+        $store = $this->makeStore();
+
+        $store->save([
+            'id' => 'content-scheduled-publish',
+            'name' => 'Scheduled content publish',
+            'handler' => 'content.scheduled_publish',
+            'cron' => '* * * * *',
+            'enabled' => true,
+            'system' => true,
+        ]);
+
+        $store->save([
+            'id' => 'content-scheduled-publish',
+            'name' => 'Scheduled content publish',
+            'handler' => 'content.scheduled_publish',
+            'cron' => '* * * * *',
+            'enabled' => true,
+            'system' => true,
+            'last_run_at' => '2026-09-23T08:43:02+02:00',
+        ]);
+
+        $job = $store->find('content-scheduled-publish');
+        $this->assertNotNull($job);
+        $this->assertSame('2026-09-23T08:43:02+02:00', $job['last_run_at']);
+    }
+
     public function testNonSystemJobPayloadIsPreserved(): void
     {
         $store = $this->makeStore();
