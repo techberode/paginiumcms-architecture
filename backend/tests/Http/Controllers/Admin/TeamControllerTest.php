@@ -5,9 +5,16 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Http\Controllers\Admin;
 
 use PaginiumCMS\Tests\Http\TestCase;
+use PaginiumCMS\Tests\Support\TestStorageCleaner;
 
 final class TeamControllerTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        TestStorageCleaner::purgeTestTeams();
+    }
+
     public function testIndexAllowedForAdmin(): void
     {
         $this->loginAsAdminUser();
@@ -41,9 +48,10 @@ final class TeamControllerTest extends TestCase
     {
         $this->loginAsSuperAdminUser();
 
+        $name = 'Partners-' . uniqid('', true);
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/teams', [
-                'name' => 'Partners',
+                'name' => $name,
                 'type' => 'external',
                 'memberUserIds' => [],
             ])
@@ -52,7 +60,7 @@ final class TeamControllerTest extends TestCase
 
         $this->assertSame(201, $response->getStatusCode());
         $this->assertTrue($data['success']);
-        $this->assertSame('Partners', $data['data']['team']['name'] ?? '');
+        $this->assertSame($name, $data['data']['team']['name'] ?? '');
     }
 
     public function testUpdateMembersForbiddenForAdmin(): void
@@ -60,7 +68,7 @@ final class TeamControllerTest extends TestCase
         $this->loginAsSuperAdminUser();
         $create = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/teams', [
-                'name' => 'Desk',
+                'name' => 'Desk-' . uniqid('', true),
                 'type' => 'support',
                 'memberUserIds' => [],
             ])

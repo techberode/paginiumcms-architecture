@@ -54,6 +54,8 @@ import {
   resolveEditorWorkspace,
   writeEditorWorkspaceOverride,
 } from '../../utils/editorWorkspace';
+import { PageHeroSettingsPanel } from './PageHeroSettingsPanel';
+import type { PageHeroSettings } from '../../utils/pageHero';
 
 const PAGE_TEMPLATE_VALUES = ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'] as const;
 
@@ -112,6 +114,8 @@ interface ContentEditorShellProps {
   localeStatusMap?: Record<string, ContentEditorStatus>;
   onLocaleChange?: (locale: string) => void;
   localeExtra?: React.ReactNode;
+  pageHero?: PageHeroSettings;
+  onPageHeroChange?: (value: PageHeroSettings) => void;
 }
 
 export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
@@ -169,6 +173,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   localeStatusMap = {},
   onLocaleChange,
   localeExtra,
+  pageHero,
+  onPageHeroChange,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -507,6 +513,19 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 </select>
               </div>
             )}
+
+            {type === 'page' && pageHero && onPageHeroChange ? (
+              <div className="form-group md:col-span-2">
+                <PageHeroSettingsPanel
+                  value={pageHero}
+                  onChange={onPageHeroChange}
+                  seoOgImage={seo.ogImage}
+                  disabled={!canEdit}
+                  pageSlug={editSlug}
+                  layoutTemplate={layoutTemplate}
+                />
+              </div>
+            ) : null}
 
             {showLayoutTemplatePicker && (
               <div className="form-group md:col-span-2 space-y-3">

@@ -47,9 +47,9 @@ services:
       # Deploy key: stack.sh auto-includes docker-compose.deploy-key.yml when the host
       # file exists. Do not store the private key in this compose directory.
       # Generate: SECRETS_DIR=/var/lib/paginiumcms/secrets ./scripts/bootstrap-github-deploy-key.sh
-      # Optional: expose host stack wrapper so admin deploy readiness can see stack.sh.
-      # Uncomment and set to your STACK_DIR (Settings → System update).
-      # - /var/lib/docker/compose/paginiumcms:/var/lib/docker/compose/paginiumcms:ro
+      # Admin deploy readiness: PHP must see host stack.sh (same path as Settings → stackDir).
+      # Requires STACK_DIR in the stack .env (see DEPLOY.md §12.5).
+      - ${STACK_DIR}:${STACK_DIR}:ro
     env_file:
       - ${APP_ROOT}/.env
     environment:

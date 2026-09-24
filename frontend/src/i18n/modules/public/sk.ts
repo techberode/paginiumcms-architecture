@@ -93,6 +93,8 @@ export const publicSk: MessageTree = {
     close: 'Zavrieť obrázok',
     previous: 'Predchádzajúci obrázok',
     next: 'Ďalší obrázok',
+    zoomIn: 'Priblížiť',
+    zoomOut: 'Oddialiť',
   },
   accessibility: {
     textScale: {

@@ -13,6 +13,7 @@ const ALLOWED_ATTR = [
   'allow', 'allowfullscreen', 'referrerpolicy', 'sandbox', 'frameborder',
   'data-tag', 'data-title',
   'data-staff-mode', 'data-staff-user', 'data-staff-type', 'data-staff-team',
+  'data-lightbox',
 ];
 
 /**

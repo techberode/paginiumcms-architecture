@@ -3,7 +3,7 @@ import { FileCode2, Youtube } from 'lucide-react';
 import { useEditor, EditorContent, type Extensions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
-import { Image } from '@tiptap/extension-image';
+import { PaginiumImage } from './tiptapPaginiumImage';
 import { Underline } from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
@@ -33,7 +33,7 @@ import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
 type WysiwygBlockedReason = 'images' | 'videos' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
 
 export interface WysiwygEditorHandle {
-  insertImage: (url: string, alt?: string) => void;
+  insertImage: (url: string, alt?: string, openInLightbox?: boolean) => void;
   insertVideo: (url: string, poster?: string) => void;
   insertLink: (url: string, label?: string) => void;
   focus: () => void;
@@ -89,7 +89,7 @@ function buildExtensions(
 
   if (profileAllows(profile, 'image')) {
     extensions.push(
-      Image.configure({
+      PaginiumImage.configure({
         HTMLAttributes: { class: 'max-w-full h-auto rounded-lg' },
       })
     );
@@ -258,17 +258,21 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
     }
     const uploaded = await onUploadImage(file);
     if (uploaded?.url) {
-      editor.chain().focus().setImage({ src: uploaded.url, alt: uploaded.alt ?? file.name }).run();
+      editor
+        .chain()
+        .focus()
+        .setImage({ src: uploaded.url, alt: uploaded.alt ?? file.name, lightbox: true })
+        .run();
     }
   };
 
   useImperativeHandle(ref, () => ({
-    insertImage: (url: string, alt = t('editor.wysiwyg.defaultImageAlt')) => {
+    insertImage: (url: string, alt = t('editor.wysiwyg.defaultImageAlt'), openInLightbox = true) => {
       if (!profileAllows(profile, 'image')) {
         onBlockedAction?.(blockedMessage('images'));
         return;
       }
-      editor?.chain().focus().setImage({ src: url, alt }).run();
+      editor?.chain().focus().setImage({ src: url, alt, lightbox: openInLightbox }).run();
     },
     insertVideo: (url: string, poster?: string) => {
       if (!profileAllows(profile, 'video')) {

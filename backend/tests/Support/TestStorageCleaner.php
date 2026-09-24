@@ -50,6 +50,50 @@ final class TestStorageCleaner
         self::purgeTestSettingsFile();
         self::purgeCodeEditorBackups();
         self::purgeCodeEditorTestModules();
+        self::purgeTestTeams();
+    }
+
+    /**
+     * Teams created by {@see TeamControllerTest} (shared storage) — not isolated temp dirs.
+     */
+    public static function purgeTestTeams(): void
+    {
+        $dir = self::contentRoot() . '/data/teams';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (glob($dir . '/team_*.json') ?: [] as $path) {
+            $raw = @file_get_contents($path);
+            if ($raw === false) {
+                continue;
+            }
+
+            try {
+                /** @var mixed $decoded */
+                $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException) {
+                continue;
+            }
+
+            if (!is_array($decoded)) {
+                continue;
+            }
+
+            $name = is_string($decoded['name'] ?? null) ? trim($decoded['name']) : '';
+            if ($name !== '' && self::isEphemeralTestTeamName($name)) {
+                @unlink($path);
+            }
+        }
+    }
+
+    private static function isEphemeralTestTeamName(string $name): bool
+    {
+        if (preg_match('/^(Partners|Desk)(-|$)/', $name) === 1) {
+            return true;
+        }
+
+        return $name === 'Marketing';
     }
 
     public static function purgeCache(): void

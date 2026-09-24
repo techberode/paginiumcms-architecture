@@ -302,6 +302,9 @@ export const editorEn: MessageTree = {
     emptyVideo: 'No videos in media library.',
     emptyDocument: 'No documents in media library.',
     documentTitle: 'Insert document link',
+    lightboxEnableLabel: 'Open in lightbox on click',
+    lightboxEnableHelp:
+      'Off = inline image only (no modal). On = click opens the image; use zoom controls in the modal.',
   },
   tags: {
     title: 'Article tags',
@@ -549,6 +552,47 @@ export const editorEn: MessageTree = {
     skipped: 'Skipped (already filled)',
     failedLocale: 'Failed',
     close: 'Close',
+  },
+  pageHero: {
+    title: 'Header hero image',
+    intro:
+      'Blog hero lives in the intro greybox. Generate 21:9 (recommended 2560×1097), keep subjects centered — see docs/en/user/PAGE_HERO_IMAGES.md. Drag the preview to reposition. Auto uses the SEO image.',
+    mode: 'Hero mode',
+    placement: 'Hero placement',
+    placementHint:
+      'Auto: blog intro greybox, landing layout uses showcase backgrounds, other pages use the wide header band. Override anytime.',
+    placements: {
+      auto: 'Auto (by page type)',
+      fullHeader: 'Full header band (home hero)',
+      introCard: 'Intro greybox below title',
+      landingInline: 'Landing — showcase / landing block backgrounds',
+    },
+    modes: {
+      auto: 'Auto — SEO / featured image',
+      single: 'Single image',
+      carousel: 'Image carousel',
+      none: 'No hero image',
+    },
+    addImage: 'Pick from media',
+    addSlide: 'Add slide',
+    useSeoImage: 'Use current SEO image',
+    emptyImages: 'No hero images yet. Pick one or use the SEO image.',
+    removeImage: 'Remove',
+    focusX: 'Horizontal focus',
+    focusY: 'Vertical focus',
+    focusEdgeStart: 'Left',
+    focusEdgeEnd: 'Right',
+    focusEdgeTop: 'Top',
+    focusEdgeBottom: 'Bottom',
+    previewEmpty: 'Set the SEO / OG image or pick a hero image to see the crop preview.',
+    previewBlog: 'Preview — /blog intro greybox',
+    previewPage: 'Preview — page header hero',
+    previewHint: 'Drag the image in the preview and release — it matches the public crop.',
+    previewDragBadge: 'Drag to reposition',
+    previewAria: 'Hero preview — drag to adjust crop',
+    resetFocus: 'Center crop',
+    localeHint:
+      'Hero settings apply to the whole page (all languages). Clear body text in each content language tab if an old markdown image still appears.',
   },
   agent: {
     title: 'AI assistant',

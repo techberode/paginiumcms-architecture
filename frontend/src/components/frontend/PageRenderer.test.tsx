@@ -42,9 +42,9 @@ describe('PageRenderer landing hero', () => {
       '/storage/app/content/media/hero.jpg'
     );
     expect(container.querySelector('[data-layout-template="landing"]')).toBeInTheDocument();
-    expect(container.querySelector('.pg-landing-seo-hero img')?.getAttribute('src')).toContain(
-      '/storage/app/content/media/hero.jpg'
-    );
+    expect(container.querySelector('header img')).toBeNull();
+    expect(container.querySelector('[data-hero-placement="landing-inline"]')).toBeInTheDocument();
+    expect(container.querySelector('.pg-landing-content')).toHaveTextContent('Hello');
   });
 
   it('marks embed variant for blog intro chrome', () => {
@@ -56,6 +56,8 @@ describe('PageRenderer landing hero', () => {
 
     expect(container.querySelector('[data-page-variant="embed"]')).toBeInTheDocument();
     expect(container.querySelector('.min-h-screen')).toBeNull();
+    expect(container.querySelector('[data-testid="page-hero-media"]')).toBeInTheDocument();
+    expect(container.querySelector('header [data-testid="page-hero-media"]')).toBeNull();
   });
 
   it('uses landing shell for home slug so showcase-hero CSS applies', () => {
@@ -99,7 +101,7 @@ describe('PageRenderer landing hero', () => {
       </MemoryRouter>
     );
 
-    const heroImg = container.querySelector('.public-hero img');
+    const heroImg = container.querySelector('header img');
     expect(heroImg).not.toBeNull();
     expect(heroImg?.getAttribute('src')).toContain(
       '/storage/app/content/media/uploads/hero.png'
@@ -120,6 +122,6 @@ describe('PageRenderer landing hero', () => {
 
     const landing = container.querySelector('.pg-landing-content');
     expect(landing?.getAttribute('data-has-hero-image')).toBe('false');
-    expect(container.querySelector('.pg-landing-seo-hero')).toBeNull();
+    expect(container.querySelector('header img')).toBeNull();
   });
 });

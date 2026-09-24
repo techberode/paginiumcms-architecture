@@ -78,13 +78,15 @@ A slug is part of the URL and file identity. Changing it may require redirects a
 
 **Page layout builder:** Settings → Layout chooses Templates, Shortcodes, **Block outline** (palette + forms; recommended for landings), or Developer. All modes store the same Markdown. Outline applies to pages only. Fullscreen **Workspace** hides admin chrome (Settings → Editor, or the toggle in the editor). Gallery photos: [GALLERY.md](GALLERY.md).
 
+**Home + landing:** Set **Template** to **`home`** and **layout** to **`landing`**. The public `/` route uses the published page with slug **`home`** or **`index`**, otherwise the first published page with template **`home`** (e.g. slug `paginium-cms`). Landing heroes come from **showcase / landing shortcodes** in the body plus the SEO image as background on those blocks—not the generic page header used for ordinary pages. Prefer opening **`/`** in navigation (Úvod), not a duplicate slug URL, so breadcrumbs stay clean.
+
 **List pagination:** The pages table (and the articles table, same component) uses Previous/Next at the bottom. The current page is in the URL (`/pages?page=2`). Changing filters or page size returns you to page 1; Next/Previous must not snap back to the first page ([ISS-169](../../ISSUES.md#iss-169)).
 
 ## 5. Articles
 
 Articles use the same editor core and can additionally contain excerpt, tags, featured image, publication time, and comment policy. Scheduled publication requires host cron **`php backend/bin/console scheduler:run`** every minute (job **`content.scheduled_publish`**) — see [CRON.md](../deploy/CRON.md). If **OTP publish approval** is enabled in Settings → Workflows, scheduled items need a saved schedule (sets `publishApprovedAt`) or cron skips them with `otp_not_approved`. Logged-in admins may preview scheduled articles on `/blog`; anonymous visitors only see **`published`** (or locale **`published`**) items.
 
-**Blog index (`/blog`):** The article list is a dedicated SPA route (not a row under `/pages`). To customize the hero/intro, create a **published page** with slug **`blog`** (Pages → New). Its body renders above the article grid; the CMS bar on `/blog` opens that page for editing. Menu link **`/blog`** still points at the list; do not expect a separate `/{slug}` URL for slug `blog`.
+**Blog index (`/blog`):** The article list is a dedicated SPA route (not a row under `/pages`). To customize the hero/intro, create a **published page** with slug **`blog`** (Pages → New). Use **Header hero image** in the page editor (drag in the preview to reposition); the hero appears inside the intro greybox above the article grid—not as a full-width site header. See [PAGE_HERO_IMAGES.md](PAGE_HERO_IMAGES.md) for **21:9 / 2560×1097** generation specs and safe zones. The CMS bar on `/blog` opens that page for editing. Menu link **`/blog`** still points at the list; do not expect a separate `/{slug}` URL for slug `blog`.
 
 **Bulk actions:** When you select rows, the bulk bar shows **“X of Y selected”** (Y = total records matching current filters). Confirm dialogs for publish, draft, archive, and delete repeat that ratio (e.g. “Publish 3 of 47 selected items?”). Always verify filters before bulk publish or delete.
 
@@ -132,6 +134,8 @@ An administrator checks:
 - public versus internal path,
 - references before deletion,
 - proxy/storage configuration when a file returns 404.
+
+**Page hero assets:** For page/blog intro heroes, prefer **21:9** masters at **≥1920 px** wide (ideal **2560×1097**). Details: [PAGE_HERO_IMAGES.md](PAGE_HERO_IMAGES.md).
 
 **Image optimization (`v2.1.0-beta.67`):** For JPEG, PNG, and WebP rasters, open the metadata modal to inspect file size and dimensions. Use **Preview optimize** to compare original vs re-encoded output and estimated savings before saving. Presets (1920 / 1280 / 1080 / 960 px width) scale height proportionally. A quick **⚡ optimize** on the media card applies immediate re-encode when GD is available. If the API returns “already optimally compressed”, the file will not shrink further — try resize instead. Requires PHP **GD** with JPEG/PNG/WebP support in the backend container.
 

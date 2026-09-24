@@ -31,12 +31,13 @@ import { ThemeScriptLoader } from '../frontend/ThemeScriptLoader';
 import { PublicHeaderStack } from './PublicHeaderStack';
 import { PublicBreadcrumbs } from '../frontend/PublicBreadcrumbs';
 import { isAdminAppRoute } from '../../utils/appRoutes';
+import { resolveSiteHomePage } from '../../utils/siteHomePage';
 
 export function PublicHomePage() {
   const { t } = useI18n();
-  const { getPageBySlug, loading } = usePublicSite();
+  const { pages, loading } = usePublicSite();
   const { settings } = useSettingsContext();
-  const home = getPageBySlug('home') ?? getPageBySlug('index');
+  const home = resolveSiteHomePage(pages);
   const galleryPlacement = settings.gallery?.placement ?? 'route';
   const showGalleryEmbed =
     settings.gallery?.enabled === true &&
@@ -125,7 +126,7 @@ export const PublicSiteLayout: React.FC = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, pendingTwoFactor } = useAuth();
-  const { getPageBySlug, getArticleBySlug, navigation, secondaryNavigation } = usePublicSite();
+  const { getPageBySlug, getArticleBySlug, navigation, secondaryNavigation, pages } = usePublicSite();
   const { settings } = useSettingsContext();
   const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
   const activeThemeId = settings?.appearance?.activeThemeId ?? 'paginium-core';
@@ -160,9 +161,11 @@ export const PublicSiteLayout: React.FC = () => {
       }
     }
     if (pathname === '/') {
-      const home = getPageBySlug('home') ?? getPageBySlug('index');
-      if (home) {
-        return { type: 'page', slug: home.slug, title: home.title };
+      const homePage = resolveSiteHomePage(
+        pages.filter((entry) => entry.status === 'published')
+      );
+      if (homePage) {
+        return { type: 'page', slug: homePage.slug, title: homePage.title };
       }
     } else if (pathname === '/blog') {
       const blogLanding = getPageBySlug('blog');
@@ -177,7 +180,7 @@ export const PublicSiteLayout: React.FC = () => {
       }
     }
     return undefined;
-  }, [pathname, getPageBySlug, getArticleBySlug]);
+  }, [pathname, getPageBySlug, getArticleBySlug, pages]);
 
   const seoType = currentDoc?.type ?? null;
   const seoSlug = currentDoc?.slug ?? null;

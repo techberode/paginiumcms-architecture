@@ -302,6 +302,9 @@ export const editorSk: MessageTree = {
     emptyVideo: 'V knižnici médií nie sú žiadne videá.',
     emptyDocument: 'V knižnici médií nie sú žiadne dokumenty.',
     documentTitle: 'Vložiť odkaz na dokument',
+    lightboxEnableLabel: 'Po kliknutí otvoriť lightbox',
+    lightboxEnableHelp:
+      'Vypnuté = obrázok len v texte (bez modalu). Zapnuté = klik zväčší obrázok; v modale môžeš približovať lupou.',
   },
   tags: {
     title: 'Tagy článku',
@@ -549,6 +552,47 @@ export const editorSk: MessageTree = {
     skipped: 'Preskočené (už vyplnené)',
     failedLocale: 'Zlyhalo',
     close: 'Zavrieť',
+  },
+  pageHero: {
+    title: 'Hero obrázok v hlavičke',
+    intro:
+      'Na blogu je hero v sivom boxe pod titulkom. Generuj 21:9 (odporúčané 2560×1097), dôležité v strede — viď docs/sk/user/PAGE_HERO_IMAGES.md. Ťahaj v náhľade. Auto = SEO obrázok.',
+    mode: 'Režim hero',
+    placement: 'Kde zobraziť hero',
+    placementHint:
+      'Auto: blog = sivý box, landing = pozadie showcase blokov, ostatné = široká hlavička. Môžeš vynútiť iný režim.',
+    placements: {
+      auto: 'Auto (podľa typu stránky)',
+      fullHeader: 'Plná hlavička (Home hero)',
+      introCard: 'Sivý box pod titulkom',
+      landingInline: 'Landing — pozadie showcase / landing blokov',
+    },
+    modes: {
+      auto: 'Auto — SEO / featured obrázok',
+      single: 'Jeden obrázok',
+      carousel: 'Karusel obrázkov',
+      none: 'Bez hero obrázka',
+    },
+    addImage: 'Vybrať z médií',
+    addSlide: 'Pridať snímku',
+    useSeoImage: 'Použiť aktuálny SEO obrázok',
+    emptyImages: 'Zatiaľ žiadne hero obrázky. Vyberte z médií alebo použite SEO obrázok.',
+    removeImage: 'Odstrániť',
+    focusX: 'Vodorovné zarovnanie',
+    focusY: 'Zvislé zarovnanie',
+    focusEdgeStart: 'Vľavo',
+    focusEdgeEnd: 'Vpravo',
+    focusEdgeTop: 'Hore',
+    focusEdgeBottom: 'Dole',
+    previewEmpty: 'Nastavte SEO / OG obrázok alebo vyberte hero snímku — potom uvidíte náhľad orezu.',
+    previewBlog: 'Náhľad — sivý box na /blog',
+    previewPage: 'Náhľad — hero v hlavičke stránky',
+    previewHint: 'Ťahaj obrázok v náhľade a pusť — uvidíš presne ten istý orez ako na webe.',
+    previewDragBadge: 'Ťahaj a pusť',
+    previewAria: 'Náhľad hero — ťahaj pre posun orezu',
+    resetFocus: 'Vycentrovať',
+    localeHint:
+      'Hero nastavenia platia pre celú stránku (všetky jazyky). Ak sa v tele stále zobrazuje starý markdown obrázok, vymažte ho v každej jazykovej záložke obsahu.',
   },
   agent: {
     title: 'AI asistent',

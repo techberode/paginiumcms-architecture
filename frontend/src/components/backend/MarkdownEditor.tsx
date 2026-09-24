@@ -13,6 +13,7 @@ import { uploadMedia, resolvePublicMediaUrl } from '../../api/media';
 import { WysiwygEditor, WysiwygEditorHandle } from './WysiwygEditor';
 import { MarkdownContentEditor } from './MarkdownContentEditor';
 import { MediaPickerModal } from './MediaPickerModal';
+import { buildInlineImageMarkup } from '../../utils/proseImageInsert';
 import { VersionHistory } from '../CodeEditor/VersionHistory';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -91,6 +92,12 @@ import {
 } from '../../utils/contentEditorLocale';
 import { applyDraftEditorSnapshot, buildDraftEditorSnapshot } from '../../utils/draftEditorSnapshot';
 import {
+  DEFAULT_PAGE_HERO,
+  pageHeroSettingsFromFrontMatter,
+  pageHeroSettingsToFrontMatter,
+  type PageHeroSettings,
+} from '../../utils/pageHero';
+import {
   contentEditorUsesOutline,
   resolveLayoutBuilderMode,
 } from '../../utils/contentEditorBuilder';
@@ -160,6 +167,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [localeStatusMap, setLocaleStatusMap] = useState<
     Partial<Record<ContentLocaleCode, ContentEditorStatus>>
   >({});
+  const [pageHero, setPageHero] = useState<PageHeroSettings>(DEFAULT_PAGE_HERO);
 
   const { get, post, put } = useApi();
   const toast = useToast();
@@ -476,6 +484,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               'hero-content'
           )
         );
+        if (type === 'page') {
+          setPageHero(pageHeroSettingsFromFrontMatter(fm));
+        }
         setStoragePath(
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );
@@ -649,6 +660,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
         if (type === 'page' && layoutTemplate.trim()) {
           data.layoutTemplate = layoutTemplate.trim();
+        }
+
+        if (type === 'page') {
+          Object.assign(data, pageHeroSettingsToFrontMatter(pageHero));
         }
 
         if (type === 'article') {
@@ -1066,6 +1081,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onScheduledAtChange={handleScheduledAtChange}
         onTemplateChange={setTemplate}
         onLayoutTemplateChange={setLayoutTemplate}
+        pageHero={type === 'page' ? pageHero : undefined}
+        onPageHeroChange={type === 'page' ? setPageHero : undefined}
         onInsertShortcode={(snippet) => setContent((prev) => `${prev}${snippet}`)}
         onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
         onSeoChange={setSeo}
@@ -1122,12 +1139,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               : undefined
           }
           mediaMode={mediaPickerMode}
-          onSelect={(url, alt) => {
+          showImageLightboxOption={mediaPickerMode === 'image'}
+          onSelect={(url, alt, options) => {
+            const openInLightbox = options?.openInLightbox !== false;
             if (editorMode === 'wysiwyg') {
               if (mediaPickerMode === 'video') {
                 wysiwygRef.current?.insertVideo(url);
               } else {
-                wysiwygRef.current?.insertImage(url, alt);
+                wysiwygRef.current?.insertImage(url, alt, openInLightbox);
               }
             } else if (mediaPickerMode === 'video') {
               const storageUrl = url.includes('/storage/')
@@ -1143,7 +1162,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
                 setContent((prev) => `${prev}${snippet}`);
               }
             } else {
-              setContent((prev) => `${prev}\n\n![${alt}](${url})\n`);
+              setContent((prev) => `${prev}${buildInlineImageMarkup(url, alt, openInLightbox)}`);
             }
           }}
         />

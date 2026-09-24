@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { ProseImageLightboxModal } from '../frontend/ProseImageLightboxModal';
 import {
   collectProseLightboxSlides,
-  isProseLightboxImageSrc,
+  isProseLightboxClickTarget,
   proseImageFullSizeSrc,
   type ProseLightboxSlide,
 } from '../../utils/proseImageLightbox';
@@ -23,10 +23,10 @@ export const ProseImageLightboxHost: React.FC<ProseImageLightboxHostProps> = ({ 
       return;
     }
 
-    const fullSrc = proseImageFullSizeSrc(target.currentSrc || target.src);
-    if (fullSrc === '' || !isProseLightboxImageSrc(fullSrc)) {
+    if (!isProseLightboxClickTarget(target)) {
       return;
     }
+    const fullSrc = proseImageFullSizeSrc(target.currentSrc || target.src);
 
     const collected = collectProseLightboxSlides(containerRef.current);
     const index = collected.findIndex((slide) => slide.src === fullSrc);

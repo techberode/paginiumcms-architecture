@@ -93,6 +93,8 @@ export const publicEn: MessageTree = {
     close: 'Close image',
     previous: 'Previous image',
     next: 'Next image',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
   },
   accessibility: {
     textScale: {

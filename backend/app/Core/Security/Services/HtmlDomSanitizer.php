@@ -20,7 +20,7 @@ final class HtmlDomSanitizer
     /** @var array<string, list<string>> */
     private const TAG_ATTRS = [
         'a' => ['href', 'target', 'rel', 'hreflang'],
-        'img' => ['src', 'alt', 'width', 'height', 'loading', 'decoding'],
+        'img' => ['src', 'alt', 'width', 'height', 'loading', 'decoding', 'data-lightbox'],
         'td' => ['colspan', 'rowspan'],
         'th' => ['colspan', 'rowspan', 'scope'],
         'ol' => ['start', 'type', 'reversed'],

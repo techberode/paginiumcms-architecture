@@ -13,6 +13,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Pages:** Unified header hero (auto / single / carousel / none) with **placement** (`auto`, `full-header`, `intro-card`, `landing-inline`), drag crop preview, home/landing routing fixes; backend `heroPlacement`; docs [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md).
+- **Fix:** Locale-scoped page saves (`locale` in PUT body) now persist hero front matter and SEO via `applyGlobalContentFields` (regression: placement reset to Auto after reload).
+- **Docs:** [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) — 21:9 / 2560×1097 hero specs, safe zone, AI prompt, OG notes (SK: `docs/sk/user/PAGE_HERO_IMAGES.md`).
+
 ## Release index
 
 | Release | Date | Scope |

@@ -374,6 +374,62 @@ class ContentControllerTest extends TestCase
         $this->assertSame(400, $response->getStatusCode());
     }
 
+    public function testLocaleScopedPageSavePersistsHeroFrontMatter(): void
+    {
+        $this->loginAsAdminUser();
+        $slug = 'hero-placement-' . uniqid('', true);
+
+        $create = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/pages', [
+                'locale' => 'sk',
+                'title' => 'Hero page',
+                'slug' => $slug,
+                'status' => 'published',
+                'content' => 'Body',
+                'template' => 'home',
+                'layoutTemplate' => 'landing',
+            ])
+        );
+        $created = $this->getJsonResponse($create);
+        $this->assertSame(201, $create->getStatusCode());
+        $revision = (string) ($created['data']['revision'] ?? '');
+
+        $update = $this->handleRequest(
+            $this->createJsonRequest('PUT', '/api/pages/' . $slug, [
+                'locale' => 'sk',
+                'title' => 'Hero page',
+                'slug' => $slug,
+                'status' => 'published',
+                'content' => 'Body',
+                'baseRevision' => $revision,
+                'template' => 'home',
+                'layoutTemplate' => 'landing',
+                'heroMode' => 'single',
+                'heroPlacement' => 'full-header',
+                'heroImages' => ['/storage/app/content/media/hero-test.jpg'],
+                'heroFocusX' => '40',
+                'heroFocusY' => '60',
+            ])
+        );
+        $updated = $this->getJsonResponse($update);
+
+        $this->assertSame(200, $update->getStatusCode());
+        $this->assertTrue($updated['success']);
+        $fm = $updated['data']['frontMatter'] ?? [];
+        $this->assertSame('full-header', $fm['heroPlacement'] ?? null);
+        $this->assertSame('single', $fm['heroMode'] ?? null);
+        $this->assertSame(40, $fm['heroFocusX'] ?? null);
+        $this->assertSame(60, $fm['heroFocusY'] ?? null);
+        $this->assertContains('/storage/app/content/media/hero-test.jpg', $fm['heroImages'] ?? []);
+
+        /** @var ContentRepositoryInterface $repo */
+        $repo = $this->container()->get(ContentRepositoryInterface::class);
+        $stored = $repo->findBySlug($slug, 'page');
+        $this->assertNotNull($stored);
+        $storedFm = $stored->getFrontMatter();
+        $this->assertSame('full-header', $storedFm['heroPlacement'] ?? null);
+    }
+
     public function testPatchPageStatusWithLocaleScopeUpdatesLocaleStatusOnly(): void
     {
         $this->loginAsAdminUser();

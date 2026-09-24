@@ -15,9 +15,8 @@ services:
     volumes:
       - ${APP_ROOT}:/var/www/html
       # Deploy key: stack.sh auto-includes docker-compose.deploy-key.yml when the host file exists.
-      # Optional: expose host stack wrapper so admin deploy readiness can see stack.sh.
-      # Uncomment and set to your STACK_DIR (Settings → System update).
-      # - /var/lib/docker/compose/paginiumcms:/var/lib/docker/compose/paginiumcms:ro
+      # Admin deploy readiness — STACK_DIR must match Settings → System update → stack directory.
+      - ${STACK_DIR}:${STACK_DIR}:ro
     env_file:
       - ${APP_ROOT}/.env
     environment:

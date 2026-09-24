@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isProseLightboxDisabled,
   isProseLightboxImageSrc,
   proseImageFullSizeSrc,
 } from './proseImageLightbox';
@@ -15,5 +16,11 @@ describe('proseImageLightbox', () => {
 
   it('strips thumbnail width query for modal', () => {
     expect(proseImageFullSizeSrc('/storage/media/shot.png?w=480')).toBe('/storage/media/shot.png');
+  });
+
+  it('respects data-lightbox off', () => {
+    const img = document.createElement('img');
+    img.setAttribute('data-lightbox', 'off');
+    expect(isProseLightboxDisabled(img)).toBe(true);
   });
 });

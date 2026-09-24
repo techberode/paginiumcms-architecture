@@ -92,7 +92,9 @@
     ),
     var(--pg-hero-image);
   background-size: cover, cover;
-  background-position: center, center;
+  background-position:
+    center,
+    var(--pg-hero-pos-x, 50%) var(--pg-hero-pos-y, 50%);
   background-repeat: no-repeat, no-repeat;
 }
 

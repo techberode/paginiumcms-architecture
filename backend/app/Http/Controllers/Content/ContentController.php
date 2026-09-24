@@ -1031,6 +1031,10 @@ class ContentController
         }
         $content->setFrontMatter($frontMatter);
 
+        $this->applySeoFrontMatter($content, $data);
+        if ($content instanceof Page) {
+            $this->applyPageHeroFrontMatter($content, $data);
+        }
         $this->applySchedulingFrontMatter($content, $data);
         $this->applyReviewFrontMatter($content, $data);
     }
@@ -1106,6 +1110,9 @@ class ContentController
         }
 
         $this->applySeoFrontMatter($content, $data);
+        if ($content instanceof Page) {
+            $this->applyPageHeroFrontMatter($content, $data);
+        }
         $this->applySchedulingFrontMatter($content, $data);
         $this->applyReviewFrontMatter($content, $data);
     }
@@ -1190,6 +1197,84 @@ class ContentController
         }
 
         $content->setFrontMatter($frontMatter);
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applyPageHeroFrontMatter(Page $page, array $data): void
+    {
+        $frontMatter = $page->getFrontMatter();
+        $touched = false;
+
+        if (array_key_exists('heroMode', $data)) {
+            $mode = trim((string) $data['heroMode']);
+            if (in_array($mode, ['auto', 'none', 'single', 'carousel'], true)) {
+                $frontMatter['heroMode'] = $mode;
+            } else {
+                unset($frontMatter['heroMode']);
+            }
+            $touched = true;
+        }
+
+        if (array_key_exists('heroImages', $data)) {
+            $raw = $data['heroImages'];
+            $images = [];
+            if (is_array($raw)) {
+                foreach ($raw as $entry) {
+                    if (!is_string($entry)) {
+                        continue;
+                    }
+                    $image = trim($entry);
+                    if ($image !== '') {
+                        $images[] = $image;
+                    }
+                }
+            }
+            if ($images === []) {
+                unset($frontMatter['heroImages']);
+            } else {
+                $frontMatter['heroImages'] = $images;
+            }
+            $touched = true;
+        }
+
+        if (array_key_exists('heroFocusX', $data)) {
+            $frontMatter['heroFocusX'] = $this->clampHeroFocusPercent($data['heroFocusX']);
+            $touched = true;
+        }
+
+        if (array_key_exists('heroFocusY', $data)) {
+            $frontMatter['heroFocusY'] = $this->clampHeroFocusPercent($data['heroFocusY']);
+            $touched = true;
+        }
+
+        if (array_key_exists('heroPlacement', $data)) {
+            $placement = trim((string) $data['heroPlacement']);
+            if (in_array($placement, ['auto', 'full-header', 'intro-card', 'landing-inline'], true)) {
+                $frontMatter['heroPlacement'] = $placement;
+            } else {
+                unset($frontMatter['heroPlacement']);
+            }
+            $touched = true;
+        }
+
+        if ($touched) {
+            $page->setFrontMatter($frontMatter);
+        }
+    }
+
+    private function clampHeroFocusPercent(mixed $value): int
+    {
+        $n = is_int($value) ? $value : (int) round((float) $value);
+        if ($n < 0) {
+            return 0;
+        }
+        if ($n > 100) {
+            return 100;
+        }
+
+        return $n;
     }
 
     /**

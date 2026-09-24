@@ -55,11 +55,27 @@ export interface ProseLightboxSlide {
   alt: string;
 }
 
+export function isProseLightboxDisabled(img: Pick<HTMLImageElement, 'getAttribute' | 'dataset'>): boolean {
+  return img.getAttribute('data-lightbox') === 'off' || img.dataset.lightbox === 'off';
+}
+
+export function isProseLightboxClickTarget(img: HTMLImageElement): boolean {
+  if (isProseLightboxDisabled(img)) {
+    return false;
+  }
+
+  const full = proseImageFullSizeSrc(img.currentSrc || img.src);
+  return full !== '' && isProseLightboxImageSrc(full);
+}
+
 export function collectProseLightboxSlides(container: HTMLElement): ProseLightboxSlide[] {
   const slides: ProseLightboxSlide[] = [];
   const seen = new Set<string>();
 
   container.querySelectorAll('img').forEach((img) => {
+    if (!(img instanceof HTMLImageElement) || isProseLightboxDisabled(img)) {
+      return;
+    }
     const full = proseImageFullSizeSrc(img.currentSrc || img.src);
     if (full === '' || seen.has(full)) {
       return;
