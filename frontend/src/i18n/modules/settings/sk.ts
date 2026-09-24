@@ -258,6 +258,7 @@ export const settingsSk: MessageTree = {
       "system": "Podľa systému"
     },
     "allowUserToggle": "Povoliť návštevníkom prepínať svetlý / tmavý režim",
+    "publicTextScaleControlEnabled": "Ovládanie veľkosti textu na webe (horná lišta)",
     "previewTemplateTitle": "Náhľadová layout šablóna",
     "previewTitle": "Náhľad stránky",
     "schemes": {
@@ -368,6 +369,16 @@ export const settingsSk: MessageTree = {
         "email": "E-mail",
         "rss": "RSS kanál"
       }
+    },
+    "techStack": {
+      "title": "Tech stack vo footeri",
+      "description": "Vodoznak technológií pod sociálnymi sieťami — vhodné pre paginiumcms.com.",
+      "label": "Názov",
+      "icon": "Ikona",
+      "url": "Odkaz (voliteľný)",
+      "enabled": "Zobraziť",
+      "add": "Pridať položku",
+      "remove": "Odstrániť položku"
     }
   },
   "privacy": {
@@ -576,6 +587,44 @@ export const settingsSk: MessageTree = {
       "blogItemsPerPage": {
         "label": "Článkov na stránku (blog)",
         "help": "Verejný zoznam článkov – stránkovanie sa zobrazí, keď je viac článkov."
+      },
+      "blogListCardSize": {
+        "label": "Blog — veľkosť kariet",
+        "help": "Kompaktné karty využijú viac stĺpcov na širokých monitoroch."
+      },
+      "blogListColumns": {
+        "label": "Blog — stĺpce zoznamu",
+        "help": "auto = podľa sidebaru a karty; pevné režimy od breakpointu sm."
+      },
+      "blogListWidth": {
+        "label": "Blog — šírka obsahu",
+        "help": "Maximálna šírka zoznamu (full = veľké monitory)."
+      },
+      "blogSidebarEnabled": {
+        "label": "Blog — bočný panel",
+        "help": "Tagy, kategórie, najnovšie a najčítanejšie na /blog."
+      },
+      "blogSidebarPlacement": {
+        "label": "Blog sidebar — umiestnenie",
+        "help": "Panel vľavo alebo vpravo od zoznamu článkov."
+      },
+      "blogSidebarShowTags": {
+        "label": "Sidebar — tagy"
+      },
+      "blogSidebarShowCategories": {
+        "label": "Sidebar — kategórie"
+      },
+      "blogSidebarShowLatest": {
+        "label": "Sidebar — najnovšie"
+      },
+      "blogSidebarShowPopular": {
+        "label": "Sidebar — najčítanejšie"
+      },
+      "blogSidebarLatestCount": {
+        "label": "Sidebar — počet najnovších"
+      },
+      "blogSidebarPopularCount": {
+        "label": "Sidebar — počet najčítanejších"
       },
       "showReadingTime": {
         "label": "Zobraziť odhadovaný čas čítania",
@@ -1471,6 +1520,14 @@ export const settingsSk: MessageTree = {
       "socialLinksJson": {
         "label": "Sociálne siete (JSON)",
         "help": "Spravované vizuálnym editorom nižšie."
+      },
+      "footerTechStackEnabled": {
+        "label": "Tech stack vo footeri",
+        "help": "Diskretný riadok technológií (PHP, React, …) pod sociálnymi sieťami."
+      },
+      "footerTechStackJson": {
+        "label": "Tech stack (JSON)",
+        "help": "Spravované editorom nižšie. Prázdne = predvolené položky."
       }
     },
     "newsletter": {
@@ -1627,6 +1684,10 @@ export const settingsSk: MessageTree = {
       "navPlacement": {
         "label": "Umiestnenie admin menu",
         "help": "Bočný panel, alebo horné rozbaľovacie menu podľa sekcií."
+      },
+      "adminTextScaleControlEnabled": {
+        "label": "Ovládanie veľkosti textu v admin UI",
+        "help": "Ovládanie v hornej lište (localStorage, oddelene od verejného webu)."
       }
     },
     "security": {

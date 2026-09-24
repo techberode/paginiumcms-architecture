@@ -30,6 +30,8 @@ export interface DeskInboxState {
   count: number;
   data: DeskInboxPayload | null;
   refresh: () => Promise<boolean>;
+  /** Remove queue rows immediately after approve / delete / mark handled (no full page reload). */
+  removeItemsByKey: (keys: Array<{ kind: string; id: string }>) => void;
 }
 
 const EMPTY: DeskInboxState = {
@@ -42,6 +44,7 @@ const EMPTY: DeskInboxState = {
   count: 0,
   data: null,
   refresh: async () => false,
+  removeItemsByKey: () => undefined,
 };
 
 const DeskInboxContext = createContext<DeskInboxState | null>(null);
@@ -84,6 +87,26 @@ export const DeskInboxProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useDeskPolling(Boolean(user), loadDesk);
 
+  const removeItemsByKey = useCallback((keys: Array<{ kind: string; id: string }>) => {
+    if (keys.length === 0) {
+      return;
+    }
+    const drop = (list: DeskItem[]) =>
+      list.filter((item) => !keys.some((key) => key.kind === item.kind && key.id === item.id));
+    setItems((current) => drop(current));
+    setData((current) => {
+      if (!current) {
+        return current;
+      }
+      const nextItems = drop(current.items ?? []);
+      return {
+        ...current,
+        items: nextItems,
+        deskCount: nextItems.length,
+      };
+    });
+  }, []);
+
   const value = useMemo((): DeskInboxState => {
     return {
       ready,
@@ -95,8 +118,9 @@ export const DeskInboxProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       count: items.length,
       data,
       refresh: loadDesk,
+      removeItemsByKey,
     };
-  }, [ready, bubbleEnabled, hasAccess, canReplyComments, items, data, loadDesk, user?.deskBubbleEnabled]);
+  }, [ready, bubbleEnabled, hasAccess, canReplyComments, items, data, loadDesk, removeItemsByKey, user?.deskBubbleEnabled]);
 
   return <DeskInboxContext.Provider value={value}>{children}</DeskInboxContext.Provider>;
 };

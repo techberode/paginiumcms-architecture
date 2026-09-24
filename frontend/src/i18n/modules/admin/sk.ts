@@ -190,4 +190,14 @@ export const adminSk: MessageTree = {
     neutral: 'Neznáme',
     installedVersion: 'Nainštalované {version}',
   },
+  accessibility: {
+    textScale: {
+      group: 'Veľkosť textu v admin',
+      toggle: 'Prepínať zväčšenie textu',
+      enable: 'Zapnúť väčší text v administrácii',
+      disable: 'Vrátiť predvolenú veľkosť v admin',
+      increase: 'Zväčšiť text v admin',
+      decrease: 'Zmenšiť text v admin',
+    },
+  },
 };

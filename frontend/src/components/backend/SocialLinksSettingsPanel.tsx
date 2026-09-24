@@ -3,6 +3,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { useI18n } from '../../context/I18nContext';
+import { SettingsToggle } from './SettingsToggle';
 import {
   SOCIAL_PLATFORMS,
   defaultSocialLinks,
@@ -189,14 +190,15 @@ export const SocialLinksSettingsPanel: React.FC<Props> = ({ register, watch, set
                     onChange={(e) => updateLink(index, { label: e.target.value })}
                   />
                 </label>
-                <label className="inline-flex items-center gap-2 text-xs">
-                  <input
-                    type="checkbox"
+                <div className="flex flex-col gap-1 text-xs">
+                  <span className="font-medium">{t('settings.marketing.social.enabled')}</span>
+                  <SettingsToggle
+                    id={`social-link-enabled-${index}`}
+                    size="sm"
                     checked={link.enabled}
-                    onChange={(e) => updateLink(index, { enabled: e.target.checked })}
+                    onChange={(next) => updateLink(index, { enabled: next })}
                   />
-                  {t('settings.marketing.social.enabled')}
-                </label>
+                </div>
               </div>
 
               <button

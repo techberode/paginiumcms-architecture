@@ -13,22 +13,11 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-### Fixed
-
-- **Inline content images:** Click any `/storage/` image in a published article or page body to open a fullscreen modal (Esc to close; arrow keys when multiple images). No gallery shortcode required.
-- **Scheduler `last_run_at`:** Registry `normalize()` now persists updated `last_run_at` from job runs (was always dropped — UI showed „—“ despite cron).
-- **Scheduled publish (localized content):** Cron job `content.scheduled_publish` now picks up items with `scheduledAt` when any locale is `scheduled`, even if flat `status` stayed `draft` (e.g. default locale EN, SK scheduled). Publish flips scheduled locales to `published` and clears scheduling metadata.
-- **Blog landing page:** Published CMS page with slug **`blog`** renders as editable intro on `/blog` (CMS bar → edit). Route `/blog` remains the article list; the page does not use `/{slug}` to avoid clashing with the SPA blog route.
-
-### Added
-
-- **Content publish notifications:** Settings → Monitoring — optional admin alerts via notification connectors when scheduled or manual publish succeeds (pages and articles), plus optional alert when scheduled publish is blocked (OTP, save error, etc.). Independent of the incident alerts master switch.
-- **Scheduler observability:** Job runs logged to app log; `/scheduler` and dashboard show line timeline of outcomes (red markers on failures); `content.scheduled_publish` returns `diagnostics.inspected` for stuck scheduled items; job cards show last outcome badge.
-
 ## Release index
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.93`](#release-2-1-0-beta-93) | 2026-09-24 | Footer tech stack · desk inbox sync · text scale · blog layout · Vitest/palette fixes · Site Design docs |
 | [`2.1.0-beta.92`](#release-2-1-0-beta-92) | 2026-09-22 | Admin status badges · getting-started SSOT · media upload compression · prod Redis compose follow-up |
 | [`2.1.0-beta.91`](#release-2-1-0-beta-91) | 2026-09-22 | It.69 Redis cache · latest-articles · breadcrumbs · media folders · Origin probes · AI/translation ops docs |
 | [`2.1.0-beta.90`](#release-2-1-0-beta-90) | 2026-09-21 | Team Kanban per team · team chat history/inbox · Kanban WIP/stats · Playground git import · 58f-h · It.95a/c |
@@ -188,6 +177,37 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Queue:** It.69 Redis driver (optional). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 
 ---
+
+<a id="release-2-1-0-beta-93"></a>
+
+## [2.1.0-beta.93] – 2026-09-24
+
+Footer tech stack watermark, desk inbox optimistic updates, public/admin text scale, blog list layout tuning, Vitest stability fixes, and Site Design commercial extension documentation.
+
+### Added
+
+- **Footer tech stack** — Settings `footerTechStackEnabled` + `footerTechStackJson`; `FooterTechStackNormalizer` (PHP); public API `footerTechStack`; admin panel with icons and compact toggles (`SettingsToggle`).
+- **Desk inbox sync** — `removeItemsByKey` + `useDeskActionSync` so comment/message approve/delete/mark-handled updates the notification modal and counts without a full reload.
+- **Public/admin text scale** — Optional top-bar controls (separate localStorage scopes) with settings to show/hide each.
+- **Blog list layout** — Card size, column mode, max width; responsive sidebar stacking below 1280px.
+- **Content publish notifications** — Settings → Monitoring alerts on successful/blocked scheduled or manual publish (independent of incident master switch).
+- **Scheduler observability** — Job run timeline on `/scheduler` and dashboard; `content.scheduled_publish` diagnostics.
+- **Site Design (docs only)** — [ITERATION_SITE_DESIGN.md](docs/en/ITERATION_SITE_DESIGN.md) (EN/SK) paid extension spec; backlog item #33.
+
+### Fixed
+
+- **Admin command palette** — Render loop when open with short query (`setResults([])` every frame); Vitest no longer stalls on `AdminCommandPalette.test.tsx`.
+- **Frontend Vitest** — Desk polling skips recurring timers under Vitest; `pool: forks`, capped workers; timer cleanup in test setup.
+- **Page/blog spacing** — `/blog` CMS intro via embedded `PageRenderer`; tighter heroes and SEO image gaps.
+- **Inline content images** — Click-to-zoom modal for `/storage/` images in article/page bodies.
+- **Scheduler `last_run_at`** — Persisted from job runs in registry `normalize()`.
+- **Scheduled publish (localized)** — Cron picks items with any locale `scheduled`; publish flips locales and clears scheduling metadata.
+- **Blog landing page** — Published page slug `blog` as editable intro on `/blog` without clashing with SPA route.
+
+### Documentation
+
+- [THEMES.md](docs/en/architecture/THEMES.md) / SK mirror — React shells vs ZIP themes clarification.
+- [ITERATION_BACKLOG.md](docs/en/ITERATION_BACKLOG.md) — Site Design commercial track.
 
 <a id="release-2-1-0-beta-92"></a>
 

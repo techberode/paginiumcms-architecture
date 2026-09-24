@@ -28,6 +28,7 @@ use PaginiumCMS\Modules\Demo\Services\DemoMode;
 use PaginiumCMS\Modules\Origin\Services\OriginPanelMode;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
+use PaginiumCMS\Core\Settings\Services\FooterTechStackNormalizer;
 use PaginiumCMS\Core\Settings\Services\SocialLinksNormalizer;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 use PaginiumCMS\Modules\Security\Services\AccessControlSyncService;
@@ -202,6 +203,15 @@ final class SettingsController
             }
         }
 
+        if ($group === 'marketing' && array_key_exists('footerTechStackJson', $payload)) {
+            try {
+                $normalized = FooterTechStackNormalizer::normalizeJson((string) $payload['footerTechStackJson']);
+                $payload['footerTechStackJson'] = FooterTechStackNormalizer::encode($normalized);
+            } catch (InvalidArgumentException $e) {
+                return $this->json->error($response, $e->getMessage(), 422);
+            }
+        }
+
         if ($group === 'engine' && ($payload['queryIndexDriver'] ?? null) === QueryIndexInterface::DRIVER_SQLITE) {
             if (!$this->queryIndexProbe->verifyActivation()) {
                 return $this->json->error(
@@ -290,6 +300,7 @@ final class SettingsController
                 'chromeGradient' => (bool) ($all['ui']['chromeGradient'] ?? false),
                 'chromeGradientDirection' => (string) ($all['ui']['chromeGradientDirection'] ?? 'to-bottom'),
                 'navPlacement' => (string) ($all['ui']['navPlacement'] ?? 'side'),
+                'adminTextScaleControlEnabled' => (bool) ($all['ui']['adminTextScaleControlEnabled'] ?? true),
             ],
             'navigationUi' => [
                 'defaultPreviewScale' => ((int) ($all['navigationUi']['defaultPreviewScale'] ?? 15)) / 10.0,
@@ -356,6 +367,7 @@ final class SettingsController
                 'enabled' => (bool) ($all['projectPlanner']['enabled'] ?? true),
             ],
             'social' => $this->publicSocialSettings($all['marketing'] ?? []),
+            'footerTechStack' => $this->publicFooterTechStackSettings($all['marketing'] ?? []),
             'gallery' => $this->publicGallerySettings($all['gallery'] ?? []),
             'comments' => [
                 'enabled' => (bool) ($all['comments']['enabled'] ?? true),
@@ -484,6 +496,9 @@ final class SettingsController
             'colorScheme' => $colorScheme,
             'mode' => $mode,
             'allowUserToggle' => (bool) ($appearance['allowUserToggle'] ?? $defaults['allowUserToggle'] ?? true),
+            'publicTextScaleControlEnabled' => (bool) (
+                $appearance['publicTextScaleControlEnabled'] ?? $defaults['publicTextScaleControlEnabled'] ?? true
+            ),
             'previewTemplate' => PageLayoutCatalog::normalizeTemplate(
                 (string) ($appearance['previewTemplate'] ?? $defaults['previewTemplate'] ?? PageLayoutCatalog::DEFAULT_TEMPLATE)
             ),
@@ -605,6 +620,22 @@ final class SettingsController
         return [
             'enabled' => $enabled,
             'links' => SocialLinksNormalizer::publicLinks($raw, $enabled),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $marketing
+     * @return array{enabled: bool, items: list<array{id: string, label: string, url: string}>}
+     */
+    private function publicFooterTechStackSettings(array $marketing): array
+    {
+        $defaults = SettingsSchema::defaults()['marketing'] ?? [];
+        $enabled = (bool) ($marketing['footerTechStackEnabled'] ?? $defaults['footerTechStackEnabled'] ?? false);
+        $raw = trim((string) ($marketing['footerTechStackJson'] ?? ''));
+
+        return [
+            'enabled' => $enabled,
+            'items' => FooterTechStackNormalizer::publicItems($raw, $enabled),
         ];
     }
 

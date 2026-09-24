@@ -14,7 +14,10 @@ export default defineConfig({
       'src/**/*.security.test.{ts,tsx}',
     ],
     css: false,
-    pool: 'threads',
+    // forks: workers exit cleanly; threads + desk polling timers looked like a hang after fast tests.
+    pool: 'forks',
+    maxWorkers: process.env.CI ? 2 : 4,
+    teardownTimeout: 10_000,
     // Kratší default timeout – testy by mali padať skôr, nie visieť.
     testTimeout: 5_000,
     // Predbalenie testovacích knižníc zrýchli import fázu.

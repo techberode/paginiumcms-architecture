@@ -40,6 +40,7 @@ import { summarizeBulkResult } from '../../types/bulk';
 import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
+import { useDeskActionSync, type DeskItemKey } from '../../hooks/useDeskActionSync';
 
 const truncate = (text: string, max = 90): string =>
   text.length <= max ? text : `${text.slice(0, max).trim()}…`;
@@ -55,6 +56,7 @@ export const MessagesViewer: React.FC = () => {
     return translated !== key ? translated : t('messages.priority.normal');
   };
   const { error: showError, success: showSuccess } = useToast();
+  const syncDesk = useDeskActionSync();
   const [items, setItems] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -152,11 +154,17 @@ export const MessagesViewer: React.FC = () => {
     if (!(await confirmDestructive(t(confirmKey, counts)))) {
       return;
     }
-    const result = await bulkMessageAction(bulkSelection.selectedIds, action);
+    const selectedIds = [...bulkSelection.selectedIds];
+    const result = await bulkMessageAction(selectedIds, action);
     if (result) {
       showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
+      const deskKeys: DeskItemKey[] =
+        action === 'read'
+          ? []
+          : selectedIds.map((id) => ({ kind: 'message', id }));
+      await syncDesk(deskKeys.length > 0 ? deskKeys : undefined);
     } else {
       showError(t('messages.toast.bulkFailed'));
     }
@@ -166,6 +174,9 @@ export const MessagesViewer: React.FC = () => {
     const updated = await updateMessage(msg.id, patch);
     if (updated) {
       await load();
+      if (patch.isProcessed || patch.isArchived) {
+        await syncDesk([{ kind: 'message', id: msg.id }]);
+      }
     }
   };
 
@@ -179,6 +190,7 @@ export const MessagesViewer: React.FC = () => {
         setExpandedId(null);
       }
       await load();
+      await syncDesk([{ kind: 'message', id }]);
     }
   };
 

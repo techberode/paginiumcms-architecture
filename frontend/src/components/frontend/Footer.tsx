@@ -7,6 +7,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { FooterNewsletter } from './FooterNewsletter';
 import { FooterSocialLinks } from './FooterSocialLinks';
+import { FooterTechStack } from './FooterTechStack';
 import { LOGO_FALLBACK } from '../../theme/publicUiClasses';
 import { useCookieConsentOptional } from '../../context/CookieConsentContext';
 import { resolveCookiePolicyHref } from '../../utils/cookiePolicyUrl';
@@ -51,6 +52,7 @@ export const Footer: React.FC = () => {
               </span>
             </div>
             <FooterSocialLinks className="mt-6" />
+            <FooterTechStack className="mt-4" />
           </div>
 
           <div>
@@ -97,7 +99,7 @@ export const Footer: React.FC = () => {
                     href={demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-semibold public-footer-link text-theme-accent"
+                    className="inline-flex items-center gap-2 text-sm public-footer-link public-footer-demo-link"
                   >
                     demo.paginiumcms.com
                     <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />

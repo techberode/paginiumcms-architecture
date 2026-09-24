@@ -113,8 +113,9 @@ export const AdminCommandPalette: React.FC<AdminCommandPaletteProps> = ({
 
   useEffect(() => {
     if (!isOpen || query.trim().length < 2) {
-      setResults([]);
-      setActiveIndex(0);
+      // Keep stable state when already empty — `setResults([])` allocates a new array every run and re-triggers this effect.
+      setResults((prev) => (prev.length === 0 ? prev : []));
+      setActiveIndex((index) => (index === 0 ? index : 0));
       return;
     }
 

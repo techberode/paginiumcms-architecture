@@ -172,6 +172,19 @@ Theme manifest nesmie obsahovať tajomstvá ani svojvoľný remote script URL.
 
 **Zero-JS (predvolené):** vizuálny chrome témy (animácie, hover, `:focus-within`, `@keyframes`, `<details>`) ide v HTML/CSS. `themeScriptsEnabled` ostáva vypnuté. Hamburger ani dark mode nepatria do Cloudflare/izolovaného origínu. Verejný web už má Core React SPA — Zero-JS znamená **žiadny extra JS z témy/obsahu**, nie nula bajtov JS v prehliadači. It.93 je admin chrome + aplikácie, nie téma.
 
+### React shell vs. `assets/*.js` v téme (dvojúrovňový model)
+
+| Úroveň | Čo sa doručí | Ako to beží | Autor cez Theme Studio / ZIP |
+|--------|--------------|-------------|----------------------------|
+| **A — balík chrome** | `theme.json`, CSS, HTML partials, voliteľný allow-list `.js` | CSS vždy; JS len pri `appearance.themeScriptsEnabled` + SRI v manifeste | Áno (validate → save → activate) |
+| **B — verejný React shell** | `frontend/src/themes/{id}/PublicShell.tsx` + CSS | Skompilované do CMS SPA (`themeShellRegistry.ts`) | Nie ako hot-upload — treba build CMS alebo dôveryhodný merge do frontend registra |
+
+Bundled témy **`terminal-breach`** a **`clean-journal`** používajú úroveň B pre header/nav/footer, stále na sémantických tokenoch a fallback **`paginium-core`**.
+
+**Prečo nenahradiť `.js` ľubovoľným Reactom z ZIP?** Nedôveryhodný JSX/TSX je spustiteľný kód bez podpísaného build pipeline — rovnaká trieda rizika ako pluginy. Vlastný React chrome = záznam v bundlovanom fronte, nie runtime `import()` z `data/themes/`.
+
+**Politika (2026):** komunitné témy preferujú úroveň A (CSS + tokeny); úroveň B pre first-party / reviewnuté balíky; opt-in statický JS len ako úzka výnimka.
+
 ---
 
 ## 9. Theme bezpečnostná politika

@@ -190,4 +190,14 @@ export const adminEn: MessageTree = {
     neutral: 'Unknown',
     installedVersion: 'Installed {version}',
   },
+  accessibility: {
+    textScale: {
+      group: 'Admin text size',
+      toggle: 'Toggle text enlargement',
+      enable: 'Enable larger text in admin',
+      disable: 'Reset admin text size',
+      increase: 'Increase admin text size',
+      decrease: 'Decrease admin text size',
+    },
+  },
 };

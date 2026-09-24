@@ -9,6 +9,9 @@ import { AdminThemeToggle } from './AdminThemeToggle';
 import { AdminAccountMenu } from './AdminAccountMenu';
 import { DeskNotificationBeacon } from './DeskNotificationBeacon';
 import { TeamChatNotificationBeacon } from './TeamChatNotificationBeacon';
+import { useSettings } from '../../hooks/useSettings';
+import { useTextScale } from '../../hooks/useTextScale';
+import { TextScaleControl } from '../common/TextScaleControl';
 
 interface AdminHeaderProps {
   onGoToWebsite: () => void;
@@ -43,6 +46,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { purge, isPurging } = useCachePurge();
+  const { settings } = useSettings();
+  const adminTextScaleEnabled = settings.ui?.adminTextScaleControlEnabled !== false;
+  const textScale = useTextScale('admin', adminTextScaleEnabled);
   const tabId = resolveTabId(location.pathname);
   const tabTitleKey = `admin.header.tabs.${tabId}`;
   const tabLabel =
@@ -113,6 +119,17 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         )}
 
         <AdminThemeToggle />
+
+        {adminTextScaleEnabled ? (
+          <TextScaleControl
+            variant="admin"
+            active={textScale.active}
+            percent={textScale.percent}
+            onIncrease={textScale.increase}
+            onDecrease={textScale.decrease}
+            onToggle={textScale.toggle}
+          />
+        ) : null}
 
         <span className="hidden lg:flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-200 dark:border-emerald-800">
           <Zap className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />

@@ -168,6 +168,7 @@ export interface PublicSettings {
     chromeGradient?: boolean;
     chromeGradientDirection?: string;
     navPlacement?: 'side' | 'top';
+    adminTextScaleControlEnabled?: boolean;
   };
   navigationUi?: {
     defaultPreviewScale?: number;
@@ -235,6 +236,7 @@ export interface PublicSettings {
     colorScheme: string;
     mode: 'light' | 'dark' | 'system';
     allowUserToggle: boolean;
+    publicTextScaleControlEnabled?: boolean;
     previewTemplate?: string;
     activeThemeId?: string;
     themeScriptsEnabled?: boolean;
@@ -276,6 +278,10 @@ export interface PublicSettings {
   social?: {
     enabled?: boolean;
     links?: Array<{ platform: string; url: string; label: string }>;
+  };
+  footerTechStack?: {
+    enabled?: boolean;
+    items?: Array<{ id: string; label: string; url: string; icon?: string }>;
   };
   gallery?: {
     enabled?: boolean;

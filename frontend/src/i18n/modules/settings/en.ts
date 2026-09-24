@@ -258,6 +258,7 @@ export const settingsEn: MessageTree = {
       "system": "System"
     },
     "allowUserToggle": "Allow visitors to switch light / dark mode",
+    "publicTextScaleControlEnabled": "Text size control on public site (top bar)",
     "previewTemplateTitle": "Preview layout wireframe",
     "previewTitle": "Page preview",
     "schemes": {
@@ -368,6 +369,16 @@ export const settingsEn: MessageTree = {
         "email": "Email",
         "rss": "RSS feed"
       }
+    },
+    "techStack": {
+      "title": "Footer tech stack",
+      "description": "Subtle technology watermark below social links — ideal for paginiumcms.com.",
+      "label": "Label",
+      "icon": "Icon",
+      "url": "Link (optional)",
+      "enabled": "Visible",
+      "add": "Add item",
+      "remove": "Remove item"
     }
   },
   "privacy": {
@@ -576,6 +587,44 @@ export const settingsEn: MessageTree = {
       "blogItemsPerPage": {
         "label": "Articles per page (blog)",
         "help": "Public article list pagination when there are more articles."
+      },
+      "blogListCardSize": {
+        "label": "Blog — card size",
+        "help": "Compact cards fit more columns on wide screens."
+      },
+      "blogListColumns": {
+        "label": "Blog — list columns",
+        "help": "auto adapts to sidebar and card size; fixed modes from the sm breakpoint."
+      },
+      "blogListWidth": {
+        "label": "Blog — content width",
+        "help": "Maximum width of the article list (full uses large monitors)."
+      },
+      "blogSidebarEnabled": {
+        "label": "Blog — sidebar",
+        "help": "Tags, categories, latest, and popular widgets on /blog."
+      },
+      "blogSidebarPlacement": {
+        "label": "Blog sidebar — placement",
+        "help": "Sidebar on the left or right of the article list."
+      },
+      "blogSidebarShowTags": {
+        "label": "Sidebar — tags"
+      },
+      "blogSidebarShowCategories": {
+        "label": "Sidebar — categories"
+      },
+      "blogSidebarShowLatest": {
+        "label": "Sidebar — latest"
+      },
+      "blogSidebarShowPopular": {
+        "label": "Sidebar — most read"
+      },
+      "blogSidebarLatestCount": {
+        "label": "Sidebar — latest count"
+      },
+      "blogSidebarPopularCount": {
+        "label": "Sidebar — popular count"
       },
       "showReadingTime": {
         "label": "Show estimated reading time",
@@ -916,6 +965,14 @@ export const settingsEn: MessageTree = {
       "socialLinksJson": {
         "label": "Social links (JSON)",
         "help": "Managed by the visual editor below."
+      },
+      "footerTechStackEnabled": {
+        "label": "Footer tech stack",
+        "help": "Subtle technology row (PHP, React, …) below social links."
+      },
+      "footerTechStackJson": {
+        "label": "Tech stack (JSON)",
+        "help": "Managed by the editor below. Empty = built-in defaults."
       }
     },
     "newsletter": {
@@ -1050,6 +1107,10 @@ export const settingsEn: MessageTree = {
       "navPlacement": {
         "label": "Admin menu placement",
         "help": "Side panel or a collapsible top menu grouped by sections."
+      },
+      "adminTextScaleControlEnabled": {
+        "label": "Text size control in admin UI",
+        "help": "Top bar control for enlarging admin text (stored in the browser, separate from the public site)."
       }
     },
     "security": {

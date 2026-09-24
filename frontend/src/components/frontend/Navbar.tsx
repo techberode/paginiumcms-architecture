@@ -15,6 +15,8 @@ import { SideNav } from './SideNav';
 import type { NavigationLayoutSettings } from '../../utils/navigationLayoutSettings';
 import type { PublicNavChrome } from '../../utils/publicNavChrome';
 import { BTN_PRIMARY_GRADIENT, LOGO_FALLBACK, NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
+import { useTextScale } from '../../hooks/useTextScale';
+import { TextScaleControl } from '../common/TextScaleControl';
 
 interface NavbarProps {
   onOpenSearch: () => void;
@@ -191,6 +193,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const { allowUserToggle, resolvedTheme, toggleVisitorTheme } = usePublicAppearanceContext();
+  const publicTextScaleEnabled = get('appearance.publicTextScaleControlEnabled', true) !== false;
+  const textScale = useTextScale('public', publicTextScaleEnabled);
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -245,6 +249,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-3">
           {allowUserToggle ? (
             <PublicThemeToggle resolvedTheme={resolvedTheme} onToggle={toggleVisitorTheme} />
+          ) : null}
+
+          {publicTextScaleEnabled ? (
+            <TextScaleControl
+              variant="public"
+              active={textScale.active}
+              percent={textScale.percent}
+              onIncrease={textScale.increase}
+              onDecrease={textScale.decrease}
+              onToggle={textScale.toggle}
+            />
           ) : null}
 
           <button

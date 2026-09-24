@@ -42,6 +42,14 @@ vi.mock('../../hooks/useAuth', () => ({
   }),
 }));
 
+vi.mock('../../utils/adminContextSearch', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../utils/adminContextSearch')>();
+  return {
+    ...actual,
+    buildAdminContextSearchItems: () => [],
+  };
+});
+
 describe('AdminCommandPalette', () => {
   beforeEach(() => {
     mockNavigate.mockReset();

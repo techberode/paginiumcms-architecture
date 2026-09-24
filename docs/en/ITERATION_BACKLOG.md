@@ -57,6 +57,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 30 | **It.95** Component playground (Sandpack) + private design-system registry | 🟡 P1 / 🔵 P2 | ✅ | **95a/c/b/d** shipped — [ITERATION_95](ITERATION_95.md) |
 | 31 | **It.96** Document library & file manager (PDF, Office, text) | 🟡 P1 | ✅ | Upload policy `documents`, text edit, PDF preview, bulk ZIP, `[document-link]` — [ITERATION_96](ITERATION_96.md) · shipped `beta.86` |
 | 32 | **It.93l-3** Kanban WIP + stats; team-chat **topics** (forum threads) | 🟡 P1 | 🟡 partial | **WIP limits**, assignee/tag filters, cycle-time stats shipped in tree; **topics** (import from ticket, idle auto-close, leader archive, desktop notify) — ⏳ next slice |
+| 33 | **Site Design** paid extension (visual tuner, live preview, CSS presets) | 🟡 P1 commercial | ⏳ planned | Isolated add-on — not Core paywall; spec [ITERATION_SITE_DESIGN.md](ITERATION_SITE_DESIGN.md) · free hook slice **SD-0** only in OSS |
 
 ---
 

@@ -85,6 +85,7 @@ export const publicSk: MessageTree = {
     cookieSettings: 'Nastavenia cookies',
     cookiePolicy: 'Zásady cookies',
     socialTitle: 'Sociálne siete',
+    techStackAria: 'Technológie použité v projekte',
     socialAria: 'Sociálne siete',
   },
   proseImageLightbox: {
@@ -92,6 +93,16 @@ export const publicSk: MessageTree = {
     close: 'Zavrieť obrázok',
     previous: 'Predchádzajúci obrázok',
     next: 'Ďalší obrázok',
+  },
+  accessibility: {
+    textScale: {
+      group: 'Veľkosť textu',
+      toggle: 'Prepínať zväčšenie textu',
+      enable: 'Zapnúť väčší text',
+      disable: 'Vrátiť predvolenú veľkosť textu',
+      increase: 'Zväčšiť text',
+      decrease: 'Zmenšiť text',
+    },
   },
   gallery: {
     sectionTitle: 'Preskúmajte administráciu',

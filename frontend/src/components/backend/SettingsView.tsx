@@ -51,6 +51,7 @@ import { BrandingImagePicker } from './BrandingImagePicker';
 import { AuthorAvatarField } from './AuthorAvatarField';
 import { AccessControlSettingsPanel } from './AccessControlSettingsPanel';
 import { SocialLinksSettingsPanel } from './SocialLinksSettingsPanel';
+import { FooterTechStackSettingsPanel } from './FooterTechStackSettingsPanel';
 import { EditorCustomComponentsPanel, type EditorComponentMeta } from './EditorCustomComponentsPanel';
 import { EditorToolbarBuilder } from './EditorToolbarBuilder';
 import { AppearanceSettingsPanel } from '../admin/AppearanceSettingsPanel';
@@ -69,6 +70,7 @@ import { AdminChromeColorField } from './AdminChromeColorField';
 import { AdminNavPlacementField } from './AdminNavPlacementField';
 import { AdminGradientField } from './AdminGradientField';
 import { AdminFormActions } from './AdminFormActions';
+import { SettingsToggle } from './SettingsToggle';
 import { AdminTabs } from '../ui/AdminTabs';
 import { useAuth } from '../../hooks/useAuth';
 import { isAdminChromeColorId, isAdminGradientDirection, isAdminNavPlacement } from '../../theme/adminChrome';
@@ -423,7 +425,9 @@ export const SettingsView: React.FC = () => {
                 ) : activeGroup === 'marketing' ? (
                   <>
                     {group.fields
-                      .filter((field) => field.key !== 'socialLinksJson')
+                      .filter(
+                        (field) => field.key !== 'socialLinksJson' && field.key !== 'footerTechStackJson'
+                      )
                       .map((field) => (
                         <SettingFieldRow
                           key={field.key}
@@ -436,6 +440,7 @@ export const SettingsView: React.FC = () => {
                         />
                       ))}
                     <SocialLinksSettingsPanel register={register} watch={watch} setValue={setValue} />
+                    <FooterTechStackSettingsPanel register={register} watch={watch} setValue={setValue} />
                   </>
                 ) : activeGroup === 'engine' ? (
                   <>
@@ -576,6 +581,38 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
   const tooltip = translateSettingFieldTooltip(t, groupKey, field.key);
   const tooltipDetail = translateSettingFieldTooltipDetail(t, groupKey, field.key);
   const docUrl = translateSettingFieldDocLink(t, groupKey, field.key);
+
+  if (field.type === 'bool') {
+    const checked = Boolean(watch(field.key));
+    return (
+      <div>
+        <div className="flex items-center gap-3">
+          <SettingsToggle
+            id={inputId}
+            size="sm"
+            checked={checked}
+            onChange={(next) =>
+              setValue(field.key, next, { shouldDirty: true, shouldValidate: true })
+            }
+          />
+          <SettingFieldLabel
+            htmlFor={inputId}
+            label={label}
+            tooltip={tooltip}
+            tooltipDetail={tooltipDetail}
+            docUrl={docUrl}
+          />
+        </div>
+        {help && !error && (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-10">{help}</p>
+        )}
+        {note && !error && (
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300 ml-10">{note}</p>
+        )}
+        <FieldError message={error} />
+      </div>
+    );
+  }
 
   if (groupKey === 'content' && field.key === 'blogAuthorAvatarUrl') {
     const currentValue = String(watch(field.key) ?? '');
@@ -746,26 +783,7 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
 
   return (
     <div>
-      {field.type === 'bool' ? (
-        <div className="flex items-center gap-3">
-          <input
-            id={inputId}
-            type="checkbox"
-            {...register(field.key, {
-              setValueAs: (v) => v === true || v === 'on' || v === 'true' || v === 1,
-            })}
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600 shrink-0"
-          />
-          <SettingFieldLabel
-            htmlFor={inputId}
-            label={label}
-            tooltip={tooltip}
-            tooltipDetail={tooltipDetail}
-            docUrl={docUrl}
-          />
-        </div>
-      ) : (
-        <>
+      <>
           <div className="mb-1">
             <SettingFieldLabel
             htmlFor={inputId}
@@ -848,7 +866,6 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
             </div>
           )}
         </>
-      )}
 
       {help && !error && (
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{help}</p>

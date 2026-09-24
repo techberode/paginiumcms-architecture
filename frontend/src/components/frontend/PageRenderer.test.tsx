@@ -47,6 +47,17 @@ describe('PageRenderer landing hero', () => {
     );
   });
 
+  it('marks embed variant for blog intro chrome', () => {
+    const { container } = renderWithProviders(
+      <MemoryRouter>
+        <PageRenderer page={landingPage()} variant="embed" />
+      </MemoryRouter>
+    );
+
+    expect(container.querySelector('[data-page-variant="embed"]')).toBeInTheDocument();
+    expect(container.querySelector('.min-h-screen')).toBeNull();
+  });
+
   it('uses landing shell for home slug so showcase-hero CSS applies', () => {
     const { container } = renderWithProviders(
       <MemoryRouter>

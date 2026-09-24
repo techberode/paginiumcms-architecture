@@ -219,23 +219,95 @@
     @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
   }
 
-  /* Public site chrome (It.58b) */
+  /* Public site chrome (It.58b) — footer fg derived from surface so links stay readable
+     when the bar flips light/dark across color schemes and visitor theme. */
   .public-footer {
+    --public-footer-fg: color-mix(in srgb, var(--color-surface) 92%, var(--color-primary-foreground, #fff));
+    --public-footer-fg-muted: color-mix(in srgb, var(--color-surface) 55%, var(--color-text-muted));
+    --public-footer-link: color-mix(in srgb, var(--color-surface) 78%, var(--color-accent));
     background: color-mix(in srgb, var(--color-text) 90%, var(--color-primary));
-    color: color-mix(in srgb, var(--color-surface-elevated) 72%, var(--color-text-muted));
+    color: var(--public-footer-fg-muted);
     border-top: 1px solid color-mix(in srgb, var(--color-text) 45%, transparent);
   }
 
   .public-footer-heading {
-    color: var(--color-surface-elevated);
+    color: var(--public-footer-fg);
   }
 
   .public-footer-link {
     @apply transition-colors;
+    color: var(--public-footer-link);
   }
 
   .public-footer-link:hover {
-    color: var(--color-accent);
+    color: color-mix(in srgb, var(--color-accent) 88%, var(--public-footer-fg));
+  }
+
+  .public-footer-demo-link {
+    color: var(--public-footer-fg);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  .public-footer-demo-link:hover {
+    color: color-mix(in srgb, var(--color-accent) 90%, var(--public-footer-fg));
+  }
+
+  .public-footer-tech {
+    opacity: 0.85;
+  }
+
+  .public-footer-tech-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 9999px;
+    border-width: 1px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .public-footer-tech-chip:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .public-footer-tech-label {
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Text scale — public navbar (all visitor color schemes) */
+  .pg-public-header .public-text-scale {
+    border: 1px solid color-mix(in srgb, var(--color-text) 22%, var(--color-border));
+    background: color-mix(in srgb, var(--color-text) 10%, var(--color-surface-elevated));
+  }
+
+  .pg-public-header .public-text-scale-btn,
+  .pg-public-header .public-text-scale-value {
+    color: var(--color-text);
+  }
+
+  .pg-public-header .public-text-scale-btn:hover {
+    background: color-mix(in srgb, var(--color-text) 12%, var(--color-surface));
+  }
+
+  .pg-public-header .public-text-scale-btn.is-active {
+    background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface-elevated));
+    color: var(--color-primary);
+  }
+
+  .pg-public-header .public-text-scale-sep {
+    border-left: 1px solid color-mix(in srgb, var(--color-text) 18%, var(--color-border));
   }
 
   .public-footer-social-link {
@@ -290,13 +362,28 @@
   }
 
   .public-footer-cookie-link {
-    color: color-mix(in srgb, var(--color-surface-elevated) 88%, var(--color-accent));
+    color: var(--public-footer-link);
     text-decoration: underline;
     text-underline-offset: 2px;
   }
 
   .public-footer-cookie-link:hover {
-    color: var(--color-accent);
+    color: color-mix(in srgb, var(--color-accent) 88%, var(--public-footer-fg));
+  }
+
+  .public-footer .public-footer-field {
+    background: color-mix(in srgb, var(--public-footer-fg) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--public-footer-fg) 32%, transparent);
+    color: var(--public-footer-fg);
+  }
+
+  .public-footer .public-footer-field::placeholder {
+    color: color-mix(in srgb, var(--public-footer-fg) 55%, transparent);
+  }
+
+  .public-footer .public-footer-field:focus {
+    --tw-ring-color: color-mix(in srgb, var(--color-accent) 65%, var(--public-footer-fg));
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--public-footer-fg));
   }
 
   .public-hero {

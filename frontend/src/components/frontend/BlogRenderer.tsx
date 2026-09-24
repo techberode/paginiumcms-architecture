@@ -39,6 +39,13 @@ import { BlogSidebar } from './BlogSidebar';
 import { ContentShareBar } from './ContentShareBar';
 import { ComingSoonCountdown } from './ComingSoonCountdown';
 import { resolveBlogSidebarSettings } from '../../utils/blogSidebarSettings';
+import {
+  blogCardBodyPaddingClass,
+  blogCardImageHeightClass,
+  blogListGridClass,
+  blogListMaxWidthClass,
+  resolveBlogListLayout,
+} from '../../utils/blogListLayout';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { PageRenderer } from './PageRenderer';
 
@@ -68,6 +75,7 @@ export const BlogRenderer: React.FC = () => {
     () => resolveBlogSidebarSettings(settings.content),
     [settings.content]
   );
+  const listLayout = useMemo(() => resolveBlogListLayout(settings.content), [settings.content]);
   const selectedTag = searchParams.get('tag');
   const selectedCategory = searchParams.get('category');
   const sort = parseBlogSort(searchParams.get('sort'));
@@ -272,7 +280,7 @@ export const BlogRenderer: React.FC = () => {
   ) : null;
 
   const wrapWithSidebar = (content: React.ReactNode, wide = false) => {
-    const maxWidth = wide ? 'max-w-7xl' : 'max-w-4xl';
+    const maxWidth = wide ? blogListMaxWidthClass(listLayout.width) : 'max-w-4xl';
 
     if (!sidebarActive || !sidebarElement) {
       return (
@@ -577,12 +585,12 @@ export const BlogRenderer: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-theme-surface text-theme-text pb-28 transition-colors">
-      <div className="bg-theme-surface-elevated border-b border-theme-border pt-16 pb-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <div className="min-h-0 bg-theme-surface text-theme-text pb-16 sm:pb-20 transition-colors">
+      <div className="bg-theme-surface-elevated border-b border-theme-border pt-6 pb-8 sm:pt-8 sm:pb-10">
+        <div className={`${blogListMaxWidthClass(listLayout.width)} mx-auto px-4 sm:px-6 lg:px-8 text-center`}>
           {blogLandingPage ? (
-            <div className="text-left mb-10">
-              <PageRenderer page={blogLandingPage} />
+            <div className="text-left mb-4 sm:mb-6">
+              <PageRenderer page={blogLandingPage} variant="embed" />
             </div>
           ) : (
             <>
@@ -647,21 +655,17 @@ export const BlogRenderer: React.FC = () => {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+      <main className={`${blogListMaxWidthClass(listLayout.width)} mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8`}>
         {wrapWithSidebar(
           <>
         {filteredTotal > 0 && (
-          <p className="text-center text-xs font-semibold text-theme-text-muted mb-8">
+          <p className="text-center text-xs font-semibold text-theme-text-muted mb-4 sm:mb-6">
             {t('public.blog.list.range', { start: rangeStart, end: rangeEnd, total: filteredTotal })}
             {totalPages > 1 ? t('public.blog.list.pageOf', { page: safePage, totalPages }) : ''}
           </p>
         )}
 
-        <div
-          className={`grid grid-cols-1 gap-8 ${
-            sidebarActive ? 'sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-3'
-          }`}
-        >
+        <div className={blogListGridClass(listLayout.columns, sidebarActive, listLayout.cardSize)}>
           {paginatedArticles.map((article) => {
             const author = article.author || String(
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
@@ -688,7 +692,7 @@ export const BlogRenderer: React.FC = () => {
                 onClick={() => navigate(`/blog/${article.slug}`)}
                 className={`text-left ${PUBLIC_CARD} overflow-hidden shadow-md hover:shadow-2xl transition-all hover:-translate-y-1.5 flex flex-col group cursor-pointer`}
               >
-                <div className="h-56 overflow-hidden relative bg-theme-surface">
+                <div className={`${blogCardImageHeightClass(listLayout.cardSize)} overflow-hidden relative bg-theme-surface`}>
                   {image && (
                     <img
                       src={image}
@@ -711,7 +715,7 @@ export const BlogRenderer: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                <div className="p-8 flex-1 flex flex-col justify-between">
+                <div className={`${blogCardBodyPaddingClass(listLayout.cardSize)} flex-1 flex flex-col justify-between`}>
                   <div>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-theme-text-muted mb-3 font-medium">
                       <span className="inline-flex items-center gap-1 rounded-full bg-theme-surface px-2.5 py-1" title={dates.primaryTitle}>

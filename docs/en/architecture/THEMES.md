@@ -189,6 +189,19 @@ Do **not** send a hamburger menu or dark-mode toggle to an isolated origin / Clo
 
 See also isolated widgets: [ISOLATED_ORIGIN.md](ISOLATED_ORIGIN.md). It.93 is **admin** chrome + apps, not theme JS.
 
+### React shells vs theme `assets/*.js` (two-tier model)
+
+| Tier | What ships | How it runs | Authoring via Theme Studio / ZIP |
+|------|------------|-------------|----------------------------------|
+| **A — Package chrome** | `theme.json`, CSS, HTML partials, optional allow-listed static `.js` | CSS always; JS only when `appearance.themeScriptsEnabled` and SRI hashes are declared in the manifest | Yes (validate → save → activate) |
+| **B — Public React shell** | `frontend/src/themes/{id}/PublicShell.tsx` plus bundled CSS | Compiled into the CMS SPA (`themeShellRegistry.ts`) | Not hot-uploaded — requires a CMS build or trusted merge into the frontend registry |
+
+Bundled themes **`terminal-breach`** and **`clean-journal`** use Tier B for header/nav/footer composition while still consuming semantic tokens and **`paginium-core`** fallback.
+
+**Why not ship arbitrary React from a theme ZIP instead of `.js`?** Untrusted JSX/TSX would be executable code without a signed build pipeline — the same trust class as plugins. The supported path for custom React chrome is to add a registry entry in the frontend (bundled theme), not runtime `import()` from `data/themes/`.
+
+**Policy (2026):** prefer Tier A (CSS + tokens) for community packages; reserve Tier B for first-party or reviewed themes; keep opt-in static JS as a narrow escape hatch, not the default integration surface.
+
 ---
 
 ## 9. Theme security policy

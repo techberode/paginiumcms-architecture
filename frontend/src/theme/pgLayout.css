@@ -59,9 +59,9 @@
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
   border-radius: 1.25rem;
-  margin: 0 0 2.5rem;
-  padding: clamp(3rem, 10vw, 6rem) 1.5rem 3rem;
-  min-height: min(78vh, 44rem);
+  margin: 0 0 1.5rem;
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem 2rem;
+  min-height: min(52vh, 32rem);
   display: flex;
   align-items: center;
   background:
@@ -97,10 +97,10 @@
 }
 
 .pg-landing-seo-hero {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
   border-radius: 1.25rem;
   overflow: hidden;
-  max-height: min(52vh, 28rem);
+  max-height: min(42vh, 22rem);
   border: 1px solid var(--color-border);
 }
 
@@ -189,8 +189,31 @@
 }
 
 .pg-section-head {
-  margin: 3rem 0 1.25rem;
+  margin: 2rem 0 1rem;
   scroll-margin-top: 5rem;
+}
+
+/* Embedded page chrome (blog intro) — no viewport-filling heroes, visible reveal blocks */
+.pg-page-embed .pg-layout-landing .pg-showcase-hero,
+.pg-page-embed .pg-layout-landing .pg-hero {
+  min-height: 0;
+  padding: 1.25rem 1rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.pg-page-embed .pg-landing-seo-hero {
+  max-height: min(28vh, 16rem);
+  margin-bottom: 0.75rem;
+}
+
+.pg-page-embed .pg-reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.pg-page-embed .pg-layout-landing .pg-showcase-hero::after {
+  display: none;
 }
 
 .pg-section-eyebrow {
@@ -256,9 +279,9 @@
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
   border-radius: 1.25rem;
-  margin: 0 0 2rem;
-  padding: clamp(3rem, 8vw, 5.5rem) 1.5rem;
-  min-height: min(72vh, 42rem);
+  margin: 0 0 1.25rem;
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem;
+  min-height: min(48vh, 28rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -811,13 +834,23 @@
   gap: 1rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .pg-blog-with-sidebar {
     grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
   }
 
   .pg-blog-sidebar-left {
     grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .pg-blog-with-sidebar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-blog-with-sidebar .pg-blog-aside {
+    order: 2;
   }
 
   .pg-blog-sidebar-left .pg-blog-aside {

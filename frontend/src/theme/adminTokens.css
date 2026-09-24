@@ -127,6 +127,32 @@
   color: var(--admin-topbar-text);
 }
 
+/* Text scale — same ink as admin-topbar-control (not admin-card canvas). */
+.admin-shell .admin-topbar .admin-text-scale {
+  background-color: color-mix(in srgb, var(--admin-topbar-text) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--admin-topbar-text) 28%, transparent);
+  text-shadow: var(--admin-topbar-ink-shadow, none);
+}
+
+.admin-shell .admin-topbar .admin-text-scale .public-text-scale-btn,
+.admin-shell .admin-topbar .admin-text-scale .public-text-scale-value,
+.admin-shell .admin-topbar .admin-text-scale svg {
+  color: var(--admin-topbar-text);
+}
+
+.admin-shell .admin-topbar .admin-text-scale .public-text-scale-btn:hover {
+  background-color: color-mix(in srgb, var(--admin-topbar-text) 14%, transparent);
+}
+
+.admin-shell .admin-topbar .admin-text-scale .public-text-scale-btn.is-active {
+  background-color: color-mix(in srgb, var(--admin-topbar-text) 22%, transparent);
+  color: var(--admin-topbar-accent);
+}
+
+.admin-shell .admin-topbar .admin-text-scale .public-text-scale-sep {
+  border-left: 1px solid color-mix(in srgb, var(--admin-topbar-text) 22%, transparent);
+}
+
 .admin-shell .admin-topbar .admin-topbar-identity {
   color: var(--admin-topbar-text);
   border-left-color: color-mix(in srgb, var(--admin-topbar-text) 22%, transparent);

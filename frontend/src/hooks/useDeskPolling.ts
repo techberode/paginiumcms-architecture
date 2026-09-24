@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 
 const BASE_INTERVAL_MS = 30_000;
 const BACKOFF_INTERVAL_MS = 120_000;
+
+/** Vitest: run the initial tick only — recurring polls keep workers alive for 30s+. */
+const isVitest = typeof import.meta !== 'undefined' && import.meta.env?.VITEST === true;
 /** Stop hammering the API (and logs) after repeated desk failures. */
 const MAX_FAILURES_BEFORE_PAUSE = 3;
 
@@ -28,6 +31,9 @@ export function useDeskPolling(
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const schedule = (delayMs: number) => {
+      if (isVitest) {
+        return;
+      }
       timer = setTimeout(() => {
         void tick();
       }, delayMs);

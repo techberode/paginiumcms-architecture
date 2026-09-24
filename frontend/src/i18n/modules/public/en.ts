@@ -85,6 +85,7 @@ export const publicEn: MessageTree = {
     cookieSettings: 'Cookie settings',
     cookiePolicy: 'Cookie policy',
     socialTitle: 'Follow us',
+    techStackAria: 'Technologies used in this project',
     socialAria: 'Social networks',
   },
   proseImageLightbox: {
@@ -92,6 +93,16 @@ export const publicEn: MessageTree = {
     close: 'Close image',
     previous: 'Previous image',
     next: 'Next image',
+  },
+  accessibility: {
+    textScale: {
+      group: 'Text size',
+      toggle: 'Toggle text enlargement',
+      enable: 'Enable larger text',
+      disable: 'Reset text size to default',
+      increase: 'Increase text size',
+      decrease: 'Decrease text size',
+    },
   },
   gallery: {
     sectionTitle: 'Explore the admin',

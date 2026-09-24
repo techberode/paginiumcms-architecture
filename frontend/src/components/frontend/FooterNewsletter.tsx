@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowRight, Mail } from 'lucide-react';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
-import { BTN_PRIMARY, INPUT_THEME } from '../../theme/publicUiClasses';
+import { BTN_PRIMARY } from '../../theme/publicUiClasses';
 import { NewsletterSubscribeModal } from './NewsletterSubscribeModal';
 
 export const FooterNewsletter: React.FC = () => {
@@ -46,14 +46,14 @@ export const FooterNewsletter: React.FC = () => {
 
       <div className="flex gap-2">
         <div className="relative min-w-0 flex-1">
-          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-60" />
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--public-footer-fg)] opacity-70" />
           <input
             type="email"
             value={emailDraft}
             onChange={(event) => setEmailDraft(event.target.value)}
             onKeyDown={handleQuickKeyDown}
             placeholder={t('public.footer.newsletter.placeholder')}
-            className={`w-full rounded-lg py-2 pl-10 pr-3 text-sm placeholder:opacity-60 focus:outline-none ${INPUT_THEME}`}
+            className="public-footer-field w-full rounded-lg py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2"
             autoComplete="email"
           />
         </div>

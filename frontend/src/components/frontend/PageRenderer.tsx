@@ -23,8 +23,12 @@ import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
 import { useLandingReveal } from '../../hooks/useLandingReveal';
 import { ComingSoonCountdown } from './ComingSoonCountdown';
 
+export type PageRendererVariant = 'full' | 'embed';
+
 interface PageRendererProps {
   page: Page;
+  /** embed = blog intro / partial chrome — no min-height shell, tighter landing heroes */
+  variant?: PageRendererVariant;
 }
 
 function pageMeta(page: Page, defaultAuthor: string) {
@@ -63,7 +67,8 @@ function pageHeroSrcSet(page: Page, featuredImage: string): string {
   );
 }
 
-export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
+export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'full' }) => {
+  const embed = variant === 'embed';
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const meta = pageMeta(page, t('public.defaults.editorial'));
@@ -81,7 +86,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
   const isAbout = meta.template === 'about' || page.slug === 'about';
   const isLandingLayout = meta.layoutTemplate === 'landing';
   const landingContentRef = useRef<HTMLDivElement>(null);
-  useLandingReveal(landingContentRef, isLandingLayout);
+  useLandingReveal(landingContentRef, isLandingLayout && !embed);
 
   const heroBlock = isHome ? (
     <div className="relative overflow-hidden public-hero pt-20 pb-28 min-h-[22rem]">
@@ -133,7 +138,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
       </div>
     </div>
   ) : (
-    <div className="bg-theme-surface-elevated border-b border-theme-border pt-12 pb-16">
+    <div className="bg-theme-surface-elevated border-b border-theme-border pt-8 pb-10 sm:pt-10 sm:pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 text-xs text-theme-text-muted font-semibold mb-3">
           <span className="flex items-center gap-1 text-theme-primary">
@@ -205,19 +210,29 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page }) => {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-theme-surface text-theme-text pb-20 transition-colors">
-      {!isLandingLayout && (meta.layoutTemplate === 'hero-content' || isHome) ? heroBlock : null}
+  const rootClass = embed
+    ? 'bg-transparent text-theme-text pb-0 transition-colors pg-page-embed'
+    : 'min-h-screen bg-theme-surface text-theme-text pb-12 sm:pb-16 transition-colors';
 
-      <main className={`mx-auto px-4 sm:px-6 lg:px-8 ${isLandingLayout ? 'max-w-6xl mt-4' : 'max-w-4xl mt-12'}`}>
+  const mainClass = embed
+    ? `mx-auto px-0 sm:px-0 ${isLandingLayout ? 'max-w-none mt-0' : 'max-w-none mt-0'}`
+    : `mx-auto px-4 sm:px-6 lg:px-8 ${isLandingLayout ? 'max-w-6xl mt-2 sm:mt-4' : 'max-w-4xl mt-6 sm:mt-8'}`;
+
+  return (
+    <div className={rootClass} data-page-variant={variant}>
+      {!embed && !isLandingLayout && (meta.layoutTemplate === 'hero-content' || isHome) ? heroBlock : null}
+
+      <main className={mainClass}>
         <ComingSoonCountdown kind="page" slug={page.slug} />
-        {isHome && !isLandingLayout ? (
+        {isHome && !isLandingLayout && !embed ? (
           contentBlock
         ) : (
           <PageLayoutShell
             layoutTemplate={meta.layoutTemplate}
             hero={
-              meta.layoutTemplate !== 'hero-content' && !isHome && !isLandingLayout ? heroBlock : undefined
+              !embed && meta.layoutTemplate !== 'hero-content' && !isHome && !isLandingLayout
+                ? heroBlock
+                : undefined
             }
           >
             {contentBlock}

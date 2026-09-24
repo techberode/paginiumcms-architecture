@@ -20,6 +20,7 @@ import {
 } from '../../api/comments';
 import { CommentMessengerThread } from './CommentMessengerThread';
 import { useDeskInbox } from '../../hooks/useDeskInbox';
+import { useDeskActionSync, type DeskItemKey } from '../../hooks/useDeskActionSync';
 import { commentThreadReplies, commentThreadRootId, rootComments } from '../../utils/commentThread';
 import { useToast } from '../../hooks/useToast';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
@@ -65,7 +66,8 @@ export const CommentsManager: React.FC = () => {
   const { t, locale } = useI18n();
   const location = useLocation();
   const { settings } = useSettings();
-  const { inPageChatActive, canReplyComments, refresh: refreshDeskInbox } = useDeskInbox();
+  const { inPageChatActive, canReplyComments } = useDeskInbox();
+  const syncDesk = useDeskActionSync();
   const confirmDestructive = useAdminConfirm();
   const dateLocale = locale === 'en' ? 'en-US' : 'sk-SK';
   const statusLabel = (status: CommentStatus): string => t(`comments.status.${status}`);
@@ -194,12 +196,17 @@ export const CommentsManager: React.FC = () => {
     if (!(await confirmDestructive(t(confirmKey, counts)))) {
       return;
     }
-    const result = await bulkCommentWorkflow(bulkSelection.selectedIds, action);
+    const selectedIds = [...bulkSelection.selectedIds];
+    const result = await bulkCommentWorkflow(selectedIds, action);
     if (result) {
       showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
-      await refreshDeskInbox();
+      const deskKeys: DeskItemKey[] =
+        action === 'read'
+          ? []
+          : selectedIds.map((id) => ({ kind: 'comment', id }));
+      await syncDesk(deskKeys.length > 0 ? deskKeys : undefined);
     } else {
       showError(t('comments.toast.bulkFailed'));
     }
@@ -212,12 +219,13 @@ export const CommentsManager: React.FC = () => {
     if (!(await confirmDestructive(t('comments.confirm.bulkDelete', bulkSelectionCounts(bulkSelection.count, listView.total))))) {
       return;
     }
-    const result = await bulkDeleteComments(bulkSelection.selectedIds);
+    const selectedIds = [...bulkSelection.selectedIds];
+    const result = await bulkDeleteComments(selectedIds);
     if (result) {
       showSuccess(summarizeBulkResult(result, t));
       bulkSelection.clear();
       await load();
-      await refreshDeskInbox();
+      await syncDesk(selectedIds.map((id) => ({ kind: 'comment', id })));
     } else {
       showError(t('comments.toast.bulkDeleteFailed'));
     }
@@ -236,6 +244,7 @@ export const CommentsManager: React.FC = () => {
     if (result.ok) {
       showSuccess(t('comments.toast.approved'));
       await load();
+      await syncDesk([{ kind: 'comment', id }]);
     } else {
       showError(result.error || t('comments.toast.updateFailed'));
     }
@@ -245,6 +254,9 @@ export const CommentsManager: React.FC = () => {
     const updated = await updateCommentFlags(comment.id, patch);
     if (updated) {
       await load();
+      if (patch.isArchived) {
+        await syncDesk([{ kind: 'comment', id: comment.id }]);
+      }
     }
   };
 
@@ -258,6 +270,7 @@ export const CommentsManager: React.FC = () => {
         setExpandedId(null);
       }
       await load();
+      await syncDesk([{ kind: 'comment', id }]);
     }
   };
 
