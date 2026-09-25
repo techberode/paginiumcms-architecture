@@ -119,6 +119,30 @@ export function resolvePageHeroPlacement(
   return 'full-header';
 }
 
+export interface PageHeroRenderFlags {
+  placement: ResolvedPageHeroPlacement;
+  /** Landing shortcodes + CSS `--pg-hero-image` (only when layout is landing). */
+  landingInlineShell: boolean;
+  /** Full-width header band; also used when landing-inline is chosen on non-landing layouts. */
+  headerBand: boolean;
+  introCard: boolean;
+}
+
+export function resolvePageHeroRenderFlags(
+  settings: PageHeroSettings,
+  ctx: PageHeroRenderContext
+): PageHeroRenderFlags {
+  const placement = resolvePageHeroPlacement(settings, ctx);
+  return {
+    placement,
+    landingInlineShell: placement === 'landing-inline' && ctx.isLandingLayout,
+    headerBand:
+      placement === 'full-header' ||
+      (placement === 'landing-inline' && !ctx.isLandingLayout),
+    introCard: placement === 'intro-card',
+  };
+}
+
 export function pageHeroSettingsFromFrontMatter(fm: Record<string, unknown>): PageHeroSettings {
   return parsePageHeroSettings({ frontMatter: fm });
 }

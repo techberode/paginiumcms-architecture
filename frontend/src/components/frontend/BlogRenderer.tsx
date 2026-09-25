@@ -4,7 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import apiClient, { type PaginationMeta } from '../../api/client';
-import { Article } from '../../api/types';
+import { Article, Page } from '../../api/types';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { ArticleComments } from './ArticleComments';
 import {
@@ -66,7 +66,28 @@ export const BlogRenderer: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { settings } = useSettingsContext();
   const { getPageBySlug } = usePublicSite();
-  const blogLandingPage = useMemo(() => getPageBySlug('blog'), [getPageBySlug]);
+  const blogPageFromList = useMemo(() => getPageBySlug('blog'), [getPageBySlug]);
+  const [blogLandingPage, setBlogLandingPage] = useState<Page | undefined>(blogPageFromList);
+
+  useEffect(() => {
+    setBlogLandingPage(blogPageFromList);
+  }, [blogPageFromList]);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const response = await apiClient.get<Page>('/api/pages/blog');
+      if (!active || !response.success || !response.data) {
+        return;
+      }
+      if (response.data.status === 'published') {
+        setBlogLandingPage(response.data);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [locale]);
 
   const itemsPerPage = resolveBlogItemsPerPage(settings.content);
   const showReadingTime = resolveShowReadingTime(settings.content);

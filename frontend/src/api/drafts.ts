@@ -7,6 +7,7 @@ import type { EditorMode } from '../utils/contentEditor';
 import type { ContentLocaleCode, LocaleEditorState } from '../utils/contentEditorLocale';
 import type { ContentEditorStatus } from '../utils/contentScheduling';
 import type { EditorProfileId } from '../utils/editorProfiles';
+import type { PageHeroSettings } from '../utils/pageHero';
 import apiClient from './client';
 
 export type ContentType = 'page' | 'article';
@@ -25,6 +26,7 @@ export interface DraftEditorSnapshot {
   articleCategory?: string;
   articleComments?: ArticleCommentsSettings;
   articleAuthorSettings?: ArticleAuthorSettings;
+  pageHero?: PageHeroSettings;
 }
 
 export interface Draft {
@@ -44,6 +46,8 @@ export interface DraftPayload {
   content: string;
   status: string;
   baseRevision: string;
+  /** Serialized page hero for auto-save dirty detection (pages only). */
+  pageHeroJson?: string;
   editorSnapshot?: DraftEditorSnapshot;
 }
 

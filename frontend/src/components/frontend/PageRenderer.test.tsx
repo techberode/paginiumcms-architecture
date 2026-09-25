@@ -47,6 +47,49 @@ describe('PageRenderer landing hero', () => {
     expect(container.querySelector('.pg-landing-content')).toHaveTextContent('Hello');
   });
 
+  it('renders full-header hero in embed (blog intro) with viewport band', () => {
+    const { container } = renderWithProviders(
+      <MemoryRouter>
+        <PageRenderer
+          page={landingPage({
+            layoutTemplate: 'hero-content',
+            frontMatter: {
+              layoutTemplate: 'hero-content',
+              heroPlacement: 'full-header',
+              seoImage: '/storage/app/content/media/hero.jpg',
+            },
+          })}
+          variant="embed"
+        />
+      </MemoryRouter>
+    );
+
+    expect(container.querySelector('.pg-embed-full-header [data-testid="page-hero-media"]')).not.toBeNull();
+    expect(container.querySelector('[data-hero-placement="full-header"]')).toBeInTheDocument();
+  });
+
+  it('falls back to header band when landing-inline is set on non-landing layout', () => {
+    const { container } = renderWithProviders(
+      <MemoryRouter>
+        <PageRenderer
+          page={landingPage({
+            layoutTemplate: 'hero-content',
+            template: 'default',
+            frontMatter: {
+              layoutTemplate: 'hero-content',
+              template: 'default',
+              heroPlacement: 'landing-inline',
+              seoImage: '/storage/app/content/media/hero.jpg',
+            },
+          })}
+        />
+      </MemoryRouter>
+    );
+
+    expect(container.querySelector('header [data-testid="page-hero-media"]')).not.toBeNull();
+    expect(container.querySelector('[data-hero-placement="landing-inline"]')).toBeInTheDocument();
+  });
+
   it('marks embed variant for blog intro chrome', () => {
     const { container } = renderWithProviders(
       <MemoryRouter>

@@ -2,12 +2,31 @@ import { describe, expect, it } from 'vitest';
 import {
   resolvePageHero,
   resolvePageHeroPlacement,
+  resolvePageHeroRenderFlags,
   resolvePageHeroPreviewImages,
   stripHeroDuplicateFromBody,
   stripHeroDuplicateFromHtml,
 } from './pageHero';
 
 describe('pageHero', () => {
+  it('maps landing-inline on non-landing layout to header band', () => {
+    const settings = {
+      mode: 'auto' as const,
+      placement: 'landing-inline' as const,
+      images: [],
+      focusX: 50,
+      focusY: 50,
+    };
+    const flags = resolvePageHeroRenderFlags(settings, {
+      embed: false,
+      isHome: false,
+      isLandingLayout: false,
+    });
+    expect(flags.placement).toBe('landing-inline');
+    expect(flags.landingInlineShell).toBe(false);
+    expect(flags.headerBand).toBe(true);
+  });
+
   it('resolves placement overrides and auto rules', () => {
     const base = { mode: 'single' as const, placement: 'auto' as const, images: [], focusX: 50, focusY: 50 };
     expect(

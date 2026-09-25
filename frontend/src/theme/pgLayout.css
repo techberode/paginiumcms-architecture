@@ -195,6 +195,30 @@
   scroll-margin-top: 5rem;
 }
 
+/* Blog intro: break hero header band out to viewport width */
+.pg-page-embed .pg-embed-full-header {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  margin-bottom: 0.75rem;
+}
+
+.pg-page-embed .pg-embed-full-header > header {
+  border-bottom: none;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: transparent;
+}
+
+.pg-page-embed .pg-embed-full-header [data-testid='page-hero-media'] {
+  border-radius: 0;
+  max-height: min(48vh, 26rem);
+}
+
 /* Embedded page chrome (blog intro) — no viewport-filling heroes, visible reveal blocks */
 .pg-page-embed .pg-layout-landing .pg-showcase-hero,
 .pg-page-embed .pg-layout-landing .pg-hero {

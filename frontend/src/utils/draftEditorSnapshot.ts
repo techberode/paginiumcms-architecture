@@ -14,6 +14,7 @@ import {
 } from './contentEditorLocale';
 import type { ContentEditorStatus } from './contentScheduling';
 import type { EditorProfileId } from './editorProfiles';
+import type { PageHeroSettings } from './pageHero';
 
 export interface BuildDraftSnapshotInput {
   type: ContentType;
@@ -34,6 +35,7 @@ export interface BuildDraftSnapshotInput {
   articleCategory?: string;
   articleComments?: ArticleCommentsSettings;
   articleAuthorSettings?: ArticleAuthorSettings;
+  pageHero?: PageHeroSettings;
 }
 
 export function buildDraftEditorSnapshot(input: BuildDraftSnapshotInput): DraftEditorSnapshot {
@@ -70,6 +72,10 @@ export function buildDraftEditorSnapshot(input: BuildDraftSnapshotInput): DraftE
     snapshot.articleAuthorSettings = input.articleAuthorSettings;
   }
 
+  if (input.type === 'page' && input.pageHero) {
+    snapshot.pageHero = input.pageHero;
+  }
+
   return snapshot;
 }
 
@@ -86,6 +92,7 @@ export interface AppliedDraftSnapshot {
   articleCategory?: string;
   articleComments?: ArticleCommentsSettings;
   articleAuthorSettings?: ArticleAuthorSettings;
+  pageHero?: PageHeroSettings;
   applied: ReturnType<typeof applyLocaleEditorState>;
 }
 
@@ -112,6 +119,7 @@ export function applyDraftEditorSnapshot(
     articleCategory: snapshot.articleCategory,
     articleComments: snapshot.articleComments,
     articleAuthorSettings: snapshot.articleAuthorSettings,
+    pageHero: snapshot.pageHero,
     applied,
   };
 }

@@ -22,7 +22,7 @@ import { MEDIA_THUMB_WIDTH } from '../../api/media';
 import {
   parsePageHeroSettings,
   resolvePageHero,
-  resolvePageHeroPlacement,
+  resolvePageHeroRenderFlags,
   stripHeroDuplicateFromBody,
   stripHeroDuplicateFromHtml,
 } from '../../utils/pageHero';
@@ -61,11 +61,9 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
   const isServices = meta.template === 'services' || page.slug === 'sluzby' || page.slug === 'services';
   const isLandingLayout = meta.layoutTemplate === 'landing';
 
-  const heroPlacement = resolvePageHeroPlacement(heroSettings, {
-    embed,
-    isHome,
-    isLandingLayout,
-  });
+  const heroCtx = { embed, isHome, isLandingLayout };
+  const heroFlags = resolvePageHeroRenderFlags(heroSettings, heroCtx);
+  const heroPlacement = heroFlags.placement;
 
   const bodyForDisplay = useMemo(
     () => stripHeroDuplicateFromBody(page.content ?? '', resolvedHero.images),
@@ -80,7 +78,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
   }, [page.html, resolvedHero.images]);
 
   const landingContentRef = useRef<HTMLDivElement>(null);
-  const useLandingShell = isLandingLayout && heroPlacement === 'landing-inline';
+  const useLandingShell = heroFlags.landingInlineShell;
   useLandingReveal(landingContentRef, useLandingShell && !embed);
 
   const templateLabel = meta.template ? meta.template.toUpperCase() : t('public.page.meta.pageLabel');
@@ -88,7 +86,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
   const showHeroMedia = resolvedHero.showImage && heroPlacement !== 'none';
 
   const introCardHero =
-    showHeroMedia && heroPlacement === 'intro-card' ? (
+    showHeroMedia && heroFlags.introCard ? (
       <PageHeroMedia
         variant="embed"
         title={page.title}
@@ -101,7 +99,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
     ) : null;
 
   const homeMarketingHero =
-    isHome && !embed && heroPlacement === 'full-header' && !showHeroMedia ? (
+    isHome && !embed && heroFlags.headerBand && !showHeroMedia ? (
       <div className="relative overflow-hidden public-hero pt-20 pb-28 min-h-[22rem]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-theme-primary/20 text-theme-primary-foreground font-bold text-xs mb-8 border border-theme-primary/30 backdrop-blur-md">
@@ -135,7 +133,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
     ) : null;
 
   const fullHeaderBand =
-    !embed && heroPlacement === 'full-header' && showHeroMedia ? (
+    !embed && heroFlags.headerBand && showHeroMedia ? (
       <PageHeroHeader
         variant="full"
         title={page.title}
@@ -151,7 +149,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
     ) : null;
 
   const standardPageHeader =
-    !embed && heroPlacement === 'full-header' && !isHome ? (
+    !embed && heroFlags.headerBand && !isHome ? (
       <PageHeroHeader
         variant="full"
         title={page.title}
@@ -167,8 +165,36 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
       />
     ) : null;
 
+  const embedHeaderBand =
+    embed && heroFlags.headerBand && showHeroMedia ? (
+      <div className="pg-embed-full-header">
+        <PageHeroHeader
+          variant="full"
+          title={page.title}
+          description={meta.description}
+          images={resolvedHero.images}
+          focusX={resolvedHero.focusX}
+          focusY={resolvedHero.focusY}
+          carousel={resolvedHero.mode === 'carousel'}
+        />
+      </div>
+    ) : null;
+
+  const embedTitleHeader =
+    embed && heroFlags.headerBand && !showHeroMedia ? (
+      <PageHeroHeader
+        variant="embed"
+        title={page.title}
+        description={meta.description}
+        images={[]}
+        focusX={resolvedHero.focusX}
+        focusY={resolvedHero.focusY}
+        showMedia={false}
+      />
+    ) : null;
+
   const introTitleHeader =
-    heroPlacement === 'intro-card' ? (
+    heroFlags.introCard ? (
       <PageHeroHeader
         variant="embed"
         title={page.title}
@@ -193,7 +219,6 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
 
   const landingNeedsSeoHeroFallback =
     useLandingShell &&
-    !embed &&
     showHeroMedia &&
     !landingHeroPresentInBody(htmlForDisplay ?? page.html, bodyForDisplay);
 
@@ -226,14 +251,14 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
       ) : null}
       <MarkdownRenderer content={bodyForDisplay} html={htmlForDisplay} enableImageLightbox />
     </div>
-  ) : heroPlacement === 'intro-card' && (introCardHero || hasBodyContent) ? (
+  ) : heroFlags.introCard && (introCardHero || hasBodyContent) ? (
     <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
       {introCardHero}
       {hasBodyContent ? (
         <MarkdownRenderer content={bodyForDisplay} html={htmlForDisplay} enableImageLightbox />
       ) : null}
     </div>
-  ) : heroPlacement === 'full-header' && hasBodyContent ? (
+  ) : heroFlags.headerBand && hasBodyContent ? (
     <div className={`${PUBLIC_CARD} p-8 sm:p-12`}>
       <MarkdownRenderer content={bodyForDisplay} html={htmlForDisplay} enableImageLightbox />
     </div>
@@ -254,16 +279,20 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
     : `mx-auto px-4 sm:px-6 lg:px-8 ${useLandingShell ? 'max-w-6xl mt-2 sm:mt-4' : 'max-w-4xl mt-6 sm:mt-8'}`;
 
   const topHeader = embed
-    ? heroPlacement === 'intro-card'
+    ? heroFlags.introCard
       ? introTitleHeader
-      : null
-    : isHome && heroPlacement === 'full-header' && showHeroMedia
+      : heroFlags.headerBand && showHeroMedia
+        ? embedHeaderBand
+        : heroFlags.headerBand
+          ? embedTitleHeader
+          : null
+    : isHome && heroFlags.headerBand && showHeroMedia
       ? fullHeaderBand
-      : isHome && heroPlacement === 'full-header' && !showHeroMedia
+      : isHome && heroFlags.headerBand && !showHeroMedia
         ? homeMarketingHero
-        : !isHome && heroPlacement === 'full-header'
+        : !isHome && heroFlags.headerBand
           ? standardPageHeader
-          : heroPlacement === 'intro-card'
+          : heroFlags.introCard
             ? introTitleHeader
             : null;
 
@@ -273,7 +302,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
         <ComingSoonCountdown kind="page" slug={page.slug} />
         {topHeader}
 
-        {isHome && !useLandingShell && !embed && heroPlacement === 'full-header' ? (
+        {isHome && !useLandingShell && !embed && heroFlags.headerBand ? (
           contentBlock
         ) : (
           <PageLayoutShell layoutTemplate={meta.layoutTemplate} hero={undefined}>

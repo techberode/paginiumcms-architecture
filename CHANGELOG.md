@@ -15,6 +15,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Pages:** Unified header hero (auto / single / carousel / none) with **placement** (`auto`, `full-header`, `intro-card`, `landing-inline`), drag crop preview, home/landing routing fixes; backend `heroPlacement`; docs [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md).
 - **Fix:** Locale-scoped page saves (`locale` in PUT body) now persist hero front matter and SEO via `applyGlobalContentFields` (regression: placement reset to Auto after reload).
+- **Fix:** Page editor save always sent stale hero mode/placement (`pageHero` missing from `handleSave` dependencies); hero settings now persist on save and in full draft snapshots.
+- **Fix:** Public hero **full-header** and **landing-inline** rendering — embed/blog intro now shows full-width header band; landing-inline on non-landing layouts falls back to header band instead of hiding the image.
+- **Fix:** Blog landing loads `/api/pages/blog` (locale-aware) so hero front matter is not stuck on list defaults; full-header hero image spans the header band edge-to-edge.
 - **Docs:** [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) — 21:9 / 2560×1097 hero specs, safe zone, AI prompt, OG notes (SK: `docs/sk/user/PAGE_HERO_IMAGES.md`).
 
 ## Release index

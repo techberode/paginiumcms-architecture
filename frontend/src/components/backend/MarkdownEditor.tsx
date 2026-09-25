@@ -201,7 +201,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const draftFullEditorState = settings.content?.draftFullEditorState === true;
 
   const draftPayload = useMemo(() => {
-    const base = { title, content, status, baseRevision };
+    const base = {
+      title,
+      content,
+      status,
+      baseRevision,
+      ...(type === 'page' ? { pageHeroJson: JSON.stringify(pageHero) } : {}),
+    };
     if (!draftFullEditorState) {
       return base;
     }
@@ -227,6 +233,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         articleCategory,
         articleComments,
         articleAuthorSettings,
+        pageHero: type === 'page' ? pageHero : undefined,
       }),
     };
   }, [
@@ -244,6 +251,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     layoutTemplate,
     localeStates,
     localeStatusMap,
+    pageHero,
     scheduledAt,
     seo,
     status,
@@ -541,6 +549,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           setLayoutTemplate(restored.layoutTemplate);
           setEditSlug(restored.editSlug);
           setScheduledAt(restored.scheduledAt);
+          if (type === 'page' && restored.pageHero) {
+            setPageHero(restored.pageHero);
+          }
           setContentFormat(restored.applied.contentFormat);
           setTitle(restored.applied.title);
           setContent(restored.applied.content);
@@ -804,6 +815,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       articleAuthorSettings,
       articleCategory,
       activeLocale,
+      pageHero,
       post,
       put,
       navigate,
