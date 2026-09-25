@@ -195,8 +195,8 @@
   scroll-margin-top: 5rem;
 }
 
-/* Blog intro: break hero header band out to viewport width */
-.pg-page-embed .pg-embed-full-header {
+/* Full-width cover hero (Wix-style): image edge-to-edge, title in centered panel */
+.pg-hero-cover--breakout {
   position: relative;
   left: 50%;
   right: 50%;
@@ -204,19 +204,10 @@
   max-width: 100vw;
   margin-left: -50vw;
   margin-right: -50vw;
-  margin-bottom: 0.75rem;
 }
 
-.pg-page-embed .pg-embed-full-header > header {
-  border-bottom: none;
-  padding-top: 0;
-  padding-bottom: 0;
-  background: transparent;
-}
-
-.pg-page-embed .pg-embed-full-header [data-testid='page-hero-media'] {
-  border-radius: 0;
-  max-height: min(48vh, 26rem);
+.pg-page-embed .pg-hero-cover--breakout {
+  margin-bottom: 0.5rem;
 }
 
 /* Embedded page chrome (blog intro) — no viewport-filling heroes, visible reveal blocks */

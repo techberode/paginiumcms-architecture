@@ -64,7 +64,7 @@ describe('PageRenderer landing hero', () => {
       </MemoryRouter>
     );
 
-    expect(container.querySelector('.pg-embed-full-header [data-testid="page-hero-media"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="page-hero-cover"]')).not.toBeNull();
     expect(container.querySelector('[data-hero-placement="full-header"]')).toBeInTheDocument();
   });
 
@@ -86,7 +86,7 @@ describe('PageRenderer landing hero', () => {
       </MemoryRouter>
     );
 
-    expect(container.querySelector('header [data-testid="page-hero-media"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="page-hero-cover"]')).not.toBeNull();
     expect(container.querySelector('[data-hero-placement="landing-inline"]')).toBeInTheDocument();
   });
 
@@ -144,7 +144,7 @@ describe('PageRenderer landing hero', () => {
       </MemoryRouter>
     );
 
-    const heroImg = container.querySelector('header img');
+    const heroImg = container.querySelector('[data-testid="page-hero-cover"] img');
     expect(heroImg).not.toBeNull();
     expect(heroImg?.getAttribute('src')).toContain(
       '/storage/app/content/media/uploads/hero.png'

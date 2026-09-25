@@ -18,6 +18,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Fix:** Page editor save always sent stale hero mode/placement (`pageHero` missing from `handleSave` dependencies); hero settings now persist on save and in full draft snapshots.
 - **Fix:** Public hero **full-header** and **landing-inline** rendering — embed/blog intro now shows full-width header band; landing-inline on non-landing layouts falls back to header band instead of hiding the image.
 - **Fix:** Blog landing loads `/api/pages/blog` (locale-aware) so hero front matter is not stuck on list defaults; full-header hero image spans the header band edge-to-edge.
+- **Pages:** **Full header** placement uses cover layout (full-bleed photo + centered title panel, Wix-style); blog intro breaks cover to viewport width while the text card stays in the nav content width.
 - **Docs:** [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) — 21:9 / 2560×1097 hero specs, safe zone, AI prompt, OG notes (SK: `docs/sk/user/PAGE_HERO_IMAGES.md`).
 
 ## Release index

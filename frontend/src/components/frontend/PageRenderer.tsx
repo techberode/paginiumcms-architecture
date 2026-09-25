@@ -15,6 +15,7 @@ import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates'
 import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
 import { useLandingReveal } from '../../hooks/useLandingReveal';
 import { ComingSoonCountdown } from './ComingSoonCountdown';
+import { PageHeroCover } from './PageHeroCover';
 import { PageHeroHeader } from './PageHeroHeader';
 import { PageHeroMedia } from './PageHeroMedia';
 import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
@@ -132,24 +133,27 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
       </div>
     ) : null;
 
-  const fullHeaderBand =
+  const heroCoverProps = {
+    title: page.title,
+    description: meta.description,
+    images: resolvedHero.images,
+    focusX: resolvedHero.focusX,
+    focusY: resolvedHero.focusY,
+    carousel: resolvedHero.mode === 'carousel',
+  };
+
+  const fullHeaderCover =
     !embed && heroFlags.headerBand && showHeroMedia ? (
-      <PageHeroHeader
-        variant="full"
-        title={page.title}
-        description={meta.description}
+      <PageHeroCover
+        {...heroCoverProps}
         templateLabel={isHome ? undefined : templateLabel}
         dateLabel={isHome ? undefined : dateLabel}
         authorLabel={isHome ? undefined : meta.author}
-        images={resolvedHero.images}
-        focusX={resolvedHero.focusX}
-        focusY={resolvedHero.focusY}
-        carousel={resolvedHero.mode === 'carousel'}
       />
     ) : null;
 
   const standardPageHeader =
-    !embed && heroFlags.headerBand && !isHome ? (
+    !embed && heroFlags.headerBand && !isHome && !showHeroMedia ? (
       <PageHeroHeader
         variant="full"
         title={page.title}
@@ -157,27 +161,26 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
         templateLabel={templateLabel}
         dateLabel={dateLabel}
         authorLabel={meta.author}
-        images={showHeroMedia ? resolvedHero.images : []}
+        images={[]}
         focusX={resolvedHero.focusX}
         focusY={resolvedHero.focusY}
-        carousel={resolvedHero.mode === 'carousel'}
-        showMedia={showHeroMedia}
+        showMedia={false}
       />
     ) : null;
 
-  const embedHeaderBand =
+  const standardPageCover =
+    !embed && heroFlags.headerBand && !isHome && showHeroMedia ? (
+      <PageHeroCover
+        {...heroCoverProps}
+        templateLabel={templateLabel}
+        dateLabel={dateLabel}
+        authorLabel={meta.author}
+      />
+    ) : null;
+
+  const embedHeaderCover =
     embed && heroFlags.headerBand && showHeroMedia ? (
-      <div className="pg-embed-full-header">
-        <PageHeroHeader
-          variant="full"
-          title={page.title}
-          description={meta.description}
-          images={resolvedHero.images}
-          focusX={resolvedHero.focusX}
-          focusY={resolvedHero.focusY}
-          carousel={resolvedHero.mode === 'carousel'}
-        />
-      </div>
+      <PageHeroCover {...heroCoverProps} breakout />
     ) : null;
 
   const embedTitleHeader =
@@ -282,19 +285,21 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
     ? heroFlags.introCard
       ? introTitleHeader
       : heroFlags.headerBand && showHeroMedia
-        ? embedHeaderBand
+        ? embedHeaderCover
         : heroFlags.headerBand
           ? embedTitleHeader
           : null
     : isHome && heroFlags.headerBand && showHeroMedia
-      ? fullHeaderBand
+      ? fullHeaderCover
       : isHome && heroFlags.headerBand && !showHeroMedia
         ? homeMarketingHero
-        : !isHome && heroFlags.headerBand
-          ? standardPageHeader
-          : heroFlags.introCard
-            ? introTitleHeader
-            : null;
+        : !isHome && heroFlags.headerBand && showHeroMedia
+          ? standardPageCover
+          : !isHome && heroFlags.headerBand
+            ? standardPageHeader
+            : heroFlags.introCard
+              ? introTitleHeader
+              : null;
 
   return (
     <div className={rootClass} data-page-variant={variant} data-hero-placement={heroPlacement}>

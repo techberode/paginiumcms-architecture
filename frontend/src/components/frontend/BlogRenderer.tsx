@@ -607,10 +607,10 @@ export const BlogRenderer: React.FC = () => {
 
   return (
     <div className="min-h-0 bg-theme-surface text-theme-text pb-16 sm:pb-20 transition-colors">
-      <div className="bg-theme-surface-elevated border-b border-theme-border pt-6 pb-8 sm:pt-8 sm:pb-10">
+      <div className="bg-theme-surface-elevated border-b border-theme-border pt-0 pb-8 sm:pb-10">
         <div className={`${blogListMaxWidthClass(listLayout.width)} mx-auto px-4 sm:px-6 lg:px-8 text-center`}>
           {blogLandingPage ? (
-            <div className="text-left mb-4 sm:mb-6">
+            <div className="text-left mb-4 sm:mb-6 -mx-4 sm:-mx-6 lg:-mx-8">
               <PageRenderer page={blogLandingPage} variant="embed" />
             </div>
           ) : (

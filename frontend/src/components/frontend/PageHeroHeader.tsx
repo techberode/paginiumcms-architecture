@@ -15,6 +15,8 @@ export interface PageHeroHeaderProps {
   carousel?: boolean;
   /** When false, title/description only (hero renders elsewhere, e.g. blog greybox). */
   showMedia?: boolean;
+  /** Wraps full-band media; default matches public navbar inner width (`max-w-7xl`). */
+  mediaWidthClass?: string;
 }
 
 export const PageHeroHeader: React.FC<PageHeroHeaderProps> = ({
@@ -29,6 +31,7 @@ export const PageHeroHeader: React.FC<PageHeroHeaderProps> = ({
   focusY,
   carousel = false,
   showMedia = true,
+  mediaWidthClass = 'max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8',
 }) => {
   const embed = variant === 'embed';
   const showImage = showMedia && images.length > 0;
@@ -97,19 +100,27 @@ export const PageHeroHeader: React.FC<PageHeroHeaderProps> = ({
           : 'bg-theme-surface-elevated border-b border-theme-border pt-6 pb-0 sm:pt-8 overflow-hidden'
       }
     >
-      <div className={embed ? 'space-y-3' : 'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 pb-8 sm:pb-10'}>
+      <div
+        className={
+          embed
+            ? 'space-y-3 w-full'
+            : `${mediaWidthClass} space-y-4 pb-6 sm:pb-8`
+        }
+      >
         {textBlock}
       </div>
       {fullBleedMedia ? (
-        <PageHeroMedia
-          variant="full"
-          title={title}
-          images={images}
-          focusX={focusX}
-          focusY={focusY}
-          carousel={carousel}
-          className="w-full max-w-none rounded-none shadow-none max-h-[min(52vh,30rem)] aspect-[21/9]"
-        />
+        <div className={mediaWidthClass}>
+          <PageHeroMedia
+            variant="full"
+            title={title}
+            images={images}
+            focusX={focusX}
+            focusY={focusY}
+            carousel={carousel}
+            className="w-full max-h-[min(52vh,30rem)] aspect-[21/9]"
+          />
+        </div>
       ) : null}
     </header>
   );
