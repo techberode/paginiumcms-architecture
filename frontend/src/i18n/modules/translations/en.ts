@@ -41,7 +41,8 @@ export const translationsEn: MessageTree = {
   actions: {
     save: 'Save translations',
     revert: 'Revert changes',
-    reload: 'Reload page',
+    applyRuntime: 'Apply edited translations',
+    reload: 'Reload full page',
   },
   backup: {
     title: 'Backups',
@@ -61,6 +62,8 @@ export const translationsEn: MessageTree = {
     revertDone: 'Changes discarded',
     restoreSuccess: 'Backup restored',
     restoreFailed: 'Backup restore failed',
+    applyRuntimeSuccess: 'Admin UI strings loaded from disk',
+    applyRuntimeFailed: 'Could not load translations from disk (check GET /api/i18n/frontend-catalog)',
   },
   policy: {
     rejectedCopy: 'Rejected copy saved to',
@@ -69,7 +72,10 @@ export const translationsEn: MessageTree = {
     nextErrorHint: 'Save again after fixing this issue to see the next error.',
   },
   hint: {
-    frontendReload: 'After editing frontend translations, reload the page to apply changes in admin.',
+    frontendReloadDev:
+      'After save, admin strings merge automatically. If something looks stale, use “Apply edited translations”.',
+    frontendReloadProd:
+      'No npm build required for copy edits: after save (or “Apply edited translations”) strings load from disk via API. Rebuild only when admin source code changes.',
     backendImmediate: 'Backend translations apply on the next API request.',
     policyTitle: 'Save policy',
     policyBody:

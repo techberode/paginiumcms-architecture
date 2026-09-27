@@ -12,7 +12,7 @@ describe('content i18n module', () => {
     registerModuleMessages('sk', 'content', contentSk);
     registerModuleMessages('en', 'content', contentEn);
 
-    expect(translate('sk', 'content.pages.title')).toBe('Podstránky');
+    expect(translate('sk', 'content.pages.title')).toBe('Stránky');
     expect(translate('en', 'content.articles.empty')).toBe('No articles found');
     expect(translate('sk', 'content.confirm.bulkDelete', { selected: '3', total: '12', count: '3' })).toContain('3 z 12');
   });

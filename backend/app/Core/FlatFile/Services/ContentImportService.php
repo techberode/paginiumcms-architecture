@@ -8,17 +8,19 @@ use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\Article;
 use PaginiumCMS\Core\FlatFile\Models\Page;
-use PaginiumCMS\Core\Import\WordPressWxrImporter;
+use PaginiumCMS\Core\Import\ContentImportSourceRegistry;
 use PaginiumCMS\Support\JsonHelper;
 
 /**
- * Imports pages/articles from JSON export bundles or WordPress WXR (It.80f / 80g).
+ * Imports pages/articles from JSON export bundles or external CMS sources (It.80f / 80g).
+ *
+ * @phpstan-import-type NormalizedImportRow from \PaginiumCMS\Core\Import\ImportRowTypes
  */
 final class ContentImportService
 {
     public function __construct(
         private ContentRepositoryInterface $repository,
-        private WordPressWxrImporter $wordpress,
+        private ContentImportSourceRegistry $sources,
     ) {
     }
 
@@ -77,16 +79,74 @@ final class ContentImportService
 
     public function importFromWordPressFile(string $path, bool $dryRun): ContentImportResult
     {
+        return $this->importFromFormat('wordpress', $path, $dryRun);
+    }
+
+    public function importFromFormat(string $format, string $path, bool $dryRun): ContentImportResult
+    {
         $result = new ContentImportResult();
 
         try {
-            $rows = $this->wordpress->parseFile($path);
+            /** @var list<NormalizedImportRow> $rows */
+            $rows = $this->sources->parse($format, $path);
         } catch (FlatFileException $e) {
             $result->addError($e->getMessage());
 
             return $result;
         }
 
+        return $this->importParsedRows($rows, $dryRun, $result);
+    }
+
+    public function importFromUploadedFile(string $format, string $tempPath, string $clientFilename, bool $dryRun): ContentImportResult
+    {
+        $result = new ContentImportResult();
+
+        try {
+            $resolved = $this->sources->resolveUploadPath($format, $tempPath, $clientFilename);
+        } catch (FlatFileException $e) {
+            if ($this->isEphemeralUploadPath($tempPath)) {
+                @unlink($tempPath);
+            }
+            $result->addError($e->getMessage());
+
+            return $result;
+        }
+
+        try {
+            if ($resolved['format'] === 'json') {
+                return $this->importFromJsonFile($resolved['path'], $dryRun);
+            }
+
+            return $this->importFromFormat($resolved['format'], $resolved['path'], $dryRun);
+        } finally {
+            $this->sources->cleanup($resolved['cleanupDir']);
+            if ($this->isEphemeralUploadPath($tempPath)) {
+                @unlink($tempPath);
+            }
+        }
+    }
+
+    private function isEphemeralUploadPath(string $path): bool
+    {
+        if (!is_file($path)) {
+            return false;
+        }
+
+        $real = realpath($path);
+        $temp = realpath(sys_get_temp_dir());
+        if ($real === false || $temp === false) {
+            return false;
+        }
+
+        return str_starts_with($real, $temp . DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * @param list<NormalizedImportRow> $rows
+     */
+    private function importParsedRows(array $rows, bool $dryRun, ContentImportResult $result): ContentImportResult
+    {
         foreach ($rows as $row) {
             try {
                 $this->importRow([
@@ -99,7 +159,7 @@ final class ContentImportService
                         'date' => $row['date'],
                         'description' => $row['description'],
                         'tags' => $row['tags'],
-                        'importSource' => 'wordpress',
+                        'importSource' => $row['importSource'],
                     ],
                     'content' => $row['content'],
                 ], $dryRun, $result);

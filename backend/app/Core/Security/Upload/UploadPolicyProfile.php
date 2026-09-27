@@ -30,7 +30,14 @@ final class UploadPolicyProfile
             UploadPolicyProfileId::MEDIA_VIDEO => $this->intersectMimeTypes($this->resolveVideoMimeTypes()),
             UploadPolicyProfileId::DOCUMENTS => $this->intersectMimeTypes(MediaDocumentPolicy::allowedMimeTypes($this->settings)),
             UploadPolicyProfileId::BACKUP_ARCHIVE,
-            UploadPolicyProfileId::EXTENSION_ARCHIVE => ['application/zip', 'application/x-zip-compressed'],
+            UploadPolicyProfileId::EXTENSION_ARCHIVE => ['application/zip', 'application/x-zip-comcompressed'],
+            UploadPolicyProfileId::CMS_MIGRATION => [
+                'application/zip',
+                'application/x-zip-compressed',
+                'application/xml',
+                'text/xml',
+                'application/json',
+            ],
             UploadPolicyProfileId::STOCK_IMPORT => $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
             default => [],
         };
@@ -48,6 +55,7 @@ final class UploadPolicyProfile
             UploadPolicyProfileId::DOCUMENTS => $this->extensionsForMimes($this->allowedMimeTypes($profileId)),
             UploadPolicyProfileId::BACKUP_ARCHIVE,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => ['zip'],
+            UploadPolicyProfileId::CMS_MIGRATION => ['zip', 'xml', 'json'],
             UploadPolicyProfileId::STOCK_IMPORT => $this->extensionsForMimes($this->allowedMimeTypes($profileId)),
             default => [],
         };
@@ -67,7 +75,8 @@ final class UploadPolicyProfile
             UploadPolicyProfileId::AVATAR => AvatarImageProcessor::MAX_UPLOAD_BYTES,
             UploadPolicyProfileId::MEDIA_VIDEO => $this->resolveMediaMaxVideoUploadBytes(),
             UploadPolicyProfileId::DOCUMENTS => MediaDocumentPolicy::maxUploadBytes($this->settings),
-            UploadPolicyProfileId::BACKUP_ARCHIVE => max(1024, (int) ($this->settings->group('uploadSecurity')['backupImportMaxSizeKb'] ?? 102400)) * 1024,
+            UploadPolicyProfileId::BACKUP_ARCHIVE,
+            UploadPolicyProfileId::CMS_MIGRATION => max(1024, (int) ($this->settings->group('uploadSecurity')['backupImportMaxSizeKb'] ?? 102400)) * 1024,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => 52_428_800,
             UploadPolicyProfileId::STOCK_IMPORT => $this->resolveMediaMaxUploadBytes(),
             default => 0,

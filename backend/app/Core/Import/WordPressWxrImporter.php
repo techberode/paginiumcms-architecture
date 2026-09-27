@@ -8,20 +8,13 @@ use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 
 /**
  * Parses WordPress WXR export XML into normalized import rows (It.80g phase 1).
+ *
+ * @phpstan-import-type NormalizedImportRow from ImportRowTypes
  */
 final class WordPressWxrImporter
 {
     /**
-     * @return list<array{
-     *     type: string,
-     *     slug: string,
-     *     title: string,
-     *     content: string,
-     *     status: string,
-     *     date: string,
-     *     description: string,
-     *     tags: list<string>
-     * }>
+     * @return list<NormalizedImportRow>
      */
     public function parseFile(string $path): array
     {
@@ -38,16 +31,7 @@ final class WordPressWxrImporter
     }
 
     /**
-     * @return list<array{
-     *     type: string,
-     *     slug: string,
-     *     title: string,
-     *     content: string,
-     *     status: string,
-     *     date: string,
-     *     description: string,
-     *     tags: list<string>
-     * }>
+     * @return list<NormalizedImportRow>
      */
     public function parseXml(string $xml): array
     {
@@ -74,15 +58,18 @@ final class WordPressWxrImporter
 
         libxml_use_internal_errors($previous);
 
-        $document->registerXPathNamespace('wp', 'http://wordpress.org/export/1.2/');
+        $wpNamespace = $this->resolveWordPressNamespace($document);
+        $excerptNamespace = str_contains($wpNamespace, '/1.0/') ? $wpNamespace : 'http://wordpress.org/export/1.2/excerpt/';
+
+        $document->registerXPathNamespace('wp', $wpNamespace);
         $document->registerXPathNamespace('content', 'http://purl.org/rss/1.0/modules/content/');
-        $document->registerXPathNamespace('excerpt', 'http://wordpress.org/export/1.2/excerpt/');
+        $document->registerXPathNamespace('excerpt', $excerptNamespace);
 
         $items = [];
         foreach ($document->channel->item ?? [] as $item) {
-            $item->registerXPathNamespace('wp', 'http://wordpress.org/export/1.2/');
+            $item->registerXPathNamespace('wp', $wpNamespace);
             $item->registerXPathNamespace('content', 'http://purl.org/rss/1.0/modules/content/');
-            $item->registerXPathNamespace('excerpt', 'http://wordpress.org/export/1.2/excerpt/');
+            $item->registerXPathNamespace('excerpt', $excerptNamespace);
 
             $postType = trim((string) ($item->children('wp', true)->post_type ?? ''));
             if (!in_array($postType, ['post', 'page'], true)) {
@@ -108,7 +95,7 @@ final class WordPressWxrImporter
             $tags = [];
             foreach ($item->category ?? [] as $category) {
                 $domain = (string) ($category->attributes()['domain'] ?? '');
-                if ($domain === 'post_tag') {
+                if ($domain === 'post_tag' || $domain === 'category') {
                     $tag = trim((string) $category);
                     if ($tag !== '') {
                         $tags[] = $tag;
@@ -116,19 +103,32 @@ final class WordPressWxrImporter
                 }
             }
 
-            $items[] = [
-                'type' => $postType === 'page' ? 'page' : 'article',
-                'slug' => $slug,
-                'title' => $title,
-                'content' => $encoded,
-                'status' => $this->mapStatus($status),
-                'date' => $postDate !== '' ? $postDate : gmdate('Y-m-d H:i:s'),
-                'description' => $excerpt,
-                'tags' => $tags,
-            ];
+            $items[] = ContentImportRowFactory::create(
+                $postType === 'page' ? 'page' : 'article',
+                $slug,
+                $title,
+                $encoded,
+                $this->mapStatus($status),
+                $postDate !== '' ? $postDate : gmdate('Y-m-d H:i:s'),
+                $excerpt,
+                $tags,
+                'wordpress',
+            );
         }
 
         return $items;
+    }
+
+    private function resolveWordPressNamespace(\SimpleXMLElement $document): string
+    {
+        $namespaces = $document->getNamespaces(true);
+        foreach (['http://wordpress.org/export/1.2/', 'http://wordpress.org/export/1.1/', 'http://wordpress.org/export/1.0/'] as $candidate) {
+            if (in_array($candidate, $namespaces, true)) {
+                return $candidate;
+            }
+        }
+
+        return 'http://wordpress.org/export/1.2/';
     }
 
     private function mapStatus(string $wpStatus): string

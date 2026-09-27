@@ -1,6 +1,6 @@
 // frontend/src/context/I18nContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { loadRuntimeI18nOverrides } from '../i18n/loadRuntimeOverrides';
+import { applyAllRuntimeFrontendCatalogs } from '../i18n/loadRuntimeOverrides';
 import { normalizeLocale, translate, type Locale } from '../i18n';
 import { useSettings } from '../hooks/useSettings';
 import { AuthContext } from './AuthContext';
@@ -24,7 +24,7 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let cancelled = false;
 
     const applyRuntimeOverrides = async (): Promise<void> => {
-      await loadRuntimeI18nOverrides(locale);
+      await applyAllRuntimeFrontendCatalogs();
       if (!cancelled) {
         setRuntimeRevision((value) => value + 1);
       }
@@ -32,7 +32,11 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     void applyRuntimeOverrides();
 
-    const onReload = (): void => {
+    const onReload = (event: Event): void => {
+      if (event instanceof CustomEvent && event.detail?.skipFetch === true) {
+        setRuntimeRevision((value) => value + 1);
+        return;
+      }
       void applyRuntimeOverrides();
     };
     window.addEventListener('paginium:i18n-runtime-reload', onReload);

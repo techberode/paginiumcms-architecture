@@ -27,6 +27,8 @@ final class UploadSurfaceRegistry
 
     public const SURFACE_TEAM_CHAT_UPLOAD = 'team-chat.upload';
 
+    public const SURFACE_CMS_MIGRATION = 'cms.migration.import';
+
     /**
      * @return array<string, string> surface id => profile id
      */
@@ -42,6 +44,7 @@ final class UploadSurfaceRegistry
             self::SURFACE_EXTENSION_IMPORT => UploadPolicyProfileId::EXTENSION_ARCHIVE,
             self::SURFACE_THEME_IMPORT => UploadPolicyProfileId::EXTENSION_ARCHIVE,
             self::SURFACE_STOCK_IMPORT => UploadPolicyProfileId::STOCK_IMPORT,
+            self::SURFACE_CMS_MIGRATION => UploadPolicyProfileId::CMS_MIGRATION,
         ];
     }
 

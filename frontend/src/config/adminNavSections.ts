@@ -33,6 +33,7 @@ import {
   ArrowUpCircle,
   KeyRound,
   ArrowRightLeft,
+  Import,
   Webhook,
   Code2,
   BookMarked,
@@ -241,6 +242,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
     labelKey: 'admin.sections.operations',
     items: [
       { id: 'backups', labelKey: 'admin.nav.backups', href: '/backups', icon: HardDrive },
+      {
+        id: 'content-migration',
+        labelKey: 'admin.nav.contentMigration',
+        href: '/content-migration',
+        icon: Import,
+        adminOnly: true,
+      },
       { id: 'trash', labelKey: 'admin.nav.trash', href: '/trash', icon: Trash2, adminOnly: true },
       { id: 'github', labelKey: 'admin.nav.github', href: '/github', icon: GitBranch, adminOnly: true },
     ],

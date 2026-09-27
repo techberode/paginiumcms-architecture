@@ -236,7 +236,11 @@ export const ArticleComments: React.FC<ArticleCommentsProps> = ({
       ) : null}
 
       {loading ? (
-        <p className="text-sm text-theme-text-muted">{t('public.comments.loading')}</p>
+        <div className="min-h-[18rem] animate-pulse space-y-3" aria-busy="true">
+          <p className="text-sm text-theme-text-muted">{t('public.comments.loading')}</p>
+          <div className={`${PUBLIC_CARD} h-24 rounded-2xl bg-theme-surface-elevated/80`} />
+          <div className={`${PUBLIC_CARD} h-32 rounded-2xl bg-theme-surface-elevated/60`} />
+        </div>
       ) : comments.length === 0 ? (
         <p className="text-sm text-theme-text-muted">{t('public.comments.empty')}</p>
       ) : (

@@ -4,14 +4,14 @@ import type { MessageTree } from '../../types';
 export const contentSk: MessageTree = {
   newItem: 'Nová položka',
   pages: {
-    title: 'Podstránky',
-    plural: 'podstránky',
-    itemAccusative: 'podstránku',
-    searchPlaceholder: 'Hľadať podstránky…',
-    empty: 'Nenašli sa žiadne podstránky',
-    emptyHint: 'Vytvorte prvú podstránku a spustite verejný web.',
-    emptyCta: 'Vytvoriť podstránku',
-    loadError: 'Nepodarilo sa načítať podstránky',
+    title: 'Stránky',
+    plural: 'stránky',
+    itemAccusative: 'stránku',
+    searchPlaceholder: 'Hľadať stránky…',
+    empty: 'Nenašli sa žiadne stránky',
+    emptyHint: 'Vytvorte prvú stránku a spustite verejný web.',
+    emptyCta: 'Vytvoriť stránku',
+    loadError: 'Nepodarilo sa načítať stránky',
   },
   articles: {
     title: 'Články',

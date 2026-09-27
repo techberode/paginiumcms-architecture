@@ -11,6 +11,10 @@ import { useI18n } from '../../context/I18nContext';
 import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { AdminFormActions } from './AdminFormActions';
+import {
+  applyAllRuntimeFrontendCatalogs,
+  dispatchRuntimeI18nReload,
+} from '../../i18n/loadRuntimeOverrides';
 
 type SourceId = 'backend' | 'frontend';
 
@@ -49,6 +53,7 @@ export const TranslationEditor: React.FC = () => {
   const [language, setLanguage] = useState('plaintext');
   const [loadingFile, setLoadingFile] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [applyingRuntime, setApplyingRuntime] = useState(false);
   const [wordWrap, setWordWrap] = useState(true);
   const [backups, setBackups] = useState<string[]>([]);
   const [fileMeta, setFileMeta] = useState<{ size: number; modified: number } | null>(null);
@@ -218,7 +223,7 @@ export const TranslationEditor: React.FC = () => {
         setPolicyErrorIndex(0);
         setRejectedPath(null);
         if (source === 'frontend') {
-          window.dispatchEvent(new CustomEvent('paginium:i18n-runtime-reload'));
+          dispatchRuntimeI18nReload();
         }
         toast.success(t('translations.toast.saveSuccess'));
         const backupList = await translationsApi.getBackups(currentPath);
@@ -241,6 +246,28 @@ export const TranslationEditor: React.FC = () => {
       console.error(error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleApplyRuntimeFrontend = async () => {
+    if (source !== 'frontend') {
+      return;
+    }
+
+    setApplyingRuntime(true);
+    try {
+      const result = await applyAllRuntimeFrontendCatalogs();
+      dispatchRuntimeI18nReload({ skipFetch: true });
+      if (result.applied) {
+        toast.success(t('translations.toast.applyRuntimeSuccess'));
+      } else {
+        toast.error(t('translations.toast.applyRuntimeFailed'));
+      }
+    } catch (error) {
+      toast.error(t('translations.toast.applyRuntimeFailed'));
+      console.error(error);
+    } finally {
+      setApplyingRuntime(false);
     }
   };
 
@@ -274,6 +301,9 @@ export const TranslationEditor: React.FC = () => {
       }
       setContent(restored);
       setOriginalContent(restored);
+      if (source === 'frontend') {
+        dispatchRuntimeI18nReload();
+      }
       toast.success(t('translations.toast.restoreSuccess'));
       const backupList = await translationsApi.getBackups(currentPath);
       setBackups(backupList);
@@ -460,7 +490,9 @@ export const TranslationEditor: React.FC = () => {
 
           <p className="text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-3">
             {source === 'frontend'
-              ? t('translations.hint.frontendReload')
+              ? import.meta.env.PROD
+                ? t('translations.hint.frontendReloadProd')
+                : t('translations.hint.frontendReloadDev')
               : t('translations.hint.backendImmediate')}
           </p>
 
@@ -469,14 +501,24 @@ export const TranslationEditor: React.FC = () => {
           </AdminHintCard>
 
           {source === 'frontend' && (
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              {t('translations.actions.reload')}
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                disabled={applyingRuntime}
+                onClick={() => void handleApplyRuntimeFrontend()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${applyingRuntime ? 'animate-spin' : ''}`} />
+                {t('translations.actions.applyRuntime')}
+              </button>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                {t('translations.actions.reload')}
+              </button>
+            </div>
           )}
         </aside>
 

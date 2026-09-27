@@ -13,6 +13,12 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Fix:** Public footer CMS version — `GET /api/settings/public` `cmsInfo.version` uses `AppVersion::current()` (was stuck on `VERSION` constant, e.g. beta.90); fallback bumped to `2.1.0-beta.94`.
+- **Fix:** Blog article-to-article navigation — stable skeleton instead of full-page spinner (lower CLS); reserved hero aspect ratio; in-prose `/blog/*` links use client routing.
+- **Fix:** Blog CLS follow-up — preserve measured article shell min-height across slug changes; comments loading placeholder; public layout flex-1 content well; theme shells fill viewport (`100dvh`).
+- **Fix:** PHPStan — `NormalizedImportRow` type lives on `ImportRowTypes` (import alias no longer conflicts with `ContentImportRowFactory` class).
+- **CMS migration:** Admin **Migrácia z CMS** (`/content-migration`) + CLI `content:import` — WordPress WXR (1.0–1.2), **Grav** `user/pages`, **Jekyll**, **Hugo** `content/`, **Ghost** JSON, Paginium JSON; ZIP auto-detect; dry-run default; slug collision → `import-{slug}`; media URLs unchanged (phase 1).
+- **Translations:** Admin **Apply edited translations** loads on-disk frontend catalogs via `GET /api/i18n/frontend-catalog` (sk + en) without `npm run build`; updated prod hints; save/restore still auto-refresh runtime i18n.
 - **Pages:** Unified header hero (auto / single / carousel / none) with **placement** (`auto`, `full-header`, `intro-card`, `landing-inline`), drag crop preview, home/landing routing fixes; backend `heroPlacement`; docs [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md).
 - **Fix:** Locale-scoped page saves (`locale` in PUT body) now persist hero front matter and SEO via `applyGlobalContentFields` (regression: placement reset to Auto after reload).
 - **Fix:** Page editor save always sent stale hero mode/placement (`pageHero` missing from `handleSave` dependencies); hero settings now persist on save and in full draft snapshots.

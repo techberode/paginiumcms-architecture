@@ -248,9 +248,11 @@ export const PublicSiteLayout: React.FC = () => {
   const mainColumn = (
     <div className={`flex-1 flex min-h-0 min-w-0 ${sideOnRight ? 'flex-row-reverse' : ''}`}>
       {sideColumn}
-      <div className="flex-1 min-w-0 pg-public-content-well">
+      <div className="flex-1 min-w-0 pg-public-content-well flex flex-col min-h-0">
         <PublicBreadcrumbs />
-        <Outlet />
+        <div className="flex-1 flex flex-col min-h-0">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
@@ -292,24 +294,26 @@ export const PublicSiteLayout: React.FC = () => {
       <DemoPublicStrip />
       <ThemeScriptLoader />
       {ThemeShell ? (
-        <ThemeShellBoundary
-          themeId={activeThemeId}
-          fallback={coreChrome}
-          onShellError={() => setShellFailed(true)}
-        >
-          <ThemeShell
-            siteName={siteName}
-            onOpenSearch={() => setSearchOpen(true)}
-            showPrimaryNav={showTopNav}
-            navLayout={navLayout}
-            chrome={chrome}
-            secondaryItems={secondaryNavigation}
-            wideHeader={showSideColumn}
-            headerPrefix={showCmsBar ? <CMSBar currentDoc={currentDoc} /> : null}
+        <div className="flex flex-1 flex-col min-h-0 w-full">
+          <ThemeShellBoundary
+            themeId={activeThemeId}
+            fallback={coreChrome}
+            onShellError={() => setShellFailed(true)}
           >
-            {mainColumn}
-          </ThemeShell>
-        </ThemeShellBoundary>
+            <ThemeShell
+              siteName={siteName}
+              onOpenSearch={() => setSearchOpen(true)}
+              showPrimaryNav={showTopNav}
+              navLayout={navLayout}
+              chrome={chrome}
+              secondaryItems={secondaryNavigation}
+              wideHeader={showSideColumn}
+              headerPrefix={showCmsBar ? <CMSBar currentDoc={currentDoc} /> : null}
+            >
+              {mainColumn}
+            </ThemeShell>
+          </ThemeShellBoundary>
+        </div>
       ) : (
         coreChrome
       )}

@@ -3,7 +3,8 @@
 .pg-tb-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  flex: 1;
+  min-height: 100dvh;
   font-family: ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', 'Cascadia Code', monospace;
 }
 
@@ -55,6 +56,10 @@
 
 .pg-tb-main {
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .pg-tb-main::before {

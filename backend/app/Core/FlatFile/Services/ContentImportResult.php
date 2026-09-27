@@ -40,4 +40,24 @@ final class ContentImportResult
     {
         return $this->errors === [];
     }
+
+    /**
+     * @return array{
+     *   created: int,
+     *   skipped: int,
+     *   messages: list<string>,
+     *   errors: list<string>,
+     *   success: bool
+     * }
+     */
+    public function toArray(): array
+    {
+        return [
+            'created' => $this->created,
+            'skipped' => $this->skipped,
+            'messages' => $this->messages,
+            'errors' => $this->errors,
+            'success' => $this->isSuccessful(),
+        ];
+    }
 }

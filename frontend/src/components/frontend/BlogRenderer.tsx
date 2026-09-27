@@ -1,5 +1,5 @@
 // frontend/src/components/frontend/BlogRenderer.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
@@ -48,6 +48,7 @@ import {
 } from '../../utils/blogListLayout';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { PageRenderer } from './PageRenderer';
+import { ArticleDetailSkeleton } from './ArticleDetailSkeleton';
 
 export const BlogRenderer: React.FC = () => {
   const { t, locale } = useI18n();
@@ -109,6 +110,8 @@ export const BlogRenderer: React.FC = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [navArticles, setNavArticles] = useState<Article[]>([]);
   const [sidebarData, setSidebarData] = useState<BlogSidebarPayload | null>(null);
+  const articleShellRef = useRef<HTMLDivElement>(null);
+  const [articleShellMinHeightPx, setArticleShellMinHeightPx] = useState(0);
 
   useEffect(() => {
     if (!sidebarSettings.enabled) {
@@ -345,15 +348,88 @@ export const BlogRenderer: React.FC = () => {
     setSearchParams(next, { replace: true });
   }, [slug, currentPage, totalPages, searchParams, setSearchParams]);
 
-  if (slug && detailLoading) {
+  const articleMatchesRoute = Boolean(slug && activeArticle && activeArticle.slug === slug);
+
+  useEffect(() => {
+    if (!slug) {
+      setArticleShellMinHeightPx(0);
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [slug]);
+
+  useLayoutEffect(() => {
+    if (!slug) {
+      return;
+    }
+    const node = articleShellRef.current;
+    if (!node) {
+      return;
+    }
+    const measured = Math.ceil(node.getBoundingClientRect().height);
+    if (measured > 0) {
+      setArticleShellMinHeightPx((previous) => Math.max(previous, measured));
+    }
+  }, [slug, articleMatchesRoute, detailLoading, activeArticle?.id]);
+
+  const articleShellStyle =
+    slug && articleShellMinHeightPx > 0
+      ? ({ minHeight: `${articleShellMinHeightPx}px` } as const)
+      : undefined;
+
+  const handleArticleProseLinkClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const anchor = (event.target as HTMLElement).closest('a');
+      if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) {
+        return;
+      }
+
+      const rawHref = anchor.getAttribute('href');
+      if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:')) {
+        return;
+      }
+
+      let url: URL;
+      try {
+        url = new URL(rawHref, window.location.origin);
+      } catch {
+        return;
+      }
+
+      if (url.origin !== window.location.origin) {
+        return;
+      }
+
+      const match = url.pathname.match(/^\/blog\/([^/]+)\/?$/);
+      if (!match?.[1]) {
+        return;
+      }
+
+      event.preventDefault();
+      navigate(`/blog/${decodeURIComponent(match[1])}${url.hash}`);
+    },
+    [navigate]
+  );
+
+  if (slug && !articleMatchesRoute && detailLoading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <div className={PUBLIC_SPINNER} />
+      <div
+        ref={articleShellRef}
+        style={articleShellStyle}
+        className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors"
+      >
+        {wrapWithSidebar(
+          <ArticleDetailSkeleton
+            backLabel={t('public.blog.backToList')}
+            onBack={() => navigate(listPath)}
+          />,
+          true
+        )}
       </div>
     );
   }
 
-  if (slug && !detailLoading && !activeArticle) {
+  if (slug && !detailLoading && !articleMatchesRoute) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
         <h1 className="text-2xl font-bold text-theme-text">{t('public.errors.notFoundCode')}</h1>
@@ -369,7 +445,7 @@ export const BlogRenderer: React.FC = () => {
     );
   }
 
-  if (activeArticle) {
+  if (articleMatchesRoute && activeArticle) {
     const defaultAuthorName = String(
       settings.content?.blogAuthorName || settings.general?.siteName || t('public.defaults.editorial')
     ).trim();
@@ -408,7 +484,11 @@ export const BlogRenderer: React.FC = () => {
       activeArticle.commentsRatingEnabled ?? globalRatingEnabled;
 
     return (
-      <div className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors">
+      <div
+        ref={articleShellRef}
+        style={articleShellStyle}
+        className="min-h-screen bg-theme-surface text-theme-text pb-24 transition-colors"
+      >
         {wrapWithSidebar(
           <>
             <div className="pt-10 pg-no-print">
@@ -493,12 +573,15 @@ export const BlogRenderer: React.FC = () => {
             </div>
           </div>
           {image && (
-            <div className="mt-8 rounded-3xl overflow-hidden shadow-2xl max-h-[480px]">
+            <div className="mt-8 rounded-3xl overflow-hidden shadow-2xl aspect-[21/9] max-h-[480px] bg-theme-surface-elevated">
               <img
                 src={image}
                 srcSet={imageSrcSet || undefined}
                 sizes="(max-width: 768px) 100vw, 896px"
                 alt={activeArticle.title}
+                width={896}
+                height={384}
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -506,7 +589,11 @@ export const BlogRenderer: React.FC = () => {
         </header>
 
             <main className="mt-10">
-          <div className={`${PUBLIC_CARD} p-8 sm:p-12 pg-print-body`}>
+          <div
+            className={`${PUBLIC_CARD} p-8 sm:p-12 pg-print-body`}
+            onClick={handleArticleProseLinkClick}
+            role="presentation"
+          >
             <MarkdownRenderer
               content={activeArticle.content}
               html={activeArticle.html}

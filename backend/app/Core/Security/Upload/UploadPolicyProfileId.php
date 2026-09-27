@@ -25,6 +25,9 @@ final class UploadPolicyProfileId
     /** It.96 — Office/PDF/text documents (separate size limit). */
     public const DOCUMENTS = 'documents';
 
+    /** CMS migration uploads (WXR, Ghost JSON, site ZIP). */
+    public const CMS_MIGRATION = 'cms-migration';
+
     /**
      * @return list<string>
      */
@@ -38,6 +41,7 @@ final class UploadPolicyProfileId
             self::STOCK_IMPORT,
             self::MEDIA_VIDEO,
             self::DOCUMENTS,
+            self::CMS_MIGRATION,
         ];
     }
 }

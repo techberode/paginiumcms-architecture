@@ -5,7 +5,7 @@ export const adminSk: MessageTree = {
   nav: {
     dashboard: 'Prehľad',
     analytics: 'Analytika',
-    pages: 'Podstránky',
+    pages: 'Stránky',
     articles: 'Články (Blog)',
     categories: 'Kategórie',
     editorialCalendar: 'Redakčný kalendár',
@@ -18,6 +18,7 @@ export const adminSk: MessageTree = {
     github: 'GitHub',
     codeEditor: 'Code Editor',
     backups: 'Zálohy',
+    contentMigration: 'Migrácia z CMS',
     trash: 'Kôš',
     firewall: 'Firewall',
     logs: 'Logy',
@@ -77,7 +78,7 @@ export const adminSk: MessageTree = {
     themeToDark: 'Zapnúť tmavý režim',
     tabs: {
       dashboard: 'Prehľadový Dashboard',
-      pages: 'Správa Podstránok',
+      pages: 'Správa Stránok',
       articles: 'Správa Blogových Článkov',
       'editorial-calendar': 'Redakčný kalendár',
       'project-planner': 'Plánovač projektu',
@@ -89,6 +90,7 @@ export const adminSk: MessageTree = {
       github: 'GitHub Sync',
       'code-editor': 'Code Editor',
       backups: 'Správa Záloh',
+      'content-migration': 'Import z WordPressu, Grav a ďalších CMS',
       trash: 'Kôš',
       firewall: 'Firewall',
       logs: 'Systémové Logy',

@@ -553,6 +553,8 @@ php backend/bin/console content:export --output=/tmp/cms-export
 # Import preview (dry-run default — no writes)
 php backend/bin/console content:import --file=/path/export.json
 php backend/bin/console content:import --file=/path/wordpress.xml --format=wordpress
+php backend/bin/console content:import --format=grav --path=/grav/user/pages --run
+php backend/bin/console content:import --file=/ghost-export.json --format=ghost --run
 
 # Persist import (requires explicit --run)
 php backend/bin/console content:import --file=/path/export.json --run
@@ -570,7 +572,7 @@ php backend/bin/console plugin:scan seo-analyzer
 php backend/bin/console plugin:scan /path/to/plugin --json
 ```
 
-Import rules: slug collisions rename to `import-{slug}`; WordPress WXR imports posts as articles and pages as pages; media URLs in HTML are not downloaded in phase 1.
+Import rules: slug collisions rename to `import-{slug}`; WordPress WXR imports posts as articles and pages as pages; Grav/Jekyll/Hugo scan Markdown trees; Ghost JSON; admin UI at `/content-migration`; media URLs in HTML are not downloaded in phase 1. See [CMS_MIGRATION.md](../user/CMS_MIGRATION.md).
 
 Run the full PHPUnit/Vitest suite in CI or a disposable environment, not against live production storage. A production server is a very expensive test fixture.
 

@@ -639,7 +639,7 @@ export const settingsSk: MessageTree = {
         "help": "Tlačidlá na detaile publikovaného článku."
       },
       "shareOnPages": {
-        "label": "Zdieľať podstránky",
+        "label": "Zdieľať stránky",
         "help": "Tlačidlá na publikovaných stránkach (nie na úvodnej)."
       },
       "shareFacebook": {
@@ -1948,7 +1948,7 @@ export const settingsSk: MessageTree = {
         "label": "Počet položiek v RSS"
       },
       "includePages": {
-        "label": "Sitemap: podstránky",
+        "label": "Sitemap: stránky",
         "help": "Zapnuté = statické stránky sú v sitemap. Vypnuté = stránky v sitemap chýbajú."
       },
       "includeArticles": {

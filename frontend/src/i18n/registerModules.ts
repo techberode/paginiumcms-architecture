@@ -53,6 +53,8 @@ import { onboardingEn } from './modules/onboarding/en';
 import { onboardingSk } from './modules/onboarding/sk';
 import { playgroundEn } from './modules/playground/en';
 import { playgroundSk } from './modules/playground/sk';
+import { migrationEn } from './modules/migration/en';
+import { migrationSk } from './modules/migration/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -107,6 +109,8 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'onboarding', onboardingEn);
   registerModuleMessages('sk', 'playground', playgroundSk);
   registerModuleMessages('en', 'playground', playgroundEn);
+  registerModuleMessages('sk', 'migration', migrationSk);
+  registerModuleMessages('en', 'migration', migrationEn);
 }
 
 registerAllI18nModules();

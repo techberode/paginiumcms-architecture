@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Import pages/articles from JSON export or WordPress WXR (It.80f / 80g).
+ * Import pages/articles from JSON export or external CMS sources (It.80f / 80g).
  *
  * Default is dry-run. Pass --run to write to flat-file SSOT.
  */
@@ -30,9 +30,15 @@ final class ContentImportCommand extends Command
     {
         $this
             ->setName('content:import')
-            ->setDescription('Import pages/articles from JSON export or WordPress WXR XML')
-            ->addOption('file', 'f', InputOption::VALUE_REQUIRED, 'Path to import file (.json or .xml)')
-            ->addOption('format', null, InputOption::VALUE_REQUIRED, 'json or wordpress (auto-detected from extension when omitted)')
+            ->setDescription('Import pages/articles from Paginium JSON or WordPress, Grav, Jekyll, Hugo, Ghost')
+            ->addOption('file', 'f', InputOption::VALUE_REQUIRED, 'Path to import file (.json, .xml, .zip)')
+            ->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'Directory path for grav/jekyll/hugo imports')
+            ->addOption(
+                'format',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'json, wordpress, grav, jekyll, hugo, ghost (auto-detected from extension when omitted)'
+            )
             ->addOption('run', null, InputOption::VALUE_NONE, 'Persist imports (default is dry-run preview only)');
     }
 
@@ -40,21 +46,13 @@ final class ContentImportCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $file = trim((string) $input->getOption('file'));
-        if ($file === '') {
-            $io->error('Missing required --file=/path/to/export.json|.xml');
-
-            return Command::FAILURE;
-        }
-
-        if (!is_file($file)) {
-            $io->error('Import file not found: ' . $file);
-
-            return Command::FAILURE;
-        }
-
+        $directory = trim((string) $input->getOption('path'));
         $format = strtolower(trim((string) ($input->getOption('format') ?? '')));
-        if ($format === '') {
-            $format = str_ends_with(strtolower($file), '.xml') ? 'wordpress' : 'json';
+
+        if ($file === '' && $directory === '') {
+            $io->error('Provide --file=export.xml|.json|.zip or --path=/site/user/pages for directory imports');
+
+            return Command::FAILURE;
         }
 
         $dryRun = !$input->getOption('run');
@@ -62,16 +60,43 @@ final class ContentImportCommand extends Command
             $io->note('Dry-run mode — no files will be written. Pass --run to persist.');
         }
 
-        $result = match ($format) {
-            'json', 'export' => $this->import->importFromJsonFile($file, $dryRun),
-            'wordpress', 'wxr', 'xml' => $this->import->importFromWordPressFile($file, $dryRun),
-            default => null,
-        };
+        if ($directory !== '') {
+            if ($format === '') {
+                $io->error('Directory import requires --format=grav|jekyll|hugo');
 
-        if ($result === null) {
-            $io->error('Invalid --format. Use json or wordpress.');
+                return Command::FAILURE;
+            }
 
-            return Command::FAILURE;
+            if (!is_dir($directory)) {
+                $io->error('Import directory not found: ' . $directory);
+
+                return Command::FAILURE;
+            }
+
+            $result = $this->import->importFromFormat($format, $directory, $dryRun);
+        } else {
+            if (!is_file($file)) {
+                $io->error('Import file not found: ' . $file);
+
+                return Command::FAILURE;
+            }
+
+            if ($format === '') {
+                $format = match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+                    'xml' => 'wordpress',
+                    'json' => 'json',
+                    'zip' => 'auto',
+                    default => 'json',
+                };
+            }
+
+            if ($format === 'json' || $format === 'export') {
+                $result = $this->import->importFromJsonFile($file, $dryRun);
+            } elseif ($format === 'auto') {
+                $result = $this->import->importFromUploadedFile('auto', $file, basename($file), $dryRun);
+            } else {
+                $result = $this->import->importFromFormat($format, $file, $dryRun);
+            }
         }
 
         if ($result->messages !== []) {

@@ -14,6 +14,7 @@ import { PagesManager } from './components/backend/PagesManager';
 import { EditorialCalendarView } from './components/backend/EditorialCalendarView';
 import { MarkdownEditor } from './components/backend/MarkdownEditor';
 import { BackupManager } from './components/backend/BackupManager';
+import { ContentMigrationManager } from './components/backend/ContentMigrationManager';
 import { SettingsView } from './components/backend/SettingsView';
 import { TranslationEditor } from './components/backend/TranslationEditor';
 import { AccountView } from './components/backend/AccountView';
@@ -233,6 +234,7 @@ function App() {
         <Route path="/code-editor" element={<CodeEditor />} />
         <Route path="/code-editor/*" element={<CodeEditor />} />
         <Route path="/backups" element={<BackupManager />} />
+        <Route path="/content-migration" element={<ContentMigrationManager />} />
         <Route path="/trash" element={<TrashManager />} />
         <Route path="/firewall" element={<FirewallManager />} />
         <Route path="/logs" element={<LogsManager />} />

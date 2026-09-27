@@ -400,7 +400,7 @@ final class SettingsController
                 'remoteCheckIntervalHours' => max(0, min(168, (int) ($all['systemUpdate']['remoteCheckIntervalHours'] ?? 0))),
             ],
             'cmsInfo' => [
-                'version' => AppVersion::VERSION,
+                'version' => AppVersion::current(),
             ],
         ];
     }

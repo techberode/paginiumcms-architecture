@@ -41,7 +41,8 @@ export const translationsSk: MessageTree = {
   actions: {
     save: 'Uložiť preklady',
     revert: 'Vrátiť zmeny',
-    reload: 'Obnoviť stránku',
+    applyRuntime: 'Aplikovať upravené preklady',
+    reload: 'Obnoviť celú stránku',
   },
   backup: {
     title: 'Zálohy',
@@ -61,6 +62,8 @@ export const translationsSk: MessageTree = {
     revertDone: 'Zmeny boli zahodené',
     restoreSuccess: 'Záloha bola obnovená',
     restoreFailed: 'Obnovenie zálohy zlyhalo',
+    applyRuntimeSuccess: 'Preklady adminu boli načítané z disku',
+    applyRuntimeFailed: 'Nepodarilo sa načítať preklady z disku (skontrolujte API /api/i18n/frontend-catalog)',
   },
   policy: {
     rejectedCopy: 'Odmietnutá kópia uložená do',
@@ -69,8 +72,10 @@ export const translationsSk: MessageTree = {
     nextErrorHint: 'Po oprave uložte znova pre ďalšiu chybu.',
   },
   hint: {
-    frontendReload:
-      'Po úprave frontendových prekladov obnovte stránku, aby sa zmeny prejavili v administrácii.',
+    frontendReloadDev:
+      'Po uložení sa preklady adminu zlúčia automaticky. Ak niečo nevidíte, použite „Aplikovať upravené preklady“.',
+    frontendReloadProd:
+      'V produkcii nie je potrebný npm build: po uložení (alebo tlačidlom „Aplikovať upravené preklady“) sa texty načítajú z disku cez API. Úplný rebuild len pri zmenách v samotnom kóde adminu.',
     backendImmediate: 'Backend preklady sa prejavia pri ďalšom API volaní.',
     policyTitle: 'Politika ukladania',
     policyBody:

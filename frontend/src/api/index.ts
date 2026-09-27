@@ -22,6 +22,7 @@ export * from './conflicts';
 export * from './contact';
 export * from './content';
 export * from './contentTranslations';
+export * from './contentMigration';
 export * from './counts';
 export * from './dashboard';
 export * from './demo';
@@ -98,6 +99,7 @@ import { codeEditorApi } from './codeEditor';
 import { comingSoonApi } from './comingSoon';
 import { contentApi } from './content';
 import { contentTranslationsApi } from './contentTranslations';
+import { contentMigrationApi } from './contentMigration';
 import { demoApi } from './demo';
 import { eventsApi } from './events';
 import { extensionsApi } from './extensions';
@@ -144,6 +146,7 @@ export const api = {
   comingSoon: comingSoonApi,
   content: contentApi,
   contentTranslations: contentTranslationsApi,
+  contentMigration: contentMigrationApi,
   demo: demoApi,
   events: eventsApi,
   extensions: extensionsApi,

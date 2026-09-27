@@ -22,6 +22,7 @@ final class UploadSurfaceRegistryTest extends TestCase
             UploadSurfaceRegistry::SURFACE_EXTENSION_IMPORT => UploadPolicyProfileId::EXTENSION_ARCHIVE,
             UploadSurfaceRegistry::SURFACE_THEME_IMPORT => UploadPolicyProfileId::EXTENSION_ARCHIVE,
             UploadSurfaceRegistry::SURFACE_STOCK_IMPORT => UploadPolicyProfileId::STOCK_IMPORT,
+            UploadSurfaceRegistry::SURFACE_CMS_MIGRATION => UploadPolicyProfileId::CMS_MIGRATION,
         ];
 
         $this->assertSame($expected, UploadSurfaceRegistry::mappings());

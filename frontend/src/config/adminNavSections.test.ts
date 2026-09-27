@@ -53,6 +53,7 @@ const ADMIN_ROUTES = new Set([
   '/security-audit',
   '/roles',
   '/backups',
+  '/content-migration',
   '/trash',
   '/github',
 ]);

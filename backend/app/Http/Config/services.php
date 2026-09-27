@@ -159,7 +159,15 @@ use PaginiumCMS\Core\FlatFile\Services\ContentImportService;
 use PaginiumCMS\Core\FlatFile\Services\ContentBulkTagService;
 use PaginiumCMS\Core\FlatFile\Services\ContentDuplicationService;
 use PaginiumCMS\Core\FlatFile\Services\ContentRepository;
+use PaginiumCMS\Core\Import\ContentImportSourceRegistry;
+use PaginiumCMS\Core\Import\ContentMigrationArchiveExtractor;
+use PaginiumCMS\Core\Import\GhostJsonImporter;
+use PaginiumCMS\Core\Import\GravPagesImporter;
+use PaginiumCMS\Core\Import\HugoSiteImporter;
+use PaginiumCMS\Core\Import\JekyllSiteImporter;
+use PaginiumCMS\Core\Import\MarkdownSiteImportScanner;
 use PaginiumCMS\Core\Import\WordPressWxrImporter;
+use PaginiumCMS\Http\Controllers\Admin\ContentMigrationController;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexCapabilityProbe;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexFactory;
@@ -2421,10 +2429,37 @@ return [
     ContentExportService::class => create(ContentExportService::class)
         ->constructor(get(ContentRepositoryInterface::class)),
     WordPressWxrImporter::class => create(WordPressWxrImporter::class),
+    MarkdownSiteImportScanner::class => create(MarkdownSiteImportScanner::class)
+        ->constructor(get(FrontMatterParserInterface::class)),
+    GravPagesImporter::class => create(GravPagesImporter::class)
+        ->constructor(get(MarkdownSiteImportScanner::class)),
+    JekyllSiteImporter::class => create(JekyllSiteImporter::class)
+        ->constructor(get(MarkdownSiteImportScanner::class)),
+    HugoSiteImporter::class => create(HugoSiteImporter::class)
+        ->constructor(get(MarkdownSiteImportScanner::class)),
+    GhostJsonImporter::class => create(GhostJsonImporter::class),
+    ContentMigrationArchiveExtractor::class => create(ContentMigrationArchiveExtractor::class)
+        ->constructor(get(ZipEntryGuard::class)),
+    ContentImportSourceRegistry::class => create(ContentImportSourceRegistry::class)
+        ->constructor(
+            get(WordPressWxrImporter::class),
+            get(GravPagesImporter::class),
+            get(JekyllSiteImporter::class),
+            get(HugoSiteImporter::class),
+            get(GhostJsonImporter::class),
+            get(ContentMigrationArchiveExtractor::class)
+        ),
     ContentImportService::class => create(ContentImportService::class)
         ->constructor(
             get(ContentRepositoryInterface::class),
-            get(WordPressWxrImporter::class)
+            get(ContentImportSourceRegistry::class)
+        ),
+    ContentMigrationController::class => create(ContentMigrationController::class)
+        ->constructor(
+            get(ContentImportSourceRegistry::class),
+            get(ContentImportService::class),
+            get(JsonResponder::class),
+            get(UploadPolicyEngine::class)
         ),
     ContentExportCommand::class => create(ContentExportCommand::class)
         ->constructor(get(ContentExportService::class)),
