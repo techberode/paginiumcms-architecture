@@ -13,7 +13,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Fix:** Public footer CMS version — `GET /api/settings/public` `cmsInfo.version` uses `AppVersion::current()` (was stuck on `VERSION` constant, e.g. beta.90); fallback bumped to `2.1.0-beta.94`.
+- **Fix:** Public footer CMS version — `GET /api/settings/public` `cmsInfo.version` uses `AppVersion::current()` (was stuck on `VERSION` constant, e.g. beta.90); `AppVersion::VERSION` fallback stays aligned with the latest **tagged** release (`2.1.0-beta.93` until `v2.1.0-beta.94` ships).
+- **Fix:** Blog article-to-article navigation — no transient 404 when slug changes before fetch (skeleton + `useLayoutEffect` loading flag; stale `activeArticle` treated as in-flight).
 - **Fix:** Blog article-to-article navigation — stable skeleton instead of full-page spinner (lower CLS); reserved hero aspect ratio; in-prose `/blog/*` links use client routing.
 - **Fix:** Blog CLS follow-up — preserve measured article shell min-height across slug changes; comments loading placeholder; public layout flex-1 content well; theme shells fill viewport (`100dvh`).
 - **Fix:** PHPStan — `NormalizedImportRow` type lives on `ImportRowTypes` (import alias no longer conflicts with `ContentImportRowFactory` class).

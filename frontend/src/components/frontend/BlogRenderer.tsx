@@ -66,7 +66,7 @@ export const BlogRenderer: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { settings } = useSettingsContext();
-  const { getPageBySlug } = usePublicSite();
+  const { getPageBySlug, pages } = usePublicSite();
   const blogPageFromList = useMemo(() => getPageBySlug('blog'), [getPageBySlug]);
   const [blogLandingPage, setBlogLandingPage] = useState<Page | undefined>(blogPageFromList);
 
@@ -349,6 +349,15 @@ export const BlogRenderer: React.FC = () => {
   }, [slug, currentPage, totalPages, searchParams, setSearchParams]);
 
   const articleMatchesRoute = Boolean(slug && activeArticle && activeArticle.slug === slug);
+  /** Route slug changed before fetch finishes — avoid flashing the article 404 block (hurts CLS). */
+  const articleSlugStale = Boolean(slug && activeArticle && activeArticle.slug !== slug);
+  const showArticleDetailLoading = Boolean(slug && !articleMatchesRoute && (detailLoading || articleSlugStale));
+
+  useLayoutEffect(() => {
+    if (slug) {
+      setDetailLoading(true);
+    }
+  }, [slug]);
 
   useEffect(() => {
     if (!slug) {
@@ -400,18 +409,34 @@ export const BlogRenderer: React.FC = () => {
         return;
       }
 
-      const match = url.pathname.match(/^\/blog\/([^/]+)\/?$/);
-      if (!match?.[1]) {
+      const blogMatch = url.pathname.match(/^\/blog\/([^/]+)\/?$/);
+      if (blogMatch?.[1]) {
+        event.preventDefault();
+        navigate(`/blog/${decodeURIComponent(blogMatch[1])}${url.hash}`);
+        return;
+      }
+
+      const rootMatch = url.pathname.match(/^\/([^/]+)\/?$/);
+      if (!rootMatch?.[1]) {
+        return;
+      }
+
+      const segment = decodeURIComponent(rootMatch[1]);
+      const reservedPaths = new Set(['blog', 'features', 'cookies']);
+      if (reservedPaths.has(segment)) {
+        return;
+      }
+      if (pages.some((page) => page.slug === segment)) {
         return;
       }
 
       event.preventDefault();
-      navigate(`/blog/${decodeURIComponent(match[1])}${url.hash}`);
+      navigate(`/blog/${segment}${url.hash}`);
     },
-    [navigate]
+    [navigate, pages]
   );
 
-  if (slug && !articleMatchesRoute && detailLoading) {
+  if (showArticleDetailLoading) {
     return (
       <div
         ref={articleShellRef}
@@ -429,7 +454,7 @@ export const BlogRenderer: React.FC = () => {
     );
   }
 
-  if (slug && !detailLoading && !articleMatchesRoute) {
+  if (slug && !detailLoading && !articleMatchesRoute && !articleSlugStale) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
         <h1 className="text-2xl font-bold text-theme-text">{t('public.errors.notFoundCode')}</h1>
