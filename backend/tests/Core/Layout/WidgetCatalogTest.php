@@ -52,4 +52,31 @@ final class WidgetCatalogTest extends TestCase
         $this->assertStringContainsString('href="#"', $html);
         $this->assertStringNotContainsString('javascript:', $html);
     }
+
+    public function testMapEmbedAllowsGoogleEmbedOnly(): void
+    {
+        $allowed = (new WidgetCatalog())->render(
+            ' type="map-embed" title="HQ" src="https://www.google.com/maps/embed?pb=test" height="300"',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-map-frame', $allowed);
+        $this->assertStringContainsString('https://www.google.com/maps/embed?pb=test', $allowed);
+
+        $blocked = (new WidgetCatalog())->render(
+            ' type="map-embed" title="X" src="https://evil.example/map" height="300"',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-empty', $blocked);
+    }
+
+    public function testDataTableRendersRows(): void
+    {
+        $html = (new WidgetCatalog())->render(
+            ' type="data-table" title="Plans" headers="Name | Price" rows="Basic | 9 | Pro | 29"',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-table', $html);
+        $this->assertStringContainsString('<th scope="col">Name</th>', $html);
+        $this->assertStringContainsString('<td>Pro</td>', $html);
+    }
 }

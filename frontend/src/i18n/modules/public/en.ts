@@ -43,6 +43,10 @@ export const publicEn: MessageTree = {
   },
   errors: {
     notFoundCode: '404',
+    notFoundTitle: 'Page not found',
+    serverErrorCode: '500',
+    serverErrorTitle: 'Something went wrong',
+    serverErrorBody: 'We could not render this page. Try again later or return to the home page.',
     pageNotFound: 'Page “:slug” does not exist.',
   },
   backToTop: {
@@ -135,7 +139,7 @@ export const publicEn: MessageTree = {
     necessaryHint: 'Session, security, and core site operation.',
     alwaysOn: 'Always on',
     functionalTitle: 'Functional',
-    functionalHint: 'Stores appearance preferences (light/dark mode) in your browser.',
+    functionalHint: 'Optional UX enhancements (light/dark mode from the header is always stored locally when you change it).',
     analyticsTitle: 'Analytics',
     analyticsHint: 'Counts anonymous page views when you accept analytics cookies.',
     cancel: 'Cancel',
@@ -150,7 +154,7 @@ export const publicEn: MessageTree = {
       tablePurpose: 'Purpose',
       tableRequired: 'Consent',
       necessaryPurpose: 'Secure login session, CSRF protection, and core site operation.',
-      functionalPurpose: 'Remembers light/dark appearance on the public site.',
+      functionalPurpose: 'Optional functional enhancements (not the header light/dark toggle).',
       analyticsPurpose: 'Counts anonymous page views to improve content (masked IP).',
       optional: 'Optional',
       storageTitle: 'Storage inventory',
@@ -172,8 +176,8 @@ export const publicEn: MessageTree = {
         },
         theme: {
           name: 'paginium-public-theme',
-          detail: 'Stores visitor light/dark preference on the public site.',
-          category: 'Functional (optional)',
+          detail: 'Local light/dark preference from the header toggle. Not shared with third parties.',
+          category: 'Local (display preference)',
         },
         analytics: {
           name: 'Analytics pageview beacon',

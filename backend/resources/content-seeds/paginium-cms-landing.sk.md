@@ -11,7 +11,7 @@ description: Hybrid flat-file CMS — admin SPA, headless API, bezpečnosť a sh
 locale: sk
 ---
 
-[showcase-hero badge="HYBRID FLAT-FILE CMS" title="Obsah pod kontrolou. Bez SQL." subtitle="PaginiumCMS spája admin SPA, REST API a verejný web nad flat-file úložiskom. Index, cache a HTTP validátory pre výkon — rovnaká filozofia ako Grav, moderný stack." terminal="curl /api/health && open /admin" cta="Prehľad platformy" href="#platform-overview" cta2="Čítať blog" href="/blog"/]
+[showcase-hero badge="HYBRID FLAT-FILE CMS" title="Obsah pod kontrolou. Bez SQL." subtitle="PaginiumCMS spája admin SPA, REST API a verejný web nad flat-file úložiskom. Index, cache a HTTP validátory pre výkon — rovnaká filozofia ako Grav, moderný stack." terminal="curl /api/health && open /admin" cta="Prehľad platformy" href="#platform-overview" cta2="Čítať blog" href2="/blog"/]
 
 [stats-row]
 [stat-item value="Flat-file" label="Zdroj pravdy"/]

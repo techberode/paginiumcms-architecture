@@ -10,7 +10,7 @@ function landingPage(overrides: Partial<Page> = {}): Page {
     title: 'PaginiumCMS',
     slug: 'paginium-cms',
     content: '[showcase-hero title="Hello"/]',
-    html: '<section class="pg-showcase-hero pg-reveal"><div class="pg-showcase-hero-inner"><h1>Hello</h1></div></section>',
+    html: '<section class="pg-showcase-hero"><div class="pg-showcase-hero-inner"><h1>Hello</h1></div></section>',
     frontMatter: {
       layoutTemplate: 'landing',
       template: 'landing',

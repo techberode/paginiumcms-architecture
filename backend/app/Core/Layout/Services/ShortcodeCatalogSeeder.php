@@ -201,7 +201,7 @@ final class ShortcodeCatalogSeeder
             ],
             'showcase-hero' => [
                 'name' => 'showcase-hero',
-                'version' => 1,
+                'version' => 2,
                 'attrs' => [
                     'badge' => ['type' => 'string'],
                     'title' => ['type' => 'string'],
@@ -212,7 +212,7 @@ final class ShortcodeCatalogSeeder
                     'cta2' => ['type' => 'string'],
                     'href2' => ['type' => 'string'],
                 ],
-                'expand' => '<section class="pg-showcase-hero pg-reveal"><div class="pg-showcase-hero-inner"><p class="pg-showcase-badge">{{badge}}</p><h1 class="pg-showcase-title">{{title}}</h1><p class="pg-showcase-subtitle">{{subtitle}}</p><pre class="pg-showcase-terminal" aria-label="Terminal preview"><code>$ {{terminal}}</code></pre><div class="pg-showcase-actions"><a class="pg-btn pg-btn-primary" href="{{href}}">{{cta}}</a><a class="pg-btn pg-btn-ghost" href="{{href2}}">{{cta2}}</a></div></div></section>',
+                'expand' => '<section class="pg-showcase-hero"><div class="pg-showcase-hero-inner"><p class="pg-showcase-badge">{{badge}}</p><h1 class="pg-showcase-title">{{title}}</h1><p class="pg-showcase-subtitle">{{subtitle}}</p><pre class="pg-showcase-terminal"><code>$ {{terminal}}</code></pre><div class="pg-showcase-actions"><a class="pg-btn pg-btn-primary" href="{{href}}">{{cta}}</a><a class="pg-btn pg-btn-ghost" href="{{href2}}">{{cta2}}</a></div></div></section>',
             ],
             'stack-grid' => [
                 'name' => 'stack-grid',

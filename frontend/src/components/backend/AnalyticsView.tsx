@@ -36,6 +36,7 @@ import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { AnalyticsRankedBarChart } from './analytics/AnalyticsRankedBarChart';
 import { AnalyticsSegmentChart } from './analytics/AnalyticsSegmentChart';
 import { aggregateGeoByCountry, referersToChartItems } from './analytics/analyticsChartData';
+import { AnalyticsGeoDotMap } from './analytics/AnalyticsGeoDotMap';
 import { AdminPageSkeleton } from '../ui/AdminPageSkeleton';
 import { AdminKpiCard } from '../ui/AdminKpiCard';
 import { AdminToolbar } from '../ui/AdminToolbar';
@@ -540,16 +541,25 @@ export const AnalyticsView: React.FC = () => {
 
           {tab === 'geo' && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
-                  {t('analytics.sections.geoSummary')}
-                </h3>
-                <AnalyticsRankedBarChart
-                  items={geoCountryChart}
+              <div className="space-y-6">
+                <AnalyticsGeoDotMap
+                  geo={payload?.geo ?? []}
                   loading={loading}
                   emptyMessage={t('analytics.empty.noGeo')}
-                  maxItems={12}
+                  title={t('analytics.sections.geoMap')}
+                  hint={t('analytics.sections.geoMapHint')}
                 />
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                    {t('analytics.sections.geoSummary')}
+                  </h3>
+                  <AnalyticsRankedBarChart
+                    items={geoCountryChart}
+                    loading={loading}
+                    emptyMessage={t('analytics.empty.noGeo')}
+                    maxItems={12}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">

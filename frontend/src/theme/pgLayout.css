@@ -53,6 +53,14 @@
   }
 }
 
+/* Showcase hero is above the fold — never hide it behind scroll-reveal (admin preview already forces visible). */
+.pg-showcase-hero.pg-reveal,
+.pg-showcase-hero.pg-reveal-visible {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
 /* Showcase hero — techberode-inspired presentation block. */
 .pg-layout-landing .pg-showcase-hero {
   position: relative;
@@ -621,6 +629,29 @@
 .pg-btn-primary {
   background: var(--color-primary);
   color: var(--color-primary-foreground);
+}
+
+/* Prose link styles must not override shortcode CTA buttons (same primary on primary). */
+.paginium-prose a.pg-btn,
+.pg-shortcode-surface a.pg-btn {
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.paginium-prose a.pg-btn-primary,
+.pg-shortcode-surface a.pg-btn-primary {
+  color: var(--color-primary-foreground);
+}
+
+.paginium-prose a.pg-btn-primary:hover,
+.pg-shortcode-surface a.pg-btn-primary:hover {
+  color: var(--color-primary-foreground);
+  filter: brightness(1.08);
+}
+
+.paginium-prose a.pg-btn-ghost,
+.pg-shortcode-surface a.pg-btn-ghost {
+  color: var(--color-text);
 }
 
 /* It.84c — marketing shortcodes */
@@ -1383,6 +1414,88 @@
 .pg-widget-tone-muted .pg-widget-delta,
 .pg-widget-tone-muted .pg-widget-badge {
   color: var(--color-text-muted, #64748b);
+}
+
+.pg-widget-map {
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-border, #e2e8f0) 80%, transparent);
+}
+
+.pg-widget-map-frame {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  border: 0;
+  background: var(--color-surface, #f8fafc);
+}
+
+.pg-widget-table-wrap {
+  overflow-x: auto;
+}
+
+.pg-widget-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.pg-widget-table th,
+.pg-widget-table td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border, #e2e8f0) 90%, transparent);
+  text-align: left;
+}
+
+.pg-widget-table th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted, #64748b);
+}
+
+.pg-widget-chart-row {
+  display: grid;
+  grid-template-columns: minmax(4rem, 22%) 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 0.55rem;
+}
+
+.pg-widget-chart-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+}
+
+.pg-widget-chart-track {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-border, #e2e8f0) 70%, transparent);
+  overflow: hidden;
+}
+
+.pg-widget-chart-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary, #4f46e5);
+}
+
+.pg-widget-chart-value {
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-widget-form-cta {
+  text-align: center;
+  padding: 1.25rem 1rem;
+}
+
+.pg-widget-empty {
+  padding: 1rem;
+  border-style: dashed;
 }
 
 /* Article print — toggled via content.articlePrintEnabled (Nastavenia → Obsah). */

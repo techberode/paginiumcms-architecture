@@ -43,6 +43,10 @@ export const publicSk: MessageTree = {
   },
   errors: {
     notFoundCode: '404',
+    notFoundTitle: 'Stránka sa nenašla',
+    serverErrorCode: '500',
+    serverErrorTitle: 'Niečo sa pokazilo',
+    serverErrorBody: 'Stránku sa nepodarilo zobraziť. Skúste to neskôr alebo prejdite na úvod.',
     pageNotFound: 'Stránka „:slug“ neexistuje.',
   },
   backToTop: {
@@ -135,7 +139,7 @@ export const publicSk: MessageTree = {
     necessaryHint: 'Session, bezpečnosť a základná prevádzka webu.',
     alwaysOn: 'Vždy zapnuté',
     functionalTitle: 'Funkčné',
-    functionalHint: 'Uloženie preferencií vzhľadu (svetlý/tmavý režim) v prehliadači.',
+    functionalHint: 'Voliteľné rozšírenia používateľského zážitku (okrem svetlého/tmavého režimu — ten sa ukladá lokálne vždy, keď ho zmeníte).',
     analyticsTitle: 'Analytické',
     analyticsHint: 'Po súhlase so súbormi cookie sa anonymne počítajú zobrazenia stránok.',
     cancel: 'Zrušiť',
@@ -150,7 +154,7 @@ export const publicSk: MessageTree = {
       tablePurpose: 'Účel',
       tableRequired: 'Súhlas',
       necessaryPurpose: 'Bezpečná prihlasovacia session, CSRF ochrana a základná prevádzka webu.',
-      functionalPurpose: 'Zapamätá si svetlý/tmavý režim na verejnom webe.',
+      functionalPurpose: 'Voliteľné funkčné rozšírenia (nie svetlý/tmavý režim v hlavičke).',
       analyticsPurpose: 'Počíta anonymné zobrazenia stránok (maskovaná IP).',
       optional: 'Voliteľné',
       storageTitle: 'Inventár úložísk',
@@ -172,8 +176,8 @@ export const publicSk: MessageTree = {
         },
         theme: {
           name: 'paginium-public-theme',
-          detail: 'Ukladá preferenciu svetlý/tmavý režim na verejnom webe.',
-          category: 'Funkčné (voliteľné)',
+          detail: 'Lokálna preferencia svetlý/tmavý režim (prepínač v hlavičke). Nezdieľa sa s tretími stranami.',
+          category: 'Lokálne (preferencia zobrazenia)',
         },
         analytics: {
           name: 'Analytický pageview beacon',

@@ -80,7 +80,8 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
 
   const landingContentRef = useRef<HTMLDivElement>(null);
   const useLandingShell = heroFlags.landingInlineShell;
-  useLandingReveal(landingContentRef, useLandingShell && !embed);
+  const landingRevealRevision = `${bodyForDisplay.length}:${htmlForDisplay?.length ?? 0}:${htmlForDisplay?.includes('pg-showcase-hero') ? 1 : 0}`;
+  useLandingReveal(landingContentRef, useLandingShell && !embed, landingRevealRevision);
 
   const templateLabel = meta.template ? meta.template.toUpperCase() : t('public.page.meta.pageLabel');
   const dateLabel = formatDisplayDate(meta.date, locale);

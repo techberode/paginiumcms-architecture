@@ -22,7 +22,7 @@ import { BackToTopButton } from '../frontend/BackToTopButton';
 import { SupportChatPresenceBubble } from '../backend/SupportChatPresenceBubble';
 import { useAnalyticsPageview } from '../../hooks/useAnalyticsPageview';
 import { galleryPublicSlug } from '../../utils/galleryPublicRoute';
-import { BTN_PRIMARY, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
+import { PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 import { resolveNavigationLayout } from '../../utils/navigationLayoutSettings';
 import { resolvePublicNavChrome } from '../../utils/publicNavChrome';
 import { resolveThemeShell } from '../../theme/themeShellRegistry';
@@ -32,6 +32,9 @@ import { PublicHeaderStack } from './PublicHeaderStack';
 import { PublicBreadcrumbs } from '../frontend/PublicBreadcrumbs';
 import { isAdminAppRoute } from '../../utils/appRoutes';
 import { resolveSiteHomePage } from '../../utils/siteHomePage';
+import { resolvePublicErrorPage } from '../../utils/publicErrorPages';
+import { PublicSystemErrorPanel } from '../frontend/PublicSystemErrorPanel';
+import { PublicRouteErrorBoundary } from './PublicRouteErrorBoundary';
 
 export function PublicHomePage() {
   const { t } = useI18n();
@@ -70,11 +73,9 @@ export function PublicHomePage() {
 }
 
 export function PublicSlugPage() {
-  const { t } = useI18n();
   const { slug } = useParams<{ slug: string }>();
   const { getPageBySlug, loading } = usePublicSite();
   const { settings } = useSettingsContext();
-  const navigate = useNavigate();
 
   const galleryEnabled = settings.gallery?.enabled === true;
   const galleryPlacement = settings.gallery?.placement ?? 'route';
@@ -101,19 +102,12 @@ export function PublicSlugPage() {
   }
 
   if (!page) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-theme-text">{t('public.errors.notFoundCode')}</h1>
-        <p className="mt-2 text-theme-text-muted">{t('public.errors.pageNotFound', { slug: slug ?? '' })}</p>
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className={`mt-6 px-6 py-2.5 rounded-xl text-sm font-bold ${BTN_PRIMARY}`}
-        >
-          {t('public.nav.home')}
-        </button>
-      </div>
-    );
+    const resolved = resolvePublicErrorPage('notFound', settings.layout, getPageBySlug, slug ?? '');
+    if (resolved.page) {
+      return <PageRenderer page={resolved.page} />;
+    }
+
+    return <PublicSystemErrorPanel kind="notFound" missingSlug={slug} />;
   }
 
   return <PageRenderer page={page} />;
@@ -245,13 +239,23 @@ export const PublicSiteLayout: React.FC = () => {
     </div>
   ) : null;
 
+  const serverErrorPage = useMemo(() => {
+    const slug = settings.layout?.serverErrorPageSlug?.trim();
+    if (!slug) {
+      return undefined;
+    }
+    return getPageBySlug(slug.replace(/^\/+/, ''));
+  }, [getPageBySlug, settings.layout?.serverErrorPageSlug]);
+
   const mainColumn = (
     <div className={`flex-1 flex min-h-0 min-w-0 ${sideOnRight ? 'flex-row-reverse' : ''}`}>
       {sideColumn}
       <div className="flex-1 min-w-0 pg-public-content-well flex flex-col min-h-0">
         <PublicBreadcrumbs />
         <div className="flex-1 flex flex-col min-h-0">
-          <Outlet />
+          <PublicRouteErrorBoundary errorPage={serverErrorPage}>
+            <Outlet />
+          </PublicRouteErrorBoundary>
         </div>
       </div>
     </div>

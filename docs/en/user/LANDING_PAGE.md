@@ -32,6 +32,7 @@ Demo installs include a sample page at `/paginium-cms` when demo mode seeds cont
 
 | Shortcode | Type | Purpose |
 |-----------|------|---------|
+| `showcase-hero` | self-closing | Presentation hero (badge, terminal strip, two CTAs) |
 | `landing-hero` | self-closing | Headline, subtitle, primary CTA |
 | `feature-grid` + `feature-card` | paired | 2–3 column feature grid |
 | `stats-row` + `stat-item` | paired + self-closing | KPI / trust metrics row |
@@ -41,7 +42,7 @@ Demo installs include a sample page at `/paginium-cms` when demo mode seeds cont
 | `feature-gallery` | self-closing | Published It.65 gallery grid (`title`, optional `tag`) |
 | `alert-box` | paired | Info / warning / success note |
 
-Related: [Feature gallery walkthrough](GALLERY.md) · Theme Studio shortcodes: [THEMES.md](THEMES.md).
+Related: [Shortcodes and widgets (syntax, inner markdown)](SHORTCODES_AND_WIDGETS.md) · [Feature gallery walkthrough](GALLERY.md) · Theme Studio: [THEMES.md](THEMES.md).
 
 ---
 
@@ -82,6 +83,19 @@ Related: [Feature gallery walkthrough](GALLERY.md) · Theme Studio shortcodes: [
 ---
 
 ## 4. Attribute reference (marketing shortcodes)
+
+### `showcase-hero`
+
+| Attribute | Example |
+|-----------|---------|
+| `badge` | `HYBRID FLAT-FILE CMS` |
+| `title` | Main headline |
+| `subtitle` | Supporting paragraph |
+| `terminal` | `curl /api/health && open /admin` (display only) |
+| `cta` / `href` | Primary button label and target (`#anchor` or path) |
+| `cta2` / `href2` | Secondary ghost button — **use `href2`**, not a second `href` |
+
+Self-closing only: `[showcase-hero badge="…" title="…" … href2="/blog"/]`
 
 ### `cta-banner`
 

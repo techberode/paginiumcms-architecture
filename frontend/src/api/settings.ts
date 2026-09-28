@@ -248,6 +248,8 @@ export interface PublicSettings {
     developerRequiresAdmin: boolean;
     breadcrumbsEnabled?: boolean;
     breadcrumbsOnHome?: boolean;
+    notFoundPageSlug?: string;
+    serverErrorPageSlug?: string;
   };
   company?: {
     showOnContactPage?: boolean;

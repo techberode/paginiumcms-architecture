@@ -13,6 +13,15 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Docs:** [PUBLIC_SITE_WORKLOG_2026-09-24_28.md](docs/en/operations/PUBLIC_SITE_WORKLOG_2026-09-24_28.md) — production incidents (footer version, blog CLS/404 flash, deploy CRLF, theme reload, showcase-hero, CTA); [ISSUES.md](docs/ISSUES.md) ISS-178–ISS-186.
+- **Widgets:** Public `[widget]` types `map-embed`, `data-table`, `bar-chart`, `form-cta` (server expand + `pgLayout.css`); Google Maps embed allow-list shared with contact page (`MapEmbedUrlGuard`).
+- **Public errors:** Settings → Layout slugs for custom **404** / **500** pages; built-in Paginium panels + `PublicRouteErrorBoundary` fallback.
+- **Analytics:** Geography tab — visitor dot map (country centroids, no third-party API) alongside country bar chart.
+- **Fix:** Landing shortcode primary CTA unreadable — `.paginium-prose a` no longer overrides `.pg-btn-primary` text color.
+- **Docs:** [SHORTCODES_AND_WIDGETS.md](docs/en/user/SHORTCODES_AND_WIDGETS.md) — syntax, inner markdown, widgets; landing page § `showcase-hero`; blog mini-series outline in `docs/marketing/ARTICLE_SERIES_SK.md`.
+- **Fix:** Landing `showcase-hero` invisible on public site — block no longer uses scroll-reveal (`pg-reveal`); CSS keeps legacy installs visible; bundled shortcode definition v2 via `seedMissingBundled`.
+- **Fix:** Landing `showcase-hero` / `.pg-reveal` blocks invisible on first paint — admin preview forced `opacity:1`; public site now reveals above-fold blocks immediately and re-binds scroll-reveal when page HTML loads.
+- **Fix:** Public light/dark mode survives reload — theme preference in `localStorage` is no longer blocked or cleared when functional cookies are declined; early `index.html` boot applies stored theme before React loads.
 - **Fix:** Public footer CMS version — `GET /api/settings/public` `cmsInfo.version` uses `AppVersion::current()` (was stuck on `VERSION` constant, e.g. beta.90); `AppVersion::VERSION` fallback stays aligned with the latest **tagged** release (`2.1.0-beta.93` until `v2.1.0-beta.94` ships).
 - **Fix:** Blog article-to-article navigation — no transient 404 when slug changes before fetch (skeleton + `useLayoutEffect` loading flag; stale `activeArticle` treated as in-flight).
 - **Fix:** Blog article-to-article navigation — stable skeleton instead of full-page spinner (lower CLS); reserved hero aspect ratio; in-prose `/blog/*` links use client routing.

@@ -69,8 +69,8 @@
     background-color: color-mix(in srgb, var(--color-secondary) 15%, transparent);
     color: var(--color-primary);
   }
-  .paginium-prose a { color: var(--color-primary); }
-  .paginium-prose a:hover { color: var(--color-accent); }
+  .paginium-prose a:not(.pg-btn) { color: var(--color-primary); }
+  .paginium-prose a:not(.pg-btn):hover { color: var(--color-accent); }
   .paginium-prose hr { background: var(--color-border); }
   .paginium-prose th {
     background-color: var(--color-surface);
@@ -533,8 +533,8 @@
 .paginium-prose.paginium-prose--lightbox img:not([data-lightbox='off']) { cursor: zoom-in; }
 .paginium-prose.paginium-prose--lightbox img:not([data-lightbox='off']):hover { opacity: 0.95; }
 .paginium-prose hr { border: 0; height: 1px; background: #e2e8f0; margin: 2.5rem 0; }
-.paginium-prose a { color: #6366f1; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-.paginium-prose a:hover { color: #4338ca; }
+.paginium-prose a:not(.pg-btn) { color: #6366f1; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.paginium-prose a:not(.pg-btn):hover { color: #4338ca; }
 .paginium-prose strong { font-weight: 800; color: #0f172a; }
 .paginium-prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
 .paginium-prose th { background-color: #f8fafc; font-weight: 700; text-align: left; padding: 0.75rem 1rem; border-bottom: 2px solid #e2e8f0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -551,8 +551,8 @@
 .dark .paginium-prose blockquote { background-color: rgba(99, 102, 241, 0.1); border-left-color: #6366f1; color: #a5b4fc; }
 .dark .paginium-prose code { background-color: #1e293b; color: #818cf8; }
 .dark .paginium-prose pre { background-color: #0f172a; }
-.dark .paginium-prose a { color: #818cf8; }
-.dark .paginium-prose a:hover { color: #a5b4fc; }
+.dark .paginium-prose a:not(.pg-btn) { color: #818cf8; }
+.dark .paginium-prose a:not(.pg-btn):hover { color: #a5b4fc; }
 .dark .paginium-prose hr { background: #334155; }
 .dark .paginium-prose th { background-color: #1e293b; border-bottom-color: #475569; color: #94a3b8; }
 .dark .paginium-prose td { border-bottom-color: #1e293b; color: #cbd5e1; }

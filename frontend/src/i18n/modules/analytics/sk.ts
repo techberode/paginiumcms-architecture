@@ -38,6 +38,8 @@ export const analyticsSk: MessageTree = {
     platforms: 'Platformy (OS)',
     browsers: 'Prehliadače',
     geoSummary: 'Krajiny',
+    geoMap: 'Mapa návštevníkov',
+    geoMapHint: 'Veľkosť bubliny = počet návštev (centroid krajiny, bez externého map API).',
     recentGeoVisits: 'Posledné návštevy',
     topBots: 'Top boty',
     recentBotVisits: 'Posledné bot návštevy',

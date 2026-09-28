@@ -534,6 +534,8 @@ final class SettingsController
             'developerRequiresAdmin' => (bool) ($layout['developerRequiresAdmin'] ?? $defaults['developerRequiresAdmin'] ?? true),
             'breadcrumbsEnabled' => (bool) ($layout['breadcrumbsEnabled'] ?? $defaults['breadcrumbsEnabled'] ?? true),
             'breadcrumbsOnHome' => (bool) ($layout['breadcrumbsOnHome'] ?? $defaults['breadcrumbsOnHome'] ?? false),
+            'notFoundPageSlug' => trim((string) ($layout['notFoundPageSlug'] ?? $defaults['notFoundPageSlug'] ?? '')),
+            'serverErrorPageSlug' => trim((string) ($layout['serverErrorPageSlug'] ?? $defaults['serverErrorPageSlug'] ?? '')),
         ];
     }
 

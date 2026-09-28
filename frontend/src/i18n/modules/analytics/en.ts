@@ -38,6 +38,8 @@ export const analyticsEn: MessageTree = {
     platforms: 'Platforms (OS)',
     browsers: 'Browsers',
     geoSummary: 'Countries',
+    geoMap: 'Visitor map',
+    geoMapHint: 'Bubble size reflects visit volume (country centroids — no third-party map API).',
     recentGeoVisits: 'Recent visits',
     topBots: 'Top bots',
     recentBotVisits: 'Recent bot visits',

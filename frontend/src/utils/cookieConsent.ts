@@ -50,8 +50,5 @@ export function writeStoredCookieConsent(preferences: CookieConsentPreferences):
 }
 
 export function clearFunctionalStorageIfDenied(): void {
-  const stored = readStoredCookieConsent();
-  if (stored && !stored.functional) {
-    window.localStorage.removeItem('paginium-public-theme');
-  }
+  // Reserved for future functional-only keys. Public theme preference is not gated on consent.
 }

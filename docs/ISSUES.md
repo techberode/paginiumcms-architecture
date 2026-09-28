@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 21 September 2026 · register **ISS-001–ISS-177** · ISS-175/176 in **2.1.0-beta.90** follow-up
+> **Last updated:** 28 September 2026 · register **ISS-001–ISS-186** · public-site batch **2.1.0-beta.93+** (Unreleased)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -200,6 +200,15 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-175](#iss-175) | Duplicate desk polling → 429 and log/monitor noise | Medium (ops) | ✅ Fixed · **2.1.0-beta.90** follow-up |
 | [ISS-176](#iss-176) | Admin log export failed (ZIP/ext-zip, silent FE) | Medium (admin ops) | ✅ Fixed · **2.1.0-beta.90** follow-up |
 | [ISS-177](#iss-177) | Health version OK but admin SPA still old build | Medium (ops) | ℹ️ Informational — full deploy incl. `build:prod` |
+| [ISS-178](#iss-178) | Public footer CMS version stuck on old beta | Low (UX) | ✅ Fixed — `AppVersion::current()` on public settings |
+| [ISS-179](#iss-179) | Blog slug change flashed 404 + CLS | Medium (UX) | ✅ Fixed — loading skeleton + blog link routing |
+| [ISS-180](#iss-180) | Deploy script `: command not found` / `APP_ROOT` unset | High (ops) | ✅ Documented — LF scripts, `bash`, full FE build |
+| [ISS-181](#iss-181) | Light theme reset after reload (cookies) | Medium (UX) | ✅ Fixed — theme localStorage + `index.html` boot |
+| [ISS-182](#iss-182) | Landing `showcase-hero` invisible on public site | High (UX) | ✅ Fixed — reveal + shortcode v2 + CSS |
+| [ISS-183](#iss-183) | Showcase primary CTA unreadable | Medium (UX) | ✅ Fixed — prose vs `.pg-btn-primary` |
+| [ISS-184](#iss-184) | Generic public 404/500 without site chrome | Low (UX) | ✅ Fixed — custom page slugs + styled fallback |
+| [ISS-185](#iss-185) | Analytics geo lacked spatial overview | Low (admin UX) | ✅ Fixed — visitor dot map panel |
+| [ISS-186](#iss-186) | Pages/articles needed table/chart/map widgets | Medium (feature) | ✅ Fixed — WidgetCatalog types + docs |
 
 ## CI failures (GitHub Actions)
 
@@ -5519,6 +5528,204 @@ Always run the full **`scripts/deploy-instance-update.sh`** path (includes front
 ### Related docs
 
 - [DEPLOY.md §12.5 verify](../deploy/DEPLOY.md#verify-after-admin-deploy) step 5
+
+---
+
+<a id="iss-178"></a>
+
+## ISS-178 – Public footer CMS version stuck on old beta
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Public settings · `AppVersion` |
+
+### Symptom
+
+Footer displayed `beta.90` while git tag and `/api/health` reported `beta.93`.
+
+### Root cause
+
+`cmsInfo.version` in public settings used the `AppVersion::VERSION` constant instead of `AppVersion::current()`.
+
+### Resolution
+
+Public payload uses `AppVersion::current()`; constant aligned with latest tagged release only.
+
+### Verification
+
+After deploy, footer version matches health endpoint.
+
+---
+
+<a id="iss-179"></a>
+
+## ISS-179 – Blog slug change flashed 404 and raised CLS
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Blog SPA · Core Web Vitals |
+
+### Symptom
+
+Navigating between articles briefly showed a 404 state; Lighthouse CLS increased.
+
+### Root cause
+
+Route param changed before fetch completed; in-prose links used `/slug` instead of `/blog/slug`.
+
+### Resolution
+
+Skeleton + layout effect loading flag; reserved hero aspect ratio; client routing for `/blog/*` links; shell min-height across slug changes.
+
+---
+
+<a id="iss-180"></a>
+
+## ISS-180 – Deploy script failed with `: command not found`
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | High (ops) |
+| **Status** | ✅ Documented |
+| **Area** | `scripts/deploy-instance-update.sh` |
+
+### Symptom
+
+Demo deploy exited early; `APP_ROOT` unset; stray `: command not found`.
+
+### Root cause
+
+CRLF line endings or broken shell continuations when script was copied outside git.
+
+### Resolution
+
+Run `bash ./scripts/deploy-instance-update.sh` from LF checkout; export `APP_ROOT`; see [PUBLIC_SITE_WORKLOG_2026-09-24_28.md](en/operations/PUBLIC_SITE_WORKLOG_2026-09-24_28.md).
+
+---
+
+<a id="iss-181"></a>
+
+## ISS-181 – Light/dark theme did not survive reload
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Cookies · public appearance |
+
+### Root cause
+
+Functional cookie decline cleared or blocked `paginium-public-theme` in `localStorage`.
+
+### Resolution
+
+Theme preference treated as essential UX; early boot in `index.html`; cookie policy copy updated.
+
+---
+
+<a id="iss-182"></a>
+
+## ISS-182 – Landing showcase-hero invisible on public site
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | High (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Shortcodes · `pg-reveal` |
+
+### Root cause
+
+Admin preview forced `.pg-reveal { opacity: 1 }`; public scroll-reveal left above-fold hero at `opacity: 0`.
+
+### Resolution
+
+`useLandingReveal` in-viewport reveal; bundled `showcase-hero` v2 without `pg-reveal`; CSS fallback; `ShowcaseHeroMarkdownIntegrationTest`.
+
+---
+
+<a id="iss-183"></a>
+
+## ISS-183 – Showcase primary CTA unreadable
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | `pgLayout.css` · prose links |
+
+### Resolution
+
+Prose anchor styles exclude `.pg-btn` / `.pg-btn-primary`.
+
+---
+
+<a id="iss-184"></a>
+
+## ISS-184 – Generic public 404/500 without branded layout
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Public routing · settings |
+
+### Resolution
+
+Settings → Layout: `notFoundPageSlug`, `serverErrorPageSlug`; `PublicSystemErrorPanel` fallback; `PublicRouteErrorBoundary` for render errors.
+
+---
+
+<a id="iss-185"></a>
+
+## ISS-185 – Analytics geography lacked map-style overview
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (admin UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Analytics admin |
+
+### Resolution
+
+`AnalyticsGeoDotMap` — visit-weighted bubbles on equirectangular grid (no Google Maps API in admin). Contact page maps remain Settings → Company embed + `map-embed` widget.
+
+---
+
+<a id="iss-186"></a>
+
+## ISS-186 – Need Lexa-style body widgets (tables, charts, maps)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (feature) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | `WidgetCatalog` |
+
+### Resolution
+
+Added `map-embed`, `data-table`, `bar-chart`, `form-cta` with PHPUnit coverage; documented in [SHORTCODES_AND_WIDGETS.md](en/user/SHORTCODES_AND_WIDGETS.md).
 
 ---
 

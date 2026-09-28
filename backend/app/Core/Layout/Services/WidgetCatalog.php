@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Layout\Services;
 
+use PaginiumCMS\Support\MapEmbedUrlGuard;
+
 /**
  * Built-in public-page widgets (It.93t). Inspired by CoreUI/Konrix cards — original markup, not vendored.
  *
@@ -120,6 +122,48 @@ final class WidgetCatalog
                 'items' => 'Pages | Blog | Media library',
             ]),
             $this->type('kpi-row', false, [], []),
+            $this->type('map-embed', true, [
+                'title' => 'string',
+                'src' => 'string',
+                'height' => 'string',
+            ], [
+                'title' => 'Office',
+                'src' => '',
+                'height' => '320',
+            ]),
+            $this->type('data-table', true, [
+                'title' => 'string',
+                'headers' => 'string',
+                'rows' => 'string',
+            ], [
+                'title' => 'Comparison',
+                'headers' => 'Plan | Storage | Support',
+                'rows' => 'Starter | 5 GB | E-mail | Pro | 50 GB | Priority',
+            ]),
+            $this->type('bar-chart', true, [
+                'title' => 'string',
+                'labels' => 'string',
+                'values' => 'string',
+                'tone' => 'tone',
+            ], [
+                'title' => 'Weekly traffic',
+                'labels' => 'Mon | Tue | Wed | Thu | Fri',
+                'values' => '40 | 55 | 48 | 70 | 62',
+                'tone' => 'primary',
+            ]),
+            $this->type('form-cta', true, [
+                'title' => 'string',
+                'subtitle' => 'string',
+                'cta' => 'string',
+                'href' => 'href',
+                'subject' => 'string',
+            ], [
+                'title' => 'Need help?',
+                'subtitle' => 'Send us a message — we reply within one business day.',
+                'cta' => 'Open contact form',
+                'href' => '/contact',
+                'subject' => '',
+            ]),
         ];
 
         $custom = $this->custom?->list() ?? [];
@@ -140,7 +184,22 @@ final class WidgetCatalog
      */
     public function builtinIds(): array
     {
-        return ['kpi', 'progress', 'brand', 'quote', 'cta', 'timeline', 'icon-box', 'profile', 'list', 'kpi-row'];
+        return [
+            'kpi',
+            'progress',
+            'brand',
+            'quote',
+            'cta',
+            'timeline',
+            'icon-box',
+            'profile',
+            'list',
+            'kpi-row',
+            'map-embed',
+            'data-table',
+            'bar-chart',
+            'form-cta',
+        ];
     }
 
     public function isKnownType(string $type): bool
@@ -182,6 +241,10 @@ final class WidgetCatalog
             'profile' => $this->renderProfile($attrs),
             'list' => $this->renderList($attrs),
             'kpi-row' => '<div class="pg-widget pg-widget-kpis">' . $inner . '</div>',
+            'map-embed' => $this->renderMapEmbed($attrs),
+            'data-table' => $this->renderDataTable($attrs),
+            'bar-chart' => $this->renderBarChart($attrs),
+            'form-cta' => $this->renderFormCta($attrs),
             default => '[widget' . $rawAttrs . ']' . $inner . ($inner === '' ? '' : '[/widget]'),
         };
     }
@@ -375,6 +438,137 @@ final class WidgetCatalog
         }
 
         return '<div class="pg-widget pg-widget-profile">' . $inner . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderMapEmbed(array $attrs): string
+    {
+        $src = MapEmbedUrlGuard::sanitizeSrc($attrs['src'] ?? '');
+        if ($src === '') {
+            return '<div class="pg-widget pg-widget-map pg-widget-empty" role="note"><p class="pg-widget-hint">'
+                . $this->e($attrs['title'] ?? 'Map')
+                . ' — embed URL missing or not allow-listed (Google Maps /maps/embed only).</p></div>';
+        }
+
+        $height = max(200, min(720, (int) ($attrs['height'] ?? 320)));
+        $title = $this->e($attrs['title'] ?? 'Map');
+
+        return '<figure class="pg-widget pg-widget-map">'
+            . '<figcaption class="pg-widget-label">' . $title . '</figcaption>'
+            . '<iframe class="pg-widget-map-frame" title="' . $title . '" src="' . $src . '" loading="lazy" '
+            . 'referrerpolicy="no-referrer-when-downgrade" allowfullscreen height="' . $height . '"></iframe>'
+            . '</figure>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderDataTable(array $attrs): string
+    {
+        $headers = $this->splitPipeList($attrs['headers'] ?? '');
+        $rowTokens = $this->splitPipeList($attrs['rows'] ?? '');
+        $colCount = count($headers);
+        if ($colCount === 0) {
+            return '<div class="pg-widget pg-widget-table pg-widget-empty"><p class="pg-widget-hint">Table headers required.</p></div>';
+        }
+
+        $headHtml = '';
+        foreach ($headers as $cell) {
+            $headHtml .= '<th scope="col">' . $this->e($cell) . '</th>';
+        }
+
+        $bodyHtml = '';
+        for ($i = 0; $i < count($rowTokens); $i += $colCount) {
+            $bodyHtml .= '<tr>';
+            for ($c = 0; $c < $colCount; $c++) {
+                $bodyHtml .= '<td>' . $this->e($rowTokens[$i + $c] ?? '') . '</td>';
+            }
+            $bodyHtml .= '</tr>';
+        }
+
+        $title = trim($attrs['title'] ?? '');
+        $caption = $title === '' ? '' : '<caption class="pg-widget-label">' . $this->e($title) . '</caption>';
+
+        return '<div class="pg-widget pg-widget-table-wrap">'
+            . '<table class="pg-widget-table">' . $caption . '<thead><tr>' . $headHtml . '</tr></thead><tbody>'
+            . $bodyHtml . '</tbody></table></div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderBarChart(array $attrs): string
+    {
+        $labels = $this->splitPipeList($attrs['labels'] ?? '');
+        $valuesRaw = $this->splitPipeList($attrs['values'] ?? '');
+        $tone = $this->tone($attrs['tone'] ?? 'primary');
+        $max = 1;
+        $values = [];
+        foreach ($valuesRaw as $raw) {
+            $n = max(0, (int) round((float) $raw));
+            $values[] = $n;
+            $max = max($max, $n);
+        }
+
+        $bars = '';
+        foreach ($labels as $index => $label) {
+            $value = $values[$index] ?? 0;
+            $pct = (int) round(($value / $max) * 100);
+            $bars .= '<div class="pg-widget-chart-row">'
+                . '<span class="pg-widget-chart-label">' . $this->e($label) . '</span>'
+                . '<div class="pg-widget-chart-track" role="img" aria-label="' . $this->e($label . ' ' . $value) . '">'
+                . '<span class="pg-widget-chart-bar pg-w-' . $this->percent((string) $pct) . '"></span>'
+                . '</div>'
+                . '<span class="pg-widget-chart-value">' . $this->e((string) $value) . '</span>'
+                . '</div>';
+        }
+
+        return '<div class="pg-widget pg-widget-chart pg-widget-tone-' . $tone . '">'
+            . '<p class="pg-widget-title">' . $this->e($attrs['title'] ?? '') . '</p>'
+            . $bars
+            . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderFormCta(array $attrs): string
+    {
+        $path = trim($attrs['href'] ?? '/contact');
+        $subject = trim($attrs['subject'] ?? '');
+        if ($subject !== '' && $path !== '' && $path !== '#') {
+            $sep = str_contains($path, '?') ? '&' : '?';
+            $path .= $sep . 'subject=' . rawurlencode($subject);
+        }
+        $href = $this->href($path);
+
+        return '<div class="pg-widget pg-widget-form-cta">'
+            . '<p class="pg-widget-title">' . $this->e($attrs['title'] ?? '') . '</p>'
+            . '<p class="pg-widget-hint">' . $this->e($attrs['subtitle'] ?? '') . '</p>'
+            . '<a class="pg-widget-btn" href="' . $href . '">' . $this->e($attrs['cta'] ?? 'Contact') . '</a>'
+            . '</div>';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function splitPipeList(string $value): array
+    {
+        $parts = preg_split('/\s*\|\s*/', $value) ?: [];
+        $out = [];
+        foreach ($parts as $part) {
+            $text = trim($part);
+            if ($text !== '') {
+                $out[] = $text;
+            }
+        }
+
+        return $out;
     }
 
     /**
