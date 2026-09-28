@@ -553,10 +553,20 @@ export const editorSk: MessageTree = {
     failedLocale: 'Zlyhalo',
     close: 'Zavrieť',
   },
+  articleHero: {
+    title: 'Hero obrázok článku (orez)',
+    intro:
+      'Používa SEO / OG obrázok pod titulkom na webe. Ťahaj v náhľade — mení sa len zobrazenie (object-position), nie veľkosť súboru.',
+    needOgImage: 'Nastavte SEO / OG obrázok vyššie, potom upravíte orez hero.',
+    previewTitle: 'Náhľad — hero pás článku (21:9)',
+    displayMode: 'Režim zobrazenia',
+    fitCover: 'Vyplniť rám (orez)',
+    fitContain: 'Celý obrázok (letterbox)',
+  },
   pageHero: {
     title: 'Hero obrázok v hlavičke',
     intro:
-      'Na blogu je hero v sivom boxe pod titulkom. Generuj 21:9 (odporúčané 2560×1097), dôležité v strede — viď docs/sk/user/PAGE_HERO_IMAGES.md. Ťahaj v náhľade. Auto = SEO obrázok.',
+      'Hero stránky v hlavičke. Generuj 21:9 (odporúčané 2560×1097) — viď docs/sk/user/PAGE_HERO_IMAGES.md. Ťahaj v náhľade. Auto = SEO obrázok.',
     mode: 'Režim hero',
     placement: 'Kde zobraziť hero',
     placementHint:

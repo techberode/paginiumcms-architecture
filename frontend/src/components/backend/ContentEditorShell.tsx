@@ -55,7 +55,8 @@ import {
   writeEditorWorkspaceOverride,
 } from '../../utils/editorWorkspace';
 import { PageHeroSettingsPanel } from './PageHeroSettingsPanel';
-import type { PageHeroSettings } from '../../utils/pageHero';
+import type { ArticleHeroFocus, PageHeroSettings } from '../../utils/pageHero';
+import { ArticleHeroFocusPanel } from './ArticleHeroFocusPanel';
 
 const PAGE_TEMPLATE_VALUES = ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'] as const;
 
@@ -116,6 +117,8 @@ interface ContentEditorShellProps {
   localeExtra?: React.ReactNode;
   pageHero?: PageHeroSettings;
   onPageHeroChange?: (value: PageHeroSettings) => void;
+  articleHeroFocus?: ArticleHeroFocus;
+  onArticleHeroFocusChange?: (value: ArticleHeroFocus) => void;
 }
 
 export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
@@ -175,6 +178,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   localeExtra,
   pageHero,
   onPageHeroChange,
+  articleHeroFocus,
+  onArticleHeroFocusChange,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -523,6 +528,17 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                   disabled={!canEdit}
                   pageSlug={editSlug}
                   layoutTemplate={layoutTemplate}
+                />
+              </div>
+            ) : null}
+
+            {type === 'article' && articleHeroFocus && onArticleHeroFocusChange ? (
+              <div className="form-group md:col-span-2">
+                <ArticleHeroFocusPanel
+                  value={articleHeroFocus}
+                  onChange={onArticleHeroFocusChange}
+                  seoOgImage={seo.ogImage}
+                  disabled={!canEdit}
                 />
               </div>
             ) : null}

@@ -1035,6 +1035,9 @@ class ContentController
         if ($content instanceof Page) {
             $this->applyPageHeroFrontMatter($content, $data);
         }
+        if ($content instanceof Article) {
+            $this->applyArticleHeroFrontMatter($content, $data);
+        }
         $this->applySchedulingFrontMatter($content, $data);
         $this->applyReviewFrontMatter($content, $data);
     }
@@ -1112,6 +1115,9 @@ class ContentController
         $this->applySeoFrontMatter($content, $data);
         if ($content instanceof Page) {
             $this->applyPageHeroFrontMatter($content, $data);
+        }
+        if ($content instanceof Article) {
+            $this->applyArticleHeroFrontMatter($content, $data);
         }
         $this->applySchedulingFrontMatter($content, $data);
         $this->applyReviewFrontMatter($content, $data);
@@ -1249,6 +1255,16 @@ class ContentController
             $touched = true;
         }
 
+        if (array_key_exists('heroFit', $data)) {
+            $fit = strtolower(trim((string) $data['heroFit']));
+            if ($fit === 'contain') {
+                $frontMatter['heroFit'] = 'contain';
+            } else {
+                unset($frontMatter['heroFit']);
+            }
+            $touched = true;
+        }
+
         if (array_key_exists('heroPlacement', $data)) {
             $placement = trim((string) $data['heroPlacement']);
             if (in_array($placement, ['auto', 'full-header', 'intro-card', 'landing-inline'], true)) {
@@ -1261,6 +1277,39 @@ class ContentController
 
         if ($touched) {
             $page->setFrontMatter($frontMatter);
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applyArticleHeroFrontMatter(Article $article, array $data): void
+    {
+        $frontMatter = $article->getFrontMatter();
+        $touched = false;
+
+        if (array_key_exists('heroFocusX', $data)) {
+            $frontMatter['heroFocusX'] = $this->clampHeroFocusPercent($data['heroFocusX']);
+            $touched = true;
+        }
+
+        if (array_key_exists('heroFocusY', $data)) {
+            $frontMatter['heroFocusY'] = $this->clampHeroFocusPercent($data['heroFocusY']);
+            $touched = true;
+        }
+
+        if (array_key_exists('heroFit', $data)) {
+            $fit = strtolower(trim((string) $data['heroFit']));
+            if ($fit === 'contain') {
+                $frontMatter['heroFit'] = 'contain';
+            } else {
+                unset($frontMatter['heroFit']);
+            }
+            $touched = true;
+        }
+
+        if ($touched) {
+            $article->setFrontMatter($frontMatter);
         }
     }
 

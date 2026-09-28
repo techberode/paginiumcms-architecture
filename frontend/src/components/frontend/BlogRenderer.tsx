@@ -21,6 +21,8 @@ import {
   Printer,
 } from 'lucide-react';
 import { resolveContentPreviewImage, resolveContentPreviewSrcSet } from '../../utils/contentPreviewImage';
+import { ArticleHeroImage } from './ArticleHeroImage';
+import { parseArticleHeroFocus } from '../../utils/pageHero';
 import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import {
   buildBlogListPath,
@@ -481,10 +483,6 @@ export const BlogRenderer: React.FC = () => {
       ? resolvePublicMediaThumbnailUrl(activeArticle.authorAvatarUrl, MEDIA_THUMB_WIDTH.avatar)
       : '';
     const image = resolveContentPreviewImage(activeArticle, MEDIA_THUMB_WIDTH.hero);
-    const imageSrcSet = resolveContentPreviewSrcSet(activeArticle, [
-      MEDIA_THUMB_WIDTH.card,
-      MEDIA_THUMB_WIDTH.hero,
-    ]);
     const dates = formatContentDateLabels(
       {
         createdAt: activeArticle.createdAt,
@@ -597,20 +595,7 @@ export const BlogRenderer: React.FC = () => {
               )}
             </div>
           </div>
-          {image && (
-            <div className="mt-8 rounded-3xl overflow-hidden shadow-2xl aspect-[21/9] max-h-[480px] bg-theme-surface-elevated">
-              <img
-                src={image}
-                srcSet={imageSrcSet || undefined}
-                sizes="(max-width: 768px) 100vw, 896px"
-                alt={activeArticle.title}
-                width={896}
-                height={384}
-                decoding="async"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          {image ? <ArticleHeroImage article={activeArticle} /> : null}
         </header>
 
             <main className="mt-10">
@@ -803,6 +788,7 @@ export const BlogRenderer: React.FC = () => {
             const author = article.author || String(
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
             );
+            const cardHero = parseArticleHeroFocus(article.frontMatter ?? {});
             const image = resolveContentPreviewImage(article, MEDIA_THUMB_WIDTH.card);
             const imageSrcSet = resolveContentPreviewSrcSet(article, [
               MEDIA_THUMB_WIDTH.card,
@@ -835,6 +821,9 @@ export const BlogRenderer: React.FC = () => {
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      style={{
+                        objectPosition: `${cardHero.focusX}% ${cardHero.focusY}%`,
+                      }}
                     />
                   )}
                   <div className="absolute top-4 left-4 flex flex-wrap gap-1">

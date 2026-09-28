@@ -38,6 +38,51 @@ export const DEFAULT_PAGE_HERO: PageHeroSettings = {
   focusY: 50,
 };
 
+/** Blog article hero crop (SEO / OG image under the title). */
+export type ArticleHeroFit = 'cover' | 'contain';
+
+export interface ArticleHeroFocus {
+  focusX: number;
+  focusY: number;
+  fit: ArticleHeroFit;
+}
+
+export const DEFAULT_ARTICLE_HERO_FOCUS: ArticleHeroFocus = {
+  focusX: 50,
+  focusY: 50,
+  /** Detail hero defaults to full image (letterbox) until editor chooses “Fill frame”. */
+  fit: 'contain',
+};
+
+export function parseArticleHeroFocus(fm: Record<string, unknown> | undefined): ArticleHeroFocus {
+  const raw = fm ?? {};
+  const fitRaw = String(raw.heroFit ?? '').trim().toLowerCase();
+  const hasExplicitFocus = raw.heroFocusX !== undefined || raw.heroFocusY !== undefined;
+
+  let fit: ArticleHeroFit = 'contain';
+  if (fitRaw === 'cover') {
+    fit = 'cover';
+  } else if (fitRaw === 'contain') {
+    fit = 'contain';
+  } else if (hasExplicitFocus) {
+    fit = 'cover';
+  }
+
+  return {
+    focusX: clampPercent(raw.heroFocusX, 50),
+    focusY: clampPercent(raw.heroFocusY, 50),
+    fit,
+  };
+}
+
+export function articleHeroFocusToFrontMatter(focus: ArticleHeroFocus): Record<string, string> {
+  return {
+    heroFocusX: String(focus.focusX),
+    heroFocusY: String(focus.focusY),
+    heroFit: focus.fit,
+  };
+}
+
 function clampPercent(value: unknown, fallback: number): number {
   const n = typeof value === 'number' ? value : Number.parseFloat(String(value ?? ''));
   if (!Number.isFinite(n)) {

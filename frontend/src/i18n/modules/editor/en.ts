@@ -553,10 +553,20 @@ export const editorEn: MessageTree = {
     failedLocale: 'Failed',
     close: 'Close',
   },
+  articleHero: {
+    title: 'Article hero image (crop)',
+    intro:
+      'Uses the SEO / OG image under the title on the public article. Drag the preview to choose the visible area — no file resize, only display crop (object-position).',
+    needOgImage: 'Set an SEO / OG image above to adjust the hero crop.',
+    previewTitle: 'Preview — article hero band (21:9)',
+    displayMode: 'Display mode',
+    fitCover: 'Fill frame (crop)',
+    fitContain: 'Show whole image (letterbox)',
+  },
   pageHero: {
     title: 'Header hero image',
     intro:
-      'Blog hero lives in the intro greybox. Generate 21:9 (recommended 2560×1097), keep subjects centered — see docs/en/user/PAGE_HERO_IMAGES.md. Drag the preview to reposition. Auto uses the SEO image.',
+      'Page header hero. Generate 21:9 (recommended 2560×1097) — see docs/en/user/PAGE_HERO_IMAGES.md. Drag the preview to reposition. Auto uses the SEO image.',
     mode: 'Hero mode',
     placement: 'Hero placement',
     placementHint:

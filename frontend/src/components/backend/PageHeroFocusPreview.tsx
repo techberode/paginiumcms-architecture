@@ -6,13 +6,14 @@ import { useI18n } from '../../context/I18nContext';
 import type { PageHeroSettings } from '../../utils/pageHero';
 import { resolvePageHeroPreviewImages } from '../../utils/pageHero';
 
-export type PageHeroPreviewLayout = 'blog-card' | 'page-header';
+export type PageHeroPreviewLayout = 'blog-card' | 'page-header' | 'article-detail';
 
 interface PageHeroFocusPreviewProps {
   settings: PageHeroSettings;
   seoOgImage: string;
   layout: PageHeroPreviewLayout;
   disabled?: boolean;
+  objectFit?: 'cover' | 'contain';
   onFocusChange: (focusX: number, focusY: number) => void;
 }
 
@@ -25,6 +26,7 @@ export const PageHeroFocusPreview: React.FC<PageHeroFocusPreviewProps> = ({
   seoOgImage,
   layout,
   disabled = false,
+  objectFit = 'cover',
   onFocusChange,
 }) => {
   const { t } = useI18n();
@@ -71,10 +73,13 @@ export const PageHeroFocusPreview: React.FC<PageHeroFocusPreviewProps> = ({
 
   const objectPosition = `${settings.focusX}% ${settings.focusY}%`;
   const blogCard = layout === 'blog-card';
+  const articleDetail = layout === 'article-detail';
 
-  const frameClass = blogCard
-    ? 'relative w-full aspect-[2/1] sm:aspect-[21/9] max-h-52 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 touch-none'
-    : 'relative w-full aspect-[2/1] sm:aspect-[21/9] max-h-56 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 touch-none';
+  const frameClass = articleDetail
+    ? 'relative w-full aspect-[21/9] max-h-[480px] overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 touch-none shadow-lg'
+    : blogCard
+      ? 'relative w-full aspect-[2/1] sm:aspect-[21/9] max-h-52 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 touch-none'
+      : 'relative w-full aspect-[2/1] sm:aspect-[21/9] max-h-56 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 touch-none';
 
   if (imageUrl === '') {
     return (
@@ -89,7 +94,11 @@ export const PageHeroFocusPreview: React.FC<PageHeroFocusPreviewProps> = ({
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-        {blogCard ? t('editor.pageHero.previewBlog') : t('editor.pageHero.previewPage')}
+        {articleDetail
+          ? t('editor.articleHero.previewTitle')
+          : blogCard
+            ? t('editor.pageHero.previewBlog')
+            : t('editor.pageHero.previewPage')}
       </p>
       <p className="text-xs text-slate-500 dark:text-slate-400">{t('editor.pageHero.previewHint')}</p>
       <div
@@ -127,7 +136,9 @@ export const PageHeroFocusPreview: React.FC<PageHeroFocusPreviewProps> = ({
         <img
           src={imageUrl}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+          className={`absolute inset-0 h-full w-full pointer-events-none select-none ${
+            objectFit === 'contain' ? 'object-contain' : 'object-cover'
+          }`}
           style={{ objectPosition }}
           draggable={false}
         />

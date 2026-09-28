@@ -17,6 +17,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Widgets:** Public `[widget]` types `map-embed`, `data-table`, `bar-chart`, `form-cta` (server expand + `pgLayout.css`); Google Maps embed allow-list shared with contact page (`MapEmbedUrlGuard`).
 - **Public errors:** Settings → Layout slugs for custom **404** / **500** pages; built-in Paginium panels + `PublicRouteErrorBoundary` fallback.
 - **Analytics:** Geography tab — visitor dot map (country centroids, no third-party API) alongside country bar chart.
+- **Blog:** Article hero crop — editor drag preview + `heroFocusX/Y` / `heroFit`; detail defaults to letterbox (`contain`) so OG images are not random center-cropped; optional fill-frame crop.
 - **Fix:** Landing shortcode primary CTA unreadable — `.paginium-prose a` no longer overrides `.pg-btn-primary` text color.
 - **Docs:** [SHORTCODES_AND_WIDGETS.md](docs/en/user/SHORTCODES_AND_WIDGETS.md) — syntax, inner markdown, widgets; landing page § `showcase-hero`; blog mini-series outline in `docs/marketing/ARTICLE_SERIES_SK.md`.
 - **Fix:** Landing `showcase-hero` invisible on public site — block no longer uses scroll-reveal (`pg-reveal`); CSS keeps legacy installs visible; bundled shortcode definition v2 via `seedMissingBundled`.

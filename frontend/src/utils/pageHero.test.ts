@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  parseArticleHeroFocus,
   resolvePageHero,
   resolvePageHeroPlacement,
   resolvePageHeroRenderFlags,
@@ -74,5 +75,17 @@ describe('pageHero', () => {
     const html = '<p>![Blog](/storage/media/a.jpg)</p><p>Hello</p>';
     const next = stripHeroDuplicateFromHtml(html, ['/storage/media/a.jpg']);
     expect(next).toBe('<p>Hello</p>');
+  });
+
+  it('parses article hero focus and fit from front matter', () => {
+    const focus = parseArticleHeroFocus({ heroFocusX: '30', heroFocusY: '70', heroFit: 'contain' });
+    expect(focus.focusX).toBe(30);
+    expect(focus.focusY).toBe(70);
+    expect(focus.fit).toBe('contain');
+  });
+
+  it('defaults article hero to contain when crop not configured', () => {
+    expect(parseArticleHeroFocus({}).fit).toBe('contain');
+    expect(parseArticleHeroFocus({ heroFocusX: '40' }).fit).toBe('cover');
   });
 });

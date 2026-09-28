@@ -7,7 +7,7 @@ import { Navbar } from '../frontend/Navbar';
 import { Footer } from '../frontend/Footer';
 import { PageRenderer } from '../frontend/PageRenderer';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
-import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
+import { ArticleHeroImage } from '../frontend/ArticleHeroImage';
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { markdownToHtml } from '../../utils/contentEditor';
 import { previewFrameMaxWidth } from '../../utils/sitePreview';
@@ -28,6 +28,8 @@ export interface SitePreviewDraft {
   seoDescription?: string;
   createdAt?: string;
   updatedAt?: string;
+  ogImage?: string;
+  frontMatter?: Record<string, unknown>;
 }
 
 export interface SitePreviewModalProps {
@@ -59,9 +61,12 @@ function buildPreviewPage(
     createdAt: draft.createdAt || now,
     updatedAt: draft.updatedAt || now,
     template: draft.template || 'default',
+    ogImage: draft.ogImage?.trim() || undefined,
     frontMatter: {
       template: draft.template || 'default',
       description: draft.seoDescription || '',
+      seoImage: draft.ogImage?.trim() || '',
+      ...(draft.frontMatter ?? {}),
     },
   };
 }
@@ -87,7 +92,6 @@ const ArticlePreviewBody: React.FC<{ article: Article; defaultAuthor: string }> 
   defaultAuthor,
 }) => {
   const { locale } = useI18n();
-  const image = resolveContentPreviewImage(article);
   const author = article.author || defaultAuthor;
   const dates = formatContentDateLabels(
     {
@@ -128,11 +132,7 @@ const ArticlePreviewBody: React.FC<{ article: Article; defaultAuthor: string }> 
             {author}
           </span>
         </div>
-        {image && (
-          <div className="mt-8 rounded-3xl overflow-hidden shadow-xl max-h-[420px]">
-            <img src={image} alt={article.title} className="w-full h-full object-cover" />
-          </div>
-        )}
+        <ArticleHeroImage article={article} />
       </header>
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm">

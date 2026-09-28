@@ -92,9 +92,13 @@ import {
 } from '../../utils/contentEditorLocale';
 import { applyDraftEditorSnapshot, buildDraftEditorSnapshot } from '../../utils/draftEditorSnapshot';
 import {
+  DEFAULT_ARTICLE_HERO_FOCUS,
   DEFAULT_PAGE_HERO,
+  articleHeroFocusToFrontMatter,
   pageHeroSettingsFromFrontMatter,
   pageHeroSettingsToFrontMatter,
+  parseArticleHeroFocus,
+  type ArticleHeroFocus,
   type PageHeroSettings,
 } from '../../utils/pageHero';
 import {
@@ -168,6 +172,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     Partial<Record<ContentLocaleCode, ContentEditorStatus>>
   >({});
   const [pageHero, setPageHero] = useState<PageHeroSettings>(DEFAULT_PAGE_HERO);
+  const [articleHeroFocus, setArticleHeroFocus] = useState<ArticleHeroFocus>(DEFAULT_ARTICLE_HERO_FOCUS);
 
   const { get, post, put } = useApi();
   const toast = useToast();
@@ -495,6 +500,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         if (type === 'page') {
           setPageHero(pageHeroSettingsFromFrontMatter(fm));
         }
+        if (type === 'article') {
+          setArticleHeroFocus(parseArticleHeroFocus(fm));
+        }
         setStoragePath(
           resolveStoragePath(type, loadedSlug, String(response.data.path ?? ''), storageFormat)
         );
@@ -683,6 +691,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           data.commentsAllowGuests = triStateToApi(articleComments.commentsAllowGuests);
           data.commentsRatingEnabled = triStateToApi(articleComments.commentsRatingEnabled);
           Object.assign(data, articleAuthorToPayload(articleAuthorSettings));
+          Object.assign(data, articleHeroFocusToFrontMatter(articleHeroFocus));
           data.category = articleCategory.trim();
         }
 
@@ -882,19 +891,24 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         .map((tag) => tag.trim())
         .filter(Boolean),
       seoDescription: seo.seoDescription,
+      ogImage: seo.ogImage,
+      frontMatter: type === 'article' ? articleHeroFocusToFrontMatter(articleHeroFocus) : undefined,
       createdAt: loadedCreatedAt,
       updatedAt: loadedUpdatedAt,
     };
   }, [
     articleAuthorSettings,
+    articleHeroFocus,
     content,
     editSlug,
     editorMode,
     loadedCreatedAt,
     loadedUpdatedAt,
     previewHtml,
+    seo.ogImage,
     seo.seoDescription,
     seo.tags,
+    type,
     settings.content?.blogAuthorName,
     settings.general?.siteName,
     template,
@@ -1095,6 +1109,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onLayoutTemplateChange={setLayoutTemplate}
         pageHero={type === 'page' ? pageHero : undefined}
         onPageHeroChange={type === 'page' ? setPageHero : undefined}
+        articleHeroFocus={type === 'article' ? articleHeroFocus : undefined}
+        onArticleHeroFocusChange={type === 'article' ? setArticleHeroFocus : undefined}
         onInsertShortcode={(snippet) => setContent((prev) => `${prev}${snippet}`)}
         onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
         onSeoChange={setSeo}
