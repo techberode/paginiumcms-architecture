@@ -112,6 +112,44 @@ final class UploadSecurityValidator
         return $this->resolveAllowedMimeTypesLegacy($mediaMimeTypes);
     }
 
+    /**
+     * MIME types for the Media Library file picker (images + documents + video surfaces).
+     *
+     * @param list<string> $mediaMimeTypes
+     *
+     * @return list<string>
+     */
+    public function resolveMediaLibraryMimeTypes(array $mediaMimeTypes): array
+    {
+        if (!$this->policyEngine->isUnifiedEnabled()) {
+            return $this->resolveAllowedMimeTypes($mediaMimeTypes);
+        }
+
+        $merged = $this->policyEngine->resolveAllowedMimeTypes(
+            UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD,
+            $mediaMimeTypes
+        );
+        $merged = array_merge(
+            $merged,
+            $this->policyEngine->resolveAllowedMimeTypes(
+                UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD,
+                $mediaMimeTypes
+            )
+        );
+
+        if (MediaDocumentPolicy::isEnabled($this->settings)) {
+            $merged = array_merge(
+                $merged,
+                $this->policyEngine->resolveAllowedMimeTypes(
+                    UploadSurfaceRegistry::SURFACE_MEDIA_DOCUMENT_UPLOAD,
+                    $mediaMimeTypes
+                )
+            );
+        }
+
+        return array_values(array_unique($merged));
+    }
+
     public function resolveMaxUploadBytes(int $mediaMaxBytes): int
     {
         if ($this->policyEngine->isUnifiedEnabled()) {

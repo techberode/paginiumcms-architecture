@@ -30,6 +30,7 @@ final class PermissionCatalogTest extends TestCase
         $admin = PermissionCatalog::defaultRolePermissions()['ADMIN'];
         $this->assertContains('project-plan:manage', $admin);
         $editor = PermissionCatalog::defaultRolePermissions()['EDITOR'];
+        $this->assertContains('content:embed-external', $editor);
         $this->assertContains('project-plan:read', $editor);
         $this->assertContains('project-plan:manage', $editor);
         $this->assertContains('time-entry:manage', PermissionCatalog::ALL);

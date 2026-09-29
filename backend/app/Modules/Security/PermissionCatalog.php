@@ -85,6 +85,7 @@ final class PermissionCatalog
                 'content:create',
                 'content:edit',
                 'content:delete',
+                'content:embed-external',
                 'media:upload',
                 'media:delete',
                 'project-plan:read',

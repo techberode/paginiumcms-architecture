@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedContentService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\PermissionCatalog;
 
 /**
@@ -27,6 +29,8 @@ final class RoleCatalogSeeder
     public function seedIfEmpty(?SettingsRepositoryInterface $settings = null): void
     {
         if ($this->roles->list() !== []) {
+            $this->backfillSystemRoleDefaults();
+
             return;
         }
 
@@ -40,6 +44,46 @@ final class RoleCatalogSeeder
                 $permissions,
                 true,
             );
+        }
+
+        $this->backfillSystemRoleDefaults();
+    }
+
+    /**
+     * Non-destructive: append newly shipped default permissions to existing system roles.
+     */
+    public function backfillSystemRoleDefaults(): void
+    {
+        /** @var array<string, list<string>> $append */
+        $append = [
+            AuthorizationInterface::ROLE_EDITOR => [
+                ExternalEmbedContentService::PERMISSION_EMBED_EXTERNAL,
+            ],
+        ];
+
+        foreach ($append as $roleId => $permissionsToAdd) {
+            $record = $this->roles->get($roleId);
+            if ($record === null) {
+                continue;
+            }
+
+            $permissions = $record->permissions;
+            $changed = false;
+            foreach ($permissionsToAdd as $permission) {
+                if (!in_array($permission, $permissions, true)) {
+                    $permissions[] = $permission;
+                    $changed = true;
+                }
+            }
+
+            if ($changed) {
+                $this->roles->save(
+                    $roleId,
+                    $record->name,
+                    PermissionCatalog::normalizeList($permissions),
+                    true,
+                );
+            }
         }
     }
 

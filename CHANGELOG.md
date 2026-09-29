@@ -13,6 +13,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Fix:** Media Library `.webm` / video invisible in OS file picker when unified upload policy (It.78) is on — `accept` now merges image + video (+ document) surfaces and includes `.webm`/`.mp4` extensions; default `media.allowedMimeTypes` includes `video/mp4,video/webm`.
+- **Fix:** YouTube/Vimeo embed for editors — default **EDITOR** role includes `content:embed-external`; public `.paginium-external-embed` styling. Custom ACL in Settings → Access control may need the permission enabled once.
 - **Fix:** Article save rejected pasted YouTube iframe — normalize embeds before validation; convert allowed iframe HTML / standalone video URLs to `:::embed`; strip embed blocks in security scan ([ISS-192](docs/ISSUES.md#iss-192)).
 - **Fix:** Markdown save false positive when prose documents `<iframe>` or HTML inside fenced/inline code (e.g. marketing article copy).
 - **Ops:** Refresh [ROADMAP.md](docs/ROADMAP.md) for It.70–77; [ROADMAP_SYNC.md](docs/en/operations/ROADMAP_SYNC.md) + `scripts/check-roadmap-stale.sh` guard against stale ⏳ rows.

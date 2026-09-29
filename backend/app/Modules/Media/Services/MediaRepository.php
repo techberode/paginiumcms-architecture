@@ -774,6 +774,14 @@ class MediaRepository implements MediaRepositoryInterface
     }
 
     /**
+     * @return list<string>
+     */
+    public function resolveMediaLibraryMimeTypes(): array
+    {
+        return $this->uploadSecurity->resolveMediaLibraryMimeTypes($this->resolveMediaMimeTypes());
+    }
+
+    /**
      * @return array{
      *     mimeTypes: list<string>,
      *     extensions: list<string>,
@@ -804,7 +812,7 @@ class MediaRepository implements MediaRepositoryInterface
             : [];
 
         return array_merge(
-            MediaFormats::toApiPayload($this->resolveAllowedMimeTypes()),
+            MediaFormats::toApiPayload($this->resolveMediaLibraryMimeTypes()),
             [
                 'imageOptimization' => MediaImageOptimizer::capabilities(),
                 'uploadOptimization' => [

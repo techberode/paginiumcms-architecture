@@ -76,7 +76,7 @@ final class MediaFormats
         return [
             'mimeTypes' => $allowedMimeTypes,
             'extensions' => array_values(array_unique($extensions)),
-            'accept' => implode(',', $allowedMimeTypes),
+            'accept' => self::buildAcceptHeader($allowedMimeTypes),
             'previewableMimeTypes' => array_values(array_unique($previewable)),
         ];
     }
@@ -204,10 +204,18 @@ final class MediaFormats
      */
     public static function buildAcceptHeader(array $allowedMimeTypes): string
     {
-        return implode(',', array_values(array_filter(
-            $allowedMimeTypes,
-            static fn (string $mimeType): bool => self::isKnownMime($mimeType)
-        )));
+        $parts = [];
+        foreach ($allowedMimeTypes as $mimeType) {
+            if (!self::isKnownMime($mimeType)) {
+                continue;
+            }
+            $parts[] = $mimeType;
+            foreach (self::FORMATS[$mimeType]['extensions'] as $extension) {
+                $parts[] = '.' . $extension;
+            }
+        }
+
+        return implode(',', array_values(array_unique($parts)));
     }
 
     /**

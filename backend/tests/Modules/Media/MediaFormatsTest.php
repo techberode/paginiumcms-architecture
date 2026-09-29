@@ -55,7 +55,9 @@ class MediaFormatsTest extends TestCase
         $this->assertSame(['image/png', 'application/pdf'], $payload['mimeTypes']);
         $this->assertContains('png', $payload['extensions']);
         $this->assertContains('pdf', $payload['extensions']);
-        $this->assertSame('image/png,application/pdf', $payload['accept']);
+        $this->assertStringContainsString('image/png', $payload['accept']);
+        $this->assertStringContainsString('.png', $payload['accept']);
+        $this->assertStringContainsString('.pdf', $payload['accept']);
         $this->assertSame(['image/png'], $payload['previewableMimeTypes']);
     }
 

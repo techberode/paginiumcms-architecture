@@ -396,6 +396,17 @@
   container-name: pg-content;
 }
 
+.paginium-prose iframe.paginium-external-embed {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin: 1.25rem 0;
+  border: 0;
+  border-radius: 0.5rem;
+}
+
 .pg-grid,
 .paginium-prose .pg-grid,
 .pg-shortcode-surface .pg-grid {

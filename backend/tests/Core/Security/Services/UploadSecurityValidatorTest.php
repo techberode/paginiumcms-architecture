@@ -81,6 +81,38 @@ class UploadSecurityValidatorTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testMediaLibraryMimeTypesIncludeVideoWhenUnifiedPolicyEnabled(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturnCallback(
+            static function (string $group): array {
+                if ($group === 'uploadSecurity') {
+                    return ['unifiedPolicyEnabled' => true, 'scanMagicBytes' => true];
+                }
+                if ($group === 'media') {
+                    return [
+                        'allowedMimeTypes' => 'image/png,application/pdf,video/mp4,video/webm',
+                        'maxUploadSizeKb' => 5120,
+                        'maxVideoUploadSizeKb' => 102400,
+                    ];
+                }
+
+                return [];
+            }
+        );
+        $validator = new UploadSecurityValidator($settings, UploadPolicyEngineTestFactory::create($settings));
+
+        $library = $validator->resolveMediaLibraryMimeTypes([
+            'image/png',
+            'video/webm',
+            'video/mp4',
+        ]);
+
+        $this->assertContains('image/png', $library);
+        $this->assertContains('video/webm', $library);
+        $this->assertContains('video/mp4', $library);
+    }
+
     public function testUsesStricterUploadSizeLimit(): void
     {
         $validator = $this->makeValidator([
