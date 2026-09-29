@@ -29,13 +29,26 @@ import { PaginiumExternalEmbed } from './tiptapExternalEmbed';
 import { HtmlBlockInsertModal } from './HtmlBlockInsertModal';
 import { EmbedInsertModal } from './EmbedInsertModal';
 import type { ExternalEmbedProvider } from '../../utils/embedShortcode';
+import {
+  normalizeMediaCaptionPosition,
+  proseFigureClassNames,
+  type MediaCaptionPosition,
+} from '../../utils/mediaCaption';
 
 type WysiwygBlockedReason = 'images' | 'videos' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
 
 export interface WysiwygEditorHandle {
-  insertImage: (url: string, alt?: string, openInLightbox?: boolean) => void;
-  insertVideo: (url: string, poster?: string) => void;
+  insertImage: (
+    url: string,
+    alt?: string,
+    openInLightbox?: boolean,
+    caption?: string,
+    captionPosition?: MediaCaptionPosition
+  ) => void;
+  insertVideo: (url: string, poster?: string, caption?: string, captionPosition?: MediaCaptionPosition) => void;
+  insertSnippet: (snippet: string) => void;
   insertLink: (url: string, label?: string) => void;
+  rememberSelection: () => void;
   focus: () => void;
   getHtml: () => string;
 }
@@ -267,22 +280,64 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
   };
 
   useImperativeHandle(ref, () => ({
-    insertImage: (url: string, alt = t('editor.wysiwyg.defaultImageAlt'), openInLightbox = true) => {
+    insertImage: (
+      url: string,
+      alt = t('editor.wysiwyg.defaultImageAlt'),
+      openInLightbox = true,
+      caption?: string,
+      captionPosition?: MediaCaptionPosition
+    ) => {
       if (!profileAllows(profile, 'image')) {
         onBlockedAction?.(blockedMessage('images'));
         return;
       }
+      const cap = caption?.trim() ?? '';
+      if (cap !== '') {
+        const position = normalizeMediaCaptionPosition(captionPosition);
+        const lightboxAttr = openInLightbox ? '' : ' data-lightbox="off"';
+        const figureClass = proseFigureClassNames({ captionPosition: position });
+        const safeCap = cap.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const img = `<img src="${url.replace(/"/g, '&quot;')}" alt="${alt.replace(/"/g, '&quot;')}" class="max-w-full h-auto rounded-lg"${lightboxAttr} />`;
+        const fig = `<figcaption>${safeCap}</figcaption>`;
+        const html =
+          position === 'above'
+            ? `<figure class="${figureClass}">${fig}${img}</figure>`
+            : `<figure class="${figureClass}">${img}${fig}</figure>`;
+        editor?.chain().focus().insertContent(html).run();
+        return;
+      }
       editor?.chain().focus().setImage({ src: url, alt, lightbox: openInLightbox }).run();
     },
-    insertVideo: (url: string, poster?: string) => {
+    insertVideo: (url: string, poster?: string, caption?: string, captionPosition?: MediaCaptionPosition) => {
       if (!profileAllows(profile, 'video')) {
         onBlockedAction?.(blockedMessage('videos'));
+        return;
+      }
+      const cap = caption?.trim() ?? '';
+      if (cap !== '') {
+        const position = normalizeMediaCaptionPosition(captionPosition);
+        const posterAttr = poster ? ` poster="${poster.replace(/"/g, '&quot;')}"` : '';
+        const figureClass = proseFigureClassNames({ video: true, captionPosition: position });
+        const safeCap = cap.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const video = `<video src="${url.replace(/"/g, '&quot;')}" controls playsinline preload="metadata"${posterAttr}></video>`;
+        const fig = `<figcaption>${safeCap}</figcaption>`;
+        const html =
+          position === 'above'
+            ? `<figure class="${figureClass}">${fig}${video}</figure>`
+            : `<figure class="${figureClass}">${video}${fig}</figure>`;
+        editor?.chain().focus().insertContent(html).run();
         return;
       }
       editor?.chain().focus().insertContent({
         type: 'video',
         attrs: { src: url, poster: poster ?? null },
       }).run();
+    },
+    insertSnippet: (snippet: string) => {
+      editor?.chain().focus().insertContent(snippet).run();
+    },
+    rememberSelection: () => {
+      editor?.commands.focus();
     },
     insertLink: (url: string, label?: string) => {
       if (!profileAllows(profile, 'link')) {

@@ -17,4 +17,10 @@ describe('buildInlineImageMarkup', () => {
     expect(snippet).toContain('<figure class="paginium-figure">');
     expect(snippet).toContain('<figcaption>Obr. 1.1</figcaption>');
   });
+
+  it('places caption above image when requested', () => {
+    const snippet = buildInlineImageMarkup('/storage/a.png', 'Alt', true, 'Obr. 1.1', 'above');
+    expect(snippet).toContain('paginium-figure--caption-top');
+    expect(snippet.indexOf('<figcaption>')).toBeLessThan(snippet.indexOf('<img'));
+  });
 });

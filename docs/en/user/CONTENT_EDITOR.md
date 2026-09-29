@@ -125,7 +125,7 @@ The media picker should return a canonical identifier or supported URL. Check re
 
 Do not insert untrusted `<script>`, inline event handlers, or `javascript:` URLs. The HTML/Markdown renderer must sanitize output according to policy.
 
-**Images and video:** optional **captions** (figure + figcaption), self-hosted **MP4/WebM** via `:::video`, and lightbox behaviour are documented in [Media in content](MEDIA_IN_CONTENT.md). **YouTube/Vimeo iframe embeds are not recommended** for production articles — use uploaded video or a plain link ([ISS-193](../ISSUES.md#iss-193)).
+**Images and video:** Media Library inserts at the **text cursor**; optional caption via checkbox in the picker (**above** or **below** media), self-hosted **MP4/WebM** via `:::video`, and lightbox behaviour — see [Media in content](MEDIA_IN_CONTENT.md). **YouTube/Vimeo iframe embeds are not recommended** for production articles — use uploaded video or a plain link ([ISS-193](../ISSUES.md#iss-193)).
 
 ## 11. Featured and OG image
 

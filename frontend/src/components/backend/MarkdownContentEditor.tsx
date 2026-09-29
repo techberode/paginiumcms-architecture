@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {
   Bold,
   Code,
@@ -62,9 +62,18 @@ interface MarkdownContentEditorProps {
   hideClientPreview?: boolean;
 }
 
+export interface MarkdownContentEditorHandle {
+  /** Inserts at the last known caret/selection (survives modal focus loss). */
+  insertSnippet: (snippet: string) => void;
+}
+
 type PreviewMode = 'edit' | 'split' | 'preview';
 
-export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
+export const MarkdownContentEditor = forwardRef<
+  MarkdownContentEditorHandle,
+  MarkdownContentEditorProps
+>(function MarkdownContentEditor(
+  {
   value,
   onChange,
   readOnly = false,
@@ -79,12 +88,15 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
   profile,
   onBlockedAction,
   hideClientPreview = false,
-}) => {
+  },
+  ref
+) {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
   const editorSettings = settings.editor as Record<string, unknown>;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const surfaceRef = useRef<MarkdownEditorSurfaceHandle>(null);
+  const lastSelectionRef = useRef({ start: 0, end: 0 });
   const useCodeMirror = editorSettings?.markdownSurface === 'codemirror6';
   const [previewMode, setPreviewMode] = useState<PreviewMode>(hideClientPreview ? 'edit' : 'split');
   const [customComponents, setCustomComponents] = useState<EditorComponentRegistration[]>([]);
@@ -100,27 +112,73 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
     void loadAllowedEditorComponents(profile, editorSettings).then(setCustomComponents);
   }, [profile, editorSettings]);
 
-  const applyEdit = (mutator: (text: string, start: number, end: number) => { next: string; cursor: number }) => {
+  useEffect(() => {
+    const len = value.length;
+    if (lastSelectionRef.current.start > len) {
+      lastSelectionRef.current = { start: len, end: len };
+    }
+  }, [value.length]);
+
+  const trackSelection = useCallback((start: number, end: number) => {
+    lastSelectionRef.current = { start, end };
+  }, []);
+
+  const syncLiveSelection = useCallback(() => {
+    if (useCodeMirror && surfaceRef.current?.hasFocus()) {
+      lastSelectionRef.current = surfaceRef.current.getSelection();
+      return;
+    }
     const el = textareaRef.current;
-    const selection =
-      useCodeMirror && surfaceRef.current
-        ? surfaceRef.current.getSelection()
-        : {
-            start: el?.selectionStart ?? value.length,
-            end: el?.selectionEnd ?? value.length,
-          };
-    const { next, cursor } = mutator(value, selection.start, selection.end);
+    if (el && document.activeElement === el) {
+      lastSelectionRef.current = { start: el.selectionStart, end: el.selectionEnd };
+    }
+  }, [useCodeMirror]);
+
+  const focusEditorAt = useCallback(
+    (cursor: number) => {
+      requestAnimationFrame(() => {
+        if (useCodeMirror && surfaceRef.current) {
+          surfaceRef.current.setCursor(cursor);
+          surfaceRef.current.focus();
+          return;
+        }
+        const el = textareaRef.current;
+        if (!el) {
+          return;
+        }
+        el.focus();
+        el.setSelectionRange(cursor, cursor);
+      });
+    },
+    [useCodeMirror]
+  );
+
+  const insertAtSavedSelection = useCallback(
+    (snippet: string) => {
+      syncLiveSelection();
+      const { start, end } = lastSelectionRef.current;
+      const { next, cursor } = insertAtCursor(value, start, end, snippet);
+      onChange(next);
+      lastSelectionRef.current = { start: cursor, end: cursor };
+      focusEditorAt(cursor);
+    },
+    [focusEditorAt, onChange, syncLiveSelection, value]
+  );
+
+  useImperativeHandle(ref, () => ({ insertSnippet: insertAtSavedSelection }), [insertAtSavedSelection]);
+
+  const applyEdit = (mutator: (text: string, start: number, end: number) => { next: string; cursor: number }) => {
+    syncLiveSelection();
+    const { start, end } = lastSelectionRef.current;
+    const { next, cursor } = mutator(value, start, end);
     onChange(next);
-    requestAnimationFrame(() => {
-      if (useCodeMirror && surfaceRef.current) {
-        surfaceRef.current.setCursor(cursor);
-        surfaceRef.current.focus();
-        return;
-      }
-      if (!el) return;
-      el.focus();
-      el.setSelectionRange(cursor, cursor);
-    });
+    lastSelectionRef.current = { start: cursor, end: cursor };
+    focusEditorAt(cursor);
+  };
+
+  const openMediaPicker = (picker?: () => void) => {
+    syncLiveSelection();
+    picker?.();
   };
 
   const toolbarButton = (
@@ -173,7 +231,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           {profileAllows(profile, 'image') &&
             toolbarButton(t('editor.markdownContent.toolbar.image'), <ImageIcon size={16} />, () => {
               if (onPickMedia) {
-                onPickMedia();
+                openMediaPicker(onPickMedia);
                 return;
               }
               const url = window.prompt(t('editor.markdownContent.prompts.imageUrl'));
@@ -190,7 +248,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           {profileAllows(profile, 'video') &&
             toolbarButton(t('editor.markdownContent.toolbar.video'), <VideoIcon size={16} />, () => {
               if (onPickVideo) {
-                onPickVideo();
+                openMediaPicker(onPickVideo);
                 return;
               }
               onBlockedAction?.(t('editor.markdownContent.videoPickerRequired'));
@@ -198,7 +256,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
           {profileAllows(profile, 'link') &&
             toolbarButton(t('editor.markdownContent.toolbar.document'), <FileText size={16} />, () => {
               if (onPickDocument) {
-                onPickDocument();
+                openMediaPicker(onPickDocument);
                 return;
               }
               onBlockedAction?.(t('editor.markdownContent.documentPickerRequired'));
@@ -318,6 +376,7 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
                 readOnly={readOnly}
                 tabSize={tabSize}
                 placeholder={t('editor.markdownContent.placeholder')}
+                onSelectionChange={trackSelection}
                 onPasteBlocked={() =>
                   onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'))
                 }
@@ -328,6 +387,15 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
               ref={textareaRef}
               value={value}
               onChange={(e) => onChange(e.target.value)}
+              onSelect={(event) =>
+                trackSelection(event.currentTarget.selectionStart, event.currentTarget.selectionEnd)
+              }
+              onKeyUp={(event) =>
+                trackSelection(event.currentTarget.selectionStart, event.currentTarget.selectionEnd)
+              }
+              onClick={(event) =>
+                trackSelection(event.currentTarget.selectionStart, event.currentTarget.selectionEnd)
+              }
               onPaste={(event) => {
                 const decision = decideMarkdownPaste(event.clipboardData);
                 applyMarkdownPasteDecision(event, decision, {
@@ -420,4 +488,4 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
       />
     </div>
   );
-};
+});

@@ -7,6 +7,7 @@ import { applyMarkdownPasteDecision, decideMarkdownPaste } from '../../utils/mar
 
 export interface MarkdownEditorSurfaceHandle {
   getSelection: () => { start: number; end: number };
+  hasFocus: () => boolean;
   focus: () => void;
   setCursor: (position: number) => void;
 }
@@ -18,13 +19,14 @@ interface MarkdownCodeMirrorEditorProps {
   tabSize?: number;
   placeholder?: string;
   onPasteBlocked?: () => void;
+  onSelectionChange?: (start: number, end: number) => void;
 }
 
 export const MarkdownCodeMirrorEditor = forwardRef<
   MarkdownEditorSurfaceHandle,
   MarkdownCodeMirrorEditorProps
 >(function MarkdownCodeMirrorEditor(
-  { value, onChange, readOnly = false, tabSize = 2, placeholder, onPasteBlocked },
+  { value, onChange, readOnly = false, tabSize = 2, placeholder, onPasteBlocked, onSelectionChange },
   ref
 ) {
   const { isDark } = useTheme();
@@ -35,6 +37,12 @@ export const MarkdownCodeMirrorEditor = forwardRef<
       markdown(),
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ spellcheck: 'true' }),
+      EditorView.updateListener.of((update) => {
+        if (update.selectionSet) {
+          const { from, to } = update.state.selection.main;
+          onSelectionChange?.(from, to);
+        }
+      }),
       EditorView.domEventHandlers({
         paste(event, view) {
           const decision = decideMarkdownPaste(event.clipboardData);
@@ -51,7 +59,7 @@ export const MarkdownCodeMirrorEditor = forwardRef<
         },
       }),
     ],
-    [onPasteBlocked]
+    [onPasteBlocked, onSelectionChange]
   );
 
   useImperativeHandle(ref, () => ({
@@ -65,6 +73,7 @@ export const MarkdownCodeMirrorEditor = forwardRef<
         end: view.state.selection.main.to,
       };
     },
+    hasFocus: () => Boolean(editorRef.current?.view?.hasFocus),
     focus: () => {
       editorRef.current?.view?.focus();
     },

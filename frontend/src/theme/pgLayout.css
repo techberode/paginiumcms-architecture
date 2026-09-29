@@ -419,11 +419,18 @@
 }
 
 .paginium-prose .paginium-figure figcaption {
-  margin-top: 0.5rem;
   text-align: center;
   font-size: 0.875rem;
   line-height: 1.45;
   color: var(--pg-text-muted, rgb(100 116 139));
+}
+
+.paginium-prose .paginium-figure:not(.paginium-figure--caption-top) figcaption {
+  margin-top: 0.5rem;
+}
+
+.paginium-prose .paginium-figure--caption-top figcaption {
+  margin-bottom: 0.5rem;
 }
 
 .pg-grid,

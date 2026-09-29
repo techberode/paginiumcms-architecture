@@ -52,4 +52,21 @@ MD;
         $this->assertStringContainsString('<figure class="paginium-figure paginium-figure--video">', $html);
         $this->assertStringContainsString('<figcaption>Obr. 1.1 demo</figcaption>', $html);
     }
+
+    public function testExpandsVideoWithCaptionAbove(): void
+    {
+        $expander = new VideoEmbedShortcode();
+        $markdown = <<<MD
+:::video
+src: /storage/app/content/media/demo.mp4
+caption: Nad videom
+captionPosition: above
+:::
+MD;
+
+        $html = $expander->expand($markdown);
+
+        $this->assertStringContainsString('paginium-figure--caption-top', $html);
+        $this->assertLessThan(strpos($html, '<video'), strpos($html, '<figcaption'));
+    }
 }

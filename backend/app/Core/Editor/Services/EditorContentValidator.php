@@ -214,7 +214,7 @@ final class EditorContentValidator
 
         if (
             preg_match_all(
-                '/:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?(?:\n\s*caption:\s*.+)?\s*\n\s*:::/s',
+                '/:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?(?:\n\s*caption:\s*.+?)?(?:\n\s*captionPosition:\s*(?:above|below))?\s*\n\s*:::/s',
                 $content,
                 $blockMatches,
                 PREG_SET_ORDER

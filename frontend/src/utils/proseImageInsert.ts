@@ -1,3 +1,9 @@
+import {
+  normalizeMediaCaptionPosition,
+  proseFigureClassNames,
+  type MediaCaptionPosition,
+} from './mediaCaption';
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
@@ -15,10 +21,12 @@ export function buildInlineImageMarkup(
   url: string,
   alt: string,
   openInLightbox: boolean,
-  caption?: string
+  caption?: string,
+  captionPosition: MediaCaptionPosition = 'below'
 ): string {
   const displayCaption = caption?.trim() ?? '';
   const shortAlt = alt.trim() || displayCaption || 'Image';
+  const position = normalizeMediaCaptionPosition(captionPosition);
 
   if (displayCaption === '') {
     if (openInLightbox) {
@@ -29,10 +37,10 @@ export function buildInlineImageMarkup(
   }
 
   const lightboxAttr = openInLightbox ? '' : ' data-lightbox="off"';
-  return (
-    `\n\n<figure class="paginium-figure">\n` +
-    `<img src="${escapeAttr(url)}" alt="${escapeAttr(shortAlt)}" class="max-w-full h-auto rounded-lg"${lightboxAttr} />\n` +
-    `<figcaption>${escapeHtml(displayCaption)}</figcaption>\n` +
-    `</figure>\n`
-  );
+  const figureClass = proseFigureClassNames({ captionPosition: position });
+  const imgLine = `<img src="${escapeAttr(url)}" alt="${escapeAttr(shortAlt)}" class="max-w-full h-auto rounded-lg"${lightboxAttr} />\n`;
+  const capLine = `<figcaption>${escapeHtml(displayCaption)}</figcaption>\n`;
+  const body = position === 'above' ? capLine + imgLine : imgLine + capLine;
+
+  return `\n\n<figure class="${figureClass}">\n${body}</figure>\n`;
 }

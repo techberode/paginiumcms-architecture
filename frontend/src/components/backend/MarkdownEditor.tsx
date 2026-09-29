@@ -11,7 +11,10 @@ import { loadDraft, discardDraft, type ContentType } from '../../api/drafts';
 import { getNavigation } from '../../api/navigation';
 import { uploadMedia, resolvePublicMediaUrl } from '../../api/media';
 import { WysiwygEditor, WysiwygEditorHandle } from './WysiwygEditor';
-import { MarkdownContentEditor } from './MarkdownContentEditor';
+import {
+  MarkdownContentEditor,
+  type MarkdownContentEditorHandle,
+} from './MarkdownContentEditor';
 import { MediaPickerModal } from './MediaPickerModal';
 import { buildInlineImageMarkup } from '../../utils/proseImageInsert';
 import { VersionHistory } from '../CodeEditor/VersionHistory';
@@ -48,6 +51,7 @@ import {
   storagePayloadFromEditor,
   markdownToHtml,
   valueForEditorMode,
+  insertAtCursor,
 } from '../../utils/contentEditor';
 import {
   getEditorProfile,
@@ -147,6 +151,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [publishOtp, setPublishOtp] = useState<{ challengeId: string; debugCode?: string } | null>(null);
   const [navigationItems, setNavigationItems] = useState<Awaited<ReturnType<typeof getNavigation>>>([]);
   const wysiwygRef = useRef<WysiwygEditorHandle>(null);
+  const markdownBodyRef = useRef<MarkdownContentEditorHandle>(null);
   const [seo, setSeo] = useState<SeoFormValues>({
     seoTitle: '',
     seoDescription: '',
@@ -933,6 +938,32 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const builderMode = resolveLayoutBuilderMode(settings.layout?.builderMode);
   const useOutlineEditor = contentEditorUsesOutline(type, builderMode);
   const showLivePreview = type === 'page' || type === 'article';
+
+  const insertBodySnippet = useCallback(
+    (snippet: string) => {
+      if (editorMode === 'wysiwyg') {
+        wysiwygRef.current?.insertSnippet(snippet);
+        return;
+      }
+      if (useOutlineEditor) {
+        setContent((prev) => {
+          const anchor = prev.length;
+          return insertAtCursor(prev, anchor, anchor, snippet).next;
+        });
+        return;
+      }
+      markdownBodyRef.current?.insertSnippet(snippet);
+    },
+    [editorMode, useOutlineEditor]
+  );
+
+  const openMediaPicker = useCallback((mode: 'image' | 'video' | 'document') => {
+    if (editorMode === 'wysiwyg') {
+      wysiwygRef.current?.rememberSelection();
+    }
+    setMediaPickerMode(mode);
+    setMediaPickerOpen(true);
+  }, [editorMode]);
   const openSitePreview = useCallback(() => {
     setPreviewHtml(
       editorMode === 'wysiwyg' ? wysiwygRef.current?.getHtml() : markdownToHtml(content)
@@ -965,14 +996,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       storedFormat={contentFormat}
       onChange={setContent}
       readOnly={!canEdit}
-      onPickMedia={() => {
-        setMediaPickerMode('image');
-        setMediaPickerOpen(true);
-      }}
-      onPickVideo={() => {
-        setMediaPickerMode('video');
-        setMediaPickerOpen(true);
-      }}
+      onPickMedia={() => openMediaPicker('image')}
+      onPickVideo={() => openMediaPicker('video')}
       onUploadImage={handleEditorImageUpload}
       profile={wysiwygEditorProfile}
       canUseTrustedHtml={canUseTrustedHtml}
@@ -982,24 +1007,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     />
   ) : (
     <MarkdownContentEditor
+      ref={markdownBodyRef}
       value={content}
       onChange={setContent}
       readOnly={!canEdit}
       spellCheck={Boolean(settings.editor?.spellcheck ?? true)}
       tabSize={Number(settings.editor?.tabSize ?? 2)}
       hideClientPreview={showLivePreview}
-      onPickMedia={() => {
-        setMediaPickerMode('image');
-        setMediaPickerOpen(true);
-      }}
-      onPickVideo={() => {
-        setMediaPickerMode('video');
-        setMediaPickerOpen(true);
-      }}
-      onPickDocument={() => {
-        setMediaPickerMode('document');
-        setMediaPickerOpen(true);
-      }}
+      onPickMedia={() => openMediaPicker('image')}
+      onPickVideo={() => openMediaPicker('video')}
+      onPickDocument={() => openMediaPicker('document')}
       profile={markdownEditorProfile}
       canUseTrustedHtml={canUseTrustedHtml}
       canUseExternalEmbed={canUseExternalEmbed}
@@ -1111,7 +1128,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onPageHeroChange={type === 'page' ? setPageHero : undefined}
         articleHeroFocus={type === 'article' ? articleHeroFocus : undefined}
         onArticleHeroFocusChange={type === 'article' ? setArticleHeroFocus : undefined}
-        onInsertShortcode={(snippet) => setContent((prev) => `${prev}${snippet}`)}
+        onInsertShortcode={insertBodySnippet}
         onDescriptionChange={(value) => setSeo((prev) => ({ ...prev, seoDescription: value }))}
         onSeoChange={setSeo}
         onSeoOpenChange={setSeoOpen}
@@ -1172,28 +1189,37 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           onSelect={(url, alt, options) => {
             const openInLightbox = options?.openInLightbox !== false;
             const caption = options?.caption?.trim() || undefined;
+            const captionPosition = options?.captionPosition ?? 'below';
             if (editorMode === 'wysiwyg') {
               if (mediaPickerMode === 'video') {
-                wysiwygRef.current?.insertVideo(url);
+                wysiwygRef.current?.insertVideo(url, undefined, caption, captionPosition);
+              } else if (mediaPickerMode === 'document') {
+                const storageUrl = url.includes('/storage/')
+                  ? url.slice(url.indexOf('/storage/'))
+                  : resolvePublicMediaUrl(url);
+                const snippet = buildDocumentLinkShortcode(storageUrl, alt || 'Download');
+                if (snippet !== '') {
+                  wysiwygRef.current?.insertSnippet(snippet);
+                }
               } else {
-                wysiwygRef.current?.insertImage(url, alt, openInLightbox);
+                wysiwygRef.current?.insertImage(url, alt, openInLightbox, caption, captionPosition);
               }
             } else if (mediaPickerMode === 'video') {
               const storageUrl = url.includes('/storage/')
                 ? url.slice(url.indexOf('/storage/'))
                 : resolvePublicMediaUrl(url);
-              setContent((prev) => `${prev}${buildVideoShortcode(storageUrl, undefined, caption)}`);
+              insertBodySnippet(buildVideoShortcode(storageUrl, undefined, caption, captionPosition));
             } else if (mediaPickerMode === 'document') {
               const storageUrl = url.includes('/storage/')
                 ? url.slice(url.indexOf('/storage/'))
                 : resolvePublicMediaUrl(url);
               const snippet = buildDocumentLinkShortcode(storageUrl, alt || 'Download');
               if (snippet !== '') {
-                setContent((prev) => `${prev}${snippet}`);
+                insertBodySnippet(snippet);
               }
             } else {
-              setContent((prev) =>
-                `${prev}${buildInlineImageMarkup(url, alt, openInLightbox, caption)}`
+              insertBodySnippet(
+                buildInlineImageMarkup(url, alt, openInLightbox, caption, captionPosition)
               );
             }
           }}
