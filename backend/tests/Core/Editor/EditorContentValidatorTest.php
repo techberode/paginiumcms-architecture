@@ -177,6 +177,17 @@ final class EditorContentValidatorTest extends TestCase
         );
     }
 
+    public function testMarkdownAllowsIframeMentionInInlineCode(): void
+    {
+        $error = $this->validator->validate('article', [
+            'content' => "Bezpečné vloženie: sem nepatrí `<iframe>`, len Media Library video.\n",
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'blog',
+        ]);
+
+        $this->assertNull($error);
+    }
+
     public function testMarkdownAllowsCalloutBlock(): void
     {
         $error = $this->validator->validate('article', [

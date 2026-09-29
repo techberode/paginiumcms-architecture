@@ -240,18 +240,35 @@ final class EditorContentValidator
         $withoutDiagrams = $this->mermaidShortcode->stripBlocks($withoutCallouts);
         $withoutCharts = $this->chartShortcode->stripBlocks($withoutDiagrams);
         $withoutEmbeds = $this->externalEmbedShortcode->stripBlocks($withoutCharts);
-        $lower = strtolower($withoutEmbeds);
+        $withoutCodeLiterals = $this->stripMarkdownCodeLiterals($withoutEmbeds);
+        $lower = strtolower($withoutCodeLiterals);
 
         if (str_contains($lower, '<script') || str_contains($lower, '<iframe')) {
             return 'Obsah nepovoľuje vložené skripty alebo iframe.';
         }
 
         $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutEmbeds);
+        $withoutTrustedBlocks = $this->stripMarkdownCodeLiterals($withoutTrustedBlocks);
         if (preg_match('/<[a-z][^>]*>/i', $withoutTrustedBlocks) === 1) {
             return 'Markdown obsah nesmie obsahovať raw HTML tagy.';
         }
 
         return null;
+    }
+
+    /**
+     * Inline/fenced code may document tag names (e.g. `<iframe>`) without executing HTML.
+     */
+    private function stripMarkdownCodeLiterals(string $markdown): string
+    {
+        $stripped = preg_replace('/```[\s\S]*?```/', '', $markdown);
+        if (!is_string($stripped)) {
+            $stripped = $markdown;
+        }
+
+        $inline = preg_replace('/`[^`\n]+`/', '', $stripped);
+
+        return is_string($inline) ? $inline : $stripped;
     }
 
     private function validateHtmlSecurity(string $content): ?string
