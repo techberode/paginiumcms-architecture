@@ -13,7 +13,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Fix:** Google Maps contact embed blocked by CSP — `frame-src` allows `https://www.google.com` (Maps embed URL unchanged).
+- **Fix:** Markdown editor paste — no longer blocks plain Markdown containing `<https://…>` or inline HTML; rich clipboard HTML falls back to `text/plain` (matches WYSIWYG); toast only when HTML is pasted without plain text ([ISS-190](docs/ISSUES.md#iss-190)).
+- **Fix:** Google Maps contact embed blocked by CSP — `frame-src` allows `https://www.google.com` in PHP middleware, Apache `.htaccess`, and **nginx** deploy snippets (`docs/deploy/nginx-security-headers-*.conf`, `docker/nginx/security-headers.conf`); rebuild FE after `public-theme-boot.js` replaces inline theme script (CSP `script-src 'self'`) ([ISS-191](docs/ISSUES.md#iss-191)).
 - **Analytics geography:** Visitor map uses Natural Earth land outline, corrected equirectangular positions (~143 country centroids + optional GeoIP lat/lon on visits), zoom/pan, and hover tooltips with masked sample IPs; tracker persists latitude/longitude/region from GeoIP.
 - **Admin dashboard:** Overview loads first (KPIs, health, analytics, log severity counts from `AdminCountsService`); audit stats / APM / scheduler chart defer until after first paint (`requestIdleCallback`) so heavy log scans no longer block the shell.
 - **Docs:** [PUBLIC_SITE_WORKLOG_2026-09-24_28.md](docs/en/operations/PUBLIC_SITE_WORKLOG_2026-09-24_28.md) — production incidents (footer version, blog CLS/404 flash, deploy CRLF, theme reload, showcase-hero, CTA); [ISSUES.md](docs/ISSUES.md) ISS-178–ISS-186.

@@ -3,6 +3,7 @@ import CodeMirror, { type ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { EditorView } from '@codemirror/view';
 import { useTheme } from '../../context/ThemeContext';
+import { applyMarkdownPasteDecision, decideMarkdownPaste } from '../../utils/markdownPaste';
 
 export interface MarkdownEditorSurfaceHandle {
   getSelection: () => { start: number; end: number };
@@ -35,14 +36,18 @@ export const MarkdownCodeMirrorEditor = forwardRef<
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ spellcheck: 'true' }),
       EditorView.domEventHandlers({
-        paste(event) {
-          const pasted = event.clipboardData?.getData('text/plain') ?? '';
-          if (/<[a-z][^>]*>/i.test(pasted)) {
-            event.preventDefault();
-            onPasteBlocked?.();
-            return true;
-          }
-          return false;
+        paste(event, view) {
+          const decision = decideMarkdownPaste(event.clipboardData);
+          return applyMarkdownPasteDecision(event, decision, {
+            onPasteBlocked: () => onPasteBlocked?.(),
+            insertPlainText: (text) => {
+              const { from, to } = view.state.selection.main;
+              view.dispatch({
+                changes: { from, to, insert: text },
+                selection: { anchor: from + text.length },
+              });
+            },
+          });
         },
       }),
     ],

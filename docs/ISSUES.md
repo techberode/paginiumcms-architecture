@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 29 September 2026 · register **ISS-001–ISS-189** · public-site batch **2.1.0-beta.93+** (Unreleased)
+> **Last updated:** 29 September 2026 · register **ISS-001–ISS-191** · public-site batch **2.1.0-beta.93+** (Unreleased)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -212,6 +212,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-187](#iss-187) | Admin dashboard slow first paint (audit + full lists) | Medium (admin perf) | ✅ Fixed — overview-first + deferred secondary queries |
 | [ISS-188](#iss-188) | Analytics geo map dots off-screen / no zoom or tooltips | Low (admin UX) | ✅ Fixed — equirectangular centroids, land outline, GeoIP lat/lon |
 | [ISS-189](#iss-189) | Blog list cropped 21:9 article heroes | Medium (UX) | ✅ Fixed — list cards share `heroFit` with detail |
+| [ISS-190](#iss-190) | Markdown editor blocked paste of valid Markdown (false HTML) | Medium (admin UX) | ✅ Fixed — rich HTML clipboard only; plain MD allowed |
+| [ISS-191](#iss-191) | Contact Google Maps iframe blocked; inline theme script vs CSP | Medium (public UX) | ✅ Fixed — nginx `frame-src`; external theme boot JS |
 
 ## CI failures (GitHub Actions)
 
@@ -5783,6 +5785,57 @@ Correct equirectangular placement (Natural Earth country centroids + optional av
 ### Resolution
 
 `ArticleHeroCardImage` applies the same `heroFit` / focus as `ArticleHeroImage` on detail (default **contain** for 21:9 masters). See [BLOG_ARTICLE_HERO.md](en/user/BLOG_ARTICLE_HERO.md).
+
+---
+
+<a id="iss-190"></a>
+
+## ISS-190 – Markdown editor blocked paste of valid Markdown
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (admin UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Admin Markdown surface (CodeMirror 6 + native textarea) |
+
+### Symptom
+
+Pasting Markdown (e.g. autolinks `<https://…>`, inline HTML, copied `.md` files) showed toast *Editor profile does not allow raw HTML paste* even though the profile was not the cause.
+
+### Cause
+
+It.90d paste guard scanned **`text/plain`** with `/<[a-z][^>]*>/`, unlike WYSIWYG which only inspects **`text/html`**.
+
+### Resolution
+
+`frontend/src/utils/markdownPaste.ts` — allow plain Markdown; on rich clipboard HTML insert `text/plain` when present; block only HTML-only paste. Regressions: `markdownPaste.test.ts`.
+
+---
+
+<a id="iss-191"></a>
+
+## ISS-191 – Contact map and theme boot vs production CSP
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (public UX) |
+| **Status** | ✅ Fixed (Unreleased) — **ops:** reload nginx snippet on host |
+| **Area** | Public site CSP (nginx + FE boot) |
+
+### Symptom
+
+Google Maps embed on contact page blocked: `frame-src` not set, `default-src 'self'` fallback. Console: inline script in `index.html` blocked by `script-src 'self'`.
+
+### Resolution
+
+- **CSP:** `frame-src 'self' https://www.google.com` in `docs/deploy/nginx-security-headers-*.conf`, `docker/nginx/security-headers.conf` (PHP middleware already aligned).
+- **Theme:** move early theme boot to `frontend/public/public-theme-boot.js` loaded via `<script src>` (no inline script).
+
+**Verify on production:** `curl -sI https://paginiumcms.com/kontakt | grep -i content-security-policy` must include `frame-src` and Google host; redeploy FE after build.
 
 ---
 

@@ -8,7 +8,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default [
   {
-    ignores: ['dist', 'coverage', 'node_modules', 'src/mocks/**'],
+    ignores: ['dist', 'coverage', 'node_modules', 'src/mocks/**', 'public/**/*.js'],
   },
   js.configs.recommended,
   {

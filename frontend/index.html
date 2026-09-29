@@ -5,18 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PaginiumCMS | Moderný FlatFile Redakčný Systém</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>" />
-    <script>
-      (function () {
-        try {
-          var theme = localStorage.getItem('paginium-public-theme');
-          if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-          } else if (theme === 'light') {
-            document.documentElement.classList.remove('dark');
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/public-theme-boot.js"></script>
   </head>
   <body class="bg-slate-50 text-slate-800 antialiased font-sans selection:bg-indigo-500 selection:text-white">
     <div id="root"></div>

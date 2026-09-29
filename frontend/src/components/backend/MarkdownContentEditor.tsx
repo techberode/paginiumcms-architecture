@@ -42,6 +42,7 @@ import {
 import { loadAllowedEditorComponents, type EditorComponentRegistration } from '../../utils/editorComponents';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
+import { applyMarkdownPasteDecision, decideMarkdownPaste } from '../../utils/markdownPaste';
 
 interface MarkdownContentEditorProps {
   value: string;
@@ -328,11 +329,26 @@ export const MarkdownContentEditor: React.FC<MarkdownContentEditorProps> = ({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               onPaste={(event) => {
-                const pasted = event.clipboardData.getData('text/plain');
-                if (/<[a-z][^>]*>/i.test(pasted)) {
-                  event.preventDefault();
-                  onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'));
-                }
+                const decision = decideMarkdownPaste(event.clipboardData);
+                applyMarkdownPasteDecision(event, decision, {
+                  onPasteBlocked: () =>
+                    onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste')),
+                  insertPlainText: (text) => {
+                    const ta = textareaRef.current;
+                    if (!ta) {
+                      return;
+                    }
+                    const start = ta.selectionStart;
+                    const end = ta.selectionEnd;
+                    const next = value.slice(0, start) + text + value.slice(end);
+                    onChange(next);
+                    const cursor = start + text.length;
+                    requestAnimationFrame(() => {
+                      ta.selectionStart = cursor;
+                      ta.selectionEnd = cursor;
+                    });
+                  },
+                });
               }}
               disabled={readOnly}
               spellCheck={spellCheck}
