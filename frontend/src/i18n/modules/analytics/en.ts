@@ -39,7 +39,7 @@ export const analyticsEn: MessageTree = {
     browsers: 'Browsers',
     geoSummary: 'Countries',
     geoMap: 'Visitor map',
-    geoMapHint: 'Bubble size reflects visit volume (country centroids — no third-party map API).',
+    geoMapHint: 'Scroll or use +/− to zoom, drag to pan. Hover bubbles for visits and masked IPs (GeoIP from visit IP — no third-party map tiles).',
     recentGeoVisits: 'Recent visits',
     topBots: 'Top bots',
     recentBotVisits: 'Recent bot visits',
@@ -54,6 +54,10 @@ export const analyticsEn: MessageTree = {
   },
   geo: {
     sampleIps: 'Sample IPs (masked)',
+    visits: 'Visits',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    resetView: 'Reset',
   },
   devices: {
     desktop: 'Desktop',

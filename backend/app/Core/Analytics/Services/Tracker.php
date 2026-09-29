@@ -159,6 +159,9 @@ class Tracker implements TrackerInterface
         $visitData['country'] = $location ? $location->getCountry() : 'Unknown';
         $visitData['countryCode'] = $location ? $location->getCountryCode() : null;
         $visitData['city'] = $location ? $location->getCity() : null;
+        $visitData['region'] = $location ? $location->getRegion() : null;
+        $visitData['latitude'] = $location ? $location->getLatitude() : null;
+        $visitData['longitude'] = $location ? $location->getLongitude() : null;
         $visitData['visitorType'] = $bot->visitorType;
         $visitData['botName'] = $bot->botName;
         $visitData['botKind'] = $bot->botKind;

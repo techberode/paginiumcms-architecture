@@ -46,15 +46,20 @@ export interface GeoStat {
   city?: string | null;
   visits: number;
   sample_ips?: string[];
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface GeoVisit {
   country: string;
   countryCode?: string | null;
   city?: string | null;
+  region?: string | null;
   ip_masked: string;
   requestUri: string;
   timestamp: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface TopPage {

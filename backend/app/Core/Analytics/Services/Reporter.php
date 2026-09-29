@@ -176,12 +176,12 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>}>
+     * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>, latitude: float|null, longitude: float|null}>
      */
     public function getGeoStats(string $period = 'today'): array
     {
         $visits = $this->collectVisitsForPeriod($period, 2000);
-        /** @var array<string, array{country: string, countryCode: string|null, cityCounts: array<string, int>, visits: int, sample_ips: list<string>}> $stats */
+        /** @var array<string, array{country: string, countryCode: string|null, cityCounts: array<string, int>, visits: int, sample_ips: list<string>, latSum: float, lonSum: float, geoSamples: int}> $stats */
         $stats = [];
 
         foreach ($visits as $visit) {
@@ -201,12 +201,23 @@ final class Reporter implements ReporterInterface
                     'cityCounts' => [],
                     'visits' => 0,
                     'sample_ips' => [],
+                    'latSum' => 0.0,
+                    'lonSum' => 0.0,
+                    'geoSamples' => 0,
                 ];
             }
 
             $stats[$key]['visits']++;
             if ($city !== null) {
                 $stats[$key]['cityCounts'][$city] = ($stats[$key]['cityCounts'][$city] ?? 0) + 1;
+            }
+
+            $lat = isset($visit['latitude']) && is_numeric($visit['latitude']) ? (float) $visit['latitude'] : null;
+            $lon = isset($visit['longitude']) && is_numeric($visit['longitude']) ? (float) $visit['longitude'] : null;
+            if ($lat !== null && $lon !== null) {
+                $stats[$key]['latSum'] += $lat;
+                $stats[$key]['lonSum'] += $lon;
+                $stats[$key]['geoSamples']++;
             }
 
             $maskedIp = AnalyticsIpMasker::mask(isset($visit['ip']) ? (string) $visit['ip'] : null);
@@ -221,12 +232,21 @@ final class Reporter implements ReporterInterface
         foreach ($stats as $row) {
             arsort($row['cityCounts']);
             $topCity = array_key_first($row['cityCounts']);
+            $latitude = null;
+            $longitude = null;
+            if ($row['geoSamples'] > 0) {
+                $latitude = round($row['latSum'] / $row['geoSamples'], 5);
+                $longitude = round($row['lonSum'] / $row['geoSamples'], 5);
+            }
+
             $rows[] = [
                 'country' => $row['country'],
                 'countryCode' => $row['countryCode'],
                 'city' => is_string($topCity) ? $topCity : null,
                 'visits' => $row['visits'],
                 'sample_ips' => $row['sample_ips'],
+                'latitude' => $latitude,
+                'longitude' => $longitude,
             ];
         }
 
@@ -234,7 +254,7 @@ final class Reporter implements ReporterInterface
     }
 
     /**
-     * @return list<array{country: string, countryCode: string|null, city: string|null, ip_masked: string, requestUri: string, timestamp: string}>
+     * @return list<array{country: string, countryCode: string|null, city: string|null, region: string|null, ip_masked: string, requestUri: string, timestamp: string, latitude: float|null, longitude: float|null}>
      */
     public function getRecentGeoVisits(int $limit = 20, string $period = 'today'): array
     {
@@ -252,9 +272,12 @@ final class Reporter implements ReporterInterface
                     ? strtoupper($visit['countryCode'])
                     : null,
                 'city' => isset($visit['city']) && is_string($visit['city']) ? $visit['city'] : null,
+                'region' => isset($visit['region']) && is_string($visit['region']) ? $visit['region'] : null,
                 'ip_masked' => AnalyticsIpMasker::mask(isset($visit['ip']) ? (string) $visit['ip'] : null),
                 'requestUri' => (string) ($visit['requestUri'] ?? '/'),
                 'timestamp' => (string) ($visit['timestamp'] ?? ''),
+                'latitude' => isset($visit['latitude']) && is_numeric($visit['latitude']) ? (float) $visit['latitude'] : null,
+                'longitude' => isset($visit['longitude']) && is_numeric($visit['longitude']) ? (float) $visit['longitude'] : null,
             ];
         }
 

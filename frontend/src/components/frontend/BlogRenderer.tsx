@@ -20,9 +20,8 @@ import {
   ChevronsRight,
   Printer,
 } from 'lucide-react';
-import { resolveContentPreviewImage, resolveContentPreviewSrcSet } from '../../utils/contentPreviewImage';
-import { ArticleHeroImage } from './ArticleHeroImage';
-import { parseArticleHeroFocus } from '../../utils/pageHero';
+import { resolveContentPreviewImage } from '../../utils/contentPreviewImage';
+import { ArticleHeroCardImage, ArticleHeroImage } from './ArticleHeroImage';
 import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import {
   buildBlogListPath,
@@ -788,12 +787,6 @@ export const BlogRenderer: React.FC = () => {
             const author = article.author || String(
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
             );
-            const cardHero = parseArticleHeroFocus(article.frontMatter ?? {});
-            const image = resolveContentPreviewImage(article, MEDIA_THUMB_WIDTH.card);
-            const imageSrcSet = resolveContentPreviewSrcSet(article, [
-              MEDIA_THUMB_WIDTH.card,
-              MEDIA_THUMB_WIDTH.hero,
-            ]);
             const desc = article.excerpt || String(article.frontMatter?.description ?? '');
             const dates = formatContentDateLabels(
               {
@@ -811,32 +804,22 @@ export const BlogRenderer: React.FC = () => {
                 onClick={() => navigate(`/blog/${article.slug}`)}
                 className={`text-left ${PUBLIC_CARD} overflow-hidden shadow-md hover:shadow-2xl transition-all hover:-translate-y-1.5 flex flex-col group cursor-pointer`}
               >
-                <div className={`${blogCardImageHeightClass(listLayout.cardSize)} overflow-hidden relative bg-theme-surface`}>
-                  {image && (
-                    <img
-                      src={image}
-                      srcSet={imageSrcSet || undefined}
-                      sizes="(max-width: 768px) 100vw, 400px"
-                      alt={article.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      style={{
-                        objectPosition: `${cardHero.focusX}% ${cardHero.focusY}%`,
-                      }}
-                    />
-                  )}
-                  <div className="absolute top-4 left-4 flex flex-wrap gap-1">
-                    {article.tags?.slice(0, 2).map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-theme-text/90 backdrop-blur-md text-theme-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <ArticleHeroCardImage
+                  article={article}
+                  heightClass={blogCardImageHeightClass(listLayout.cardSize)}
+                  overlay={
+                    <div className="absolute top-4 left-4 flex flex-wrap gap-1 pointer-events-none">
+                      {article.tags?.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className="bg-theme-text/90 backdrop-blur-md text-theme-primary-foreground text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  }
+                />
                 <div className={`${blogCardBodyPaddingClass(listLayout.cardSize)} flex-1 flex flex-col justify-between`}>
                   <div>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-theme-text-muted mb-3 font-medium">

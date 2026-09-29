@@ -1,5 +1,5 @@
 // frontend/src/components/backend/DashboardView.tsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -14,9 +14,10 @@ import {
   Settings,
   Clock3,
 } from 'lucide-react';
-import { useApi } from '../../hooks/useApi';
 import { useToast } from '../../hooks/useToast';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
+import { useDeferredAfterPaint } from '../../hooks/useDeferredAfterPaint';
+import { useApi } from '../../hooks/useApi';
 import { queryKeys } from '../../api/queryKeys';
 import { getDashboardOverview, DashboardOverview } from '../../api/dashboard';
 import { getApmOverview, ApmOverview } from '../../api/metrics';
@@ -43,18 +44,8 @@ import { GettingStartedChecklist } from '../dashboard/GettingStartedChecklist';
 import { getJobsOverview, type JobsOverview } from '../../api/jobs';
 import { JobRunsLineChart } from './JobRunsLineChart';
 
-interface ContentStats {
-  totalPages: number;
-  totalArticles: number;
-  totalMedia: number;
-  totalUsers: number;
-  totalBackups: number;
+interface DashboardSecondaryData {
   recentActivity: Array<Record<string, unknown>>;
-}
-
-interface DashboardData {
-  stats: ContentStats;
-  overview: DashboardOverview | null;
   apm: ApmOverview | null;
   jobs: JobsOverview | null;
 }
@@ -78,45 +69,16 @@ export const DashboardView: React.FC = () => {
   const { settings } = useSettings();
   const isDemoInstance = settings.demo?.enabled === true;
 
-  const { data, isLoading, isFetching, refetch } = useAdminListQuery<DashboardData>({
-    queryKey: queryKeys.dashboard.stats,
+  const {
+    data: overview,
+    isLoading: overviewLoading,
+    isFetching: overviewFetching,
+    refetch: refetchOverview,
+  } = useAdminListQuery<DashboardOverview | null>({
+    queryKey: queryKeys.dashboard.overview,
     queryFn: async () => {
       try {
-        const [pagesRes, articlesRes, mediaRes, usersRes, backupsRes, auditRes, monitoring, apm, jobs] =
-          await Promise.all([
-            get('/api/pages'),
-            get('/api/articles'),
-            get('/api/media'),
-            get<{ users: Array<{ id: string }> }>('/api/admin/users'),
-            get<unknown[]>('/api/admin/backups'),
-            get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
-            getDashboardOverview(),
-            getApmOverview(),
-            getJobsOverview(),
-          ]);
-
-        return {
-          stats: {
-            totalPages: pagesRes.success ? (Array.isArray(pagesRes.data) ? pagesRes.data.length : 0) : 0,
-            totalArticles: articlesRes.success
-              ? Array.isArray(articlesRes.data)
-                ? articlesRes.data.length
-                : 0
-              : 0,
-            totalMedia: mediaRes.success ? (Array.isArray(mediaRes.data) ? mediaRes.data.length : 0) : 0,
-            totalUsers:
-              usersRes.success && usersRes.data?.users ? usersRes.data.users.length : 0,
-            totalBackups: backupsRes.success
-              ? Array.isArray(backupsRes.data)
-                ? backupsRes.data.length
-                : 0
-              : 0,
-            recentActivity: auditRes.success ? auditRes.data?.recent_events || [] : [],
-          },
-          overview: monitoring,
-          apm,
-          jobs,
-        };
+        return await getDashboardOverview();
       } catch (error) {
         toast.error(t('dashboard.toast.loadFailed'));
         console.error(error);
@@ -125,20 +87,52 @@ export const DashboardView: React.FC = () => {
     },
   });
 
-  const loading = isLoading && !data;
-  const stats = data?.stats ?? {
-    totalPages: 0,
-    totalArticles: 0,
-    totalMedia: 0,
-    totalUsers: 0,
-    totalBackups: 0,
-    recentActivity: [],
-  };
-  const overview = data?.overview ?? null;
-  const apm = data?.apm ?? null;
+  const deferSecondary = useDeferredAfterPaint(overview != null);
+
+  const {
+    data: secondary,
+    isLoading: secondaryLoading,
+    isFetching: secondaryFetching,
+    refetch: refetchSecondary,
+  } = useAdminListQuery<DashboardSecondaryData>({
+    queryKey: queryKeys.dashboard.secondary,
+    enabled: deferSecondary,
+    queryFn: async () => {
+      const [auditRes, apm, jobs] = await Promise.all([
+        get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
+        getApmOverview(),
+        getJobsOverview(),
+      ]);
+
+      return {
+        recentActivity: auditRes.success ? auditRes.data?.recent_events ?? [] : [],
+        apm,
+        jobs,
+      };
+    },
+  });
+
+  const refetch = useCallback(() => {
+    void refetchOverview();
+    if (deferSecondary) {
+      void refetchSecondary();
+    }
+  }, [deferSecondary, refetchOverview, refetchSecondary]);
+
+  const loading = overviewLoading && overview == null;
+  const isFetching = overviewFetching || secondaryFetching;
+  const counts = overview?.counts;
+  const totalPages = counts?.pages ?? 0;
+  const totalArticles = counts?.articles ?? 0;
+  const totalMedia = counts?.media ?? 0;
+  const totalUsers = counts?.users ?? 0;
+  const totalBackups = counts?.backups ?? 0;
+  const recentActivity = secondary?.recentActivity ?? [];
+  const apm = secondary?.apm ?? null;
+  const jobs = secondary?.jobs ?? null;
+  const secondaryPanelsLoading = deferSecondary && secondaryLoading && !secondary;
 
   const analytics = overview?.analytics;
-  const counts = overview?.counts;
   const storageFree = overview?.storage?.free_space;
   const demoStorageQuota =
     overview?.storage?.demo_synthetic && overview.storage.demo_quota_bytes
@@ -151,9 +145,9 @@ export const DashboardView: React.FC = () => {
   }
 
   const kpiCards = [
-    { id: 'pages', title: t('dashboard.kpi.pages'), value: stats.totalPages, icon: FileText, to: '/pages' },
-    { id: 'articles', title: t('dashboard.kpi.articles'), value: stats.totalArticles, icon: BookOpen, to: '/articles' },
-    { id: 'media', title: t('dashboard.kpi.media'), value: counts?.media ?? stats.totalMedia, icon: ImageIcon, to: '/media' },
+    { id: 'pages', title: t('dashboard.kpi.pages'), value: totalPages, icon: FileText, to: '/pages' },
+    { id: 'articles', title: t('dashboard.kpi.articles'), value: totalArticles, icon: BookOpen, to: '/articles' },
+    { id: 'media', title: t('dashboard.kpi.media'), value: totalMedia, icon: ImageIcon, to: '/media' },
     {
       id: 'visits',
       title: t('dashboard.kpi.visitsToday'),
@@ -161,7 +155,7 @@ export const DashboardView: React.FC = () => {
       icon: ArrowUpRight,
       to: '/analytics',
     },
-    { id: 'users', title: t('dashboard.kpi.users'), value: stats.totalUsers, icon: Users, to: '/users' },
+    { id: 'users', title: t('dashboard.kpi.users'), value: totalUsers, icon: Users, to: '/users' },
   ];
   const usedPercent = storageUsedPercent(overview?.storage);
 
@@ -169,7 +163,7 @@ export const DashboardView: React.FC = () => {
     <div className="space-y-6 animate-fadeIn pb-16">
       <SystemUpdateBanner />
 
-      {stats.totalPages === 0 && stats.totalArticles === 0 ? (
+      {totalPages === 0 && totalArticles === 0 ? (
         <AdminEmptyState
           title={t('dashboard.empty.title')}
           description={t('dashboard.empty.body')}
@@ -214,10 +208,10 @@ export const DashboardView: React.FC = () => {
       </AdminToolbar>
 
       <GettingStartedChecklist
-        totalPages={stats.totalPages}
-        totalArticles={stats.totalArticles}
-        totalMedia={counts?.media ?? stats.totalMedia}
-        probes={data?.overview?.getting_started}
+        totalPages={totalPages}
+        totalArticles={totalArticles}
+        totalMedia={totalMedia}
+        probes={overview?.getting_started}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
@@ -232,7 +226,7 @@ export const DashboardView: React.FC = () => {
         ))}
       </div>
 
-      {(data?.jobs?.recent_runs?.length ?? 0) > 0 ? (
+      {(jobs?.recent_runs?.length ?? 0) > 0 ? (
         <AdminWidgetCard
           title={t('platform.scheduler.chart.dashboardTitle')}
           action={
@@ -241,7 +235,7 @@ export const DashboardView: React.FC = () => {
             </Link>
           }
         >
-          <JobRunsLineChart runs={data?.jobs?.recent_runs ?? []} />
+          <JobRunsLineChart runs={jobs?.recent_runs ?? []} />
         </AdminWidgetCard>
       ) : null}
 
@@ -303,7 +297,7 @@ export const DashboardView: React.FC = () => {
             icon={Clock3}
           />
         </Link>
-        <AdminKpiCard title={t('dashboard.kpi.backups')} value={stats.totalBackups} icon={HardDrive} to="/backups" />
+        <AdminKpiCard title={t('dashboard.kpi.backups')} value={totalBackups} icon={HardDrive} to="/backups" />
         <AdminKpiCard
           title={t('dashboard.stats.realtimeVisitors')}
           value={analytics?.realtime.active_visitors ?? 0}
@@ -324,7 +318,11 @@ export const DashboardView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <HealthPanel health={overview?.health ?? null} loading={false} />
-        <PerformanceGuardPanel overview={apm} loading={false} onRefresh={() => void refetch()} />
+        <PerformanceGuardPanel
+          overview={apm}
+          loading={secondaryPanelsLoading}
+          onRefresh={() => void refetch()}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -372,13 +370,13 @@ export const DashboardView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <DashboardActivityPanel events={stats.recentActivity} loading={false} />
+          <DashboardActivityPanel events={recentActivity} loading={secondaryPanelsLoading} />
         </div>
         <DashboardDiskStructurePanel
-          pages={contentStorage?.pages ?? stats.totalPages}
-          articles={contentStorage?.articles ?? stats.totalArticles}
-          media={contentStorage?.media ?? stats.totalMedia}
-          users={contentStorage?.users ?? stats.totalUsers}
+          pages={contentStorage?.pages ?? totalPages}
+          articles={contentStorage?.articles ?? totalArticles}
+          media={contentStorage?.media ?? totalMedia}
+          users={contentStorage?.users ?? totalUsers}
           totalHuman={contentStorage?.total_human}
           documentCount={contentStorage?.document_count}
           loading={false}

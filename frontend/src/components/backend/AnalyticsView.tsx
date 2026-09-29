@@ -575,6 +575,7 @@ export const AnalyticsView: React.FC = () => {
                         <span aria-hidden>{countryCodeToFlag(visit.countryCode)}</span>
                         {visit.country}
                         {visit.city ? ` · ${visit.city}` : ''}
+                        {visit.region && !visit.city ? ` · ${visit.region}` : ''}
                       </div>
                       <div className="text-xs text-slate-500 truncate">{visit.requestUri}</div>
                     </div>

@@ -39,7 +39,7 @@ export const analyticsSk: MessageTree = {
     browsers: 'Prehliadače',
     geoSummary: 'Krajiny',
     geoMap: 'Mapa návštevníkov',
-    geoMapHint: 'Veľkosť bubliny = počet návštev (centroid krajiny, bez externého map API).',
+    geoMapHint: 'Koliesko alebo +/− priblížia mapu, ťahaním posunieš. Nad bublinou uvidíš návštevy a maskované IP (GeoIP z IP návštevy — bez externých mapových dlaždíc).',
     recentGeoVisits: 'Posledné návštevy',
     topBots: 'Top boty',
     recentBotVisits: 'Posledné bot návštevy',
@@ -54,6 +54,10 @@ export const analyticsSk: MessageTree = {
   },
   geo: {
     sampleIps: 'Ukážkové IP (maskované)',
+    visits: 'Návštevy',
+    zoomIn: 'Priblížiť',
+    zoomOut: 'Oddialiť',
+    resetView: 'Reset',
   },
   devices: {
     desktop: 'Desktop',

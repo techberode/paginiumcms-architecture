@@ -13,11 +13,14 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Analytics geography:** Visitor map uses Natural Earth land outline, corrected equirectangular positions (~143 country centroids + optional GeoIP lat/lon on visits), zoom/pan, and hover tooltips with masked sample IPs; tracker persists latitude/longitude/region from GeoIP.
+- **Admin dashboard:** Overview loads first (KPIs, health, analytics, log severity counts from `AdminCountsService`); audit stats / APM / scheduler chart defer until after first paint (`requestIdleCallback`) so heavy log scans no longer block the shell.
 - **Docs:** [PUBLIC_SITE_WORKLOG_2026-09-24_28.md](docs/en/operations/PUBLIC_SITE_WORKLOG_2026-09-24_28.md) — production incidents (footer version, blog CLS/404 flash, deploy CRLF, theme reload, showcase-hero, CTA); [ISSUES.md](docs/ISSUES.md) ISS-178–ISS-186.
 - **Widgets:** Public `[widget]` types `map-embed`, `data-table`, `bar-chart`, `form-cta` (server expand + `pgLayout.css`); Google Maps embed allow-list shared with contact page (`MapEmbedUrlGuard`).
 - **Public errors:** Settings → Layout slugs for custom **404** / **500** pages; built-in Paginium panels + `PublicRouteErrorBoundary` fallback.
 - **Analytics:** Geography tab — visitor dot map (country centroids, no third-party API) alongside country bar chart.
-- **Blog:** Article hero crop — editor drag preview + `heroFocusX/Y` / `heroFit`; detail defaults to letterbox (`contain`) so OG images are not random center-cropped; optional fill-frame crop.
+- **Blog:** Article hero crop — editor drag preview + `heroFocusX/Y` / `heroFit`; detail defaults to letterbox (`contain`) so OG images are not random center-cropped; optional fill-frame crop; **article list cards** use the same contain/cover + focus rules (fixes 21:9 heroes cropped in `/blog` grid); docs [BLOG_ARTICLE_HERO.md](docs/en/user/BLOG_ARTICLE_HERO.md).
+- **Docs:** [ISSUES.md](docs/ISSUES.md) ISS-187–ISS-189 (dashboard defer, analytics geo map, blog list hero).
 - **Fix:** Landing shortcode primary CTA unreadable — `.paginium-prose a` no longer overrides `.pg-btn-primary` text color.
 - **Docs:** [SHORTCODES_AND_WIDGETS.md](docs/en/user/SHORTCODES_AND_WIDGETS.md) — syntax, inner markdown, widgets; landing page § `showcase-hero`; blog mini-series outline in `docs/marketing/ARTICLE_SERIES_SK.md`.
 - **Fix:** Landing `showcase-hero` invisible on public site — block no longer uses scroll-reveal (`pg-reveal`); CSS keeps legacy installs visible; bundled shortcode definition v2 via `seedMissingBundled`.

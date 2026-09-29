@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 28 September 2026 · register **ISS-001–ISS-186** · public-site batch **2.1.0-beta.93+** (Unreleased)
+> **Last updated:** 29 September 2026 · register **ISS-001–ISS-189** · public-site batch **2.1.0-beta.93+** (Unreleased)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -209,6 +209,9 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-184](#iss-184) | Generic public 404/500 without site chrome | Low (UX) | ✅ Fixed — custom page slugs + styled fallback |
 | [ISS-185](#iss-185) | Analytics geo lacked spatial overview | Low (admin UX) | ✅ Fixed — visitor dot map panel |
 | [ISS-186](#iss-186) | Pages/articles needed table/chart/map widgets | Medium (feature) | ✅ Fixed — WidgetCatalog types + docs |
+| [ISS-187](#iss-187) | Admin dashboard slow first paint (audit + full lists) | Medium (admin perf) | ✅ Fixed — overview-first + deferred secondary queries |
+| [ISS-188](#iss-188) | Analytics geo map dots off-screen / no zoom or tooltips | Low (admin UX) | ✅ Fixed — equirectangular centroids, land outline, GeoIP lat/lon |
+| [ISS-189](#iss-189) | Blog list cropped 21:9 article heroes | Medium (UX) | ✅ Fixed — list cards share `heroFit` with detail |
 
 ## CI failures (GitHub Actions)
 
@@ -5707,7 +5710,7 @@ Settings → Layout: `notFoundPageSlug`, `serverErrorPageSlug`; `PublicSystemErr
 
 ### Resolution
 
-`AnalyticsGeoDotMap` — visit-weighted bubbles on equirectangular grid (no Google Maps API in admin). Contact page maps remain Settings → Company embed + `map-embed` widget.
+Initial `AnalyticsGeoDotMap` — visit-weighted bubbles (no third-party map tiles). **Follow-up (ISS-188):** land outline, corrected centroids, zoom/pan, GeoIP coordinates on visits. Contact page maps remain Settings → Company embed + `map-embed` widget.
 
 ---
 
@@ -5726,6 +5729,60 @@ Settings → Layout: `notFoundPageSlug`, `serverErrorPageSlug`; `PublicSystemErr
 ### Resolution
 
 Added `map-embed`, `data-table`, `bar-chart`, `form-cta` with PHPUnit coverage; documented in [SHORTCODES_AND_WIDGETS.md](en/user/SHORTCODES_AND_WIDGETS.md).
+
+---
+
+<a id="iss-187"></a>
+
+## ISS-187 – Admin dashboard blocked on heavy parallel fetches
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (admin perf) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | `DashboardView` |
+
+### Resolution
+
+Split loading: `GET /api/admin/dashboard/overview` first (KPIs from `AdminCountsService`), then audit stats / APM / jobs after first paint via `requestIdleCallback` (`useDeferredAfterPaint`). Removed redundant full `/api/pages`, `/api/articles`, etc. for dashboard KPI lengths.
+
+---
+
+<a id="iss-188"></a>
+
+## ISS-188 – Analytics geography map unusable (wrong coords, no interaction)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (admin UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Analytics → Geography |
+
+### Resolution
+
+Correct equirectangular placement (Natural Earth country centroids + optional averaged GeoIP lat/lon on visits). Natural Earth 110m land outline, zoom/pan, hover tooltips with masked sample IPs. Tracker persists `latitude`, `longitude`, `region` from `GeoIPService`.
+
+---
+
+<a id="iss-189"></a>
+
+## ISS-189 – Blog list cards cropped wide article heroes
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Public blog list |
+
+### Resolution
+
+`ArticleHeroCardImage` applies the same `heroFit` / focus as `ArticleHeroImage` on detail (default **contain** for 21:9 masters). See [BLOG_ARTICLE_HERO.md](en/user/BLOG_ARTICLE_HERO.md).
 
 ---
 

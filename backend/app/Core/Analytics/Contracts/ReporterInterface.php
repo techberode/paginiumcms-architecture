@@ -45,14 +45,14 @@ interface ReporterInterface
     /**
      * Získa geo štatistiky.
      *
-     * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>}>
+     * @return list<array{country: string, countryCode: string|null, city: string|null, visits: int, sample_ips: list<string>, latitude: float|null, longitude: float|null}>
      */
     public function getGeoStats(string $period = 'today'): array;
 
     /**
      * Posledné návštevy s geo metadátami (maskovaná IP).
      *
-     * @return list<array{country: string, countryCode: string|null, city: string|null, ip_masked: string, requestUri: string, timestamp: string}>
+     * @return list<array{country: string, countryCode: string|null, city: string|null, region: string|null, ip_masked: string, requestUri: string, timestamp: string, latitude: float|null, longitude: float|null}>
      */
     public function getRecentGeoVisits(int $limit = 20, string $period = 'today'): array;
 

@@ -1,6 +1,8 @@
 export const queryKeys = {
   dashboard: {
     stats: ['admin', 'dashboard', 'stats'] as const,
+    overview: ['admin', 'dashboard', 'overview'] as const,
+    secondary: ['admin', 'dashboard', 'secondary'] as const,
   },
   content: {
     list: (
