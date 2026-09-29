@@ -9,6 +9,19 @@ use PHPUnit\Framework\TestCase;
 
 final class ExternalEmbedShortcodeTest extends TestCase
 {
+    public function testConvertRawYoutubeIframeToEmbedBlock(): void
+    {
+        $expander = new ExternalEmbedShortcode();
+        $markdown = '<iframe src="https://www.youtube.com/embed/2PuFyjAs7JA" width="560"></iframe>';
+
+        $normalized = $expander->normalizeMarkdownEmbeds($markdown);
+        $expanded = $expander->expand($normalized);
+
+        $this->assertStringContainsString('provider: youtube', $normalized);
+        $this->assertStringContainsString('id: 2PuFyjAs7JA', $normalized);
+        $this->assertStringContainsString('youtube-nocookie.com/embed/2PuFyjAs7JA', $expanded);
+    }
+
     public function testPromoteStandaloneYoutubeWatchUrl(): void
     {
         $expander = new ExternalEmbedShortcode();

@@ -139,7 +139,7 @@ final class SecurityLogger
         ]);
 
         if ($this->config['alert_on_privilege_escalation']) {
-            $this->checkPrivilegeEscalation($userId, $oldRoles, $newRoles);
+            $this->checkPrivilegeEscalation($userId, $email, $oldRoles, $newRoles);
         }
     }
 
@@ -291,22 +291,38 @@ final class SecurityLogger
      * Kontrola eskalácie privilégií.
  * @param array<int|string, mixed> $oldRoles
  * @param array<int|string, mixed> $newRoles
- */private function checkPrivilegeEscalation(string $userId, array $oldRoles, array $newRoles): void
+ */private function checkPrivilegeEscalation(string $userId, string $email, array $oldRoles, array $newRoles): void
     {
         // Kontrola, či boli pridané administrátorské roly
         $adminRoles = ['ADMIN', 'SUPER_ADMIN'];
         
         foreach ($adminRoles as $role) {
             if (in_array($role, $newRoles, true) && !in_array($role, $oldRoles, true)) {
+                $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
                 $this->logger->critical('Security: Privilege escalation detected!', [
                     'user_id' => $userId,
                     'new_role' => $role,
-                    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                    'ip' => $ip,
                     'timestamp' => date('Y-m-d H:i:s'),
                     'type' => 'privilege_escalation',
                 ]);
-                
-                // TODO: Odoslať notifikáciu administrátorovi
+
+                if ($this->isTestingEnvironment()) {
+                    continue;
+                }
+
+                $this->incidentNotifier?->notifySecurityEvent(
+                    'privilege_escalation',
+                    sprintf(
+                        'User %s (%s) was granted %s from IP %s at %s.',
+                        $email,
+                        $userId,
+                        $role,
+                        $ip,
+                        date('c')
+                    ),
+                    'critical'
+                );
             }
         }
     }

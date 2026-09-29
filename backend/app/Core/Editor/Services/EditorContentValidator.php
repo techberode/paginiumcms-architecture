@@ -23,7 +23,13 @@ final class EditorContentValidator
         private CalloutShortcode $calloutShortcode = new CalloutShortcode(),
         private MermaidShortcode $mermaidShortcode = new MermaidShortcode(),
         private ChartShortcode $chartShortcode = new ChartShortcode(),
+        private ExternalEmbedShortcode $externalEmbedShortcode = new ExternalEmbedShortcode(),
     ) {
+    }
+
+    public function normalizeMarkdown(string $content): string
+    {
+        return $this->externalEmbedShortcode->normalizeMarkdownEmbeds($content);
     }
 
     /**
@@ -233,13 +239,14 @@ final class EditorContentValidator
         $withoutCallouts = $this->calloutShortcode->stripBlocks($content);
         $withoutDiagrams = $this->mermaidShortcode->stripBlocks($withoutCallouts);
         $withoutCharts = $this->chartShortcode->stripBlocks($withoutDiagrams);
-        $lower = strtolower($withoutCharts);
+        $withoutEmbeds = $this->externalEmbedShortcode->stripBlocks($withoutCharts);
+        $lower = strtolower($withoutEmbeds);
 
         if (str_contains($lower, '<script') || str_contains($lower, '<iframe')) {
             return 'Obsah nepovoľuje vložené skripty alebo iframe.';
         }
 
-        $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutCharts);
+        $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutEmbeds);
         if (preg_match('/<[a-z][^>]*>/i', $withoutTrustedBlocks) === 1) {
             return 'Markdown obsah nesmie obsahovať raw HTML tagy.';
         }

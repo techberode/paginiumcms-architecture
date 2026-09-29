@@ -1,9 +1,10 @@
 # PaginiumCMS — project roadmap
 
-> **Documentation checkpoint:** September 13, 2026  
-> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (currently `v2.1.0-beta.73`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Documentation checkpoint:** September 29, 2026  
+> **Latest release:** see [`CHANGELOG.md`](CHANGELOG.md) (tagged **`v2.1.0-beta.93`**; newer work in `[Unreleased]`) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** Stabilization freeze **closed** — active: **It.91c** Tiptap parity · **It.72** / **It.89**
+> **Code status:** Hybrid Engine layers **It.68–77 largely shipped** — verify live wiring in **Origin Panel** (`/platform/origin`) before trusting table rows below.  
+> **Source of truth for “does it run?”:** Origin feature probes + [CHANGELOG.md](CHANGELOG.md), not stale ⏳ symbols alone — see [en/operations/ROADMAP_SYNC.md](en/operations/ROADMAP_SYNC.md).
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
@@ -42,7 +43,7 @@ PaginiumCMS is evolving from a production-capable flat-file CMS into a **Hybrid 
 | Roadmap and backlog | ✅ this iteration | stale priorities and duplicate iteration numbers removed |
 | Bilingual documentation | 🚧 | separate, structurally matching `SK/` and `EN/` trees |
 | Hybrid Engine foundation (It.68) | ✅ | `[Unreleased]` — storage abstraction, schema registry, engine settings |
-| Hybrid Engine layers It.69–77 | ⏳ | cache, Git publish, APM, media drivers, locale, API auth, AI/translation |
+| Hybrid Engine layers It.69–77 | ✅ core shipped | probes: `it.71.performance_guard`, `it.74`-class API keys, multi-locale; remainder = polish/docs |
 
 The **documentation gate is complete** when the SK and EN editions do not contradict each other, feature states match, and planned capabilities are not presented as shipped.
 
@@ -61,7 +62,7 @@ Instead of repeating dozens of historical specifications, this roadmap groups sh
 | Security | ✅ ongoing | sessions, CSRF, RBAC, 2FA, encryption, WAF, rate limits, SSRF/Zip-Slip/path controls, audit |
 | Extensions | ✅ foundation | external plugins, hooks, Code Policy, Developer Mode, Code Editor |
 | Operations | ✅ foundation | Docker onboarding, health, monitoring, logs, release and deployment workflow |
-| Hybrid Engine layers | 🟡 | It.68 foundation shipped; unified cache/Redis/Git/APM/S3 remain planned |
+| Hybrid Engine layers | ✅ / 🟡 | It.68–77 core in tree (Git publish, APM, S3 driver, locales, API keys/JWT, translation, AI propose/apply); Redis/static remainder |
 
 Detailed inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
@@ -73,14 +74,14 @@ Detailed inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 |-----|-------|----------|--------|---------------------|
 | **68** | Storage abstraction, schema registry, and engine settings | 🔴 | ✅ `[Unreleased]` | local driver; settings + JSON content write slice |
 | **69** | Unified cache, Redis, `ETag`, `Last-Modified` | 🔴 | ✅ | absorbs legacy It.45 and It.49; Redis driver deferred |
-| **70** | Git publish — immediate and queued | 🟡 | ⏳ | uses scheduler/queue |
-| **71** | Performance Guard APM | 🟡 | ⏳ | latency, I/O, memory, and incident measurement |
-| **72** | Flysystem media drivers, S3/CDN | 🟡 | ⏳ | local driver remains the default |
-| **73** | Multiple locales in one content document | 🟡 | ⏳ | prerequisite for assisted translation |
-| **74** | Additive API keys and JWT | 🟡 | ⏳ | admin session + CSRF remain unchanged |
-| **75** | CMS-aware AI agent | 🔵 | ⏳ | human-approved proposals; no autonomous publishing |
-| **76** | Self-hosted assisted translation | 🔵 | ⏳ | LibreTranslate / compatible driver |
-| **77** | Cloud assisted translation | 🔵 | ⏳ | DeepL, Google, and additional drivers |
+| **70** | Git publish — immediate and queued | 🟡 | ✅ | `LocalGitPublisher`, `GitHubApiPublisher`; UI polish in backlog |
+| **71** | Performance Guard APM | 🟡 | ✅ | `PerformanceSampleStore`, metrics API; probe `it.71.performance_guard` |
+| **72** | Flysystem media drivers, S3/CDN | 🟡 | ✅ | `S3MediaStorageDriver`; **local** remains default |
+| **73** | Multiple locales in one content document | 🟡 | ✅ | multi-locale writes; probe `MultiLocaleFeatureProbe` |
+| **74** | Additive API keys and JWT | 🟡 | ✅ | headless auth + JWT denylist; probe `ApiKeysFeatureProbe` |
+| **75** | CMS-aware AI agent | 🔵 | ✅ | propose/apply only; no autonomous publish |
+| **76** | Self-hosted assisted translation | 🔵 | ✅ | assisted translation drivers |
+| **77** | Cloud assisted translation | 🔵 | ✅ | DeepL/Google-style drivers where configured |
 
 Dependency map: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md).
 

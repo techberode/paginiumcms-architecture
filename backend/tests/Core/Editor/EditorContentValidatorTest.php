@@ -199,6 +199,46 @@ final class EditorContentValidatorTest extends TestCase
         $this->assertSame('Callout bloky nepovoľujú skripty ani iframe.', $error);
     }
 
+    public function testMarkdownNormalizesRawYoutubeIframeBeforeValidation(): void
+    {
+        $auth = $this->createMock(AuthorizationInterface::class);
+        $auth->method('hasPermission')->willReturnCallback(
+            static fn (mixed $user, string $permission): bool => $permission === ExternalEmbedContentService::PERMISSION_EMBED_EXTERNAL
+        );
+        $baseDir = getcwd() ?: sys_get_temp_dir();
+        $validator = new FileValidator($baseDir);
+        $settings = new SettingsRepository(
+            new FileWriter($validator),
+            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($baseDir),
+            new Validator(),
+            'data/settings.json'
+        );
+        $plugins = $this->createMock(PluginManagerInterface::class);
+        $plugins->method('listEnabledEditorComponents')->willReturn([]);
+        $components = new EditorComponentRegistry($plugins);
+        $trustedHtml = new TrustedHtmlContentService($settings, $auth, new TrustedHtmlPurifier($settings));
+        $externalEmbed = new ExternalEmbedContentService($settings, $auth, new ExternalEmbedShortcode());
+        $validatorService = new EditorContentValidator(
+            new EditorProfileService($settings, $components),
+            $components,
+            $trustedHtml,
+            $externalEmbed,
+            new HtmlSafeShortcode(),
+        );
+
+        $user = $this->createMock(\PaginiumCMS\Modules\Security\Models\User::class);
+        $normalized = $validatorService->normalizeMarkdown(
+            '<iframe src="https://www.youtube.com/embed/2PuFyjAs7JA"></iframe>'
+        );
+        $error = $validatorService->validate('article', [
+            'content' => $normalized,
+            'contentFormat' => 'markdown',
+            'editorProfile' => 'blog',
+        ], $user);
+
+        $this->assertNull($error);
+    }
+
     public function testMarkdownRejectsEmbedBlockWithoutPermission(): void
     {
         $error = $this->validator->validate('article', [

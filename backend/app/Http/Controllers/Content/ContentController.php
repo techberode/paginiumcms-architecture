@@ -260,13 +260,13 @@ class ContentController
             false
         );
         $user = $this->resolveUser($request);
+        $this->normalizeEditorContentPayload($data, $user);
         $validation = $this->validatePayload($data, $type, true, $user);
 
         if ($validation !== null) {
             return $this->json->error($response, $validation, 400);
         }
 
-        $this->normalizeEditorContentPayload($data, $user);
         $this->trustedContentAudit->logContentSave(
             $user,
             $type,
@@ -373,13 +373,13 @@ class ContentController
             $existing->getPath()
         );
         $user = $this->resolveUser($request);
+        $this->normalizeEditorContentPayload($data, $user);
         $validation = $this->validatePayload($data, $type, false, $user);
 
         if ($validation !== null) {
             return $this->json->error($response, $validation, 400);
         }
 
-        $this->normalizeEditorContentPayload($data, $user);
         $this->trustedContentAudit->logContentSave(
             $user,
             $type,
@@ -1596,10 +1596,6 @@ class ContentController
      */
     private function normalizeEditorContentPayload(array &$data, ?User $user): void
     {
-        if (!$this->trustedHtmlContent->canUseTrustedHtml($user)) {
-            return;
-        }
-
         $format = (string) ($data['contentFormat'] ?? 'markdown');
         if ($format !== 'markdown') {
             return;
@@ -1610,7 +1606,13 @@ class ContentController
             return;
         }
 
-        $data['content'] = $this->trustedHtmlContent->normalizeMarkdown($content);
+        $content = $this->editorContentValidator->normalizeMarkdown($content);
+
+        if ($this->trustedHtmlContent->canUseTrustedHtml($user)) {
+            $content = $this->trustedHtmlContent->normalizeMarkdown($content);
+        }
+
+        $data['content'] = $content;
     }
 
     /**

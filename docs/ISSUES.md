@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 29 September 2026 · register **ISS-001–ISS-191** · public-site batch **2.1.0-beta.93+** (Unreleased)
+> **Last updated:** 29 September 2026 · register **ISS-001–ISS-192** · public-site batch **2.1.0-beta.93+** (Unreleased)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -214,6 +214,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-189](#iss-189) | Blog list cropped 21:9 article heroes | Medium (UX) | ✅ Fixed — list cards share `heroFit` with detail |
 | [ISS-190](#iss-190) | Markdown editor blocked paste of valid Markdown (false HTML) | Medium (admin UX) | ✅ Fixed — rich HTML clipboard only; plain MD allowed |
 | [ISS-191](#iss-191) | Contact Google Maps iframe blocked; inline theme script vs CSP | Medium (public UX) | ✅ Fixed — nginx `frame-src`; external theme boot JS |
+| [ISS-192](#iss-192) | Article save 400 — iframe in Markdown body | High (admin UX) | ✅ Fixed — normalize embeds before validate |
 
 ## CI failures (GitHub Actions)
 
@@ -5836,6 +5837,32 @@ Google Maps embed on contact page blocked: `frame-src` not set, `default-src 'se
 - **Theme:** move early theme boot to `frontend/public/public-theme-boot.js` loaded via `<script src>` (no inline script).
 
 **Verify on production:** `curl -sI https://paginiumcms.com/kontakt | grep -i content-security-policy` must include `frame-src` and Google host; redeploy FE after build.
+
+---
+
+<a id="iss-192"></a>
+
+## ISS-192 – Article save rejected YouTube embed (iframe validation)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | High (admin UX) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Content save / Markdown validator |
+
+### Symptom
+
+`POST /api/articles` → 400 *Obsah nepovoľuje vložené skripty alebo iframe* when authors pasted Google embed HTML or a standalone YouTube URL. Validation ran **before** embed normalization.
+
+### Resolution
+
+- `ExternalEmbedShortcode::normalizeMarkdownEmbeds()` — promote standalone video URLs + convert allow-listed iframe HTML to `:::embed`.
+- `ContentController` — normalize markdown **before** `validatePayload`.
+- `EditorContentValidator` — strip `:::embed` blocks before raw `<iframe` scan.
+
+Requires `content:embed-external` to **save** `:::embed` blocks; normalized iframe HTML follows the same gate.
 
 ---
 

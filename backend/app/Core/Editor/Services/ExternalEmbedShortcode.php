@@ -163,6 +163,40 @@ final class ExternalEmbedShortcode
     /**
      * Converts a line that contains only an allow-listed video URL into a :::embed block.
      */
+    /**
+     * Replaces copy-pasted YouTube/Vimeo iframe HTML with guarded :::embed blocks.
+     */
+    public function convertRawEmbedIframesToBlocks(string $markdown): string
+    {
+        $converted = preg_replace_callback(
+            '/<iframe\b[^>]*\bsrc=(["\'])([^"\']+)\1[^>]*>\s*<\/iframe>/i',
+            function (array $matches): string {
+                $src = html_entity_decode(trim((string) $matches[2]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                if (!self::isAllowedIframeSrc($src)) {
+                    return (string) $matches[0];
+                }
+
+                if (preg_match('#(?:youtube-nocookie\.com|youtube\.com)/embed/([a-zA-Z0-9_-]{11})#', $src, $youtube) === 1) {
+                    return "\n\n:::embed\nprovider: youtube\nid: {$youtube[1]}\n:::\n";
+                }
+
+                if (preg_match('#player\.vimeo\.com/video/(\d{1,20})#', $src, $vimeo) === 1) {
+                    return "\n\n:::embed\nprovider: vimeo\nid: {$vimeo[1]}\n:::\n";
+                }
+
+                return (string) $matches[0];
+            },
+            $markdown
+        );
+
+        return is_string($converted) ? $converted : $markdown;
+    }
+
+    public function normalizeMarkdownEmbeds(string $markdown): string
+    {
+        return $this->convertRawEmbedIframesToBlocks($this->promoteStandaloneVideoUrls($markdown));
+    }
+
     public function promoteStandaloneVideoUrls(string $markdown): string
     {
         $patterns = [
