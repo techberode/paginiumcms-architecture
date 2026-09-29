@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   parseArticleHeroFocus,
+  parsePageHeroSettings,
   resolvePageHero,
   resolvePageHeroPlacement,
   resolvePageHeroRenderFlags,
@@ -17,6 +18,7 @@ describe('pageHero', () => {
       images: [],
       focusX: 50,
       focusY: 50,
+      fit: 'contain' as const,
     };
     const flags = resolvePageHeroRenderFlags(settings, {
       embed: false,
@@ -29,7 +31,14 @@ describe('pageHero', () => {
   });
 
   it('resolves placement overrides and auto rules', () => {
-    const base = { mode: 'single' as const, placement: 'auto' as const, images: [], focusX: 50, focusY: 50 };
+    const base = {
+      mode: 'single' as const,
+      placement: 'auto' as const,
+      images: [],
+      focusX: 50,
+      focusY: 50,
+      fit: 'contain' as const,
+    };
     expect(
       resolvePageHeroPlacement(
         { ...base, placement: 'intro-card' },
@@ -50,7 +59,7 @@ describe('pageHero', () => {
   it('preview images fall back to SEO in auto mode', () => {
     expect(
       resolvePageHeroPreviewImages(
-        { mode: 'auto', placement: 'auto', images: [], focusX: 50, focusY: 50 },
+        { mode: 'auto', placement: 'auto', images: [], focusX: 50, focusY: 50, fit: 'contain' },
         '/storage/seo.jpg'
       )
     ).toEqual(['/storage/seo.jpg']);
@@ -59,7 +68,7 @@ describe('pageHero', () => {
   it('auto mode uses og image', () => {
     const resolved = resolvePageHero(
       { ogImage: '/storage/media/a.jpg', frontMatter: {} },
-      { mode: 'auto', placement: 'auto', images: [], focusX: 50, focusY: 50 }
+      { mode: 'auto', placement: 'auto', images: [], focusX: 50, focusY: 50, fit: 'contain' }
     );
     expect(resolved.showImage).toBe(true);
     expect(resolved.images[0]).toBe('/storage/media/a.jpg');
@@ -75,6 +84,15 @@ describe('pageHero', () => {
     const html = '<p>![Blog](/storage/media/a.jpg)</p><p>Hello</p>';
     const next = stripHeroDuplicateFromHtml(html, ['/storage/media/a.jpg']);
     expect(next).toBe('<p>Hello</p>');
+  });
+
+  it('parses page hero fit from shared front matter keys', () => {
+    const settings = parsePageHeroSettings({
+      frontMatter: { heroFit: 'contain', heroFocusX: '20', heroFocusY: '80' },
+    });
+    expect(settings.fit).toBe('contain');
+    expect(settings.focusX).toBe(20);
+    expect(settings.focusY).toBe(80);
   });
 
   it('parses article hero focus and fit from front matter', () => {

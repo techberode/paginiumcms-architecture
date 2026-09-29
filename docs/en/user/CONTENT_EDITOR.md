@@ -125,6 +125,8 @@ The media picker should return a canonical identifier or supported URL. Check re
 
 Do not insert untrusted `<script>`, inline event handlers, or `javascript:` URLs. The HTML/Markdown renderer must sanitize output according to policy.
 
+**Images and video:** optional **captions** (figure + figcaption), self-hosted **MP4/WebM** via `:::video`, and lightbox behaviour are documented in [Media in content](MEDIA_IN_CONTENT.md). **YouTube/Vimeo iframe embeds are not recommended** for production articles — use uploaded video or a plain link ([ISS-193](../ISSUES.md#iss-193)).
+
 ## 11. Featured and OG image
 
 An article may map one media path to `featuredImage`, `ogImage`, or front matter `seoImage` under the transitional API contract. The concrete build documentation is decisive; the editor should not create three different values without a clear reason.
@@ -179,4 +181,5 @@ Saving to SSOT is a local success. It.70 Git publishing has its own state and ma
 - [Media and storage](../architecture/STORAGE.md)
 - [Permissions](ACCESS_CONTROL.md)
 - [Feature gallery](GALLERY.md)
+- [Media in content](MEDIA_IN_CONTENT.md)
 - [Project site planner](PROJECT_PLANNER.md)

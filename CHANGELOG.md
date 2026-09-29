@@ -13,6 +13,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Content editor:** Optional **caption** when inserting images/videos from Media Library — `<figure>` + `<figcaption>` in prose and the same text in the image lightbox modal; `:::video` blocks support `caption:` line.
+- **Pages:** Page hero editor matches article hero — **Fill frame / Show full image** (`heroFit` cover/contain) with drag focus preview on public page headers and intro cards.
+- **Docs:** [MEDIA_IN_CONTENT.md](docs/en/user/MEDIA_IN_CONTENT.md) (captions, DAM video, embed policy); [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) updated for page `heroFit`; [ISS-193](docs/ISSUES.md#iss-193) — YouTube/Vimeo public embed **deferred** (use uploaded video or links).
 - **Fix:** YouTube/Vimeo embed player blank on site and in preview — removed restrictive `sandbox` on allow-listed embed iframes (CSP `frame-src` already gates hosts).
 - **Fix:** YouTube/Vimeo embed blank in admin content preview — sandbox iframe CSP now includes `frame-src` for nocookie YouTube and Vimeo.
 - **Fix:** Settings → Access control showed raw permission keys (`content:embed-external`) — added sk/en labels and `translateAccessControlPermission` helper.

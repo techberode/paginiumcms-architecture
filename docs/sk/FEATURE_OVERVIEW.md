@@ -82,7 +82,7 @@
 | Flysystem/S3/CDN drivers | 🟡 partial | It.72 MVP local; S3 neskôr |
 | Video v Media Library | ✅ | It.79 — MP4/WebM, `:::video` shortcode (`beta.71`) |
 | Unified upload security | ✅ | It.78 — UploadPolicyEngine (`beta.70`) |
-| Trusted HTML / YouTube embed | ⏳ | It.91 — role-based `:::html-safe`, `:::embed` |
+| Trusted HTML / YouTube embed | ⏸️ odložené | It.91 ukladanie; verejný prehrávač nespolahlivý — radšej DAM `:::video` ([ISS-193](../ISSUES.md#iss-193)) |
 | Scoped Section FileManager | ⏳ kandidát | zostávajúci backlog bez prideleného nového čísla |
 
 ---

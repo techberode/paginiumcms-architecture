@@ -305,6 +305,11 @@ export const editorEn: MessageTree = {
     lightboxEnableLabel: 'Open in lightbox on click',
     lightboxEnableHelp:
       'Off = inline image only (no modal). On = click opens the image; use zoom controls in the modal.',
+    captionLabel: 'Caption under the image',
+    captionPlaceholder: 'e.g. Fig. 1.1/3 Content settings — see the docs for details…',
+    captionHelp: 'Shown under the image in prose and in the lightbox modal.',
+    altLabel: 'Alt text (accessibility)',
+    altPlaceholder: 'Short description for screen readers',
   },
   tags: {
     title: 'Article tags',

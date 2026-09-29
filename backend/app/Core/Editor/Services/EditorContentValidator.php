@@ -82,6 +82,11 @@ final class EditorContentValidator
                 return $videoError;
             }
 
+            $figureError = (new ProseFigureMarkup())->validateBlocks($content);
+            if ($figureError !== null) {
+                return $figureError;
+            }
+
             $calloutError = $this->validateCalloutShortcodes($content);
             if ($calloutError !== null) {
                 return $calloutError;
@@ -207,7 +212,14 @@ final class EditorContentValidator
     {
         $expander = new VideoEmbedShortcode();
 
-        if (preg_match_all('/:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?\s*\n\s*:::/', $content, $blockMatches, PREG_SET_ORDER)) {
+        if (
+            preg_match_all(
+                '/:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?(?:\n\s*caption:\s*.+)?\s*\n\s*:::/s',
+                $content,
+                $blockMatches,
+                PREG_SET_ORDER
+            )
+        ) {
             foreach ($blockMatches as $match) {
                 if ($expander->sanitizeMediaUrl($match[1]) === '') {
                     return 'Video shortcode obsahuje neplatnú alebo externú URL — použite súbor z Media Library.';
@@ -248,6 +260,7 @@ final class EditorContentValidator
         }
 
         $withoutTrustedBlocks = $this->htmlSafeShortcode->stripBlocks($withoutEmbeds);
+        $withoutTrustedBlocks = (new ProseFigureMarkup())->stripBlocks($withoutTrustedBlocks);
         $withoutTrustedBlocks = $this->stripMarkdownCodeLiterals($withoutTrustedBlocks);
         if (preg_match('/<[a-z][^>]*>/i', $withoutTrustedBlocks) === 1) {
             return 'Markdown obsah nesmie obsahovať raw HTML tagy.';

@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 29 September 2026 · register **ISS-001–ISS-192** · public-site batch **2.1.0-beta.93+** (Unreleased)
+> **Last updated:** 29 September 2026 · register **ISS-001–ISS-193** · public-site batch **2.1.0-beta.93+** (Unreleased)
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -215,6 +215,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-190](#iss-190) | Markdown editor blocked paste of valid Markdown (false HTML) | Medium (admin UX) | ✅ Fixed — rich HTML clipboard only; plain MD allowed |
 | [ISS-191](#iss-191) | Contact Google Maps iframe blocked; inline theme script vs CSP | Medium (public UX) | ✅ Fixed — nginx `frame-src`; external theme boot JS |
 | [ISS-192](#iss-192) | Article save 400 — iframe in Markdown body | High (admin UX) | ✅ Fixed — normalize embeds before validate |
+| [ISS-193](#iss-193) | YouTube/Vimeo player blank on public site (Chrome, Floorp) | Medium (public UX) | ⏸️ Deferred — use self-hosted video or links |
 
 ## CI failures (GitHub Actions)
 
@@ -5863,6 +5864,37 @@ Google Maps embed on contact page blocked: `frame-src` not set, `default-src 'se
 - `EditorContentValidator` — strip `:::embed` blocks before raw `<iframe` scan.
 
 Requires `content:embed-external` to **save** `:::embed` blocks; normalized iframe HTML follows the same gate.
+
+---
+
+<a id="iss-193"></a>
+
+## ISS-193 – YouTube/Vimeo embed player blank on public site
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Medium (public UX) |
+| **Status** | ⏸️ **Deferred** (product decision — no active fix track) |
+| **Area** | Public content / external embed shortcode |
+
+### Symptom
+
+Articles or pages contain a saved `:::embed` block (YouTube nocookie / Vimeo). CSP `frame-src` and permissions are configured, save succeeds, but the **iframe area stays empty** in **Chrome** and **Floorp** (and possibly other engines). Admin preview may also show a blank frame.
+
+### Scope
+
+- **In scope for save/API:** normalization to `:::embed`, RBAC `content:embed-external`, CSP headers (see [ISS-192](#iss-192)).
+- **Out of scope (deferred):** further debugging or UX investment on third-party iframe players until a reproducible, environment-independent fix exists.
+
+### Recommended workaround (documented)
+
+Use **Media Library video** (`:::video` / editor **Insert video**) or a **plain link** to YouTube/Vimeo. Use **image + caption** for documentation screenshots. User guide: [MEDIA_IN_CONTENT.md](en/user/MEDIA_IN_CONTENT.md).
+
+### Notes
+
+Removing broken embed markup from existing posts is an editorial task, not a migration. Embed code paths remain in the codebase for sites that still want to experiment; PaginiumCMS production content should not rely on them.
 
 ---
 

@@ -15,6 +15,8 @@ export interface PageHeroCoverProps {
   images: string[];
   focusX: number;
   focusY: number;
+  /** `contain` = letterbox; `cover` = fill frame (default when unset in front matter). */
+  objectFit?: 'cover' | 'contain';
   carousel?: boolean;
   /** Break out to viewport width (blog intro under a centered column). */
   breakout?: boolean;
@@ -29,6 +31,7 @@ export const PageHeroCover: React.FC<PageHeroCoverProps> = ({
   images,
   focusX,
   focusY,
+  objectFit = 'cover',
   carousel = false,
   breakout = false,
 }) => {
@@ -69,7 +72,9 @@ export const PageHeroCover: React.FC<PageHeroCoverProps> = ({
         srcSet={srcSet || undefined}
         sizes="100vw"
         alt={title}
-        className="absolute inset-0 h-full w-full object-cover"
+        className={`absolute inset-0 h-full w-full ${
+          objectFit === 'contain' ? 'object-contain bg-black/40' : 'object-cover'
+        }`}
         style={{ objectPosition }}
         loading="eager"
         decoding="async"

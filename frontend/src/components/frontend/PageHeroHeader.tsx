@@ -12,6 +12,7 @@ export interface PageHeroHeaderProps {
   images: string[];
   focusX: number;
   focusY: number;
+  objectFit?: 'cover' | 'contain';
   carousel?: boolean;
   /** When false, title/description only (hero renders elsewhere, e.g. blog greybox). */
   showMedia?: boolean;
@@ -29,6 +30,7 @@ export const PageHeroHeader: React.FC<PageHeroHeaderProps> = ({
   images,
   focusX,
   focusY,
+  objectFit = 'cover',
   carousel = false,
   showMedia = true,
   mediaWidthClass = 'max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8',
@@ -86,6 +88,7 @@ export const PageHeroHeader: React.FC<PageHeroHeaderProps> = ({
           images={images}
           focusX={focusX}
           focusY={focusY}
+          objectFit={objectFit}
           carousel={carousel}
         />
       ) : null}
@@ -117,6 +120,7 @@ export const PageHeroHeader: React.FC<PageHeroHeaderProps> = ({
             images={images}
             focusX={focusX}
             focusY={focusY}
+            objectFit={objectFit}
             carousel={carousel}
             className="w-full max-h-[min(52vh,30rem)] aspect-[21/9]"
           />

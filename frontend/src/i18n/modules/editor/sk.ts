@@ -305,6 +305,11 @@ export const editorSk: MessageTree = {
     lightboxEnableLabel: 'Po kliknutí otvoriť lightbox',
     lightboxEnableHelp:
       'Vypnuté = obrázok len v texte (bez modalu). Zapnuté = klik zväčší obrázok; v modale môžeš približovať lupou.',
+    captionLabel: 'Titulok / popis pod obrázkom',
+    captionPlaceholder: 'napr. Obr. 1.1/3 Nastavenia obsahu — viac v dokumentácii…',
+    captionHelp: 'Zobrazí sa pod obrázkom aj vo zväčšenom modale (figcaption).',
+    altLabel: 'Alt text (prístupnosť)',
+    altPlaceholder: 'Stručný popis pre čítačky obrazovky',
   },
   tags: {
     title: 'Tagy článku',

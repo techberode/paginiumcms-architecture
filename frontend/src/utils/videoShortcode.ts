@@ -30,7 +30,15 @@ function sanitizeMediaUrl(url: string): string {
   }
 }
 
-function renderVideoHtml(src: string, poster?: string): string {
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderVideoHtml(src: string, poster?: string, caption?: string): string {
   const safeSrc = sanitizeMediaUrl(src);
   if (safeSrc === '') {
     return '';
@@ -38,28 +46,36 @@ function renderVideoHtml(src: string, poster?: string): string {
 
   const safePoster = poster ? sanitizeMediaUrl(poster) : '';
   const posterAttr = safePoster !== '' ? ` poster="${safePoster.replace(/"/g, '&quot;')}"` : '';
+  const video = `<video src="${safeSrc.replace(/"/g, '&quot;')}" controls playsinline preload="metadata"${posterAttr}></video>`;
+  const cap = (caption ?? '').trim();
+  if (cap === '') {
+    return video;
+  }
 
-  return `<video src="${safeSrc.replace(/"/g, '&quot;')}" controls playsinline preload="metadata"${posterAttr}></video>`;
+  return `<figure class="paginium-figure paginium-figure--video">${video}<figcaption>${escapeHtml(cap)}</figcaption></figure>`;
 }
 
 export function expandVideoShortcodes(markdown: string): string {
   let result = markdown.replace(
-    /:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?\s*\n\s*:::/g,
-    (_, src: string, poster?: string) => renderVideoHtml(src, poster)
+    /:::video\s*\n\s*src:\s*(\S+)(?:\n\s*poster:\s*(\S+))?(?:\n\s*caption:\s*(.+))?\s*\n\s*:::/gs,
+    (_, src: string, poster?: string, caption?: string) => renderVideoHtml(src, poster, caption?.trim())
   );
 
   result = result.replace(
-    /:::video\s+src="([^"]+)"(?:\s+poster="([^"]+)")?\s*:::/g,
-    (_, src: string, poster?: string) => renderVideoHtml(src, poster)
+    /:::video\s+src="([^"]+)"(?:\s+poster="([^"]+)")?(?:\s+caption="([^"]*)")?\s*:::/g,
+    (_, src: string, poster?: string, caption?: string) => renderVideoHtml(src, poster, caption)
   );
 
   return result;
 }
 
-export function buildVideoShortcode(src: string, poster?: string): string {
+export function buildVideoShortcode(src: string, poster?: string, caption?: string): string {
   const lines = [':::video', `src: ${src}`];
   if (poster && poster.trim() !== '') {
     lines.push(`poster: ${poster.trim()}`);
+  }
+  if (caption && caption.trim() !== '') {
+    lines.push(`caption: ${caption.trim()}`);
   }
   lines.push(':::');
 

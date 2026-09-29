@@ -14,6 +14,7 @@ export interface PageHeroSettings {
   images: string[];
   focusX: number;
   focusY: number;
+  fit: ArticleHeroFit;
 }
 
 export interface PageHeroRenderContext {
@@ -27,6 +28,7 @@ export interface ResolvedPageHero {
   images: string[];
   focusX: number;
   focusY: number;
+  fit: ArticleHeroFit;
   showImage: boolean;
 }
 
@@ -36,6 +38,7 @@ export const DEFAULT_PAGE_HERO: PageHeroSettings = {
   images: [],
   focusX: 50,
   focusY: 50,
+  fit: 'contain',
 };
 
 /** Blog article hero crop (SEO / OG image under the title). */
@@ -133,12 +136,15 @@ export function parsePageHeroSettings(page: Pick<Page, 'frontMatter'>): PageHero
       ? placementRaw
       : 'auto';
 
+  const heroFocus = parseArticleHeroFocus(fm);
+
   return {
     mode,
     placement,
     images: parseHeroImages(fm.heroImages),
-    focusX: clampPercent(fm.heroFocusX, 50),
-    focusY: clampPercent(fm.heroFocusY, 50),
+    focusX: heroFocus.focusX,
+    focusY: heroFocus.focusY,
+    fit: heroFocus.fit,
   };
 }
 
@@ -201,6 +207,7 @@ export function pageHeroSettingsToFrontMatter(
     heroImages: settings.images,
     heroFocusX: String(settings.focusX),
     heroFocusY: String(settings.focusY),
+    heroFit: settings.fit,
   };
 }
 

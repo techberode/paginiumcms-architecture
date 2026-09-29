@@ -95,6 +95,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
         images={resolvedHero.images}
         focusX={resolvedHero.focusX}
         focusY={resolvedHero.focusY}
+        objectFit={resolvedHero.fit}
         carousel={resolvedHero.mode === 'carousel'}
         className="mb-6 sm:mb-8"
       />
@@ -140,6 +141,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
     images: resolvedHero.images,
     focusX: resolvedHero.focusX,
     focusY: resolvedHero.focusY,
+    objectFit: resolvedHero.fit,
     carousel: resolvedHero.mode === 'carousel',
   };
 
@@ -249,6 +251,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
             images={resolvedHero.images}
             focusX={resolvedHero.focusX}
             focusY={resolvedHero.focusY}
+            objectFit={resolvedHero.fit}
             carousel={resolvedHero.mode === 'carousel'}
           />
         </div>

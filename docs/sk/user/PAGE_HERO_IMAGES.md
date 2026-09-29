@@ -1,6 +1,6 @@
 # Hero stránky a úvod blogu — veľkosť a orez obrázka
 
-Hero na stránkach (vrátane **sivého boxu** na `/blog` pre slug **`blog`**) vždy používa **`object-fit: cover`** v rámci s pevným pomerom strán. **Ťahaj a pusť** v editore mení len **`object-position`**, nie tvar rámu. Pri generovaní (AI) alebo exporte z grafiky dodržte pomer a „bezpečnú zónu“, aby orezy boli čo najmenšie.
+Hero na stránkach (vrátane **sivého boxu** na `/blog` pre slug **`blog`**) je v rámci s pevným pomerom strán. V **Header hero image** zvolíš **Celý obrázok** (`heroFit: contain`, predvolene) alebo **Vyplniť rám** (cover). **Ťahaj a pusť** mení **`heroFocusX/Y`**, nie tvar rámu. Detail: anglická [PAGE_HERO_IMAGES.md](../en/user/PAGE_HERO_IMAGES.md). Pri generovaní (AI) dodrž pomer a bezpečnú zónu.
 
 ## Pomer strán rámca (verejný web)
 

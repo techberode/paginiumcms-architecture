@@ -11,6 +11,7 @@ export interface PageHeroMediaProps {
   images: string[];
   focusX: number;
   focusY: number;
+  objectFit?: 'cover' | 'contain';
   carousel?: boolean;
   /** embed = blog intro card; full = page header band */
   variant?: 'full' | 'embed';
@@ -22,6 +23,7 @@ export const PageHeroMedia: React.FC<PageHeroMediaProps> = ({
   images,
   focusX,
   focusY,
+  objectFit = 'cover',
   carousel = false,
   variant = 'full',
   className = '',
@@ -65,7 +67,9 @@ export const PageHeroMedia: React.FC<PageHeroMediaProps> = ({
         srcSet={srcSet || undefined}
         sizes={embed ? '(max-width: 768px) 100vw, 896px' : '100vw'}
         alt={title}
-        className="absolute inset-0 h-full w-full object-cover"
+        className={`absolute inset-0 h-full w-full ${
+          objectFit === 'contain' ? 'object-contain' : 'object-cover'
+        }`}
         style={{ objectPosition }}
         loading={embed ? 'lazy' : 'eager'}
         decoding="async"

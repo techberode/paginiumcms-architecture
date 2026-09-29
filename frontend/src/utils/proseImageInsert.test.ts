@@ -11,4 +11,10 @@ describe('buildInlineImageMarkup', () => {
     expect(snippet).toContain('data-lightbox="off"');
     expect(snippet).not.toContain('![');
   });
+
+  it('wraps captioned images in figure with figcaption', () => {
+    const snippet = buildInlineImageMarkup('/storage/a.png', 'Alt', true, 'Obr. 1.1');
+    expect(snippet).toContain('<figure class="paginium-figure">');
+    expect(snippet).toContain('<figcaption>Obr. 1.1</figcaption>');
+  });
 });

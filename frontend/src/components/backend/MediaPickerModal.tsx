@@ -17,13 +17,19 @@ export type MediaPickerUrlFormat = 'absolute' | 'storage';
 interface MediaPickerModalProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (url: string, altText: string, options?: { openInLightbox?: boolean }) => void;
+  onSelect: (
+    url: string,
+    altText: string,
+    options?: { openInLightbox?: boolean; caption?: string }
+  ) => void;
   title?: string;
   urlFormat?: MediaPickerUrlFormat;
   /** When `video`, lists only video/* assets from the library (It.79). */
   mediaMode?: 'image' | 'video' | 'document';
   /** Show checkbox for public click-to-lightbox (content editor images only). */
   showImageLightboxOption?: boolean;
+  /** Caption field for prose figures / video blocks (content editor). */
+  showCaptionField?: boolean;
 }
 
 export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
@@ -34,15 +40,20 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   urlFormat = 'absolute',
   mediaMode = 'image',
   showImageLightboxOption = false,
+  showCaptionField = false,
 }) => {
   const { t } = useI18n();
   const resolvedTitle = title ?? t('editor.mediaPicker.defaultTitle');
   const [items, setItems] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [openInLightbox, setOpenInLightbox] = useState(true);
+  const [caption, setCaption] = useState('');
+  const [altOverride, setAltOverride] = useState('');
 
   useEffect(() => {
     if (!open) return;
+    setCaption('');
+    setAltOverride('');
     setLoading(true);
     const filters =
       mediaMode === 'document'
@@ -97,12 +108,23 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
                         : typeof window !== 'undefined' && window.location?.origin
                           ? `${window.location.origin}${relative}`
                           : relative;
+                    const defaultAlt = file.altText || file.title || file.fileName;
+                    const altText = altOverride.trim() || defaultAlt;
+                    const options: { openInLightbox?: boolean; caption?: string } = {};
+                    if (showImageLightboxOption && mediaMode === 'image') {
+                      options.openInLightbox = openInLightbox;
+                    }
+                    if (
+                      showCaptionField &&
+                      (mediaMode === 'image' || mediaMode === 'video') &&
+                      caption.trim() !== ''
+                    ) {
+                      options.caption = caption.trim();
+                    }
                     onSelect(
                       selectedUrl,
-                      file.altText || file.fileName,
-                      showImageLightboxOption && mediaMode === 'image'
-                        ? { openInLightbox }
-                        : undefined
+                      altText,
+                      Object.keys(options).length > 0 ? options : undefined
                     );
                     onClose();
                   }}
@@ -131,25 +153,59 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
             </div>
           )}
         </div>
-        {showImageLightboxOption && mediaMode === 'image' ? (
+        {showCaptionField || (showImageLightboxOption && mediaMode === 'image') ? (
           <div
-            className="card-body border-t border-gray-200 dark:border-gray-700 py-3"
+            className="card-body border-t border-gray-200 dark:border-gray-700 py-3 space-y-3"
             onClick={(event) => event.stopPropagation()}
           >
-            <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
-              <input
-                type="checkbox"
-                className="mt-0.5 rounded border-gray-300"
-                checked={openInLightbox}
-                onChange={(event) => setOpenInLightbox(event.target.checked)}
-              />
-              <span>
-                <span className="font-medium block">{t('editor.mediaPicker.lightboxEnableLabel')}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {t('editor.mediaPicker.lightboxEnableHelp')}
+            {showCaptionField && (mediaMode === 'image' || mediaMode === 'video') ? (
+              <>
+                <label className="block text-sm">
+                  <span className="font-medium text-gray-800 dark:text-gray-100">
+                    {t('editor.mediaPicker.captionLabel')}
+                  </span>
+                  <textarea
+                    className="form-input mt-1 text-sm min-h-[4rem]"
+                    value={caption}
+                    onChange={(event) => setCaption(event.target.value)}
+                    placeholder={t('editor.mediaPicker.captionPlaceholder')}
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                    {t('editor.mediaPicker.captionHelp')}
+                  </span>
+                </label>
+                {mediaMode === 'image' ? (
+                  <label className="block text-sm">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">
+                      {t('editor.mediaPicker.altLabel')}
+                    </span>
+                    <input
+                      type="text"
+                      className="form-input mt-1 text-sm"
+                      value={altOverride}
+                      onChange={(event) => setAltOverride(event.target.value)}
+                      placeholder={t('editor.mediaPicker.altPlaceholder')}
+                    />
+                  </label>
+                ) : null}
+              </>
+            ) : null}
+            {showImageLightboxOption && mediaMode === 'image' ? (
+              <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 rounded border-gray-300"
+                  checked={openInLightbox}
+                  onChange={(event) => setOpenInLightbox(event.target.checked)}
+                />
+                <span>
+                  <span className="font-medium block">{t('editor.mediaPicker.lightboxEnableLabel')}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('editor.mediaPicker.lightboxEnableHelp')}
+                  </span>
                 </span>
-              </span>
-            </label>
+              </label>
+            ) : null}
           </div>
         ) : null}
       </div>

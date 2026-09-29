@@ -125,6 +125,8 @@ Media picker má vracať kanonický identifikátor alebo podporovanú URL. Pred 
 
 Do tela nevkladaj neoverený `<script>`, inline event handler alebo `javascript:` URL. HTML/Markdown renderer musí sanitizovať výstup podľa policy.
 
+**Titulok pod obrázkom / video z knižnice:** anglická príručka [MEDIA_IN_CONTENT.md](../en/user/MEDIA_IN_CONTENT.md) (caption, `:::video`, lightbox). **YouTube/Vimeo embed na webe neodporúčame** — prázdny prehrávač v Chrome/Floorp; riešenie: nahrané video alebo odkaz ([ISS-193](../ISSUES.md#iss-193)).
+
 ## 11. Featured a OG obrázok
 
 Článok môže mapovať jednu media cestu na `featuredImage`, `ogImage` alebo front matter `seoImage` podľa prechodného API kontraktu. Dokumentáciu konkrétneho buildu považuj za rozhodujúcu; editor nemá vytvárať tri navzájom odlišné hodnoty bez jasného dôvodu.

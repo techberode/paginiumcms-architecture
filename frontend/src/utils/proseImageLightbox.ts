@@ -53,6 +53,7 @@ export function proseImageFullSizeSrc(src: string): string {
 export interface ProseLightboxSlide {
   src: string;
   alt: string;
+  caption: string;
 }
 
 export function isProseLightboxDisabled(img: Pick<HTMLImageElement, 'getAttribute' | 'dataset'>): boolean {
@@ -81,7 +82,16 @@ export function collectProseLightboxSlides(container: HTMLElement): ProseLightbo
       return;
     }
     seen.add(full);
-    slides.push({ src: full, alt: img.alt ?? '' });
+    const figure = img.closest('figure');
+    const figCaption =
+      figure?.querySelector('figcaption')?.textContent?.trim() ??
+      img.getAttribute('data-caption')?.trim() ??
+      '';
+    slides.push({
+      src: full,
+      alt: img.alt ?? '',
+      caption: figCaption,
+    });
   });
 
   return slides;

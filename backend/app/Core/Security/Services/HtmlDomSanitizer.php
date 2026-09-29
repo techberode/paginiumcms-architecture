@@ -41,6 +41,8 @@ final class HtmlDomSanitizer
             'sandbox',
             'frameborder',
         ],
+        'figure' => ['class'],
+        'figcaption' => ['class'],
         'video' => [
             'src',
             'poster',

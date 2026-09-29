@@ -1,6 +1,15 @@
 # Page hero & blog intro — image size and crop
 
-PaginiumCMS page heroes (including the **`blog`** intro greybox on `/blog`) always use **`object-fit: cover`** inside a fixed aspect frame. The editor **drag-to-reposition** control only changes **`object-position`**; it does not change the frame shape. To lose as little content as possible, generate (or export) images that match the frame and keep important subjects away from the edges.
+PaginiumCMS page heroes (including the **`blog`** intro greybox on `/blog`) render inside a fixed aspect frame. In **Header hero image** you choose:
+
+| Display mode | Front matter | Behaviour |
+|--------------|--------------|-----------|
+| **Show full image** (letterbox) | `heroFit: contain` (default) | Whole image visible; bars if aspect differs |
+| **Fill frame** (crop) | `heroFit` unset / cover | `object-fit: cover` — edges may clip |
+
+The **drag-to-reposition** control sets **`heroFocusX`** / **`heroFocusY`** (`object-position`). It does not change the frame shape. Article heroes use the same keys — see [BLOG_ARTICLE_HERO.md](BLOG_ARTICLE_HERO.md).
+
+To lose as little content as possible, generate (or export) images that match the frame and keep important subjects away from the edges.
 
 ## Frame aspect ratios (public site)
 
@@ -100,5 +109,5 @@ Use **landing inline** for template **home** + layout **landing** with shortcode
 |------|----------|
 | Public hero frame | `frontend/src/components/frontend/PageHeroMedia.tsx` |
 | Admin drag preview | `frontend/src/components/backend/PageHeroFocusPreview.tsx` |
-| Hero settings API | `heroMode`, `heroImages`, `heroFocusX`, `heroFocusY` in page front matter |
+| Hero settings API | `heroMode`, `heroImages`, `heroFocusX`, `heroFocusY`, `heroFit` in page front matter |
 | Thumbnail preset | `MEDIA_THUMB_WIDTH.hero` = **960** (`frontend/src/api/media.ts`) |

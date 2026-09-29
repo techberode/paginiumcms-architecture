@@ -3,8 +3,13 @@ import { FolderOpen, Plus, Trash2 } from 'lucide-react';
 import { MediaPickerModal } from './MediaPickerModal';
 import { PageHeroFocusPreview } from './PageHeroFocusPreview';
 import { useI18n } from '../../context/I18nContext';
-import type { PageHeroMode, PageHeroPlacement, PageHeroSettings } from '../../utils/pageHero';
-import { resolvePageHeroPlacement } from '../../utils/pageHero';
+import type {
+  ArticleHeroFit,
+  PageHeroMode,
+  PageHeroPlacement,
+  PageHeroSettings,
+} from '../../utils/pageHero';
+import { DEFAULT_PAGE_HERO, resolvePageHeroPlacement } from '../../utils/pageHero';
 
 interface PageHeroSettingsPanelProps {
   value: PageHeroSettings;
@@ -142,6 +147,26 @@ export const PageHeroSettingsPanel: React.FC<PageHeroSettingsPanelProps> = ({
 
       {value.mode !== 'none' && (
         <div className="space-y-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/30 p-3">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500 w-full">
+              {t('editor.articleHero.displayMode')}
+            </span>
+            {(['cover', 'contain'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                disabled={disabled}
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold border transition-colors ${
+                  value.fit === mode
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200'
+                    : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-slate-300'
+                }`}
+                onClick={() => patch({ fit: mode as ArticleHeroFit })}
+              >
+                {mode === 'cover' ? t('editor.articleHero.fitCover') : t('editor.articleHero.fitContain')}
+              </button>
+            ))}
+          </div>
           <PageHeroFocusPreview
             settings={value}
             seoOgImage={seoOgImage}
@@ -154,6 +179,7 @@ export const PageHeroSettingsPanel: React.FC<PageHeroSettingsPanelProps> = ({
                 ? 'blog-card'
                 : 'page-header'
             }
+            objectFit={value.fit}
             disabled={disabled}
             onFocusChange={(focusX, focusY) => patch({ focusX, focusY })}
           />
@@ -161,11 +187,25 @@ export const PageHeroSettingsPanel: React.FC<PageHeroSettingsPanelProps> = ({
             <button
               type="button"
               className="btn btn-secondary text-xs"
-              disabled={disabled || (value.focusX === 50 && value.focusY === 50)}
-              onClick={() => patch({ focusX: 50, focusY: 50 })}
+              disabled={
+                disabled ||
+                (value.focusX === DEFAULT_PAGE_HERO.focusX &&
+                  value.focusY === DEFAULT_PAGE_HERO.focusY &&
+                  value.fit === DEFAULT_PAGE_HERO.fit)
+              }
+              onClick={() =>
+                patch({
+                  focusX: DEFAULT_PAGE_HERO.focusX,
+                  focusY: DEFAULT_PAGE_HERO.focusY,
+                  fit: DEFAULT_PAGE_HERO.fit,
+                })
+              }
             >
               {t('editor.pageHero.resetFocus')}
             </button>
+            <span className="text-[10px] font-mono text-slate-500">
+              {value.focusX}% · {value.focusY}%
+            </span>
           </div>
         </div>
       )}

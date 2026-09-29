@@ -82,7 +82,7 @@
 | Flysystem/S3/CDN drivers | 🟡 partial | It.72 MVP local; S3 deferred |
 | Video in Media Library | ✅ | It.79 — MP4/WebM, `:::video` shortcode (`beta.71`) |
 | Unified upload security | ✅ | It.78 — UploadPolicyEngine (`beta.70`) |
-| Trusted HTML / YouTube embed | ⏳ | It.91 — role-based `:::html-safe`, `:::embed` |
+| Trusted HTML / YouTube embed | ⏸️ deferred | It.91 save path; public player unreliable — prefer DAM `:::video` ([ISS-193](ISSUES.md#iss-193)) |
 | Unified upload security | ⏳ | It.78 — all upload surfaces |
 | Scoped Section FileManager | ⏳ candidate | remaining backlog without a reused iteration number |
 

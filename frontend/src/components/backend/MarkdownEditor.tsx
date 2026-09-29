@@ -1168,8 +1168,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           }
           mediaMode={mediaPickerMode}
           showImageLightboxOption={mediaPickerMode === 'image'}
+          showCaptionField={mediaPickerMode === 'image' || mediaPickerMode === 'video'}
           onSelect={(url, alt, options) => {
             const openInLightbox = options?.openInLightbox !== false;
+            const caption = options?.caption?.trim() || undefined;
             if (editorMode === 'wysiwyg') {
               if (mediaPickerMode === 'video') {
                 wysiwygRef.current?.insertVideo(url);
@@ -1180,7 +1182,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               const storageUrl = url.includes('/storage/')
                 ? url.slice(url.indexOf('/storage/'))
                 : resolvePublicMediaUrl(url);
-              setContent((prev) => `${prev}${buildVideoShortcode(storageUrl)}`);
+              setContent((prev) => `${prev}${buildVideoShortcode(storageUrl, undefined, caption)}`);
             } else if (mediaPickerMode === 'document') {
               const storageUrl = url.includes('/storage/')
                 ? url.slice(url.indexOf('/storage/'))
@@ -1190,7 +1192,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
                 setContent((prev) => `${prev}${snippet}`);
               }
             } else {
-              setContent((prev) => `${prev}${buildInlineImageMarkup(url, alt, openInLightbox)}`);
+              setContent((prev) =>
+                `${prev}${buildInlineImageMarkup(url, alt, openInLightbox, caption)}`
+              );
             }
           }}
         />

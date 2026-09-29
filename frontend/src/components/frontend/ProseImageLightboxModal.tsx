@@ -168,9 +168,9 @@ export const ProseImageLightboxModal: React.FC<ProseImageLightboxModalProps> = (
               transformOrigin: 'center center',
             }}
           />
-          {slide.alt.trim() !== '' ? (
+          {(slide.caption.trim() !== '' || slide.alt.trim() !== '') ? (
             <figcaption className="mt-3 max-w-prose shrink-0 text-center text-sm text-white/90">
-              {slide.alt}
+              {slide.caption.trim() !== '' ? slide.caption : slide.alt}
             </figcaption>
           ) : null}
         </figure>

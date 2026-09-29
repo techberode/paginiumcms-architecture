@@ -36,4 +36,20 @@ MD;
         $this->assertSame('', $expander->sanitizeMediaUrl('https://evil.example/clip.mp4'));
         $this->assertSame('/storage/app/content/media/x.mp4', $expander->sanitizeMediaUrl('/storage/app/content/media/x.mp4'));
     }
+
+    public function testExpandsVideoWithCaption(): void
+    {
+        $expander = new VideoEmbedShortcode();
+        $markdown = <<<MD
+:::video
+src: /storage/app/content/media/demo.mp4
+caption: Obr. 1.1 demo
+:::
+MD;
+
+        $html = $expander->expand($markdown);
+
+        $this->assertStringContainsString('<figure class="paginium-figure paginium-figure--video">', $html);
+        $this->assertStringContainsString('<figcaption>Obr. 1.1 demo</figcaption>', $html);
+    }
 }
