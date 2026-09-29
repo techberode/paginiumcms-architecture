@@ -69,7 +69,6 @@ export const CompanyInfoPanel: React.FC = () => {
         <h3 className="text-xl font-extrabold text-theme-text">
           {company?.name?.trim() || t('public.company.defaultTitle')}
         </h3>
-        <p className="text-xs text-theme-text-muted mt-1">{t('public.company.editHint')}</p>
       </div>
       <dl className="space-y-3">
         {rows.map((row) => (

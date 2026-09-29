@@ -103,7 +103,6 @@ export const ContactForm: React.FC = () => {
         </div>
         <div>
           <h3 className="text-xl font-extrabold text-theme-text">{t('public.contact.title')}</h3>
-          <p className="text-xs text-theme-text-muted">{t('public.contact.subtitle')}</p>
         </div>
       </div>
 
