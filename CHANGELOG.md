@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Fix:** YouTube/Vimeo in Markdown — CSP `frame-src` allows `youtube-nocookie.com` and `player.vimeo.com`; embed modal accepts full URLs; standalone YouTube/Vimeo URL on its own line renders as `:::embed` player (not a plain link).
 - **Fix:** Markdown editor paste — no longer blocks plain Markdown containing `<https://…>` or inline HTML; rich clipboard HTML falls back to `text/plain` (matches WYSIWYG); toast only when HTML is pasted without plain text ([ISS-190](docs/ISSUES.md#iss-190)).
 - **Fix:** Google Maps contact embed blocked by CSP — `frame-src` allows `https://www.google.com` in PHP middleware, Apache `.htaccess`, and **nginx** deploy snippets (`docs/deploy/nginx-security-headers-*.conf`, `docker/nginx/security-headers.conf`); rebuild FE after `public-theme-boot.js` replaces inline theme script (CSP `script-src 'self'`) ([ISS-191](docs/ISSUES.md#iss-191)).
 - **Analytics geography:** Visitor map uses Natural Earth land outline, corrected equirectangular positions (~143 country centroids + optional GeoIP lat/lon on visits), zoom/pan, and hover tooltips with masked sample IPs; tracker persists latitude/longitude/region from GeoIP.

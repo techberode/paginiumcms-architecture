@@ -34,7 +34,10 @@ final class SecurityMiddlewareTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'none'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertStringContainsString("base-uri 'self'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertStringContainsString("form-action 'self'", $response->getHeaderLine('Content-Security-Policy'));
-        $this->assertStringContainsString("frame-src 'self' https://www.google.com", $response->getHeaderLine('Content-Security-Policy'));
+        $csp = $response->getHeaderLine('Content-Security-Policy');
+        $this->assertStringContainsString("frame-src 'self' https://www.google.com", $csp);
+        $this->assertStringContainsString('https://www.youtube-nocookie.com', $csp);
+        $this->assertStringContainsString('https://player.vimeo.com', $csp);
         $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
         $this->assertSame('1; mode=block', $response->getHeaderLine('X-XSS-Protection'));
         $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));

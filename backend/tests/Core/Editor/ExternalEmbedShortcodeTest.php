@@ -9,6 +9,16 @@ use PHPUnit\Framework\TestCase;
 
 final class ExternalEmbedShortcodeTest extends TestCase
 {
+    public function testPromoteStandaloneYoutubeWatchUrl(): void
+    {
+        $expander = new ExternalEmbedShortcode();
+        $markdown = "Intro\n\nhttps://www.youtube.com/watch?v=2PuFyjAs7JA\n\nTail";
+
+        $expanded = $expander->expand($markdown);
+
+        $this->assertStringContainsString('youtube-nocookie.com/embed/2PuFyjAs7JA', $expanded);
+    }
+
     public function testExpandYoutubeBlockUsesNocookieHost(): void
     {
         $expander = new ExternalEmbedShortcode();

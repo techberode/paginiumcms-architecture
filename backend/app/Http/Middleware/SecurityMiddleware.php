@@ -44,7 +44,7 @@ final class SecurityMiddleware implements MiddlewareInterface
             'csp_base_uri' => "base-uri 'self'",
             'csp_form_action' => "form-action 'self'",
             // Contact page + map-embed widget (MapEmbedUrlGuard: https://www.google.com/maps/embed/*)
-            'csp_frame_src' => "frame-src 'self' https://www.google.com",
+            'csp_frame_src' => "frame-src 'self' https://www.google.com https://www.youtube-nocookie.com https://player.vimeo.com",
             'frame_options' => 'DENY',
             'xss_protection' => '1; mode=block',
             'content_type' => 'nosniff',

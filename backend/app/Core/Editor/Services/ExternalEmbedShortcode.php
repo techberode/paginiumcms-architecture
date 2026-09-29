@@ -25,6 +25,8 @@ final class ExternalEmbedShortcode
 
     public function expand(string $markdown): string
     {
+        $markdown = $this->promoteStandaloneVideoUrls($markdown);
+
         $expanded = preg_replace_callback(
             '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/',
             fn (array $matches): string => $this->renderMatch((string) $matches[1], (string) $matches[2]),
@@ -51,6 +53,8 @@ final class ExternalEmbedShortcode
      */
     public function deferBlocks(string $markdown): array
     {
+        $markdown = $this->promoteStandaloneVideoUrls($markdown);
+
         /** @var array<string, string> $renders */
         $renders = [];
         $index = 0;
@@ -154,6 +158,34 @@ final class ExternalEmbedShortcode
         }
 
         return null;
+    }
+
+    /**
+     * Converts a line that contains only an allow-listed video URL into a :::embed block.
+     */
+    public function promoteStandaloneVideoUrls(string $markdown): string
+    {
+        $patterns = [
+            '/^(?:[ \t]*)https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11})\/?(?:\?[^\s]*)?(?:[ \t]*)$/mu'
+                => "\n\n:::embed\nprovider: youtube\nid: $1\n:::\n",
+            '/^(?:[ \t]*)https?:\/\/(?:www\.|m\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})[^\s]*(?:[ \t]*)$/mu'
+                => "\n\n:::embed\nprovider: youtube\nid: $1\n:::\n",
+            '/^(?:[ \t]*)https?:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})[^\s]*(?:[ \t]*)$/mu'
+                => "\n\n:::embed\nprovider: youtube\nid: $1\n:::\n",
+            '/^(?:[ \t]*)https?:\/\/[^\s]*[?&]v=([a-zA-Z0-9_-]{11})(?:&[^\s]*)?(?:[ \t]*)$/mu'
+                => "\n\n:::embed\nprovider: youtube\nid: $1\n:::\n",
+            '/^(?:[ \t]*)https?:\/\/(?:www\.)?(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d{1,20})[^\s]*(?:[ \t]*)$/mu'
+                => "\n\n:::embed\nprovider: vimeo\nid: $1\n:::\n",
+        ];
+
+        foreach ($patterns as $pattern => $replacement) {
+            $next = preg_replace($pattern, $replacement, $markdown);
+            if (is_string($next)) {
+                $markdown = $next;
+            }
+        }
+
+        return $markdown;
     }
 
     public static function isAllowedIframeSrc(string $src): bool

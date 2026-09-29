@@ -468,8 +468,8 @@ export const editorSk: MessageTree = {
     providerLabel: 'Poskytovateľ',
     idLabel: 'ID videa',
     idPlaceholder: {
-      youtube: 'dQw4w9WgXcQ',
-      vimeo: '123456789',
+      youtube: 'dQw4w9WgXcQ alebo https://youtube.com/watch?v=…',
+      vimeo: '123456789 alebo https://vimeo.com/…',
     },
     providers: {
       youtube: 'YouTube',

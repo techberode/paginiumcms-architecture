@@ -468,8 +468,8 @@ export const editorEn: MessageTree = {
     providerLabel: 'Provider',
     idLabel: 'Video ID',
     idPlaceholder: {
-      youtube: 'dQw4w9WgXcQ',
-      vimeo: '123456789',
+      youtube: 'dQw4w9WgXcQ or https://youtube.com/watch?v=…',
+      vimeo: '123456789 or https://vimeo.com/…',
     },
     providers: {
       youtube: 'YouTube',

@@ -12,10 +12,127 @@ const ID_PATTERNS: Record<ExternalEmbedProvider, RegExp> = {
   vimeo: /^\d{1,20}$/,
 };
 
+export function normalizeEmbedVideoId(
+  provider: ExternalEmbedProvider,
+  raw: string
+): string {
+  const trimmed = raw.trim();
+  if (ID_PATTERNS[provider]?.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (provider === 'youtube') {
+    return parseYoutubeVideoId(trimmed) ?? '';
+  }
+
+  if (provider === 'vimeo') {
+    return parseVimeoVideoId(trimmed) ?? '';
+  }
+
+  return '';
+}
+
+export function parseYoutubeVideoId(input: string): string | null {
+  const trimmed = input.trim();
+  if (ID_PATTERNS.youtube.test(trimmed)) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
+    const host = url.hostname.replace(/^www\./, '').replace(/^m\./, '');
+
+    if (host === 'youtu.be') {
+      const id = url.pathname.replace(/^\//, '').split('/')[0] ?? '';
+      return ID_PATTERNS.youtube.test(id) ? id : null;
+    }
+
+    if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      const fromQuery = url.searchParams.get('v');
+      if (fromQuery && ID_PATTERNS.youtube.test(fromQuery)) {
+        return fromQuery;
+      }
+
+      const embed = url.pathname.match(/^\/embed\/([a-zA-Z0-9_-]{11})/);
+      if (embed?.[1]) {
+        return embed[1];
+      }
+
+      const shorts = url.pathname.match(/^\/shorts\/([a-zA-Z0-9_-]{11})/);
+      if (shorts?.[1]) {
+        return shorts[1];
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+export function parseVimeoVideoId(input: string): string | null {
+  const trimmed = input.trim();
+  if (ID_PATTERNS.vimeo.test(trimmed)) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
+    const host = url.hostname.replace(/^www\./, '');
+    if (host !== 'vimeo.com' && host !== 'player.vimeo.com') {
+      return null;
+    }
+
+    const fromPath = url.pathname.match(/\/(?:video\/)?(\d{1,20})/);
+    const id = fromPath?.[1] ?? '';
+    return ID_PATTERNS.vimeo.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Standalone line that is only a video URL → :::embed block (public + admin preview). */
+export function promoteStandaloneVideoUrls(markdown: string): string {
+  const toEmbed = (provider: ExternalEmbedProvider, id: string) =>
+    `\n\n:::embed\nprovider: ${provider}\nid: ${id}\n:::\n`;
+
+  const lineReplace = (source: string, re: RegExp, provider: ExternalEmbedProvider) =>
+    source.replace(re, (_match, id: string) => toEmbed(provider, id));
+
+  let result = markdown;
+  result = lineReplace(
+    result,
+    /^(?:[ \t]*)https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11})\/?(?:\?[^\s]*)?(?:[ \t]*)$/gmu,
+    'youtube'
+  );
+  result = lineReplace(
+    result,
+    /^(?:[ \t]*)https?:\/\/(?:www\.|m\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})[^\s]*(?:[ \t]*)$/gmu,
+    'youtube'
+  );
+  result = lineReplace(
+    result,
+    /^(?:[ \t]*)https?:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})[^\s]*(?:[ \t]*)$/gmu,
+    'youtube'
+  );
+  result = lineReplace(
+    result,
+    /^(?:[ \t]*)https?:\/\/[^\s]*[?&]v=([a-zA-Z0-9_-]{11})(?:&[^\s]*)?(?:[ \t]*)$/gmu,
+    'youtube'
+  );
+  result = lineReplace(
+    result,
+    /^(?:[ \t]*)https?:\/\/(?:www\.)?(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d{1,20})[^\s]*(?:[ \t]*)$/gmu,
+    'vimeo'
+  );
+
+  return result;
+}
+
 export function buildEmbedShortcode(provider: ExternalEmbedProvider, id: string): string {
   const normalizedProvider = provider.trim().toLowerCase() as ExternalEmbedProvider;
-  const normalizedId = id.trim();
-  if (!ID_PATTERNS[normalizedProvider]?.test(normalizedId)) {
+  const normalizedId = normalizeEmbedVideoId(normalizedProvider, id);
+  if (normalizedId === '') {
     return '';
   }
 
@@ -31,6 +148,7 @@ export function deferEmbedShortcodes(markdown: string): {
   markdown: string;
   renders: Record<string, string>;
 } {
+  const source = promoteStandaloneVideoUrls(markdown);
   const renders: Record<string, string> = {};
   let index = 0;
 
@@ -46,7 +164,7 @@ export function deferEmbedShortcodes(markdown: string): {
     return `\n\n<!-- ${key} -->\n\n`;
   };
 
-  let result = markdown.replace(
+  let result = source.replace(
     /:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/g,
     replace
   );
