@@ -89,6 +89,10 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         $declaredMime = MediaFormats::coalesceDeclaredMime($originalName, $mimeType);
+        $detectedVideoMime = MediaFormats::detectVideoMimeFromBytes($binary);
+        if ($detectedVideoMime !== null) {
+            $declaredMime = $detectedVideoMime;
+        }
 
         if ($this->uploadPolicy->isUnifiedEnabled()) {
             try {
@@ -123,10 +127,12 @@ class MediaRepository implements MediaRepositoryInterface
         $relativePath = $prefix . '/' . $media->getId() . '_' . $safeName;
 
         if (!$this->uploadPolicy->isUnifiedEnabled()) {
+            $isVideo = MediaFormats::isVideoMime($mimeType);
             $maxBytes = $this->uploadSecurity->resolveMaxUploadBytes(
-                MediaFormats::isVideoMime($mimeType)
+                $isVideo
                     ? $this->resolveMediaMaxVideoUploadBytes()
-                    : $this->resolveMediaMaxUploadBytes()
+                    : $this->resolveMediaMaxUploadBytes(),
+                !$isVideo
             );
             if (strlen($binary) > $maxBytes) {
                 throw new FlatFileException('Súbor presahuje maximálnu povolenú veľkosť');
@@ -811,9 +817,22 @@ class MediaRepository implements MediaRepositoryInterface
             ? MediaDocumentPolicy::allowedMimeTypes($this->settings)
             : [];
 
+        $configuredMedia = $this->resolveMediaMimeTypes();
+        $libraryMimeTypes = $this->resolveMediaLibraryMimeTypes();
+        $videoMimeTypes = $this->uploadPolicy->resolveAllowedMimeTypes(
+            UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD,
+            $configuredMedia
+        );
+        if ($videoMimeTypes === []) {
+            $videoMimeTypes = MediaFormats::defaultVideoMimeTypes();
+        }
+        $libraryMimeTypes = array_values(array_unique(array_merge($libraryMimeTypes, $videoMimeTypes)));
+
         return array_merge(
-            MediaFormats::toApiPayload($this->resolveMediaLibraryMimeTypes()),
+            MediaFormats::toApiPayload($libraryMimeTypes),
             [
+                'videoMimeTypes' => $videoMimeTypes,
+                'videoAccept' => MediaFormats::buildAcceptHeader($videoMimeTypes),
                 'imageOptimization' => MediaImageOptimizer::capabilities(),
                 'uploadOptimization' => [
                     'enabled' => ($media['autoOptimizeOnUpload'] ?? true) === true,
@@ -821,7 +840,14 @@ class MediaRepository implements MediaRepositoryInterface
                     'jpegQuality' => max(60, min(95, (int) ($media['jpegQuality'] ?? MediaImageOptimizer::JPEG_QUALITY))),
                     'webpQuality' => max(60, min(95, (int) ($media['webpQuality'] ?? MediaImageOptimizer::WEBP_QUALITY))),
                 ],
+                'maxUploadSizeKb' => max(64, (int) ($media['maxUploadSizeKb'] ?? 5120)),
                 'maxVideoUploadSizeKb' => max(1024, (int) ($media['maxVideoUploadSizeKb'] ?? 102400)),
+                'effectiveMaxImageUploadBytes' => $this->uploadPolicy->resolveMaxUploadBytes(
+                    UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD
+                ),
+                'effectiveMaxVideoUploadBytes' => $this->uploadPolicy->resolveMaxUploadBytes(
+                    UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD
+                ),
                 'documentsEnabled' => MediaDocumentPolicy::isEnabled($this->settings),
                 'documentMimeTypes' => $documentMimeTypes,
                 'documentAccept' => MediaFormats::buildAcceptHeader($documentMimeTypes),

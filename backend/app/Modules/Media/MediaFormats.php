@@ -145,6 +145,22 @@ final class MediaFormats
     }
 
     /**
+     * Detect supported video MIME from file header (upload surface routing when the client lies or omits type).
+     */
+    public static function detectVideoMimeFromBytes(string $bytes): ?string
+    {
+        if (self::looksLikeWebm($bytes)) {
+            return 'video/webm';
+        }
+
+        if (self::looksLikeMp4($bytes)) {
+            return 'video/mp4';
+        }
+
+        return null;
+    }
+
+    /**
      * @return list<string>
      */
     public static function defaultDocumentMimeTypes(): array

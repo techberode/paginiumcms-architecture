@@ -37,10 +37,17 @@ export interface MediaFormatsPayload {
   extensions: string[];
   accept: string;
   previewableMimeTypes: string[];
+  maxUploadSizeKb?: number;
   maxVideoUploadSizeKb?: number;
+  /** Effective cap from unified upload policy (images/PDF). */
+  effectiveMaxImageUploadBytes?: number;
+  /** Effective cap from unified upload policy (video/mp4, video/webm). */
+  effectiveMaxVideoUploadBytes?: number;
   documentsEnabled?: boolean;
   documentMimeTypes?: string[];
   documentAccept?: string;
+  videoMimeTypes?: string[];
+  videoAccept?: string;
   maxDocumentUploadSizeKb?: number;
   textEditableMimeTypes?: string[];
   adminPdfPreviewMimeTypes?: string[];

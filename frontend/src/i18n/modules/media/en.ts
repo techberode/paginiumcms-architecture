@@ -154,6 +154,8 @@ export const mediaEn: MessageTree = {
     uploadOne: 'File uploaded successfully.',
     uploadMany: ':count files uploaded.',
     uploadFailed: ':name: :error',
+    uploadTooLarge:
+      ':name: file exceeds the server limit (:limitMb MB). For video, use Media → Max video upload size (not the image upload limit).',
     stockImported: 'Stock image imported (:label).',
     stockFailed: 'Stock import failed',
     folderCreated: 'Folder created.',

@@ -64,7 +64,10 @@ final class UploadPolicyEngine
 
             $maxBytes = $this->profiles->maxBytes($profileId);
             if ($sizeBytes > $maxBytes) {
-                throw new UploadPolicyException('Súbor presahuje maximálnu povolenú veľkosť');
+                throw new UploadPolicyException(sprintf(
+                    'Súbor presahuje maximálnu povolenú veľkosť (limit %.1f MB)',
+                    $maxBytes / 1024 / 1024
+                ));
             }
 
             $this->quotaGuard->assertWithinQuota($userId, $sizeBytes);

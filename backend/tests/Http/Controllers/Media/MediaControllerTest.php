@@ -276,6 +276,9 @@ class MediaControllerTest extends TestCase
         $this->assertTrue($data['success']);
         $this->assertContains('image/png', $data['data']['mimeTypes']);
         $this->assertStringContainsString('image/png', $data['data']['accept']);
+        $this->assertContains('video/webm', $data['data']['mimeTypes']);
+        $this->assertStringContainsString('video/webm', $data['data']['videoAccept'] ?? '');
+        $this->assertStringContainsString('.webm', $data['data']['accept']);
     }
 
     public function testServeFileReturnsBinaryForUploadedImage(): void

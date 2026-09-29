@@ -27,7 +27,7 @@ final class UploadPolicyProfile
         return match ($profileId) {
             UploadPolicyProfileId::MEDIA => $this->nonVideoMediaMimeTypes(),
             UploadPolicyProfileId::AVATAR => AvatarImageProcessor::ALLOWED_MIMES,
-            UploadPolicyProfileId::MEDIA_VIDEO => $this->intersectMimeTypes($this->resolveVideoMimeTypes()),
+            UploadPolicyProfileId::MEDIA_VIDEO => $this->videoMimeTypesForPolicy(),
             UploadPolicyProfileId::DOCUMENTS => $this->intersectMimeTypes(MediaDocumentPolicy::allowedMimeTypes($this->settings)),
             UploadPolicyProfileId::BACKUP_ARCHIVE,
             UploadPolicyProfileId::EXTENSION_ARCHIVE => ['application/zip', 'application/x-zip-comcompressed'],
@@ -65,9 +65,11 @@ final class UploadPolicyProfile
     {
         $candidates = [];
 
-        $globalKb = (int) ($this->settings->group('uploadSecurity')['maxUploadSizeKb'] ?? 0);
-        if ($globalKb > 0) {
-            $candidates[] = max(64, $globalKb) * 1024;
+        if ($this->usesGlobalUploadSecuritySizeCap($profileId)) {
+            $globalKb = (int) ($this->settings->group('uploadSecurity')['maxUploadSizeKb'] ?? 0);
+            if ($globalKb > 0) {
+                $candidates[] = max(64, $globalKb) * 1024;
+            }
         }
 
         $profileMax = match ($profileId) {
@@ -91,6 +93,18 @@ final class UploadPolicyProfile
         }
 
         return min($candidates);
+    }
+
+    /**
+     * Global uploadSecurity.maxUploadSizeKb caps images/stock imports only — not video, documents, or archives.
+     */
+    private function usesGlobalUploadSecuritySizeCap(string $profileId): bool
+    {
+        return in_array($profileId, [
+            UploadPolicyProfileId::MEDIA,
+            UploadPolicyProfileId::AVATAR,
+            UploadPolicyProfileId::STOCK_IMPORT,
+        ], true);
     }
 
     public function requiresMagicBytes(string $profileId): bool
@@ -177,6 +191,30 @@ final class UploadPolicyProfile
             $this->intersectMimeTypes($this->resolveMediaMimeTypes()),
             static fn (string $mime): bool => !MediaFormats::isVideoMime($mime) && !MediaFormats::isDocumentMime($mime)
         ));
+    }
+
+    /**
+     * Video allow-list: media settings are authoritative when uploadSecurity MIME list omits video/* (It.79).
+     *
+     * @return list<string>
+     */
+    private function videoMimeTypesForPolicy(): array
+    {
+        $domain = $this->resolveVideoMimeTypes();
+        $securityTypes = $this->parseCsv((string) ($this->settings->group('uploadSecurity')['allowedMimeTypes'] ?? ''));
+        if ($securityTypes === []) {
+            return $domain;
+        }
+
+        $securityVideo = array_values(array_filter(
+            $securityTypes,
+            static fn (string $type): bool => MediaFormats::isVideoMime($type)
+        ));
+        if ($securityVideo === []) {
+            return $domain;
+        }
+
+        return array_values(array_intersect($domain, $securityVideo));
     }
 
     /**

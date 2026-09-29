@@ -150,13 +150,13 @@ final class UploadSecurityValidator
         return array_values(array_unique($merged));
     }
 
-    public function resolveMaxUploadBytes(int $mediaMaxBytes): int
+    public function resolveMaxUploadBytes(int $mediaMaxBytes, bool $applyGlobalSecurityCap = true): int
     {
         if ($this->policyEngine->isUnifiedEnabled()) {
             return $this->policyEngine->resolveMaxUploadBytes(UploadSurfaceRegistry::SURFACE_MEDIA_UPLOAD);
         }
 
-        return $this->resolveMaxUploadBytesLegacy($mediaMaxBytes);
+        return $this->resolveMaxUploadBytesLegacy($mediaMaxBytes, $applyGlobalSecurityCap);
     }
 
     /**
@@ -201,8 +201,12 @@ final class UploadSecurityValidator
         return array_values(array_intersect($mediaMimeTypes, $securityTypes));
     }
 
-    private function resolveMaxUploadBytesLegacy(int $mediaMaxBytes): int
+    private function resolveMaxUploadBytesLegacy(int $mediaMaxBytes, bool $applyGlobalSecurityCap = true): int
     {
+        if (!$applyGlobalSecurityCap) {
+            return $mediaMaxBytes;
+        }
+
         $securityKb = (int) ($this->settings->group('uploadSecurity')['maxUploadSizeKb'] ?? 0);
         if ($securityKb <= 0) {
             return $mediaMaxBytes;

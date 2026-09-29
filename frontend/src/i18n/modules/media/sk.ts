@@ -153,6 +153,8 @@ export const mediaSk: MessageTree = {
     uploadOne: 'Súbor bol nahraný.',
     uploadMany: ':count súborov bolo nahraných.',
     uploadFailed: ':name: :error',
+    uploadTooLarge:
+      ':name: súbor je príliš veľký (povolené max. :limitMb MB podľa nastavení servera). Pre video skontroluj Médiá → Max. video uploadu; pri unified policy nie je to isté pole ako Max. veľkosť uploadu pre obrázky.',
     stockImported: 'Stock obrázok importovaný (:label).',
     stockFailed: 'Import stock obrázka zlyhal',
     folderCreated: 'Priečinok bol vytvorený.',

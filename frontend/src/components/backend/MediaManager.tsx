@@ -132,6 +132,10 @@ export const MediaManager: React.FC = () => {
     webp: false,
   });
   const [uploadOptimizationEnabled, setUploadOptimizationEnabled] = useState(true);
+  const uploadLimitsRef = useRef({
+    effectiveMaxVideoUploadBytes: undefined as number | undefined,
+    effectiveMaxImageUploadBytes: undefined as number | undefined,
+  });
   const [pageSize, setStoredPageSize] = useAdminListPageSize('media');
   const setPageSize = useCallback(
     (value: number) => {
@@ -163,6 +167,9 @@ export const MediaManager: React.FC = () => {
       const configured = String(settings?.values?.media?.stockImageTopic ?? 'tech');
       setStockTopic(configured);
       const acceptParts = [formats.accept];
+      if (formats.videoAccept) {
+        acceptParts.push(formats.videoAccept);
+      }
       if (formats.documentsEnabled && formats.documentAccept) {
         acceptParts.push(formats.documentAccept);
       }
@@ -175,6 +182,10 @@ export const MediaManager: React.FC = () => {
       if (formats.uploadOptimization) {
         setUploadOptimizationEnabled(formats.uploadOptimization.enabled);
       }
+      uploadLimitsRef.current = {
+        effectiveMaxVideoUploadBytes: formats.effectiveMaxVideoUploadBytes,
+        effectiveMaxImageUploadBytes: formats.effectiveMaxImageUploadBytes,
+      };
     })();
   }, []);
 
@@ -213,6 +224,19 @@ export const MediaManager: React.FC = () => {
     let successCount = 0;
 
     for (const file of list) {
+      const isVideo =
+        file.type.toLowerCase().startsWith('video/') || /\.(webm|mp4)$/i.test(file.name);
+      const maxBytes = isVideo
+        ? uploadLimitsRef.current.effectiveMaxVideoUploadBytes
+        : uploadLimitsRef.current.effectiveMaxImageUploadBytes;
+      if (maxBytes !== undefined && file.size > maxBytes) {
+        const limitMb = (maxBytes / (1024 * 1024)).toFixed(1);
+        toast.error(
+          t('media.toast.uploadTooLarge', { name: file.name, limitMb })
+        );
+        continue;
+      }
+
       const result = await uploadMedia(file, '', currentFolder);
       if (result.ok) {
         successCount += 1;

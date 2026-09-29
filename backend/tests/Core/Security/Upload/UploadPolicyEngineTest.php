@@ -118,6 +118,70 @@ final class UploadPolicyEngineTest extends TestCase
         $this->assertSame(['application/pdf'], $documents);
     }
 
+    public function testVideoSurfaceAllowedWhenSecurityMimeListOmitsVideo(): void
+    {
+        $engine = $this->makeEngine([
+            'uploadSecurity' => [
+                'unifiedPolicyEnabled' => true,
+                'allowedMimeTypes' => 'image/jpeg,image/png,application/pdf',
+                'maxUploadSizeKb' => 5120,
+                'scanMagicBytes' => true,
+                'blockDoubleExtensions' => true,
+                'blockExecutables' => true,
+                'allowedExtensions' => 'jpg,jpeg,png,pdf,webm,mp4',
+            ],
+            'media' => [
+                'allowedMimeTypes' => 'image/png,video/webm,video/mp4',
+                'maxUploadSizeKb' => 5120,
+                'maxVideoUploadSizeKb' => 102400,
+            ],
+        ]);
+
+        $allowed = $engine->resolveAllowedMimeTypes(
+            UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD,
+            ['video/webm', 'video/mp4']
+        );
+
+        $this->assertContains('video/webm', $allowed);
+        $this->assertContains('video/mp4', $allowed);
+    }
+
+    public function testVideoSurfaceAllowsFileAboveGlobalUploadSecurityCap(): void
+    {
+        $engine = $this->makeEngine([
+            'uploadSecurity' => [
+                'unifiedPolicyEnabled' => true,
+                'allowedMimeTypes' => 'image/png,video/webm,video/mp4',
+                'maxUploadSizeKb' => 5120,
+                'scanMagicBytes' => true,
+                'blockDoubleExtensions' => true,
+                'blockExecutables' => true,
+                'allowedExtensions' => 'png,webm,mp4',
+            ],
+            'media' => [
+                'allowedMimeTypes' => 'image/png,video/webm,video/mp4',
+                'maxUploadSizeKb' => 5120,
+                'maxVideoUploadSizeKb' => 102400,
+            ],
+        ]);
+
+        $header = "\x1A\x45\xDF\xA3\x01\x00\x00\x00";
+        $sixMb = $header . str_repeat("\0", 6 * 1024 * 1024 - strlen($header));
+
+        $mime = $engine->enforceBinary(
+            UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD,
+            'ukazka_20s.webm',
+            $sixMb,
+            'video/webm'
+        );
+
+        $this->assertSame('video/webm', $mime);
+        $this->assertGreaterThan(
+            5 * 1024 * 1024,
+            $engine->resolveMaxUploadBytes(UploadSurfaceRegistry::SURFACE_MEDIA_VIDEO_UPLOAD)
+        );
+    }
+
     public function testRejectsUnsafeZipEntryOnBackupImport(): void
     {
         $engine = $this->makeEngine();
