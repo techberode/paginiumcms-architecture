@@ -20,7 +20,7 @@ final class PlaygroundSettings implements CspDirectiveContributorInterface
         'https://codesandbox.io',
     ];
 
-    public const SANDBOX_FRAME = "frame-src 'self' blob: https://*.codesandbox.io https://codesandbox.io";
+    public const SANDBOX_FRAME = "frame-src 'self' blob: https://*.codesandbox.io https://codesandbox.io https://www.google.com";
 
     public function __construct(
         private SettingsRepositoryInterface $settings,

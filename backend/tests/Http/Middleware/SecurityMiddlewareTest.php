@@ -34,6 +34,7 @@ final class SecurityMiddlewareTest extends TestCase
         $this->assertStringContainsString("frame-ancestors 'none'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertStringContainsString("base-uri 'self'", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertStringContainsString("form-action 'self'", $response->getHeaderLine('Content-Security-Policy'));
+        $this->assertStringContainsString("frame-src 'self' https://www.google.com", $response->getHeaderLine('Content-Security-Policy'));
         $this->assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
         $this->assertSame('1; mode=block', $response->getHeaderLine('X-XSS-Protection'));
         $this->assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
@@ -86,6 +87,7 @@ final class SecurityMiddlewareTest extends TestCase
             'csp_frame_ancestors' => "frame-ancestors 'none'",
             'csp_base_uri' => "base-uri 'none'",
             'csp_form_action' => "form-action 'none'",
+            'csp_frame_src' => '',
         ]);
 
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/');
@@ -150,7 +152,7 @@ final class SecurityMiddlewareTest extends TestCase
 
         $csp = $middleware->process($request, $handler)->getHeaderLine('Content-Security-Policy');
         $this->assertStringNotContainsString('codesandbox.io', $csp);
-        $this->assertStringNotContainsString('frame-src', $csp);
+        $this->assertStringContainsString("frame-src 'self' https://www.google.com", $csp);
     }
 
     public function testPlaygroundCspExtrasApplyWhenContributorEnabled(): void
