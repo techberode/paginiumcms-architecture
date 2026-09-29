@@ -13,6 +13,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Fix:** YouTube/Vimeo embed player blank on site and in preview — removed restrictive `sandbox` on allow-listed embed iframes (CSP `frame-src` already gates hosts).
+- **Fix:** YouTube/Vimeo embed blank in admin content preview — sandbox iframe CSP now includes `frame-src` for nocookie YouTube and Vimeo.
+- **Fix:** Settings → Access control showed raw permission keys (`content:embed-external`) — added sk/en labels and `translateAccessControlPermission` helper.
+- **Fix:** Editors with stale `permissionsEditor` in Settings missing `content:embed-external` — role guard auto-grants embed when the role can edit content.
 - **Fix:** Video upload rejected above ~5 MB despite **Max. video upload** setting — unified policy no longer applies global `uploadSecurity.maxUploadSizeKb` to the video profile; size errors show effective limit in MB; `/api/media/formats` exposes effective byte caps; video detected from file header when MIME is wrong.
 - **Fix:** Video MIME allow-list no longer empty when `uploadSecurity.allowedMimeTypes` omits `video/*` but media settings allow video.
 - **Fix:** Media Library `.webm` / video invisible in OS file picker when unified upload policy (It.78) is on — `accept` merges image + video (+ documents); `/api/media/formats` adds explicit `videoAccept`; default `media.allowedMimeTypes` includes `video/mp4,video/webm`.

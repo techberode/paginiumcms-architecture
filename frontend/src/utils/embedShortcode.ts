@@ -197,5 +197,5 @@ function renderEmbed(providerRaw: string, idRaw: string): string {
 
   const src = `${EMBED_URLS[provider]}${encodeURIComponent(id)}`;
 
-  return `<iframe class="paginium-external-embed" src="${src}" title="${provider} embed" width="560" height="315" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
+  return `<iframe class="paginium-external-embed" src="${src}" title="${provider} embed" width="560" height="315" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 }

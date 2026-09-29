@@ -41,7 +41,7 @@ final class ExternalEmbedShortcodeTest extends TestCase
 
         $this->assertStringContainsString('youtube-nocookie.com/embed/dQw4w9WgXcQ', $expanded);
         $this->assertStringContainsString('class="paginium-external-embed"', $expanded);
-        $this->assertStringContainsString('sandbox=', $expanded);
+        $this->assertStringNotContainsString('sandbox=', $expanded);
     }
 
     public function testExpandInlineVimeoBlock(): void

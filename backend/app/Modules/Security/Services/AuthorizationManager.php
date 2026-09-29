@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Security\Services;
 
+use PaginiumCMS\Core\Editor\Services\ExternalEmbedContentService;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Exception\AuthorizationException;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -321,6 +322,14 @@ class AuthorizationManager implements AuthorizationInterface
             && !in_array('mail:read-own', $permissions, true)
         ) {
             $permissions[] = 'mail:read-own';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_EDITOR
+            && $this->hasContentEditPermission($permissions)
+            && !in_array(ExternalEmbedContentService::PERMISSION_EMBED_EXTERNAL, $permissions, true)
+        ) {
+            $permissions[] = ExternalEmbedContentService::PERMISSION_EMBED_EXTERNAL;
             $permissions = PermissionCatalog::normalizeList($permissions);
         }
 

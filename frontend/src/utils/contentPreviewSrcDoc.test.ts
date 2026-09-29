@@ -11,6 +11,7 @@ describe('buildContentPreviewSrcDoc', () => {
     const doc = buildContentPreviewSrcDoc('<h1>Prehľad</h1>');
     expect(doc).toContain('<meta charset="UTF-8">');
     expect(doc).toContain("default-src 'none'");
+    expect(doc).toContain('frame-src https://www.youtube-nocookie.com');
     expect(doc).toContain('<h1>Prehľad</h1>');
     expect(doc).not.toContain('allow-scripts');
     expect(doc).toContain('.pg-stats');

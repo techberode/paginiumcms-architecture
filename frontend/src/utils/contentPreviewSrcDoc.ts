@@ -34,6 +34,7 @@ export function buildContentPreviewSrcDoc(html: string): string {
     '<meta name="referrer" content="no-referrer">' +
     '<meta http-equiv="Content-Security-Policy" content="' +
     "default-src 'none'; img-src data: https: http: blob:; media-src data: https: http: blob:; " +
+    "frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.google.com; " +
     "style-src 'unsafe-inline'; font-src data: https:" +
     '">' +
     '<title>Preview</title>' +

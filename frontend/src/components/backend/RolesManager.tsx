@@ -10,6 +10,7 @@ import { useAdminConfirm } from '../../hooks/useAdminConfirm';
 import { AdminHintCard } from './AdminHintCard';
 import { BulkActionBar } from './BulkActionBar';
 import { summarizeBulkResult } from '../../types/bulk';
+import { translateAccessControlPermission } from '../../i18n/modules/settings/helpers';
 
 function roleLabel(role: CustomRole, t: (key: string) => string): string {
   const known = t(`users.roles.${role.id}`);
@@ -291,7 +292,7 @@ export const RolesManager: React.FC = () => {
                   onChange={() => toggleNewPermission(permission)}
                   className="h-4 w-4 rounded border-gray-300 text-indigo-600"
                 />
-                <span>{t(`settings.accessControl.permissions.${permission}`)}</span>
+                <span>{translateAccessControlPermission(t, permission)}</span>
               </label>
             ))}
           </div>
@@ -432,7 +433,7 @@ export const RolesManager: React.FC = () => {
                         onChange={() => toggleDraftPermission(role.id, permission)}
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600"
                       />
-                      <span>{t(`settings.accessControl.permissions.${permission}`)}</span>
+                      <span>{translateAccessControlPermission(t, permission)}</span>
                     </label>
                   ))}
                 </div>

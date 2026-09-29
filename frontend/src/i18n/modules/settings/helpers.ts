@@ -1,5 +1,12 @@
 type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
+/** RBAC permission id (may contain `:`) → localized label; falls back to raw id. */
+export function translateAccessControlPermission(t: TranslateFn, permission: string): string {
+  const key = `settings.accessControl.permissions.${permission}`;
+  const value = t(key);
+  return value !== key ? value : permission;
+}
+
 export function translateSettingGroup(
   t: TranslateFn,
   groupKey: string,

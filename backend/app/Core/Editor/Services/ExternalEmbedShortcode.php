@@ -259,10 +259,10 @@ final class ExternalEmbedShortcode
         $srcAttr = htmlspecialchars($src, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         // Standalone block-level iframe (same pattern as :::video) — CommonMark escapes nested HTML inside <div>.
+        // No sandbox: allow-listed nocookie/Vimeo hosts only; sandbox breaks most embed players despite CSP frame-src.
         return '<iframe class="paginium-external-embed" src="' . $srcAttr . '" title="' . $title . '" width="560" height="315" loading="lazy" '
             . 'frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
-            . 'allowfullscreen referrerpolicy="strict-origin-when-cross-origin" '
-            . 'sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>';
+            . 'allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
     }
 
     /**

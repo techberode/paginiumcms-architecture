@@ -75,4 +75,19 @@ final class AuthorizationManagerSettingsReloadTest extends TestCase
         $this->assertTrue($authz->hasPermission($user, 'content:create'));
         $this->assertTrue($authz->hasPermission($user, 'content:edit'));
     }
+
+    public function testReloadEnsuresEmbedExternalWhenEditorCanEdit(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('accessControl')->willReturn([
+            'permissionsEditor' => 'content:create,content:edit,content:delete,media:upload',
+        ]);
+
+        $authz = new AuthorizationManager(null, $settings);
+
+        $user = new User();
+        $user->setRoles(['EDITOR']);
+
+        $this->assertTrue($authz->hasPermission($user, 'content:embed-external'));
+    }
 }

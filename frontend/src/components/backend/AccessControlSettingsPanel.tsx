@@ -4,7 +4,10 @@ import { Lock, Plus, Trash2 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { AdminHintCard } from './AdminHintCard';
 import { SettingFieldLabel } from './SettingHelpTooltip';
-import { translateSettingFieldTooltip } from '../../i18n/modules/settings/helpers';
+import {
+  translateAccessControlPermission,
+  translateSettingFieldTooltip,
+} from '../../i18n/modules/settings/helpers';
 
 export interface PathAclRule {
   id: string;
@@ -125,7 +128,7 @@ export const AccessControlSettingsPanel: React.FC<AccessControlSettingsPanelProp
                     onChange={() => togglePermission(role, permission)}
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600"
                   />
-                  <span>{t(`settings.accessControl.permissions.${permission}`)}</span>
+                  <span>{translateAccessControlPermission(t, permission)}</span>
                 </label>
               ))}
             </div>
