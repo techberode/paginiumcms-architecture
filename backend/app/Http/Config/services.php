@@ -1316,11 +1316,20 @@ return [
         ->constructor(
             get(DisposableEmailDomainList::class)
         ),
+    \PaginiumCMS\Core\Content\Services\ContentEditorialDeskService::class => create(
+        \PaginiumCMS\Core\Content\Services\ContentEditorialDeskService::class
+    )
+        ->constructor(
+            get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class),
+            get(ContentIndexService::class),
+            get(SettingsRepositoryInterface::class)
+        ),
     DeskInboxService::class => create(DeskInboxService::class)
         ->constructor(
             get(MessageDeskService::class),
             get(CommentsRepositoryInterface::class),
             get(TeamRepository::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentEditorialDeskService::class),
             get(VisitorReplyMailer::class)
         ),
     PaginiumCMS\Modules\Newsletter\Support\NewsletterUnsubscribeToken::class => function () {

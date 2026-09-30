@@ -778,6 +778,7 @@ export const platformSk: MessageTree = {
         comment: 'Komentár',
         message: 'Správa',
         articleReply: 'Odpoveď pod článok',
+        contentReview: 'Redakčná kontrola',
       },
       beacon: 'Stôl',
       beaconHint: 'Čakajúce položky na tvojom stole. Otvor frontu alebo skoč na komentár či chat.',

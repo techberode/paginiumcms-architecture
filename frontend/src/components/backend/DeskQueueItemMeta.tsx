@@ -6,12 +6,17 @@ import { inboxPriorityBadgeClass } from '../../utils/adminInboxPriority';
 export const DeskQueueItemMeta: React.FC<{ item: DeskItem }> = ({ item }) => {
   const { t } = useI18n();
   const isComment = item.kind === 'comment';
-  const kindLabel = isComment
-    ? t('platform.account.desk.kind.comment')
-    : t('platform.account.desk.kind.message');
-  const kindClass = isComment
-    ? 'badge bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300'
-    : 'badge bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
+  const isContentReview = item.kind === 'content_review';
+  const kindLabel = isContentReview
+    ? t('platform.account.desk.kind.contentReview')
+    : isComment
+      ? t('platform.account.desk.kind.comment')
+      : t('platform.account.desk.kind.message');
+  const kindClass = isContentReview
+    ? 'badge bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'
+    : isComment
+      ? 'badge bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300'
+      : 'badge bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
   const priorityKey = item.priority ? `messages.priority.${item.priority}` : '';
   const priorityLabel = priorityKey !== '' ? t(priorityKey) : '';
   const showPriority = !isComment && priorityLabel !== '' && priorityLabel !== priorityKey;

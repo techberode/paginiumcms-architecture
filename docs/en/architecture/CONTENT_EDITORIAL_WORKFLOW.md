@@ -28,6 +28,8 @@ Planner integration: on first transition to `pending_review`, enqueue a plan ite
 
 Notifications: when content transitions to `pending_review`, team leaders can be alerted via **Monitoring → content publish** connector (`content.editorialReviewNotifyLeaders`, requires `monitoring.contentPublishNotifyEnabled`). Hook context includes `previousStatus` so re-saves while already pending do not spam.
 
+**Admin desk:** team leaders see all `pending_review` pages/articles in `/api/auth/me/desk` (`kind: content_review`, links to `/pages/{slug}` or `/articles/{slug}`). Toggle: `content.editorialReviewDeskEnabled` (default on). Implemented by `ContentEditorialDeskService` + `DeskInboxService` merge (no separate flat-file queue).
+
 ## 3. Internal link check (admin)
 
 Scope: **same-site** targets only. The server never performs outbound HTTP (SSRF-safe). It resolves slugs against flat-file content.
@@ -55,7 +57,7 @@ Body formats: **markdown**, **html** (`href`), **tiptap_json** (link marks). The
 | Step | UI |
 |------|-----|
 | Editor slug card | **Check links & slug** → `POST /api/admin/content/link-check` |
-| Result | Issue list + CodeMirror line highlight (`.cm-broken-link-line`) |
+| Result | Issue list + CodeMirror line highlight (`.cm-broken-link-line`); live preview marks `<a class="pg-link-broken">` after link check |
 | Optional gate | `content.editorialLinkCheckRequired` — before save as `published` or `pending_review`, auto-runs check and blocks on any issue |
 
 Broken-link fix loop: author edits → re-run check → when clean, proceed to save.
@@ -77,7 +79,8 @@ Auth: `content:edit` (same as content meta routes).
 | `content.editorialReviewEnabled` | Master switch; ignored when zero teams |
 | `content.editorialReviewStatusesEnabled` | Expose `pending_review` / `reviewed` in status UI |
 | `content.editorialReviewNotifyLeaders` | Pending-review alerts via content-publish connector |
-| `content.editorialReviewPlanId` | Optional planner id for review queue items |
+| `content.editorialReviewDeskEnabled` | Pending-review items in desk queue for team leaders |
+| `content.editorialReviewPlanId` | Optional planner id for review queue items (dropdown in Settings → Content) |
 | `content.editorialLinkCheckRequired` | Mandatory link check before publish / pending_review save |
 
 Permissions: reuse `content:edit`. **Mark as reviewed** (toolbar) is shown to **team leaders** when status is `pending_review`; sets status `reviewed`.
@@ -88,14 +91,12 @@ Permissions: reuse `content:edit`. **Mark as reviewed** (toolbar) is shown to **
 |---------|------|
 | `ContentEditorialReviewService` | Workflow active, status gate, planner enqueue |
 | `ContentEditorialReviewNotificationService` | Leader notify on transition to `pending_review` |
+| `ContentEditorialDeskService` | Pending-review rows for team-leader desk |
 | `ContentInternalLinkCheckService` | Link extraction + slug resolution |
 | `ContentEditorialReviewHookRegistrar` | Registers `CONTENT_AFTER_SAVE` hooks |
 
 ## 6. Remaining / future
 
-- Preview HTML `.pg-link-broken` decoration (admin live preview).
-- Settings UI picker for `editorialReviewPlanId`.
-- In-app desk notifications (email/ntfy only today).
 - Dedicated `content:review` permission (optional).
 
 Related: [Project planner](../user/PROJECT_PLANNER.md) (if exists), [Content editor](../user/CONTENT_EDITOR.md), teams `teamLeaderUserIds`.

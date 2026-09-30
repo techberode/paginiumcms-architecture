@@ -66,6 +66,7 @@ import { MediaSettingsPanel } from './MediaSettingsPanel';
 import type { MediaSettingsMeta } from '../../api/settings';
 import { TimezoneSelect } from './TimezoneSelect';
 import { MaintenanceModeSelect } from './MaintenanceModeSelect';
+import { EditorialReviewPlanIdField } from './EditorialReviewPlanIdField';
 import { AdminChromeColorField } from './AdminChromeColorField';
 import { AdminNavPlacementField } from './AdminNavPlacementField';
 import { AdminGradientField } from './AdminGradientField';
@@ -681,6 +682,23 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
         value={currentValue}
         onChange={(url) =>
           setValue(field.key, url, { shouldDirty: true, shouldValidate: true })
+        }
+        label={label}
+        help={help}
+        error={error}
+      />
+    );
+  }
+
+  if (groupKey === 'content' && field.key === 'editorialReviewPlanId') {
+    const currentValue = String(watch(field.key) ?? '');
+
+    return (
+      <EditorialReviewPlanIdField
+        inputId={inputId}
+        value={currentValue}
+        onChange={(planId) =>
+          setValue(field.key, planId, { shouldDirty: true, shouldValidate: true })
         }
         label={label}
         help={help}

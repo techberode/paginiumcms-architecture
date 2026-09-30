@@ -1817,3 +1817,16 @@
     display: none;
   }
 }
+
+.paginium-prose a.pg-link-broken,
+a.pg-link-broken {
+  color: rgb(185 28 28);
+  font-weight: 700;
+  text-decoration: underline wavy rgb(185 28 28);
+}
+
+.dark .paginium-prose a.pg-link-broken,
+.dark a.pg-link-broken {
+  color: rgb(252 165 165);
+  text-decoration-color: rgb(252 165 165);
+}

@@ -48,4 +48,5 @@ return [
     'publish_notify_reason_archived' => 'obsah je archivovaný',
     'editorial_review_notify_subject' => 'Žiadosť o kontrolu: :title',
     'editorial_review_notify_body' => ':type „:title“ (slug :slug) čaká na kontrolu vedúcim tímu.',
+    'editorial_review_desk_preview' => ':type :slug — čaká na vašu kontrolu',
 ];

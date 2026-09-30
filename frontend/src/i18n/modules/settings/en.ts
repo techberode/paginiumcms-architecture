@@ -668,6 +668,32 @@ export const settingsEn: MessageTree = {
         "label": "Default content status",
         "help": "New pages/articles start as draft or published immediately."
       },
+      "editorialReviewEnabled": {
+        "label": "Editorial review workflow (teams)",
+        "help": "When on and at least one team exists, non-leaders cannot publish directly — status becomes pending_review until a team leader marks reviewed."
+      },
+      "editorialReviewStatusesEnabled": {
+        "label": "Show review statuses in editor",
+        "help": "Expose pending_review and reviewed in the content editor status control when workflow is active."
+      },
+      "editorialReviewNotifyLeaders": {
+        "label": "Notify on pending review",
+        "help": "Uses Monitoring → content publish connector when content publish alerts are enabled."
+      },
+      "editorialReviewDeskEnabled": {
+        "label": "Show pending review on admin desk",
+        "help": "Team leaders see pending_review items in the desk queue and notification beacon."
+      },
+      "editorialReviewPlanId": {
+        "label": "Project plan for review queue",
+        "help": "Optional plan for auto-created review items. Empty = default plan or auto-created Content publication queue.",
+        "selectDefault": "Default / auto queue",
+        "defaultBadge": "default"
+      },
+      "editorialLinkCheckRequired": {
+        "label": "Require link check before publish/review submit",
+        "help": "Editor must run internal link check with zero issues before saving as published or pending_review."
+      },
       "autoSaveInterval": {
         "label": "Auto-save interval (s)",
         "help": "How often drafts are saved."

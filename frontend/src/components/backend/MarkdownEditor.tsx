@@ -1208,6 +1208,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               contentFormat === 'html' || contentFormat === 'tiptap_json' ? contentFormat : 'markdown'
             }
             onOpenFullPreview={openSitePreview}
+            brokenLinkUrls={linkIssues.map((issue) => issue.url)}
           >
             {bodyEditor}
           </PageLivePreviewSplit>

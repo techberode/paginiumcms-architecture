@@ -48,4 +48,5 @@ return [
     'publish_notify_reason_archived' => 'content archived',
     'editorial_review_notify_subject' => 'Review requested: :title',
     'editorial_review_notify_body' => ':type “:title” (slug :slug) is waiting for team-lead review.',
+    'editorial_review_desk_preview' => ':type :slug — waiting for your review',
 ];

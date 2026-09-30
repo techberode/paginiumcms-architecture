@@ -9,6 +9,7 @@ import {
   THEME_STUDIO_PREVIEW_SANDBOX,
 } from '../../utils/themeStudioPreview';
 import { useEditorWorkspaceActive } from './EditorWorkspaceFrame';
+import { markBrokenLinksInPreviewHtml } from '../../utils/markBrokenLinksInPreviewHtml';
 
 interface AdminBodyPreviewPanelProps {
   body: string;
@@ -20,6 +21,8 @@ interface AdminBodyPreviewPanelProps {
   /** Stretch the iframe to the remaining column instead of a 72vh box. */
   fillViewport?: boolean;
   onOpenFullPreview?: () => void;
+  /** Hrefs from the latest link-check (highlights `.pg-link-broken` in preview). */
+  brokenLinkUrls?: readonly string[];
 }
 
 export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
@@ -30,6 +33,7 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
   sandbox = false,
   fillViewport = false,
   onOpenFullPreview,
+  brokenLinkUrls = [],
 }) => {
   const { t } = useI18n();
   const [html, setHtml] = useState<string | null>(null);
@@ -51,7 +55,7 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
       void contentApi
         .renderPreview({ body, bodyFormat })
         .then((rendered) => {
-          setHtml(rendered);
+          setHtml(markBrokenLinksInPreviewHtml(rendered, brokenLinkUrls));
           setError(null);
         })
         .catch(() => {
@@ -66,7 +70,7 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [body, bodyFormat, debounceMs, t]);
+  }, [body, bodyFormat, brokenLinkUrls, debounceMs, t]);
 
   return (
     <div
@@ -129,11 +133,13 @@ export function PageLivePreviewSplit({
   bodyFormat,
   children,
   onOpenFullPreview,
+  brokenLinkUrls,
 }: {
   body: string;
   bodyFormat: 'markdown' | 'html' | 'tiptap_json';
   children: React.ReactNode;
   onOpenFullPreview?: () => void;
+  brokenLinkUrls?: readonly string[];
 }): React.ReactElement {
   const fillViewport = useEditorWorkspaceActive();
 
@@ -162,6 +168,7 @@ export function PageLivePreviewSplit({
         sandbox
         fillViewport={fillViewport}
         onOpenFullPreview={onOpenFullPreview}
+        brokenLinkUrls={brokenLinkUrls}
         className={
           fillViewport
             ? 'relative z-0 min-h-0 min-w-0 overflow-hidden'

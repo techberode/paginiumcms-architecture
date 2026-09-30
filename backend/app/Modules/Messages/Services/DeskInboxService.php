@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Modules\Messages\Services;
 
+use PaginiumCMS\Core\Content\Services\ContentEditorialDeskService;
 use PaginiumCMS\Core\Teams\Services\TeamRepository;
 use PaginiumCMS\Modules\Comments\Contracts\CommentsRepositoryInterface;
 use PaginiumCMS\Modules\Comments\Models\Comment;
@@ -20,6 +21,7 @@ final class DeskInboxService
         private MessageDeskService $messages,
         private CommentsRepositoryInterface $comments,
         private TeamRepository $teams,
+        private ContentEditorialDeskService $editorialDesk,
         private ?VisitorReplyMailer $visitorMail = null,
     ) {
     }
@@ -67,6 +69,14 @@ final class DeskInboxService
             }
         } catch (\Throwable $exception) {
             error_log('desk_messages_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+        }
+
+        try {
+            foreach ($this->editorialDesk->pendingReviewDeskItems($actor) as $reviewItem) {
+                $items[] = $reviewItem;
+            }
+        } catch (\Throwable $exception) {
+            error_log('desk_editorial_failed ' . LogSanitizer::value($exception->getMessage(), 240));
         }
 
         if ($this->canReplyComments($actor)) {

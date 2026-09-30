@@ -668,6 +668,32 @@ export const settingsSk: MessageTree = {
         "label": "Predvolený stav obsahu",
         "help": "Nové stránky/články vzniknú ako koncept alebo rovno publikované."
       },
+      "editorialReviewEnabled": {
+        "label": "Redakčný review workflow (tímy)",
+        "help": "Pri zapnutí a existujúcom tíme nemôžu ne-vodcovia publikovať priamo — stav pending_review, kým vedúci neoznačí reviewed."
+      },
+      "editorialReviewStatusesEnabled": {
+        "label": "Stavy review v editore",
+        "help": "Zobrazí pending_review a reviewed v editore, keď je workflow aktívny."
+      },
+      "editorialReviewNotifyLeaders": {
+        "label": "Notifikácia pri pending review",
+        "help": "Použije Monitoring → connector pre publikovanie obsahu, ak sú alerty zapnuté."
+      },
+      "editorialReviewDeskEnabled": {
+        "label": "Pending review v admin desk fronte",
+        "help": "Vedúci tímov vidia položky pending_review vo fronte stola a v notifikačnom beacon-e."
+      },
+      "editorialReviewPlanId": {
+        "label": "Projektový plán pre review frontu",
+        "help": "Voliteľný plán pre položky z review workflow. Prázdne = predvolený plán alebo auto fronta Content publication.",
+        "selectDefault": "Predvolené / auto fronta",
+        "defaultBadge": "predvolený"
+      },
+      "editorialLinkCheckRequired": {
+        "label": "Vyžadovať kontrolu odkazov pred publish/review",
+        "help": "Pred uložením ako published alebo pending_review musí link check nahlásiť nulu chýb."
+      },
       "autoSaveInterval": {
         "label": "Interval auto-save (s)",
         "help": "Ako často sa ukladá koncept."
