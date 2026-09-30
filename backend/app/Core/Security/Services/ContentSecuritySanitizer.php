@@ -55,7 +55,7 @@ final class ContentSecuritySanitizer
 
         $result = preg_replace_callback(
             '/<figure\s+class="paginium-(?:mermaid|chart)"[^>]*>[\s\S]*?<\/figure>'
-            . '|<iframe\s+class="paginium-external-embed"[^>]*>\s*<\/iframe>/i',
+            . '|<iframe[^>]*class="[^"]*\bpaginium-external-embed\b[^"]*"[^>]*>\s*<\/iframe>/i',
             static function (array $matches) use (&$blocks, &$index): string {
                 $key = '<!-- paginium-editor-figure-preserve:' . $index . ' -->';
                 $blocks[$key] = $matches[0];

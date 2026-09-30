@@ -72,6 +72,14 @@ final class ShortcodeExpanderService
             return $this->renderSnippetReference($rawAttrs);
         }
 
+        if ($name === 'visual-frame') {
+            $definition = ['attrs' => VisualFramePresentation::attributeSchema()];
+            $attrs = $this->parseAttributes($rawAttrs, $definition);
+            $expandedInner = trim($inner) === '' ? '' : $this->expand($inner);
+
+            return $this->sanitizer->sanitizeHtml(VisualFramePresentation::render($attrs, $expandedInner));
+        }
+
         if ($name === 'widget') {
             $html = ($this->widgets ?? new WidgetCatalog())->render($rawAttrs, $inner);
             if (str_starts_with($html, '[widget')) {
@@ -104,6 +112,10 @@ final class ShortcodeExpanderService
             if (LandingHeroRenderer::hasMedia($attrs)) {
                 return $this->sanitizer->sanitizeHtml(LandingHeroRenderer::render($attrs));
             }
+        }
+
+        if ($name === 'showcase-hero') {
+            return $this->sanitizer->sanitizeHtml(ShowcaseHeroRenderer::render($attrs));
         }
 
         if ($name === 'feature-gallery') {
@@ -239,6 +251,12 @@ final class ShortcodeExpanderService
             if (is_array($options) && isset($options[0]) && is_string($options[0])) {
                 return $options[0];
             }
+        }
+
+        if ($type === 'bool') {
+            $default = $rules['default'] ?? true;
+
+            return filter_var($default, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
         }
 
         return '';

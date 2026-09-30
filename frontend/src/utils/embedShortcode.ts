@@ -2,6 +2,17 @@
 
 export type ExternalEmbedProvider = 'youtube' | 'vimeo';
 
+export type EmbedAlign = 'left' | 'center' | 'right';
+
+export interface EmbedLayoutOptions {
+  align?: EmbedAlign;
+  maxWidth?: number;
+}
+
+export const EMBED_MAX_WIDTH_MIN = 280;
+export const EMBED_MAX_WIDTH_MAX = 1280;
+export const EMBED_MAX_WIDTH_DEFAULT = 560;
+
 const EMBED_URLS: Record<ExternalEmbedProvider, string> = {
   youtube: 'https://www.youtube-nocookie.com/embed/',
   vimeo: 'https://player.vimeo.com/video/',
@@ -11,6 +22,39 @@ const ID_PATTERNS: Record<ExternalEmbedProvider, RegExp> = {
   youtube: /^[a-zA-Z0-9_-]{11}$/,
   vimeo: /^\d{1,20}$/,
 };
+
+const BLOCK_PATTERN =
+  /:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)(?:\n\s*align:\s*(left|center|right))?(?:\n\s*maxWidth:\s*(\d+))?\s*\n\s*:::/;
+
+const INLINE_PATTERN =
+  /:::embed\s+provider="([^"]+)"\s+id="([^"]+)"(?:\s+align="(left|center|right)")?(?:\s+maxWidth="(\d+)")?\s*:::/;
+
+export function normalizeEmbedAlign(raw: string | undefined): EmbedAlign | undefined {
+  const value = (raw ?? '').trim().toLowerCase();
+  if (value === 'left' || value === 'center' || value === 'right') {
+    return value;
+  }
+  return undefined;
+}
+
+export function normalizeEmbedMaxWidth(raw: string | number | undefined): number | undefined {
+  if (typeof raw === 'number') {
+    if (!Number.isFinite(raw)) {
+      return undefined;
+    }
+    const rounded = Math.round(raw);
+    if (rounded < EMBED_MAX_WIDTH_MIN || rounded > EMBED_MAX_WIDTH_MAX) {
+      return undefined;
+    }
+    return rounded;
+  }
+
+  const trimmed = String(raw ?? '').trim();
+  if (trimmed === '' || !/^\d+$/.test(trimmed)) {
+    return undefined;
+  }
+  return normalizeEmbedMaxWidth(Number(trimmed));
+}
 
 export function normalizeEmbedVideoId(
   provider: ExternalEmbedProvider,
@@ -129,14 +173,44 @@ export function promoteStandaloneVideoUrls(markdown: string): string {
   return result;
 }
 
-export function buildEmbedShortcode(provider: ExternalEmbedProvider, id: string): string {
+export function buildEmbedShortcode(
+  provider: ExternalEmbedProvider,
+  id: string,
+  layout?: EmbedLayoutOptions
+): string {
   const normalizedProvider = provider.trim().toLowerCase() as ExternalEmbedProvider;
   const normalizedId = normalizeEmbedVideoId(normalizedProvider, id);
   if (normalizedId === '') {
     return '';
   }
 
-  return `\n\n:::embed\nprovider: ${normalizedProvider}\nid: ${normalizedId}\n:::\n`;
+  const align = layout?.align ?? 'center';
+  const maxWidth = layout?.maxWidth ?? EMBED_MAX_WIDTH_DEFAULT;
+  const safeMaxWidth = normalizeEmbedMaxWidth(maxWidth) ?? EMBED_MAX_WIDTH_DEFAULT;
+  const safeAlign = normalizeEmbedAlign(align) ?? 'center';
+
+  return `\n\n:::embed\nprovider: ${normalizedProvider}\nid: ${normalizedId}\nalign: ${safeAlign}\nmaxWidth: ${safeMaxWidth}\n:::\n`;
+}
+
+export function buildEmbedIframeMarkup(
+  provider: ExternalEmbedProvider,
+  id: string,
+  layout?: EmbedLayoutOptions
+): string {
+  const normalizedProvider = provider.trim().toLowerCase() as ExternalEmbedProvider;
+  const normalizedId = normalizeEmbedVideoId(normalizedProvider, id);
+  if (normalizedId === '' || !EMBED_URLS[normalizedProvider]) {
+    return '';
+  }
+
+  const align = normalizeEmbedAlign(layout?.align) ?? 'center';
+  const maxWidth =
+    normalizeEmbedMaxWidth(layout?.maxWidth) ?? EMBED_MAX_WIDTH_DEFAULT;
+
+  const src = `${EMBED_URLS[normalizedProvider]}${encodeURIComponent(normalizedId)}`;
+  const style = maxWidth !== EMBED_MAX_WIDTH_DEFAULT ? ` style="max-width:${maxWidth}px"` : '';
+
+  return `<iframe class="paginium-external-embed paginium-external-embed--align-${align}" src="${src}" title="${normalizedProvider} embed" width="560" height="315" loading="lazy"${style} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 }
 
 export function expandEmbedShortcodes(markdown: string): string {
@@ -152,8 +226,8 @@ export function deferEmbedShortcodes(markdown: string): {
   const renders: Record<string, string> = {};
   let index = 0;
 
-  const replace = (_match: string, providerRaw: string, idRaw: string): string => {
-    const html = renderEmbed(providerRaw, idRaw);
+  const replace = (_match: string, providerRaw: string, idRaw: string, alignRaw?: string, maxWidthRaw?: string): string => {
+    const html = renderEmbed(providerRaw, idRaw, alignRaw, maxWidthRaw);
     if (html === '') {
       return '';
     }
@@ -164,15 +238,8 @@ export function deferEmbedShortcodes(markdown: string): {
     return `\n\n<!-- ${key} -->\n\n`;
   };
 
-  let result = source.replace(
-    /:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/g,
-    replace
-  );
-
-  result = result.replace(
-    /:::embed\s+provider="([^"]+)"\s+id="([^"]+)"\s*:::/g,
-    replace
-  );
+  let result = source.replace(new RegExp(BLOCK_PATTERN.source, 'g'), replace);
+  result = result.replace(new RegExp(INLINE_PATTERN.source, 'g'), replace);
 
   return { markdown: result, renders };
 }
@@ -188,14 +255,20 @@ export function restoreDeferredEmbeds(html: string, renders: Record<string, stri
   return output;
 }
 
-function renderEmbed(providerRaw: string, idRaw: string): string {
+function renderEmbed(
+  providerRaw: string,
+  idRaw: string,
+  alignRaw?: string,
+  maxWidthRaw?: string
+): string {
   const provider = providerRaw.trim().toLowerCase() as ExternalEmbedProvider;
   const id = idRaw.trim();
   if (!EMBED_URLS[provider] || !ID_PATTERNS[provider]?.test(id)) {
     return '';
   }
 
-  const src = `${EMBED_URLS[provider]}${encodeURIComponent(id)}`;
-
-  return `<iframe class="paginium-external-embed" src="${src}" title="${provider} embed" width="560" height="315" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  return buildEmbedIframeMarkup(provider, id, {
+    align: normalizeEmbedAlign(alignRaw),
+    maxWidth: normalizeEmbedMaxWidth(maxWidthRaw),
+  });
 }

@@ -791,6 +791,21 @@
   @apply my-3 rounded-lg border border-indigo-200 bg-indigo-50/80 p-3 text-xs text-indigo-950 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-100;
 }
 
+.embed-insert-preview-placeholder {
+  display: block;
+  margin: 1.25rem auto;
+}
+
+.embed-insert-preview-placeholder.paginium-external-embed--align-left {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.embed-insert-preview-placeholder.paginium-external-embed--align-right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
 .paginium-html-safe__source {
   @apply m-0 mt-2 whitespace-pre-wrap font-mono text-xs text-slate-700 dark:text-slate-200;
 }

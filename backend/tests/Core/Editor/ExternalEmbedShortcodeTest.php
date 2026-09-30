@@ -54,6 +54,17 @@ final class ExternalEmbedShortcodeTest extends TestCase
         $this->assertStringContainsString('player.vimeo.com/video/123456789', $expanded);
     }
 
+    public function testExpandBlockWithAlignAndMaxWidth(): void
+    {
+        $expander = new ExternalEmbedShortcode();
+        $markdown = ":::embed\nprovider: youtube\nid: dQw4w9WgXcQ\nalign: right\nmaxWidth: 960\n:::";
+
+        $expanded = $expander->expand($markdown);
+
+        $this->assertStringContainsString('paginium-external-embed--align-right', $expanded);
+        $this->assertStringContainsString('max-width:960px', $expanded);
+    }
+
     public function testInvalidYoutubeIdExpandsToEmpty(): void
     {
         $expander = new ExternalEmbedShortcode();

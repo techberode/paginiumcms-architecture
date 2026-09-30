@@ -744,6 +744,14 @@ export const settingsEn: MessageTree = {
         "label": "Audit trusted HTML / embed saves",
         "help": "When enabled, security audit logs each save that contains :::html-safe or :::embed blocks (counts and body hash only — never block body)."
       },
+      "visualInsertModalsEnabled": {
+        "label": "Visual insert modals (shortcodes)",
+        "help": "On = modal with live server preview for shortcodes. Off = legacy dropdown quick insert."
+      },
+      "visualInsertTypographyEnabled": {
+        "label": "Layout & typography in insert modals",
+        "help": "Align, width, text size, emphasis, and highlight — stored via [visual-frame] wrapper when non-default."
+      },
       "customComponentsEnabled": {
         "label": "Enable custom editor components",
         "help": "Plugins can register custom blocks for Markdown and WYSIWYG."

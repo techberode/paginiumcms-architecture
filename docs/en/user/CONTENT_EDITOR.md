@@ -42,6 +42,8 @@ Settings → Layout (`layout.builderMode`) changes how the **page** editor looks
 
 **Workspace** (optional fullscreen): hide admin chrome while editing. The canvas fills the viewport; outline/editor and live preview scroll independently, toolbar stays on top. Default in Settings → Editor; each browser can toggle it.
 
+**Shortcodes and widgets:** When Settings → Editor allows visual insert modals, each browser can enable **Modal workspace** in the insert panel — full dialog with server preview vs quick Markdown insert. See [Shortcodes and widgets](SHORTCODES_AND_WIDGETS.md#visual-insert-settings--editor--per-browser).
+
 Photos for the Gallery block live in [Feature gallery](GALLERY.md), not in the page form. A tag on the block is a filter sticker, not a second catalog.
 
 Landing walkthrough: [LANDING_PAGE.md](LANDING_PAGE.md).
@@ -125,7 +127,7 @@ The media picker should return a canonical identifier or supported URL. Check re
 
 Do not insert untrusted `<script>`, inline event handlers, or `javascript:` URLs. The HTML/Markdown renderer must sanitize output according to policy.
 
-**Images and video:** Media Library inserts at the **text cursor**; optional caption via checkbox in the picker (**above** or **below** media), self-hosted **MP4/WebM** via `:::video`, and lightbox behaviour — see [Media in content](MEDIA_IN_CONTENT.md). **YouTube/Vimeo** via `:::embed` needs **`content:embed-external`** and CSP `frame-src`; sanitizer preserves allow-listed embed iframes ([ISS-193](../ISSUES.md#iss-193)). Prefer uploaded video when you control the file.
+**Images and video:** Media Library inserts at the **text cursor**; optional caption via checkbox in the picker (**above** or **below** media), self-hosted **MP4/WebM** via `:::video`, and lightbox behaviour — see [Media in content](MEDIA_IN_CONTENT.md). **YouTube/Vimeo** via `:::embed` needs **`content:embed-external`** and CSP `frame-src`; sanitizer preserves allow-listed embed iframes ([ISS-193](../ISSUES.md#iss-193)). Use **Insert YouTube/Vimeo** for alignment, width, and a layout preview — see [Media in content](MEDIA_IN_CONTENT.md#layout-alignment-and-width). Prefer uploaded video when you control the file.
 
 ## 11. Featured and OG image
 

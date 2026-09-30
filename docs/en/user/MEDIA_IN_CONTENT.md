@@ -45,6 +45,36 @@ Allow-listed YouTube (nocookie) and Vimeo URLs can be stored as `:::embed` short
 
 The public HTML pipeline expands embeds to `<iframe class="paginium-external-embed">` and **preserves** that iframe through content security sanitization (even when `iframe` is not listed in **Settings → Allowed HTML tags**). If an embed still does not show, re-save the page after deploy and verify CSP with `curl -sI … | grep -i content-security-policy`.
 
+### Layout: alignment and width
+
+Use the editor toolbar **Insert YouTube/Vimeo** modal (Markdown and WYSIWYG). Besides provider and video ID, you can set:
+
+| Control | Stored in Markdown | Public effect |
+|---------|-------------------|---------------|
+| **Horizontal alignment** | `align: left` \| `center` \| `right` | CSS class `paginium-external-embed--align-*` on the iframe |
+| **Player width** | `maxWidth: 280`–`1280` (pixels) | Inline `max-width` on the iframe (height follows **16:9** via theme CSS) |
+
+The modal **layout preview** shows sample paragraphs above and below the player so you can see placement inside the prose column before insert.
+
+Example block (you can also edit these lines by hand in Markdown):
+
+```markdown
+:::embed
+provider: youtube
+id: dQw4w9WgXcQ
+align: center
+maxWidth: 960
+:::
+```
+
+Inline form: `:::embed provider="youtube" id="dQw4w9WgXcQ" align="center" maxWidth="960" :::`
+
+**Defaults:** `align: center`, `maxWidth: 560`. Blocks created before layout options existed omit `align` / `maxWidth`; the theme still caps width at 560px and centers embeds in `.paginium-prose`.
+
+**Site-wide overrides:** Theme Studio → `assets/theme.css` can target `.paginium-prose iframe.paginium-external-embed` (e.g. larger default `max-width`, border radius). Per-embed `maxWidth` in the shortcode wins over the theme cap when set.
+
+**YouTube “playback disabled on other websites”:** That message comes from the video owner’s YouTube settings, not from Paginium alignment. Allow embedding in YouTube Studio, use a link, or host the file with **`:::video`**.
+
 **Alternatives:**
 
 | Need | Approach |
@@ -69,4 +99,4 @@ See [ACCESS_CONTROL.md](ACCESS_CONTROL.md).
 
 - [CONTENT_EDITOR.md](CONTENT_EDITOR.md) — save flow, SEO, diagnostics  
 - [SHORTCODES_AND_WIDGETS.md](SHORTCODES_AND_WIDGETS.md) — landing widgets, maps  
-- [ISS-193](../ISSUES.md#iss-193) — external video embed display deferred  
+- [ISS-193](../ISSUES.md#iss-193) — sanitizer stripped allow-listed embed iframes (fixed)  

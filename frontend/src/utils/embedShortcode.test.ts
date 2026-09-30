@@ -16,6 +16,16 @@ describe('embedShortcode', () => {
   it('builds shortcode from full youtube URL', () => {
     const block = buildEmbedShortcode('youtube', 'https://www.youtube.com/watch?v=2PuFyjAs7JA');
     expect(block).toContain('id: 2PuFyjAs7JA');
+    expect(block).toContain('align: center');
+    expect(block).toContain('maxWidth: 560');
+  });
+
+  it('expands embed with layout options', () => {
+    const md =
+      ':::embed\nprovider: youtube\nid: 2PuFyjAs7JA\nalign: center\nmaxWidth: 800\n:::\n';
+    const html = expandEmbedShortcodes(md);
+    expect(html).toContain('paginium-external-embed--align-center');
+    expect(html).toContain('max-width:800px');
   });
 
   it('promotes standalone youtube line to iframe html', () => {

@@ -105,12 +105,16 @@ final class ContentBodyRendererTest extends TestCase
 :::embed
 provider: youtube
 id: dQw4w9WgXcQ
+align: center
+maxWidth: 960
 :::
 MD;
 
         $html = $renderer->resolveHtml($markdown, 'markdown', null);
 
         $this->assertStringContainsString('paginium-external-embed', $html);
+        $this->assertStringContainsString('paginium-external-embed--align-center', $html);
         $this->assertStringContainsString('youtube-nocookie.com/embed/dQw4w9WgXcQ', $html);
+        $this->assertStringContainsString('max-width:960px', $html);
     }
 }

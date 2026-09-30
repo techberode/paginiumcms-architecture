@@ -4,11 +4,17 @@ import { WidgetPicker } from './WidgetPicker';
 
 interface WidgetInsertModalProps {
   open: boolean;
+  typographyEnabled?: boolean;
   onClose: () => void;
   onInsert: (markup: string) => void;
 }
 
-export const WidgetInsertModal: React.FC<WidgetInsertModalProps> = ({ open, onClose, onInsert }) => {
+export const WidgetInsertModal: React.FC<WidgetInsertModalProps> = ({
+  open,
+  typographyEnabled = true,
+  onClose,
+  onInsert,
+}) => {
   const { t } = useI18n();
 
   if (!open) {
@@ -23,6 +29,7 @@ export const WidgetInsertModal: React.FC<WidgetInsertModalProps> = ({ open, onCl
           <p className="text-sm text-admin-muted">{t('editor.widgets.hint')}</p>
           <WidgetPicker
             actionLabel={t('editor.widgets.insert')}
+            typographyEnabled={typographyEnabled}
             onAction={(markup) => {
               onInsert(`\n\n${markup}\n`);
               onClose();

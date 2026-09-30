@@ -300,6 +300,20 @@ JSON;
         $this->assertStringNotContainsString('[staff-card', $result);
     }
 
+    public function testExpandsVisualFrameAroundAlertBox(): void
+    {
+        $markdown = '[visual-frame align="center" max-width="960" bold="true" text-size="lg" tone="primary" mark="soft" italic="false" underline="false"]'
+            . '[alert-box tone="info"]Hello frame[/alert-box][/visual-frame]';
+
+        $result = $this->expander->expand($markdown);
+
+        $this->assertStringContainsString('pg-visual-frame--align-center', $result);
+        $this->assertStringContainsString('pg-visual-frame--max-960', $result);
+        $this->assertStringContainsString('pg-alert', $result);
+        $this->assertStringContainsString('Hello frame', $result);
+        $this->assertStringNotContainsString('[visual-frame', $result);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

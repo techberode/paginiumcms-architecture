@@ -81,4 +81,13 @@ final class ShowcaseHeroMarkdownIntegrationTest extends TestCase
         $this->assertStringContainsString('pg-stats', $html);
         $this->assertStringNotContainsString('[showcase-hero', $html);
     }
+
+    public function testShowTerminalFalseOmitsTerminalInExpandedHtml(): void
+    {
+        $shortcode = '[showcase-hero title="Headline" terminal="curl /api/health" show-terminal="false"/]';
+        $html = $this->bodyRenderer->resolveHtml($shortcode, 'markdown');
+
+        $this->assertStringContainsString('pg-showcase-title', $html);
+        $this->assertStringNotContainsString('pg-showcase-terminal', $html);
+    }
 }

@@ -125,7 +125,7 @@ Media picker má vracať kanonický identifikátor alebo podporovanú URL. Pred 
 
 Do tela nevkladaj neoverený `<script>`, inline event handler alebo `javascript:` URL. HTML/Markdown renderer musí sanitizovať výstup podľa policy.
 
-**Médiá z knižnice:** vloženie na **pozíciu kurzora**; voliteľný titulok (checkbox v modale, **nad** / **pod** obrázok alebo video), `:::video`, lightbox — [MEDIA_IN_CONTENT.md](../en/user/MEDIA_IN_CONTENT.md). **YouTube/Vimeo `:::embed`** — oprávnenie + CSP; sanitizer preserve ([ISS-193](../ISSUES.md#iss-193)).
+**Médiá z knižnice:** vloženie na **pozíciu kurzora**; voliteľný titulok (checkbox v modale, **nad** / **pod** obrázok alebo video), `:::video`, lightbox — [MEDIA_IN_CONTENT.md](../en/user/MEDIA_IN_CONTENT.md). **YouTube/Vimeo `:::embed`** — oprávnenie + CSP; sanitizer preserve ([ISS-193](../ISSUES.md#iss-193)). Modal **Vložiť YouTube/Vimeo**: zarovnanie, šírka, náhľad — [MEDIA_IN_CONTENT.md](../en/user/MEDIA_IN_CONTENT.md#layout-alignment-and-width).
 
 ## 11. Featured a OG obrázok
 

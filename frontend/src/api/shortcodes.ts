@@ -11,7 +11,7 @@ export interface ShortcodeListItem {
 export interface ShortcodeDefinition {
   name: string;
   version: number;
-  attrs: Record<string, { type: string; options?: string[]; accept?: string }>;
+  attrs: Record<string, { type: string; options?: string[]; accept?: string; default?: boolean | string }>;
   expand: string;
 }
 
@@ -23,7 +23,10 @@ export interface ShortcodePreviewResult {
 export const shortcodesApi = {
   list: async (): Promise<ShortcodeListItem[]> => {
     const response = await apiClient.get<{ shortcodes: ShortcodeListItem[] }>('/api/admin/shortcodes');
-    return response.success && response.data ? response.data.shortcodes : [];
+    if (!response.success) {
+      throw new Error(response.error ?? 'Failed to load shortcodes');
+    }
+    return response.data?.shortcodes ?? [];
   },
 
   get: async (name: string) =>
@@ -36,6 +39,9 @@ export const shortcodesApi = {
 
   preview: async (definition: unknown) =>
     apiClient.post<ShortcodePreviewResult>('/api/admin/shortcodes/preview', definition),
+
+  renderMarkup: async (markup: string) =>
+    apiClient.post<{ html: string }>('/api/admin/shortcodes/render-markup', { markup }),
 
   delete: async (name: string) =>
     apiClient.delete(`/api/admin/shortcodes/${encodeURIComponent(name)}`),

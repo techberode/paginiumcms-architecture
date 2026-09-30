@@ -7,12 +7,20 @@ import { AdminOfferCard } from '../ui/AdminOfferCard';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { ADMIN_INPUT } from '../../theme/adminUiClasses';
 import { buildWidgetMarkup, sampleInnerFor, widgetTypeIcon, widgetTypeLabel } from '../../utils/widgetMarkup';
+import {
+  DEFAULT_VISUAL_PRESENTATION,
+  wrapWithVisualFrame,
+  type VisualInsertPresentation,
+} from '../../utils/visualInsertPresentation';
+import { ShortcodeInsertField } from './ShortcodeInsertField';
+import { VisualInsertTypographyControls } from './VisualInsertTypographyControls';
 
 interface WidgetPickerProps {
   actionLabel: string;
   onAction: (markup: string) => void;
   disabled?: boolean;
   reloadToken?: number;
+  typographyEnabled?: boolean;
 }
 
 export const WidgetPicker: React.FC<WidgetPickerProps> = ({
@@ -20,6 +28,7 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
   onAction,
   disabled,
   reloadToken = 0,
+  typographyEnabled = true,
 }) => {
   const { t } = useI18n();
   const toast = useToast();
@@ -30,6 +39,8 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
   const [inner, setInner] = useState('');
   const [html, setHtml] = useState('');
   const [previewing, setPreviewing] = useState(false);
+  const [presentation, setPresentation] = useState<VisualInsertPresentation>(DEFAULT_VISUAL_PRESENTATION);
+  const [fieldEnabled, setFieldEnabled] = useState<Record<string, boolean>>({});
 
   const selected = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
@@ -46,6 +57,7 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
         setSelectedId(first.id);
         setValues({ ...first.defaults });
         setInner(sampleInnerFor(first));
+        setFieldEnabled(defaultWidgetFieldEnabled(first));
       }
     } catch {
       toast.error(t('platform.widgets.toast.loadFailed'));
@@ -58,6 +70,22 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
     void load();
   }, [load, reloadToken]);
 
+  const previewAttrs = useMemo(() => {
+    if (!selected) {
+      return values;
+    }
+    const filtered: Record<string, string> = {};
+    for (const field of selected.fields) {
+      if (fieldEnabled[field.key] === false) {
+        continue;
+      }
+      filtered[field.key] = values[field.key] ?? selected.defaults[field.key] ?? '';
+    }
+    return filtered;
+  }, [selected, values, fieldEnabled]);
+
+  const previewInner = fieldEnabled.__inner === false ? '' : inner;
+
   useEffect(() => {
     if (!selected) {
       setHtml('');
@@ -69,8 +97,8 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
       void widgetsApi
         .preview({
           type: selected.id,
-          attrs: values,
-          content: selected.selfClosing ? '' : inner,
+          attrs: previewAttrs,
+          content: selected.selfClosing ? '' : previewInner,
         })
         .then((response) => {
           setHtml(response.success && response.data ? response.data.html : '');
@@ -84,9 +112,13 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
     }, 280);
 
     return () => window.clearTimeout(timer);
-  }, [selected, values, inner]);
+  }, [selected, previewAttrs, previewInner]);
 
-  const markup = selected ? buildWidgetMarkup(selected, values, inner) : '';
+  const coreMarkup = selected ? buildWidgetMarkup(selected, values, inner, fieldEnabled) : '';
+  const markup =
+    coreMarkup === '' || !typographyEnabled
+      ? coreMarkup
+      : wrapWithVisualFrame(coreMarkup, presentation);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] items-start" data-testid="widget-picker">
@@ -109,6 +141,7 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
                   setSelectedId(item.id);
                   setValues({ ...item.defaults });
                   setInner(sampleInnerFor(item));
+                  setFieldEnabled(defaultWidgetFieldEnabled(item));
                 }}
               />
             ))}
@@ -121,48 +154,64 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
           <>
             <AdminWidgetCard title={widgetTypeLabel(selected, t)}>
               <div className="space-y-3">
-                {selected.fields.map((field) => (
-                  <label key={field.key} className="block text-sm text-admin-text">
-                    {t(`platform.widgets.fields.${field.key}`) === `platform.widgets.fields.${field.key}`
+                <p className="text-xs text-admin-muted">{t('editor.shortcodes.fieldsHint')}</p>
+                {selected.fields.map((field) => {
+                  const label =
+                    t(`platform.widgets.fields.${field.key}`) === `platform.widgets.fields.${field.key}`
                       ? field.key
-                      : t(`platform.widgets.fields.${field.key}`)}
-                    {field.kind === 'tone' ? (
-                      <select
-                        className={`mt-1 ${ADMIN_INPUT}`}
-                        value={values[field.key] ?? ''}
-                        disabled={disabled}
-                        onChange={(event) =>
-                          setValues((prev) => ({ ...prev, [field.key]: event.target.value }))
-                        }
-                      >
-                        {(field.options ?? ['primary', 'success', 'warn', 'muted']).map((option) => (
-                          <option key={option} value={option}>
-                            {t(`platform.widgets.tones.${option}`)}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        className={`mt-1 ${ADMIN_INPUT}`}
-                        value={values[field.key] ?? ''}
-                        disabled={disabled}
-                        onChange={(event) =>
-                          setValues((prev) => ({ ...prev, [field.key]: event.target.value }))
-                        }
-                      />
-                    )}
-                  </label>
-                ))}
+                      : t(`platform.widgets.fields.${field.key}`);
+                  const enabled = fieldEnabled[field.key] !== false;
+                  return (
+                    <ShortcodeInsertField
+                      key={field.key}
+                      fieldKey={label}
+                      enabled={enabled}
+                      onEnabledChange={(next) => setFieldEnabled((prev) => ({ ...prev, [field.key]: next }))}
+                    >
+                      {field.kind === 'tone' ? (
+                        <select
+                          className={`mt-1 ${ADMIN_INPUT}`}
+                          value={values[field.key] ?? ''}
+                          disabled={disabled || !enabled}
+                          onChange={(event) =>
+                            setValues((prev) => ({ ...prev, [field.key]: event.target.value }))
+                          }
+                        >
+                          {(field.options ?? ['primary', 'success', 'warn', 'muted']).map((option) => (
+                            <option key={option} value={option}>
+                              {t(`platform.widgets.tones.${option}`)}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          className={`mt-1 ${ADMIN_INPUT}`}
+                          value={values[field.key] ?? ''}
+                          disabled={disabled || !enabled}
+                          onChange={(event) =>
+                            setValues((prev) => ({ ...prev, [field.key]: event.target.value }))
+                          }
+                        />
+                      )}
+                    </ShortcodeInsertField>
+                  );
+                })}
                 {!selected.selfClosing ? (
-                  <label className="block text-sm text-admin-text">
-                    {t('platform.widgets.inner')}
+                  <ShortcodeInsertField
+                    fieldKey={t('platform.widgets.inner')}
+                    enabled={fieldEnabled.__inner !== false}
+                    onEnabledChange={(next) => setFieldEnabled((prev) => ({ ...prev, __inner: next }))}
+                  >
                     <textarea
                       className={`mt-1 min-h-[6rem] font-mono text-xs ${ADMIN_INPUT}`}
                       value={inner}
-                      disabled={disabled}
+                      disabled={disabled || fieldEnabled.__inner === false}
                       onChange={(event) => setInner(event.target.value)}
                     />
-                  </label>
+                  </ShortcodeInsertField>
+                ) : null}
+                {typographyEnabled ? (
+                  <VisualInsertTypographyControls value={presentation} onChange={setPresentation} disabled={disabled} />
                 ) : null}
                 <pre className="overflow-x-auto rounded-lg bg-admin-canvas p-3 text-xs text-admin-muted" data-testid="widget-markup">
                   {markup}
@@ -193,3 +242,14 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
     </div>
   );
 };
+
+function defaultWidgetFieldEnabled(type: WidgetTypeDefinition): Record<string, boolean> {
+  const enabled: Record<string, boolean> = {};
+  for (const field of type.fields) {
+    enabled[field.key] = true;
+  }
+  if (!type.selfClosing) {
+    enabled.__inner = true;
+  }
+  return enabled;
+}

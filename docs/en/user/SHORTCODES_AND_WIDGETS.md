@@ -24,6 +24,21 @@ Outline and shortcodes edit the **same string**. Switching modes does not duplic
 
 **Live preview (right pane)** calls the backend expander — it matches the public site. If preview looks correct but the site does not, purge **content cache** and re-save the page.
 
+### Visual insert (Settings → Editor + per-browser)
+
+| Layer | Effect |
+|-------|--------|
+| **Visual insert modals (shortcodes & widgets)** | Site-wide gate: when off, only the compact insert panel (dropdown / inline picker) is available. |
+| **Modal workspace** (checkbox in the page/article editor) | Per-browser preference (`localStorage`). On = full dialog with live preview; off = quick Markdown insert for experienced editors. |
+| **Layout & typography in insert modals** | Alignment, max width, text size, emphasis, tone, highlight. Non-default choices wrap markup in `[visual-frame …]…[/visual-frame]`. |
+| **Include field** (in modal / widget picker) | Each attribute is included in the generated tag by default; uncheck to **omit** that attribute from the inserted shortcode or widget. |
+
+Shortcode preview uses `POST /api/admin/shortcodes/render-markup`. Widget catalog uses the existing widget preview API.
+
+Embed (YouTube/Vimeo) uses its own modal with player width/alignment — see [Media in content](MEDIA_IN_CONTENT.md#layout-alignment-and-width).
+
+**Roadmap:** server-side **slot toggles** on bundled blocks (e.g. `showcase-hero` without terminal strip) and an admin **shortcode composer** from an internal parts library — see [Shortcode composer roadmap](../architecture/SHORTCODE_COMPOSER.md).
+
 ---
 
 ## 2. Shortcode syntax (rules)
@@ -75,7 +90,7 @@ Markdown inside paired blocks is converted when the page HTML is built. Keep one
 
 | Shortcode | Syntax | Notes |
 |-----------|--------|--------|
-| `showcase-hero` | self-closing | Hero + terminal strip + two CTAs (`href`, `href2`) |
+| `showcase-hero` | self-closing | Hero + optional terminal strip + two CTAs; bool attrs `show-badge`, `show-terminal`, `show-cta`, `show-cta2` (default `true`) hide slots on the public site |
 | `landing-hero` | self-closing | Simpler hero; optional media attrs (see admin definition) |
 | `stats-row` + `stat-item` | paired + self-closing | KPI row |
 | `section-head` | self-closing | Anchor + eyebrow + title + subtitle |

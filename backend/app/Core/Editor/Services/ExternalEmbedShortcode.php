@@ -11,6 +11,22 @@ final class ExternalEmbedShortcode
 {
     public const DIRECTIVE = 'embed';
 
+    public const MAX_WIDTH_MIN = 280;
+
+    public const MAX_WIDTH_MAX = 1280;
+
+    private const BLOCK_PATTERN =
+        '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)(?:\n\s*align:\s*(left|center|right))?(?:\n\s*maxWidth:\s*(\d+))?\s*\n\s*:::/';
+
+    private const INLINE_PATTERN =
+        '/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"(?:\s+align="(left|center|right)")?(?:\s+maxWidth="(\d+)")?\s*:::/';
+
+    private const STRIP_BLOCK_PATTERN =
+        '/:::embed\s*\n\s*provider:\s*\S+\s*\n\s*id:\s*\S+(?:\n\s*align:\s*(?:left|center|right))?(?:\n\s*maxWidth:\s*\d+)?\s*\n\s*:::/';
+
+    private const STRIP_INLINE_PATTERN =
+        '/:::embed\s+provider="[^"]+"\s+id="[^"]+"(?:\s+align="(?:left|center|right)")?(?:\s+maxWidth="\d+")?\s*:::/';
+
     /** @var array<string, string> */
     private const EMBED_URLS = [
         'youtube' => 'https://www.youtube-nocookie.com/embed/',
@@ -28,8 +44,8 @@ final class ExternalEmbedShortcode
         $markdown = $this->promoteStandaloneVideoUrls($markdown);
 
         $expanded = preg_replace_callback(
-            '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/',
-            fn (array $matches): string => $this->renderMatch((string) $matches[1], (string) $matches[2]),
+            self::BLOCK_PATTERN,
+            fn (array $matches): string => $this->renderFromRegexMatch($matches),
             $markdown
         );
 
@@ -38,8 +54,8 @@ final class ExternalEmbedShortcode
         }
 
         $oneLine = preg_replace_callback(
-            '/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"\s*:::/',
-            fn (array $matches): string => $this->renderMatch((string) $matches[1], (string) $matches[2]),
+            self::INLINE_PATTERN,
+            fn (array $matches): string => $this->renderFromRegexMatch($matches),
             $expanded
         );
 
@@ -60,7 +76,7 @@ final class ExternalEmbedShortcode
         $index = 0;
 
         $replace = function (array $matches) use (&$renders, &$index): string {
-            $html = $this->renderMatch((string) $matches[1], (string) $matches[2]);
+            $html = $this->renderFromRegexMatch($matches);
             if ($html === '') {
                 return '';
             }
@@ -73,7 +89,7 @@ final class ExternalEmbedShortcode
         };
 
         $deferred = preg_replace_callback(
-            '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/',
+            self::BLOCK_PATTERN,
             $replace,
             $markdown
         );
@@ -83,7 +99,7 @@ final class ExternalEmbedShortcode
         }
 
         $deferred = preg_replace_callback(
-            '/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"\s*:::/',
+            self::INLINE_PATTERN,
             $replace,
             $deferred
         );
@@ -112,12 +128,12 @@ final class ExternalEmbedShortcode
 
     public function stripBlocks(string $markdown): string
     {
-        $stripped = preg_replace('/:::embed\s*\n\s*provider:\s*\S+\s*\n\s*id:\s*\S+\s*\n\s*:::/', '', $markdown);
+        $stripped = preg_replace(self::STRIP_BLOCK_PATTERN, '', $markdown);
         if (!is_string($stripped)) {
             return $markdown;
         }
 
-        $inline = preg_replace('/:::embed\s+provider="[^"]+"\s+id="[^"]+"\s*:::/', '', $stripped);
+        $inline = preg_replace(self::STRIP_INLINE_PATTERN, '', $stripped);
 
         return is_string($inline) ? $inline : $stripped;
     }
@@ -130,7 +146,7 @@ final class ExternalEmbedShortcode
         $enabled = array_fill_keys(array_map('strtolower', $enabledProviders), true);
 
         if (preg_match_all(
-            '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)\s*\n\s*:::/',
+            self::BLOCK_PATTERN,
             $markdown,
             $blockMatches,
             PREG_SET_ORDER
@@ -144,7 +160,7 @@ final class ExternalEmbedShortcode
         }
 
         if (preg_match_all(
-            '/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"\s*:::/',
+            self::INLINE_PATTERN,
             $markdown,
             $inlineMatches,
             PREG_SET_ORDER
@@ -238,8 +254,25 @@ final class ExternalEmbedShortcode
         ], true);
     }
 
-    private function renderMatch(string $providerRaw, string $idRaw): string
+    /**
+     * @param array<int, string> $matches
+     */
+    private function renderFromRegexMatch(array $matches): string
     {
+        return $this->renderMatch(
+            (string) $matches[1],
+            (string) $matches[2],
+            isset($matches[3]) ? (string) $matches[3] : '',
+            isset($matches[4]) ? (string) $matches[4] : ''
+        );
+    }
+
+    private function renderMatch(
+        string $providerRaw,
+        string $idRaw,
+        string $alignRaw = '',
+        string $maxWidthRaw = ''
+    ): string {
         $provider = strtolower(trim($providerRaw));
         $id = trim($idRaw);
         if ($id === '' || !isset(self::EMBED_URLS[$provider])) {
@@ -255,14 +288,53 @@ final class ExternalEmbedShortcode
             return '';
         }
 
+        $align = $this->normalizeAlign($alignRaw);
+        $maxWidth = $this->normalizeMaxWidth($maxWidthRaw);
+
         $title = htmlspecialchars($provider . ' embed', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $srcAttr = htmlspecialchars($src, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
+        $class = 'paginium-external-embed';
+        if ($align !== null) {
+            $class .= ' paginium-external-embed--align-' . $align;
+        }
+
+        $styleAttr = '';
+        if ($maxWidth !== null) {
+            $styleAttr = ' style="max-width:' . $maxWidth . 'px"';
+        }
+
         // Standalone block-level iframe (same pattern as :::video) — CommonMark escapes nested HTML inside <div>.
         // No sandbox: allow-listed nocookie/Vimeo hosts only; sandbox breaks most embed players despite CSP frame-src.
-        return '<iframe class="paginium-external-embed" src="' . $srcAttr . '" title="' . $title . '" width="560" height="315" loading="lazy" '
-            . 'frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
+        return '<iframe class="' . $class . '" src="' . $srcAttr . '" title="' . $title . '" width="560" height="315" loading="lazy" '
+            . $styleAttr
+            . ' frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
             . 'allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+    }
+
+    private function normalizeAlign(string $raw): ?string
+    {
+        $value = strtolower(trim($raw));
+        if ($value === '') {
+            return null;
+        }
+
+        return in_array($value, ['left', 'center', 'right'], true) ? $value : null;
+    }
+
+    private function normalizeMaxWidth(string $raw): ?int
+    {
+        $trimmed = trim($raw);
+        if ($trimmed === '' || !ctype_digit($trimmed)) {
+            return null;
+        }
+
+        $width = (int) $trimmed;
+        if ($width < self::MAX_WIDTH_MIN || $width > self::MAX_WIDTH_MAX) {
+            return null;
+        }
+
+        return $width;
     }
 
     /**

@@ -56,10 +56,14 @@ export function escapeWidgetAttr(value: string): string {
 export function buildWidgetMarkup(
   type: WidgetTypeDefinition,
   values: Record<string, string>,
-  inner = ''
+  inner = '',
+  fieldEnabled?: Record<string, boolean>
 ): string {
   const parts = [`type="${escapeWidgetAttr(type.id)}"`];
   for (const field of type.fields) {
+    if (fieldEnabled && fieldEnabled[field.key] === false) {
+      continue;
+    }
     const raw = values[field.key] ?? type.defaults[field.key] ?? '';
     parts.push(`${field.key}="${escapeWidgetAttr(raw)}"`);
   }
@@ -69,7 +73,11 @@ export function buildWidgetMarkup(
     return `[widget ${attrs} /]`;
   }
 
-  const body = inner.trim() === '' && type.id === 'kpi-row' ? KPI_ROW_SAMPLE : inner.trim();
+  const innerDisabled = fieldEnabled?.__inner === false;
+  let body = innerDisabled ? '' : inner.trim();
+  if (body === '' && !innerDisabled && type.id === 'kpi-row') {
+    body = KPI_ROW_SAMPLE;
+  }
   return `[widget ${attrs}]\n${body}\n[/widget]`;
 }
 

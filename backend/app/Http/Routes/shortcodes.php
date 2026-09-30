@@ -27,11 +27,18 @@ return function (App $app): void {
 
     $app->group('/api/admin/shortcodes', function (RouteCollectorProxy $group) use ($container) {
         $controller = $container->get(ShortcodeController::class);
-
         $group->get('', [$controller, 'index']);
+        $group->get('/{name}', [$controller, 'show']);
+        $group->post('/render-markup', [$controller, 'renderMarkup']);
+    })->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($container->get(AuthMiddleware::class));
+
+    $app->group('/api/admin/shortcodes', function (RouteCollectorProxy $group) use ($container) {
+        $controller = $container->get(ShortcodeController::class);
+
         $group->post('/preview', [$controller, 'preview']);
         $group->post('/bulk-delete', [$controller, 'bulkDelete']);
-        $group->get('/{name}', [$controller, 'show']);
         $group->put('/{name}', [$controller, 'save']);
         $group->delete('/{name}', [$controller, 'delete']);
     })->add(new PermissionMiddleware($authz, 'settings:manage'))

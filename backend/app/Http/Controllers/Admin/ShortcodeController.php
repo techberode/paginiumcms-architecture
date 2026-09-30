@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\CodePolicy\Exceptions\CodePolicyViolationException;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
+use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -26,6 +27,7 @@ final class ShortcodeController
         private ShortcodeDefinitionManager $shortcodes,
         private ShortcodeCatalogSeeder $catalogSeeder,
         private ContentCacheService $contentCache,
+        private ShortcodeExpanderService $expander,
         private JsonResponder $json,
     ) {
     }
@@ -103,6 +105,33 @@ final class ShortcodeController
         } catch (\JsonException $exception) {
             return $this->json->error($response, 'Invalid JSON: ' . $exception->getMessage(), 422);
         }
+    }
+
+    public function renderMarkup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = RequestJsonBody::decode($request);
+        if (!is_array($payload)) {
+            return $this->json->error($response, 'Invalid JSON body', 400);
+        }
+
+        $markup = trim((string) ($payload['markup'] ?? ''));
+        if ($markup === '') {
+            return $this->json->success($response, ['html' => '']);
+        }
+
+        if (strlen($markup) > 65536) {
+            return $this->json->error($response, 'Markup too large', 422);
+        }
+
+        try {
+            $this->catalogSeeder->seedIfEmpty();
+        } catch (CodePolicyViolationException $exception) {
+            return $this->json->validation($response, $exception->getMessage(), $exception->getErrors());
+        }
+
+        $html = $this->expander->expand($markup);
+
+        return $this->json->success($response, ['html' => $html]);
     }
 
     /**

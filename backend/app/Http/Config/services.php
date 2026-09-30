@@ -1783,6 +1783,7 @@ return [
             get(ShortcodeDefinitionManager::class),
             get(ShortcodeCatalogSeeder::class),
             get(ContentCacheService::class),
+            get(ShortcodeExpanderService::class),
             get(JsonResponder::class)
         ),
     WidgetController::class => create(WidgetController::class)

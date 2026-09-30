@@ -744,6 +744,14 @@ export const settingsSk: MessageTree = {
         "label": "Audit trusted HTML / embed uložení",
         "help": "Zapnuté = security audit pri každom uložení s :::html-safe alebo :::embed (počty a hash tela — nikdy telo bloku)."
       },
+      "visualInsertModalsEnabled": {
+        "label": "Vizuálne modaly (shortcodes)",
+        "help": "Zapnuté = modal s live server náhľadom. Vypnuté = rýchle vloženie cez dropdown."
+      },
+      "visualInsertTypographyEnabled": {
+        "label": "Layout a typografia v modale",
+        "help": "Zarovnanie, šírka, veľkosť textu, dôraz, zvýraznenie — ukladá sa cez [visual-frame] pri neštandardných hodnotách."
+      },
       "customComponentsEnabled": {
         "label": "Povoliť custom komponenty editora",
         "help": "Pluginy môžu registrovať vlastné bloky pre Markdown a WYSIWYG."

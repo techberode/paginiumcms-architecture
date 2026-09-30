@@ -5890,6 +5890,7 @@ Articles or pages contain a saved `:::embed` block (YouTube nocookie / Vimeo). S
 ### Resolution
 
 - `ContentSecuritySanitizer::preserveTrustedEditorFigures()` also preserves `<iframe class="paginium-external-embed">…</iframe>` through sanitization (same pattern as trusted diagram figures).
+- **Follow-up (2026-09-30):** Layout classes (`paginium-external-embed--align-*`) broke preserve regex (it required `class="paginium-external-embed"` exactly). Preserve now matches any class list containing `paginium-external-embed`.
 - Regression tests: `ContentSecuritySanitizerTest`, `ContentBodyRendererTest` (markdown → parse → sanitize pipeline).
 
 ### Still required for embeds

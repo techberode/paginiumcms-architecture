@@ -296,13 +296,20 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
               'shortcodes',
               <ShortcodeInsertPanel
                 disabled={!canEdit}
+                visualModalsEnabled={Boolean(settings.editor?.visualInsertModalsEnabled ?? true)}
+                visualTypographyEnabled={Boolean(settings.editor?.visualInsertTypographyEnabled ?? true)}
                 onInsert={(snippet) => onInsertShortcode(snippet)}
               />
             )
           : null}
         {wrap(
           'widgets',
-          <WidgetInsertPanel disabled={!canEdit} onInsert={(snippet) => onInsertShortcode(snippet)} />
+          <WidgetInsertPanel
+            disabled={!canEdit}
+            visualModalsEnabled={Boolean(settings.editor?.visualInsertModalsEnabled ?? true)}
+            visualTypographyEnabled={Boolean(settings.editor?.visualInsertTypographyEnabled ?? true)}
+            onInsert={(snippet) => onInsertShortcode(snippet)}
+          />
         )}
         {wrap(
           'snippets',
