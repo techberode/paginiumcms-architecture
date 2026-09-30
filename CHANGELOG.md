@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Planned (It.58f-i):** Page field composer — section shells, per-block gallery layout overrides, portfolio-page flexibility without new themes — [PAGE_FIELD_COMPOSER_PLANNED.md](docs/en/architecture/PAGE_FIELD_COMPOSER_PLANNED.md).
 - **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
 - **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.
 - **Shortcodes:** Bundled `faq-list` / `faq-item` (native `<details>`), `link-row` / `link-chip`; `landing-hero` v3 slot toggles (`show-subtitle`, `show-cta`, `show-media`).

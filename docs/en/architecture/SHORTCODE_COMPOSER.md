@@ -117,7 +117,7 @@ If a block needs client hydration on the public site, it must be a **first‑par
 
 ## Suggested implementation order
 
-1. `showcase-hero` slot toggles + renderer refactor (proves bool + modal + tests).
+1. ~~`showcase-hero` slot toggles~~ (done) · **`feature-gallery` v2 per-block layout** + **`section-band`** — see [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md) (**It.58f-i**, September 30, 2026 handoff).
 2. Parts library JSON + seeder + policy tests.
 3. `ComposedShortcodeRenderer` + one example composed shortcode.
 4. Admin composer UI (MVP: checklist of parts, no drag‑drop).

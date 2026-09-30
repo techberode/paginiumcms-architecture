@@ -1,8 +1,9 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 22, 2026 · `v2.1.0-beta.89` (+ `[Unreleased]` Redis cache)  
-> **Active phase:** **Full planned-iteration development** — stabilization freeze lifted
+> **Checkpoint:** September 30, 2026 · `main` @ editorial + layout slices (+ `[Unreleased]`)  
+> **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
+> **Next planned slice:** **Page field composer (It.58f-i)** — see [architecture/PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md)
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -52,6 +53,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
+| 0 | **It.58f-i** Page field composer (sections + gallery per-block layout) | User-requested flexibility for portfolio/landing pages without per-page themes — [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 1 | **It.82d** Origin host metrics | Optional maintainer hook |
 
 Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
