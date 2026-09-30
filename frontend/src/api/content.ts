@@ -139,7 +139,7 @@ export const contentApi = {
   bulkUpdateStatus: async (
     type: ContentType,
     slugs: string[],
-    status: 'draft' | 'published' | 'archived' | 'scheduled'
+    status: 'draft' | 'published' | 'archived' | 'scheduled' | 'pending_review' | 'reviewed'
   ) => {
     return apiClient.patch<import('../types/bulk').BulkBatchResult>(
       `${endpoint(type)}/bulk-status`,

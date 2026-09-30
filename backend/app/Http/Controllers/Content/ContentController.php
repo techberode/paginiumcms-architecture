@@ -47,6 +47,7 @@ use PaginiumCMS\Modules\Security\Models\ApiBearerAuth;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\ContentPathAclGuard;
 use PaginiumCMS\Core\Content\BlogAuthorSettings;
+use PaginiumCMS\Core\Content\Services\ContentEditorialReviewService;
 use PaginiumCMS\Core\Content\Models\CategoryRecord;
 use PaginiumCMS\Core\Content\Services\BlogSidebarService;
 use PaginiumCMS\Support\AppTimezone;
@@ -57,7 +58,14 @@ use Psr\Http\Message\ServerRequestInterface;
 class ContentController
 {
     /** @var array<int, string> */
-    private array $validStatuses = ['draft', 'published', 'archived', 'scheduled'];
+    private array $validStatuses = [
+        'draft',
+        'published',
+        'archived',
+        'scheduled',
+        'pending_review',
+        'reviewed',
+    ];
 
     public function __construct(
         private ContentRepositoryInterface $repository,
@@ -85,6 +93,7 @@ class ContentController
         private ContentBulkTagService $bulkTagService,
         private ContentStalenessService $staleness,
         private BlogSidebarService $blogSidebar,
+        private ContentEditorialReviewService $editorialReview,
     ) {
     }
 
@@ -261,6 +270,7 @@ class ContentController
         );
         $user = $this->resolveUser($request);
         $this->normalizeEditorContentPayload($data, $user);
+        $this->applyEditorialReviewStatus($data, $user, null);
         $validation = $this->validatePayload($data, $type, true, $user);
 
         if ($validation !== null) {
@@ -306,7 +316,7 @@ class ContentController
                 $content->setStatus('draft');
                 $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'create', $user);
                 $this->repository->save($content);
-                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user);
+                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user, 'draft');
                 $otp = $this->otpWorkflow->startPublishApproval($user, $type, $content->getSlug(), $targetStatus);
 
                 return $this->json->respond($response, [
@@ -323,7 +333,7 @@ class ContentController
 
             $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'create', $user);
             $this->repository->save($content);
-            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user);
+            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'create', $user, 'draft');
             $this->versioning->recordChange(
                 $content,
                 $type,
@@ -374,6 +384,7 @@ class ContentController
         );
         $user = $this->resolveUser($request);
         $this->normalizeEditorContentPayload($data, $user);
+        $this->applyEditorialReviewStatus($data, $user, $existing);
         $validation = $this->validatePayload($data, $type, false, $user);
 
         if ($validation !== null) {
@@ -441,6 +452,7 @@ class ContentController
                     return $this->json->error($response, 'Neprihlásený používateľ', 401);
                 }
 
+                $otpPreviousStatus = $existing->getStatus();
                 $this->applyWritePayload($existing, $data, $newSlug);
                 $writeLocale = strtolower(trim((string) ($data['locale'] ?? '')));
                 if ($writeLocale !== '') {
@@ -450,7 +462,14 @@ class ContentController
                 }
                 $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
                 $this->repository->save($existing);
-                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $existing, $type, 'update', $user);
+                $this->emitContentHook(
+                    HookCatalog::CONTENT_AFTER_SAVE,
+                    $existing,
+                    $type,
+                    'update',
+                    $user,
+                    $otpPreviousStatus
+                );
 
                 $otp = $this->otpWorkflow->startPublishApproval($user, $type, $newSlug, 'published');
 
@@ -467,11 +486,19 @@ class ContentController
                 ], 202);
             }
 
+            $previousStatus = $existing->getStatus();
             $this->applyWritePayload($existing, $data, $newSlug);
             $user = $this->resolveUser($request);
             $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $existing, $type, 'update', $user);
             $this->repository->save($existing);
-            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $existing, $type, 'update', $user);
+            $this->emitContentHook(
+                HookCatalog::CONTENT_AFTER_SAVE,
+                $existing,
+                $type,
+                'update',
+                $user,
+                $previousStatus
+            );
             $this->versioning->recordChange(
                 $existing,
                 $type,
@@ -633,7 +660,14 @@ class ContentController
                 $user = $this->resolveUser($request);
                 $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'status', $user);
                 $this->repository->save($content);
-                $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'status', $user);
+                $this->emitContentHook(
+                    HookCatalog::CONTENT_AFTER_SAVE,
+                    $content,
+                    $type,
+                    'status',
+                    $user,
+                    $previousStatus
+                );
                 if ($previousStatus !== $status) {
                     $this->emitContentHook(
                         HookCatalog::CONTENT_AFTER_STATUS_CHANGE,
@@ -910,7 +944,14 @@ class ContentController
             $user = $this->resolveUser($request);
             $this->emitContentHook(HookCatalog::CONTENT_BEFORE_SAVE, $content, $type, 'status', $user);
             $this->repository->save($content);
-            $this->emitContentHook(HookCatalog::CONTENT_AFTER_SAVE, $content, $type, 'status', $user);
+            $this->emitContentHook(
+                HookCatalog::CONTENT_AFTER_SAVE,
+                $content,
+                $type,
+                'status',
+                $user,
+                $previousStatus
+            );
             if ($previousStatus !== $content->getStatus()) {
                 $this->emitContentHook(
                     HookCatalog::CONTENT_AFTER_STATUS_CHANGE,
@@ -1618,6 +1659,23 @@ class ContentController
     /**
      * @param array<int|string, mixed> $data
      */
+    private function applyEditorialReviewStatus(array &$data, ?User $user, ?Content $existing): void
+    {
+        if ($user === null || !array_key_exists('status', $data)) {
+            return;
+        }
+
+        $previous = $existing !== null ? $existing->getStatus() : 'draft';
+        $data['status'] = $this->editorialReview->resolveRequestedStatus(
+            $user,
+            (string) $data['status'],
+            $previous
+        );
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
     private function validateSchedulingPayload(array $data): ?string
     {
         $status = (string) ($data['status'] ?? 'draft');
@@ -1963,6 +2021,7 @@ class ContentController
         $context = [
             'type' => $type,
             'slug' => $content->getSlug(),
+            'title' => $content->getTitle(),
             'status' => $content->getStatus(),
             'action' => $action,
             'userId' => $user?->getId() ?? '',

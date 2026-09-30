@@ -21,6 +21,7 @@ export * from './comments';
 export * from './conflicts';
 export * from './contact';
 export * from './content';
+export * from './contentEditorial';
 export * from './contentTranslations';
 export * from './contentMigration';
 export * from './counts';
@@ -98,6 +99,7 @@ import { categoriesApi } from './categories';
 import { codeEditorApi } from './codeEditor';
 import { comingSoonApi } from './comingSoon';
 import { contentApi } from './content';
+import { contentEditorialApi } from './contentEditorial';
 import { contentTranslationsApi } from './contentTranslations';
 import { contentMigrationApi } from './contentMigration';
 import { demoApi } from './demo';
@@ -145,6 +147,7 @@ export const api = {
   codeEditor: codeEditorApi,
   comingSoon: comingSoonApi,
   content: contentApi,
+  contentEditorial: contentEditorialApi,
   contentTranslations: contentTranslationsApi,
   contentMigration: contentMigrationApi,
   demo: demoApi,

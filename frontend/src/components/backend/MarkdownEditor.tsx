@@ -78,6 +78,7 @@ import {
   resolveScheduledAtForSave,
   type ContentEditorStatus,
 } from '../../utils/contentScheduling';
+import { contentEditorialApi, type ContentLinkIssue } from '../../api/contentEditorial';
 import { useI18n } from '../../context/I18nContext';
 import { SUPPORTED_LOCALES } from '../../i18n/types';
 import {
@@ -167,6 +168,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
   );
+  const [linkIssues, setLinkIssues] = useState<ContentLinkIssue[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | undefined>();
   const [loadedCreatedAt, setLoadedCreatedAt] = useState<string | undefined>();
@@ -631,7 +633,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     async (
       forceRevision?: string,
       contentOverride?: string,
-      options?: { markReviewed?: boolean }
+      options?: { markReviewed?: boolean; approveEditorial?: boolean }
     ) => {
       if (status === 'published' && !title.trim()) {
         toast.warning(t('editor.markdown.toast.titleRequired'));
@@ -648,6 +650,30 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         return;
       }
 
+      const saveStatus: ContentEditorStatus = options?.approveEditorial ? 'reviewed' : status;
+      const linkCheckRequired = Boolean(settings.content?.editorialLinkCheckRequired);
+      const needsLinkGate =
+        linkCheckRequired && (saveStatus === 'published' || saveStatus === 'pending_review');
+
+      if (needsLinkGate) {
+        try {
+          const check = await contentEditorialApi.linkCheck({
+            type,
+            slug: nextSlug,
+            body: stored.content,
+            contentFormat: stored.contentFormat,
+          });
+          setLinkIssues(check.issues);
+          if (!check.ok) {
+            toast.error(t('editor.editorial.linkCheckRequired'));
+            return;
+          }
+        } catch {
+          toast.error(t('editor.editorial.linkCheckError'));
+          return;
+        }
+      }
+
       setSaving(true);
       try {
         const data: Record<string, unknown> = {
@@ -655,7 +681,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           title: title.trim(),
           content: stored.content,
           contentFormat: stored.contentFormat,
-          status,
+          status: saveStatus,
           slug: nextSlug,
           message: commitMessage.trim(),
           baseRevision: forceRevision ?? baseRevision,
@@ -766,8 +792,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             await discardDraft(type, slug);
           }
           autoSave.syncBaseline();
+          if (options?.approveEditorial) {
+            setStatus('reviewed');
+            setLocaleStatusMap((prev) => ({ ...prev, [activeLocale]: 'reviewed' }));
+          }
           toast.success(
-            options?.markReviewed ? t('content.stale.reviewedToast') : t('editor.markdown.toast.saved')
+            options?.approveEditorial
+              ? t('editor.editorial.approvedToast')
+              : options?.markReviewed
+                ? t('content.stale.reviewedToast')
+                : t('editor.markdown.toast.saved')
           );
           if (slugRenamed) {
             toast.warning(t('editor.markdown.toast.slugChanged', { slug: nextSlug }));
@@ -836,6 +870,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       toast,
       t,
       autoSave.syncBaseline,
+      settings.content?.editorialLinkCheckRequired,
     ]
   );
 
@@ -1022,6 +1057,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
       canUseExternalEmbed={canUseExternalEmbed}
       embedProviders={embedProviders}
       onBlockedAction={(message) => toast.warning(message)}
+      brokenLinkLines={linkIssues.map((issue) => issue.line)}
     />
   );
 
@@ -1136,6 +1172,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onCancel={() => navigate(type === 'article' ? '/articles' : '/pages')}
         onSave={() => void handleSave()}
         onMarkReviewed={() => void handleSave(undefined, undefined, { markReviewed: true })}
+        onApproveEditorialReview={() =>
+          void handleSave(undefined, undefined, { approveEditorial: true })
+        }
+        onLinkIssuesChange={setLinkIssues}
         onOpenPreview={openSitePreview}
         articleComments={type === 'article' ? articleComments : undefined}
         onArticleCommentsChange={type === 'article' ? setArticleComments : undefined}

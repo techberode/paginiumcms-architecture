@@ -46,4 +46,6 @@ return [
     'publish_notify_reason_otp_not_approved' => 'chýba schválenie OTP na publikovanie',
     'publish_notify_reason_save_failed' => 'uloženie zlyhalo',
     'publish_notify_reason_archived' => 'obsah je archivovaný',
+    'editorial_review_notify_subject' => 'Žiadosť o kontrolu: :title',
+    'editorial_review_notify_body' => ':type „:title“ (slug :slug) čaká na kontrolu vedúcim tímu.',
 ];

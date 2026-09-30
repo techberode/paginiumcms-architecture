@@ -16,16 +16,16 @@ final class ExternalEmbedShortcode
     public const MAX_WIDTH_MAX = 1280;
 
     private const BLOCK_PATTERN =
-        '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)(?:\n\s*align:\s*(left|center|right))?(?:\n\s*maxWidth:\s*(\d+))?\s*\n\s*:::/';
+        '/:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)(?:\n\s*align:\s*(left|center|right))?(?:\n\s*maxWidth:\s*(\d+))?(?:\n\s*caption:\s*(.+?))?(?:\n\s*captionAlign:\s*(left|center|right))?\s*\n\s*:::/s';
 
     private const INLINE_PATTERN =
-        '/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"(?:\s+align="(left|center|right)")?(?:\s+maxWidth="(\d+)")?\s*:::/';
+        '/:::embed\s+provider="([^"]+)"\s+id="([^"]+)"(?:\s+align="(left|center|right)")?(?:\s+maxWidth="(\d+)")?(?:\s+caption="([^"]*)")?(?:\s+captionAlign="(left|center|right)")?\s*:::/';
 
     private const STRIP_BLOCK_PATTERN =
-        '/:::embed\s*\n\s*provider:\s*\S+\s*\n\s*id:\s*\S+(?:\n\s*align:\s*(?:left|center|right))?(?:\n\s*maxWidth:\s*\d+)?\s*\n\s*:::/';
+        '/:::embed\s*\n\s*provider:\s*\S+\s*\n\s*id:\s*\S+(?:\n\s*align:\s*(?:left|center|right))?(?:\n\s*maxWidth:\s*\d+)?(?:\n\s*caption:\s*.+?)?(?:\n\s*captionAlign:\s*(?:left|center|right))?\s*\n\s*:::/s';
 
     private const STRIP_INLINE_PATTERN =
-        '/:::embed\s+provider="[^"]+"\s+id="[^"]+"(?:\s+align="(?:left|center|right)")?(?:\s+maxWidth="\d+")?\s*:::/';
+        '/:::embed\s+provider="[^"]+"\s+id="[^"]+"(?:\s+align="(?:left|center|right)")?(?:\s+maxWidth="\d+")?(?:\s+caption="[^"]*")?(?:\s+captionAlign="(?:left|center|right)")?\s*:::/';
 
     /** @var array<string, string> */
     private const EMBED_URLS = [
@@ -263,7 +263,9 @@ final class ExternalEmbedShortcode
             (string) $matches[1],
             (string) $matches[2],
             isset($matches[3]) ? (string) $matches[3] : '',
-            isset($matches[4]) ? (string) $matches[4] : ''
+            isset($matches[4]) ? (string) $matches[4] : '',
+            isset($matches[5]) ? (string) $matches[5] : '',
+            isset($matches[6]) ? (string) $matches[6] : ''
         );
     }
 
@@ -271,7 +273,9 @@ final class ExternalEmbedShortcode
         string $providerRaw,
         string $idRaw,
         string $alignRaw = '',
-        string $maxWidthRaw = ''
+        string $maxWidthRaw = '',
+        string $captionRaw = '',
+        string $captionAlignRaw = 'left'
     ): string {
         $provider = strtolower(trim($providerRaw));
         $id = trim($idRaw);
@@ -306,10 +310,31 @@ final class ExternalEmbedShortcode
 
         // Standalone block-level iframe (same pattern as :::video) — CommonMark escapes nested HTML inside <div>.
         // No sandbox: allow-listed nocookie/Vimeo hosts only; sandbox breaks most embed players despite CSP frame-src.
-        return '<iframe class="' . $class . '" src="' . $srcAttr . '" title="' . $title . '" width="560" height="315" loading="lazy" '
+        $iframe = '<iframe class="' . $class . '" src="' . $srcAttr . '" title="' . $title . '" width="560" height="315" loading="lazy" '
             . $styleAttr
             . ' frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
             . 'allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+
+        $caption = trim($captionRaw);
+        if ($caption === '') {
+            return $iframe;
+        }
+
+        $align = $this->normalizeCaptionAlign($captionAlignRaw);
+        $safeCaption = htmlspecialchars($caption, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $figureClass = 'paginium-figure paginium-figure--embed paginium-figure--caption-' . $align;
+
+        return '<figure class="' . $figureClass . '">' . $iframe . '<figcaption>' . $safeCaption . '</figcaption></figure>';
+    }
+
+    private function normalizeCaptionAlign(string $raw): string
+    {
+        $value = strtolower(trim($raw));
+        if ($value === '') {
+            return 'left';
+        }
+
+        return in_array($value, ['left', 'center', 'right'], true) ? $value : 'left';
     }
 
     private function normalizeAlign(string $raw): ?string

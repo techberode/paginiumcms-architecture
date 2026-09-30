@@ -60,6 +60,7 @@ interface MarkdownContentEditorProps {
   onBlockedAction?: (message: string) => void;
   /** Hide Úprava/Rozdelený/Náhľad when a sibling live preview pane is already shown. */
   hideClientPreview?: boolean;
+  brokenLinkLines?: number[];
 }
 
 export interface MarkdownContentEditorHandle {
@@ -88,6 +89,7 @@ export const MarkdownContentEditor = forwardRef<
   profile,
   onBlockedAction,
   hideClientPreview = false,
+  brokenLinkLines = [],
   },
   ref
 ) {
@@ -377,6 +379,7 @@ export const MarkdownContentEditor = forwardRef<
                 tabSize={tabSize}
                 placeholder={t('editor.markdownContent.placeholder')}
                 onSelectionChange={trackSelection}
+                brokenLinkLines={brokenLinkLines}
                 onPasteBlocked={() =>
                   onBlockedAction?.(t('editor.markdownContent.blockedHtmlPaste'))
                 }

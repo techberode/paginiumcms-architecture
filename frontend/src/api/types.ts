@@ -84,7 +84,7 @@ export interface Page {
   content: string;
   frontMatter: Record<string, unknown>;
   html: string;
-  status: 'draft' | 'published' | 'archived' | 'scheduled';
+  status: 'draft' | 'published' | 'archived' | 'scheduled' | 'pending_review' | 'reviewed';
   author: string;
   createdAt: string;
   updatedAt: string;

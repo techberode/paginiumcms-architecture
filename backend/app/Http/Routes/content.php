@@ -116,6 +116,11 @@ return function (App $app): void {
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);
 
+    $app->post('/api/admin/content/link-check', [$metaController, 'linkCheck'])
+        ->add($container->get(\PaginiumCMS\Http\Middleware\ContentSuggestMetaRateLimitMiddleware::class))
+        ->add(new PermissionMiddleware($authz, 'content:edit'))
+        ->add($auth);
+
     $app->get('/api/admin/content/editorial-calendar', [$calendarController, 'index'])
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);

@@ -46,4 +46,6 @@ return [
     'publish_notify_reason_otp_not_approved' => 'publish OTP not approved',
     'publish_notify_reason_save_failed' => 'save failed',
     'publish_notify_reason_archived' => 'content archived',
+    'editorial_review_notify_subject' => 'Review requested: :title',
+    'editorial_review_notify_body' => ':type “:title” (slug :slug) is waiting for team-lead review.',
 ];

@@ -12,6 +12,8 @@ const STATUS_CLASS: Record<ContentEditorStatus, string> = {
   published: 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200',
   archived: 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200',
   scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-200',
+  pending_review: 'bg-orange-100 text-orange-900 dark:bg-orange-950/50 dark:text-orange-200',
+  reviewed: 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-200',
 };
 
 export const LocaleStatusBadges: React.FC<LocaleStatusBadgesProps> = ({

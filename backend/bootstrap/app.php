@@ -1141,6 +1141,7 @@ $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentIndexService::class)
 $container->get(\PaginiumCMS\Modules\Newsletter\Services\NewsletterHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Core\Webhooks\Services\WebhookHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanHookRegistrar::class)->register();
+$container->get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewHookRegistrar::class)->register();
 $container->get(\PaginiumCMS\Core\Content\Services\ContentPublishNotificationHookRegistrar::class)->register();
 
 return $app;

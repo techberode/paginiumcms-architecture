@@ -13,6 +13,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Content editor:** YouTube/Vimeo embed optional **caption** under player (`caption` / `captionAlign`, default left).
+- **Content editor:** Editorial **review workflow** — settings + teams, statuses `pending_review` / `reviewed`, non-leader publish → pending, planner enqueue, leader notifications (`editorialReviewNotifyLeaders` + monitoring content-publish connector), team-lead **Mark as reviewed**, optional `editorialReviewPlanId`.
+- **Content editor:** **Internal link check** — `POST /api/admin/content/link-check` (markdown/html/tiptap, relative `./slug`, `/blog/…`, absolute same-path URLs); flags missing slugs and unpublished targets; editor button, CodeMirror line highlights, optional `editorialLinkCheckRequired` gate on save. See [CONTENT_EDITORIAL_WORKFLOW.md](docs/en/architecture/CONTENT_EDITORIAL_WORKFLOW.md).
 - **Content editor:** **Modal workspace** toggle (localStorage) on shortcode/widget insert panels — visual dialog with preview vs compact Markdown quick insert; per-field **include** checkboxes in insert modal and widget picker (omit disabled attrs from generated tags).
 - **Content editor:** Visual **shortcode insert modal** (server live preview, attribute fields) + shared **layout/typography** controls for shortcodes/widgets (`[visual-frame]` wrapper); Settings → Editor toggles `visualInsertModalsEnabled` / `visualInsertTypographyEnabled`; `POST /api/admin/shortcodes/render-markup`; bundled `visual-frame` uses policy-safe `pg-visual-frame` class.
 - **Fix:** Shortcode catalog list / render for editors — `GET /api/admin/shortcodes`, definition fetch, and `render-markup` require `content:edit` (not `settings:manage`).

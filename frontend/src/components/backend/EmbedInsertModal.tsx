@@ -9,6 +9,7 @@ import {
   normalizeEmbedMaxWidth,
   normalizeEmbedVideoId,
   type EmbedAlign,
+  type EmbedCaptionAlign,
   type ExternalEmbedProvider,
 } from '../../utils/embedShortcode';
 
@@ -30,6 +31,9 @@ export const EmbedInsertModal: React.FC<EmbedInsertModalProps> = ({
   const [videoId, setVideoId] = useState('');
   const [align, setAlign] = useState<EmbedAlign>('center');
   const [maxWidth, setMaxWidth] = useState(EMBED_MAX_WIDTH_DEFAULT);
+  const [captionEnabled, setCaptionEnabled] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [captionAlign, setCaptionAlign] = useState<EmbedCaptionAlign>('left');
 
   const providers = useMemo(
     () => (enabledProviders.length > 0 ? enabledProviders : (['youtube'] as ExternalEmbedProvider[])),
@@ -42,6 +46,9 @@ export const EmbedInsertModal: React.FC<EmbedInsertModalProps> = ({
       setVideoId('');
       setAlign('center');
       setMaxWidth(EMBED_MAX_WIDTH_DEFAULT);
+      setCaptionEnabled(false);
+      setCaption('');
+      setCaptionAlign('left');
     }
   }, [open, providers]);
 
@@ -54,8 +61,10 @@ export const EmbedInsertModal: React.FC<EmbedInsertModalProps> = ({
     () => ({
       align,
       maxWidth: normalizeEmbedMaxWidth(maxWidth) ?? EMBED_MAX_WIDTH_DEFAULT,
+      caption: captionEnabled ? caption.trim() : '',
+      captionAlign,
     }),
-    [align, maxWidth]
+    [align, maxWidth, caption, captionAlign, captionEnabled]
   );
 
   const previewIframeHtml = useMemo(() => {
@@ -150,6 +159,40 @@ export const EmbedInsertModal: React.FC<EmbedInsertModalProps> = ({
                   onChange={(e) => setMaxWidth(Number(e.target.value))}
                 />
               </label>
+
+              <div className="space-y-2 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={captionEnabled}
+                    onChange={(e) => setCaptionEnabled(e.target.checked)}
+                  />
+                  {t('editor.embed.captionEnableLabel')}
+                </label>
+                {captionEnabled ? (
+                  <>
+                    <textarea
+                      className="form-input min-h-[4rem] w-full text-sm"
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      placeholder={t('editor.embed.captionPlaceholder')}
+                    />
+                    <label className="block text-sm text-gray-700 dark:text-gray-300">
+                      {t('editor.embed.captionAlignLabel')}
+                      <select
+                        className="form-input mt-1 w-full"
+                        value={captionAlign}
+                        onChange={(e) => setCaptionAlign(e.target.value as EmbedCaptionAlign)}
+                      >
+                        <option value="left">{t('editor.embed.captionAlignLeft')}</option>
+                        <option value="center">{t('editor.embed.captionAlignCenter')}</option>
+                        <option value="right">{t('editor.embed.captionAlignRight')}</option>
+                      </select>
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('editor.embed.captionHelp')}</p>
+                  </>
+                ) : null}
+              </div>
             </div>
 
             <div className="space-y-2">

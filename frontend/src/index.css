@@ -810,6 +810,23 @@
   @apply m-0 mt-2 whitespace-pre-wrap font-mono text-xs text-slate-700 dark:text-slate-200;
 }
 
+.cm-broken-link-line {
+  background-color: rgb(254 226 226 / 0.55);
+}
+
+.dark .cm-broken-link-line {
+  background-color: rgb(127 29 29 / 0.35);
+}
+
+.cm-broken-link-line .cm-line {
+  font-weight: 600;
+  color: rgb(185 28 28);
+}
+
+.dark .cm-broken-link-line .cm-line {
+  color: rgb(252 165 165);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gallery-slider__slide,
   .gallery-slider--cinematic .gallery-slider__image {

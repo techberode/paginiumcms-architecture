@@ -57,6 +57,9 @@ import {
 import { PageHeroSettingsPanel } from './PageHeroSettingsPanel';
 import type { ArticleHeroFocus, PageHeroSettings } from '../../utils/pageHero';
 import { ArticleHeroFocusPanel } from './ArticleHeroFocusPanel';
+import { ContentEditorLinkCheck } from './ContentEditorLinkCheck';
+import type { ContentLinkIssue } from '../../api/contentEditorial';
+import { teamsApi } from '../../api/teams';
 
 const PAGE_TEMPLATE_VALUES = ['default', 'home', 'about', 'contact', 'landing', 'services', 'blog'] as const;
 
@@ -97,6 +100,8 @@ interface ContentEditorShellProps {
   onCancel: () => void;
   onSave: () => void;
   onMarkReviewed?: () => void;
+  onApproveEditorialReview?: () => void;
+  onLinkIssuesChange?: (issues: ContentLinkIssue[]) => void;
   onOpenPreview?: () => void;
   children: React.ReactNode;
   footerExtra?: React.ReactNode;
@@ -158,6 +163,8 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onCancel,
   onSave,
   onMarkReviewed,
+  onApproveEditorialReview,
+  onLinkIssuesChange,
   onOpenPreview,
   children,
   footerExtra,
@@ -231,15 +238,54 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
       ? t('editor.shell.editArticle')
       : t('editor.shell.editPage');
 
-  const statusLabels = useMemo(
-    () => ({
+  const reviewStatusesOn =
+    Boolean(settings.content?.editorialReviewEnabled) &&
+    Boolean(settings.content?.editorialReviewStatusesEnabled ?? true);
+
+  const [isTeamLeader, setIsTeamLeader] = useState(false);
+
+  useEffect(() => {
+    if (!reviewStatusesOn || !user?.id) {
+      setIsTeamLeader(false);
+      return;
+    }
+
+    let cancelled = false;
+    void teamsApi
+      .list()
+      .then((index) => {
+        if (cancelled) {
+          return;
+        }
+        const leader = index.teams.some((team) =>
+          (team.teamLeaderUserIds ?? []).includes(user.id)
+        );
+        setIsTeamLeader(leader);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsTeamLeader(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reviewStatusesOn, user?.id]);
+
+  const statusLabels = useMemo(() => {
+    const labels: Record<string, string> = {
       draft: t('editor.shell.statusLabels.draft'),
       published: t('editor.shell.statusLabels.published'),
       archived: t('editor.shell.statusLabels.archived'),
       scheduled: t('editor.shell.statusLabels.scheduled'),
-    }),
-    [t]
-  );
+    };
+    if (reviewStatusesOn) {
+      labels.pending_review = t('editor.shell.statusLabels.pending_review');
+      labels.reviewed = t('editor.shell.statusLabels.reviewed');
+    }
+    return labels;
+  }, [reviewStatusesOn, t]);
 
   const settingsWorkspaceDefault = Boolean(settings.editor?.fullscreenWorkspace);
   const [workspace, setWorkspace] = useState(() => resolveEditorWorkspace(settingsWorkspaceDefault));
@@ -416,6 +462,16 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                 {t('editor.shell.preview')}
               </button>
             )}
+            {!isNew && status === 'pending_review' && isTeamLeader && onApproveEditorialReview && (
+              <button
+                type="button"
+                onClick={onApproveEditorialReview}
+                disabled={!canEdit || saving}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200"
+              >
+                {t('editor.editorial.approveReview')}
+              </button>
+            )}
             {!isNew && status === 'published' && onMarkReviewed && (
               <button
                 type="button"
@@ -478,6 +534,14 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
                     {t('editor.shell.slugChangeWarning')}
                   </p>
                 )}
+              <ContentEditorLinkCheck
+                contentType={type}
+                slug={resolveEditorSlug(editSlug, title)}
+                body={content}
+                editorMode={editorMode}
+                disabled={!canEdit}
+                onIssuesChange={onLinkIssuesChange}
+              />
             </div>
 
             <div className="form-group">

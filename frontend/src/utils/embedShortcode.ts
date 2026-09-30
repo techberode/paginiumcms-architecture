@@ -4,9 +4,13 @@ export type ExternalEmbedProvider = 'youtube' | 'vimeo';
 
 export type EmbedAlign = 'left' | 'center' | 'right';
 
+export type EmbedCaptionAlign = 'left' | 'center' | 'right';
+
 export interface EmbedLayoutOptions {
   align?: EmbedAlign;
   maxWidth?: number;
+  caption?: string;
+  captionAlign?: EmbedCaptionAlign;
 }
 
 export const EMBED_MAX_WIDTH_MIN = 280;
@@ -24,10 +28,10 @@ const ID_PATTERNS: Record<ExternalEmbedProvider, RegExp> = {
 };
 
 const BLOCK_PATTERN =
-  /:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)(?:\n\s*align:\s*(left|center|right))?(?:\n\s*maxWidth:\s*(\d+))?\s*\n\s*:::/;
+  /:::embed\s*\n\s*provider:\s*(\S+)\s*\n\s*id:\s*(\S+)(?:\n\s*align:\s*(left|center|right))?(?:\n\s*maxWidth:\s*(\d+))?(?:\n\s*caption:\s*([\s\S]*?))?(?:\n\s*captionAlign:\s*(left|center|right))?\s*\n\s*:::/;
 
 const INLINE_PATTERN =
-  /:::embed\s+provider="([^"]+)"\s+id="([^"]+)"(?:\s+align="(left|center|right)")?(?:\s+maxWidth="(\d+)")?\s*:::/;
+  /:::embed\s+provider="([^"]+)"\s+id="([^"]+)"(?:\s+align="(left|center|right)")?(?:\s+maxWidth="(\d+)")?(?:\s+caption="([^"]*)")?(?:\s+captionAlign="(left|center|right)")?\s*:::/;
 
 export function normalizeEmbedAlign(raw: string | undefined): EmbedAlign | undefined {
   const value = (raw ?? '').trim().toLowerCase();
@@ -189,7 +193,23 @@ export function buildEmbedShortcode(
   const safeMaxWidth = normalizeEmbedMaxWidth(maxWidth) ?? EMBED_MAX_WIDTH_DEFAULT;
   const safeAlign = normalizeEmbedAlign(align) ?? 'center';
 
-  return `\n\n:::embed\nprovider: ${normalizedProvider}\nid: ${normalizedId}\nalign: ${safeAlign}\nmaxWidth: ${safeMaxWidth}\n:::\n`;
+  const caption = (layout?.caption ?? '').trim();
+  const captionAlign = normalizeEmbedCaptionAlign(layout?.captionAlign) ?? 'left';
+  let block = `\n\n:::embed\nprovider: ${normalizedProvider}\nid: ${normalizedId}\nalign: ${safeAlign}\nmaxWidth: ${safeMaxWidth}`;
+  if (caption !== '') {
+    block += `\ncaption: ${caption}\ncaptionAlign: ${captionAlign}`;
+  }
+  block += '\n:::\n';
+
+  return block;
+}
+
+export function normalizeEmbedCaptionAlign(raw: string | undefined): EmbedCaptionAlign | undefined {
+  const value = (raw ?? '').trim().toLowerCase();
+  if (value === 'left' || value === 'center' || value === 'right') {
+    return value;
+  }
+  return undefined;
 }
 
 export function buildEmbedIframeMarkup(
@@ -210,7 +230,19 @@ export function buildEmbedIframeMarkup(
   const src = `${EMBED_URLS[normalizedProvider]}${encodeURIComponent(normalizedId)}`;
   const style = maxWidth !== EMBED_MAX_WIDTH_DEFAULT ? ` style="max-width:${maxWidth}px"` : '';
 
-  return `<iframe class="paginium-external-embed paginium-external-embed--align-${align}" src="${src}" title="${normalizedProvider} embed" width="560" height="315" loading="lazy"${style} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  const iframe = `<iframe class="paginium-external-embed paginium-external-embed--align-${align}" src="${src}" title="${normalizedProvider} embed" width="560" height="315" loading="lazy"${style} frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  const caption = (layout?.caption ?? '').trim();
+  if (caption === '') {
+    return iframe;
+  }
+  const captionAlign = normalizeEmbedCaptionAlign(layout?.captionAlign) ?? 'left';
+  const safeCaption = caption
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  return `<figure class="paginium-figure paginium-figure--embed paginium-figure--caption-${captionAlign}">${iframe}<figcaption>${safeCaption}</figcaption></figure>`;
 }
 
 export function expandEmbedShortcodes(markdown: string): string {
@@ -226,8 +258,16 @@ export function deferEmbedShortcodes(markdown: string): {
   const renders: Record<string, string> = {};
   let index = 0;
 
-  const replace = (_match: string, providerRaw: string, idRaw: string, alignRaw?: string, maxWidthRaw?: string): string => {
-    const html = renderEmbed(providerRaw, idRaw, alignRaw, maxWidthRaw);
+  const replace = (
+    _match: string,
+    providerRaw: string,
+    idRaw: string,
+    alignRaw?: string,
+    maxWidthRaw?: string,
+    captionRaw?: string,
+    captionAlignRaw?: string
+  ): string => {
+    const html = renderEmbed(providerRaw, idRaw, alignRaw, maxWidthRaw, captionRaw, captionAlignRaw);
     if (html === '') {
       return '';
     }
@@ -259,7 +299,9 @@ function renderEmbed(
   providerRaw: string,
   idRaw: string,
   alignRaw?: string,
-  maxWidthRaw?: string
+  maxWidthRaw?: string,
+  captionRaw?: string,
+  captionAlignRaw?: string
 ): string {
   const provider = providerRaw.trim().toLowerCase() as ExternalEmbedProvider;
   const id = idRaw.trim();
@@ -270,5 +312,7 @@ function renderEmbed(
   return buildEmbedIframeMarkup(provider, id, {
     align: normalizeEmbedAlign(alignRaw),
     maxWidth: normalizeEmbedMaxWidth(maxWidthRaw),
+    caption: captionRaw?.trim(),
+    captionAlign: normalizeEmbedCaptionAlign(captionAlignRaw),
   });
 }

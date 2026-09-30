@@ -1576,6 +1576,36 @@ return [
             get(ContentBulkTagService::class),
             get(ContentStalenessService::class),
             get(BlogSidebarService::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class),
+        ),
+    \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class => create(
+        \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class
+    )
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(TeamRepository::class),
+            get(ProjectPlanRepositoryInterface::class)
+        ),
+    \PaginiumCMS\Core\Content\Services\ContentInternalLinkCheckService::class => create(
+        \PaginiumCMS\Core\Content\Services\ContentInternalLinkCheckService::class
+    )
+        ->constructor(get(ContentRepositoryInterface::class)),
+    \PaginiumCMS\Core\Content\Services\ContentEditorialReviewNotificationService::class => create(
+        \PaginiumCMS\Core\Content\Services\ContentEditorialReviewNotificationService::class
+    )
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(TeamRepository::class),
+            get(IncidentNotifier::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class)
+        ),
+    \PaginiumCMS\Core\Content\Services\ContentEditorialReviewHookRegistrar::class => create(
+        \PaginiumCMS\Core\Content\Services\ContentEditorialReviewHookRegistrar::class
+    )
+        ->constructor(
+            get(HookManager::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewNotificationService::class)
         ),
     AdvancedSearchService::class => create(AdvancedSearchService::class)
         ->constructor(
@@ -1603,7 +1633,8 @@ return [
             get(ContentMetaGenerator::class),
             get(ContentBodyRenderer::class),
             get(SettingsRepositoryInterface::class),
-            get(JsonResponder::class)
+            get(JsonResponder::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentInternalLinkCheckService::class)
         ),
     MediaController::class => create(MediaController::class)
         ->constructor(

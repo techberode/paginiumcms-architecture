@@ -4,6 +4,7 @@ import { markdown } from '@codemirror/lang-markdown';
 import { EditorView } from '@codemirror/view';
 import { useTheme } from '../../context/ThemeContext';
 import { applyMarkdownPasteDecision, decideMarkdownPaste } from '../../utils/markdownPaste';
+import { brokenLinkLineExtension } from '../../utils/brokenLinkCodeMirror';
 
 export interface MarkdownEditorSurfaceHandle {
   getSelection: () => { start: number; end: number };
@@ -20,13 +21,23 @@ interface MarkdownCodeMirrorEditorProps {
   placeholder?: string;
   onPasteBlocked?: () => void;
   onSelectionChange?: (start: number, end: number) => void;
+  brokenLinkLines?: number[];
 }
 
 export const MarkdownCodeMirrorEditor = forwardRef<
   MarkdownEditorSurfaceHandle,
   MarkdownCodeMirrorEditorProps
 >(function MarkdownCodeMirrorEditor(
-  { value, onChange, readOnly = false, tabSize = 2, placeholder, onPasteBlocked, onSelectionChange },
+  {
+    value,
+    onChange,
+    readOnly = false,
+    tabSize = 2,
+    placeholder,
+    onPasteBlocked,
+    onSelectionChange,
+    brokenLinkLines = [],
+  },
   ref
 ) {
   const { isDark } = useTheme();
@@ -35,6 +46,7 @@ export const MarkdownCodeMirrorEditor = forwardRef<
   const extensions = useMemo(
     () => [
       markdown(),
+      brokenLinkLineExtension(brokenLinkLines),
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ spellcheck: 'true' }),
       EditorView.updateListener.of((update) => {
@@ -59,7 +71,7 @@ export const MarkdownCodeMirrorEditor = forwardRef<
         },
       }),
     ],
-    [onPasteBlocked, onSelectionChange]
+    [brokenLinkLines, onPasteBlocked, onSelectionChange]
   );
 
   useImperativeHandle(ref, () => ({

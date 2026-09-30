@@ -41,7 +41,13 @@ export function datetimeLocalToIso(value: string): string {
   return `${match[1]}T${match[2]}:00${sign}${offsetHours}:${offsetMins}`;
 }
 
-export type ContentEditorStatus = 'draft' | 'published' | 'archived' | 'scheduled';
+export type ContentEditorStatus =
+  | 'draft'
+  | 'published'
+  | 'archived'
+  | 'scheduled'
+  | 'pending_review'
+  | 'reviewed';
 
 /** ISO value for API save — always sent so backend can clear scheduling metadata. */
 export function resolveScheduledAtForSave(

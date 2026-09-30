@@ -47,7 +47,7 @@ interface ContentItem {
   title: string;
   slug: string;
   path?: string;
-  status: 'draft' | 'published' | 'archived' | 'scheduled';
+  status: ContentEditorStatus;
   scheduledAt?: string;
   author: string;
   createdAt: string;
@@ -106,6 +106,8 @@ const STATUS_BADGE_CLASS: Record<ContentItem['status'], string> = {
   draft: 'badge-warning',
   archived: 'badge-danger',
   scheduled: 'badge-info',
+  pending_review: 'badge-warning',
+  reviewed: 'badge-info',
 };
 
 function resolveContentListTitle(item: ContentItem, untitled: string): string {
@@ -258,6 +260,8 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
       published: statusLabel('published'),
       archived: statusLabel('archived'),
       scheduled: statusLabel('scheduled'),
+      pending_review: statusLabel('pending_review'),
+      reviewed: statusLabel('reviewed'),
     }),
     [t]
   );

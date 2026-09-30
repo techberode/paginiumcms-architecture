@@ -510,6 +510,18 @@
   margin-bottom: 0.5rem;
 }
 
+.paginium-prose .paginium-figure--embed.paginium-figure--caption-left figcaption {
+  text-align: left;
+}
+
+.paginium-prose .paginium-figure--embed.paginium-figure--caption-center figcaption {
+  text-align: center;
+}
+
+.paginium-prose .paginium-figure--embed.paginium-figure--caption-right figcaption {
+  text-align: right;
+}
+
 .pg-grid,
 .paginium-prose .pg-grid,
 .pg-shortcode-surface .pg-grid {

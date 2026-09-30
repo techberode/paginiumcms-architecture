@@ -65,6 +65,18 @@ final class ExternalEmbedShortcodeTest extends TestCase
         $this->assertStringContainsString('max-width:960px', $expanded);
     }
 
+    public function testExpandBlockWithCaptionLeftAligned(): void
+    {
+        $expander = new ExternalEmbedShortcode();
+        $markdown = ":::embed\nprovider: youtube\nid: dQw4w9WgXcQ\ncaption: Demo walkthrough\ncaptionAlign: left\n:::";
+
+        $expanded = $expander->expand($markdown);
+
+        $this->assertStringContainsString('paginium-figure--embed', $expanded);
+        $this->assertStringContainsString('paginium-figure--caption-left', $expanded);
+        $this->assertStringContainsString('<figcaption>Demo walkthrough</figcaption>', $expanded);
+    }
+
     public function testInvalidYoutubeIdExpandsToEmpty(): void
     {
         $expander = new ExternalEmbedShortcode();

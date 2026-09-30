@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Content;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
+use PaginiumCMS\Core\Content\Services\ContentInternalLinkCheckService;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Services\ContentMetaGenerator;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -22,7 +23,36 @@ final class ContentMetaController
         private ContentBodyRenderer $bodyRenderer,
         private SettingsRepositoryInterface $settings,
         private JsonResponder $json,
+        private ContentInternalLinkCheckService $linkCheck,
     ) {
+    }
+
+    public function linkCheck(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $payload = RequestJsonBody::decode($request);
+        if (!is_array($payload)) {
+            return $this->json->error($response, Lang::get('invalid_json', [], 'content'), 400);
+        }
+
+        $type = strtolower(trim((string) ($payload['type'] ?? '')));
+        if (!in_array($type, ['page', 'article'], true)) {
+            return $this->json->error($response, Lang::get('invalid_type', [], 'content'), 400);
+        }
+
+        $body = (string) ($payload['body'] ?? '');
+        if (strlen($body) > self::MAX_BODY_BYTES) {
+            return $this->json->error($response, Lang::get('body_too_large', [], 'content'), 413);
+        }
+
+        $slug = trim((string) ($payload['slug'] ?? ''));
+        $contentFormat = strtolower(trim((string) ($payload['contentFormat'] ?? 'markdown')));
+        if (!in_array($contentFormat, ['markdown', 'html', 'tiptap_json'], true)) {
+            $contentFormat = 'markdown';
+        }
+
+        $result = $this->linkCheck->check($body, $slug, $type, $contentFormat);
+
+        return $this->json->success($response, $result);
     }
 
     public function suggestMeta(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
