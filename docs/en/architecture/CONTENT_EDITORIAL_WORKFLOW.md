@@ -28,7 +28,7 @@ Planner integration: on first transition to `pending_review`, enqueue a plan ite
 
 Notifications: when content transitions to `pending_review`, team leaders can be alerted via **Monitoring → content publish** connector (`content.editorialReviewNotifyLeaders`, requires `monitoring.contentPublishNotifyEnabled`). Hook context includes `previousStatus` so re-saves while already pending do not spam.
 
-**Admin desk:** team leaders see all `pending_review` pages/articles in `/api/auth/me/desk` (`kind: content_review`, links to `/pages/{slug}` or `/articles/{slug}`). Toggle: `content.editorialReviewDeskEnabled` (default on). Implemented by `ContentEditorialDeskService` + `DeskInboxService` merge (no separate flat-file queue).
+**Admin desk:** team leaders see all `pending_review` pages/articles in `/api/auth/me/desk` (`kind: content_review`, links to `/pages/{slug}` or `/articles/{slug}`). Toggle: `content.editorialReviewDeskEnabled` (default on). Implemented by `ContentEditorialDeskService` + `DeskInboxService` merge (no separate flat-file queue). Regression: `DeskInboxServiceTest::testDeskInboxMergesEditorialReviewForTeamLeader`.
 
 ## 3. Internal link check (admin)
 

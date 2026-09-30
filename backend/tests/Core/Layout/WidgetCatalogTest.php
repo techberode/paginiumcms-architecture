@@ -79,4 +79,25 @@ final class WidgetCatalogTest extends TestCase
         $this->assertStringContainsString('<th scope="col">Name</th>', $html);
         $this->assertStringContainsString('<td>Pro</td>', $html);
     }
+
+    public function testChecklistRendersMarkedItems(): void
+    {
+        $html = (new WidgetCatalog())->render(
+            ' type="checklist" title="Plan" items="A | B" tone="success"',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-checklist', $html);
+        $this->assertStringContainsString('pg-widget-check-item', $html);
+    }
+
+    public function testStatDuoRendersTwoCells(): void
+    {
+        $html = (new WidgetCatalog())->render(
+            ' type="stat-duo" label1="Uptime" value1="99%" label2="Posts" value2="12" tone="primary"',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-stat-duo', $html);
+        $this->assertStringContainsString('99%', $html);
+        $this->assertStringContainsString('Posts', $html);
+    }
 }

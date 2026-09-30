@@ -100,7 +100,7 @@ final class ShortcodeCatalogSeeder
             ],
             'landing-hero' => [
                 'name' => 'landing-hero',
-                'version' => 2,
+                'version' => 3,
                 'attrs' => [
                     'title' => ['type' => 'string'],
                     'subtitle' => ['type' => 'string'],
@@ -110,8 +110,41 @@ final class ShortcodeCatalogSeeder
                     'poster' => ['type' => 'media', 'accept' => 'image'],
                     'src' => ['type' => 'media', 'accept' => 'video'],
                     'srcmobile' => ['type' => 'media', 'accept' => 'video'],
+                    'show-subtitle' => ['type' => 'bool', 'default' => true],
+                    'show-cta' => ['type' => 'bool', 'default' => true],
+                    'show-media' => ['type' => 'bool', 'default' => true],
                 ],
                 'expand' => '<section class="pg-hero"><div class="pg-hero-inner"><h1 class="pg-hero-title">{{title}}</h1><p class="pg-hero-subtitle">{{subtitle}}</p><a class="pg-btn pg-btn-primary" href="{{href}}">{{cta}}</a></div></section>',
+            ],
+            'faq-list' => [
+                'name' => 'faq-list',
+                'version' => 1,
+                'attrs' => [],
+                'expand' => '<div class="pg-faq-list">{{content}}</div>',
+            ],
+            'faq-item' => [
+                'name' => 'faq-item',
+                'version' => 1,
+                'attrs' => [
+                    'question' => ['type' => 'string'],
+                    'answer' => ['type' => 'string'],
+                ],
+                'expand' => '<details class="pg-faq-item"><summary class="pg-faq-question">{{question}}</summary><div class="pg-faq-answer"><p>{{answer}}</p></div></details>',
+            ],
+            'link-row' => [
+                'name' => 'link-row',
+                'version' => 1,
+                'attrs' => [],
+                'expand' => '<nav class="pg-link-row pg-reveal" aria-label="Related links">{{content}}</nav>',
+            ],
+            'link-chip' => [
+                'name' => 'link-chip',
+                'version' => 1,
+                'attrs' => [
+                    'label' => ['type' => 'string'],
+                    'href' => ['type' => 'string'],
+                ],
+                'expand' => '<a class="pg-link-chip" href="{{href}}">{{label}}</a>',
             ],
             'cta-banner' => [
                 'name' => 'cta-banner',

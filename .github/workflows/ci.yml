@@ -56,6 +56,9 @@ jobs:
       - name: PHPStan level 8
         run: ./vendor/bin/phpstan analyse backend --level=8
 
+      - name: Roadmap staleness guard
+        run: chmod +x scripts/check-roadmap-stale.sh && ./scripts/check-roadmap-stale.sh
+
       - name: PHPUnit
         env:
           PAGINIUMCMS_CI_STRICT_OUTPUT: '1'

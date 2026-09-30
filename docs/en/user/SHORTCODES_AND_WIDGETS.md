@@ -101,6 +101,9 @@ Markdown inside paired blocks is converted when the page HTML is built. Keep one
 | `pricing-table` + `pricing-plan` + `pricing-feature` | paired | See [LANDING_PAGE.md](LANDING_PAGE.md) |
 | `feature-gallery` | self-closing | Published gallery items — [GALLERY.md](GALLERY.md) |
 | `alert-box` | paired | `tone="info|warn|success"` + inner markdown |
+| `faq-list` + `faq-item` | paired + self-closing | FAQ accordion via native `<details>` (`question`, `answer`) |
+| `link-row` + `link-chip` | paired + self-closing | Pill link row (`label`, `href`) |
+| `landing-hero` | self-closing | Optional DAM image/video; bool toggles `show-subtitle`, `show-cta`, `show-media` |
 
 Full landing walkthrough: [LANDING_PAGE.md](LANDING_PAGE.md). Seed body: `backend/resources/content-seeds/paginium-cms-landing.sk.md`.
 
@@ -126,6 +129,8 @@ Widgets are intended for structured data displays; shortcodes are for marketing 
 | `data-table` | `headers="Plan \| Price"` `rows="Basic \| 9 \| Pro \| 29"` | Comparison tables |
 | `map-embed` | `src="https://www.google.com/maps/embed?pb=…"` | Google embed only (same rule as contact settings) |
 | `form-cta` | `href="/contact"` optional `subject="…"` | CTA to contact form |
+| `checklist` | `items="A \| B \| C"` | Checkmarked bullet list (CSS) |
+| `stat-duo` | `label1` / `value1` / `label2` / `value2` | Two-up stat strip |
 | `brand`, `cta`, `quote`, `timeline`, `icon-box`, `profile`, `list` | see **Widgets** admin | Marketing / dashboard blocks |
 
 Editor charts (Mermaid, etc.) remain in the **article editor**; body widgets above expand on the server for public HTML.

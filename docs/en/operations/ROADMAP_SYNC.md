@@ -13,7 +13,7 @@
 | Approach | Effort | Benefit |
 |----------|--------|---------|
 | Manual ROADMAP refresh each release | Low | Good enough if checkpoint date is updated |
-| CI guard `scripts/check-roadmap-stale.sh` | Low | Fails when known-shipped iterations are still marked ⏳ in ROADMAP |
+| CI guard `scripts/check-roadmap-stale.sh` | Done | Runs in GitHub Actions `backend` job; fails when known-shipped iterations are still marked ⏳ in ROADMAP |
 | Generated ROADMAP section from probe JSON | Medium | Single source of truth; needs export endpoint or CLI |
 
 ## CI guard

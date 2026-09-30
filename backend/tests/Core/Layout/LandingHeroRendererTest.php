@@ -53,4 +53,16 @@ final class LandingHeroRendererTest extends TestCase
         $this->assertFalse(LandingHeroRenderer::hasMedia(['src' => 'https://cdn.example/x.mp4']));
         $this->assertTrue(LandingHeroRenderer::hasMedia(['image' => '/api/media/file/hero.jpg']));
     }
+
+    public function testShowMediaFalseOmitsHeroMediaBlock(): void
+    {
+        $html = LandingHeroRenderer::render([
+            'title' => 'Text only',
+            'image' => '/api/media/file/hero.jpg',
+            'show-media' => 'false',
+        ]);
+
+        $this->assertStringNotContainsString('pg-hero-media', $html);
+        $this->assertStringContainsString('Text only', $html);
+    }
 }

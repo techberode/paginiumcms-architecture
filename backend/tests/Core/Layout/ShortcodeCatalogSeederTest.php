@@ -81,11 +81,15 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'coming-soon',
                 'cta-banner',
                 'document-link',
+                'faq-item',
+                'faq-list',
                 'feature-card',
                 'feature-gallery',
                 'feature-grid',
                 'landing-hero',
                 'latest-articles',
+                'link-chip',
+                'link-row',
                 'pricing-feature',
                 'pricing-plan',
                 'pricing-table',
@@ -109,7 +113,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->seeder->seedIfEmpty();
         $this->seeder->seedMissingBundled();
 
-        $this->assertCount(22, $this->manager->list());
+        $this->assertCount(26, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
         $this->assertNotEmpty($this->manager->get('coming-soon'));
         $this->assertNotEmpty($this->manager->get('feature-gallery'));
@@ -132,7 +136,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $loaded = $this->manager->get('landing-hero');
         $definition = $loaded['definition'];
         $this->assertIsArray($definition);
-        $this->assertSame(2, (int) ($definition['version'] ?? 0));
+        $this->assertSame(3, (int) ($definition['version'] ?? 0));
         $this->assertArrayHasKey('image', $definition['attrs']);
         $this->assertSame('media', $definition['attrs']['image']['type']);
         $this->assertSame('video', $definition['attrs']['src']['accept']);

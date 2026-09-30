@@ -164,6 +164,28 @@ final class WidgetCatalog
                 'href' => '/contact',
                 'subject' => '',
             ]),
+            $this->type('checklist', true, [
+                'title' => 'string',
+                'items' => 'string',
+                'tone' => 'tone',
+            ], [
+                'title' => 'Included',
+                'items' => 'Flat-file SSOT | Editorial workflow | Media library',
+                'tone' => 'success',
+            ]),
+            $this->type('stat-duo', true, [
+                'label1' => 'string',
+                'value1' => 'string',
+                'label2' => 'string',
+                'value2' => 'string',
+                'tone' => 'tone',
+            ], [
+                'label1' => 'Uptime',
+                'value1' => '99.9%',
+                'label2' => 'Articles',
+                'value2' => '240+',
+                'tone' => 'primary',
+            ]),
         ];
 
         $custom = $this->custom?->list() ?? [];
@@ -199,6 +221,8 @@ final class WidgetCatalog
             'data-table',
             'bar-chart',
             'form-cta',
+            'checklist',
+            'stat-duo',
         ];
     }
 
@@ -245,6 +269,8 @@ final class WidgetCatalog
             'data-table' => $this->renderDataTable($attrs),
             'bar-chart' => $this->renderBarChart($attrs),
             'form-cta' => $this->renderFormCta($attrs),
+            'checklist' => $this->renderChecklist($attrs),
+            'stat-duo' => $this->renderStatDuo($attrs),
             default => '[widget' . $rawAttrs . ']' . $inner . ($inner === '' ? '' : '[/widget]'),
         };
     }
@@ -589,6 +615,47 @@ final class WidgetCatalog
         return '<div class="pg-widget pg-widget-list">'
             . '<p class="pg-widget-title">' . $this->e($attrs['title'] ?? '') . '</p>'
             . '<ul>' . $lis . '</ul>'
+            . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderChecklist(array $attrs): string
+    {
+        $tone = $this->tone($attrs['tone'] ?? 'success');
+        $parts = preg_split('/\s*\|\s*/', (string) ($attrs['items'] ?? '')) ?: [];
+        $lis = '';
+        foreach ($parts as $part) {
+            $text = trim($part);
+            if ($text === '') {
+                continue;
+            }
+            $lis .= '<li class="pg-widget-check-item">' . $this->e($text) . '</li>';
+        }
+
+        return '<div class="pg-widget pg-widget-checklist pg-widget-tone-' . $tone . '">'
+            . '<p class="pg-widget-title">' . $this->e($attrs['title'] ?? '') . '</p>'
+            . '<ul class="pg-widget-checklist-items">' . $lis . '</ul>'
+            . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderStatDuo(array $attrs): string
+    {
+        $tone = $this->tone($attrs['tone'] ?? 'primary');
+
+        return '<div class="pg-widget pg-widget-stat-duo pg-widget-tone-' . $tone . '">'
+            . '<div class="pg-widget-stat-cell">'
+            . '<p class="pg-widget-label">' . $this->e($attrs['label1'] ?? '') . '</p>'
+            . '<p class="pg-widget-value">' . $this->e($attrs['value1'] ?? '') . '</p>'
+            . '</div>'
+            . '<div class="pg-widget-stat-cell">'
+            . '<p class="pg-widget-label">' . $this->e($attrs['label2'] ?? '') . '</p>'
+            . '<p class="pg-widget-value">' . $this->e($attrs['value2'] ?? '') . '</p>'
+            . '</div>'
             . '</div>';
     }
 

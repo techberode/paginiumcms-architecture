@@ -20,7 +20,7 @@ Constraints (non‑negotiable):
 | **Editor insert** | Visual shortcode modal + server preview (`POST /api/admin/shortcodes/render-markup`); layout via `[visual-frame]`; **Modal workspace** + **include field** checkboxes in the page editor (see [Shortcodes and widgets (user)](../user/SHORTCODES_AND_WIDGETS.md)). |
 | **Admin CRUD** | Settings → Shortcodes (definitions JSON, policy on save). |
 
-**Phase 1 (done for `showcase-hero`):** `ShowcaseHeroRenderer` + bool attrs `show-badge`, `show-terminal`, `show-cta`, `show-cta2`. Editor **include field** still controls which attrs appear in the Markdown tag; bool attrs control server-side slot visibility. Next: `landing-hero`, `cta-banner`, …
+**Phase 1 (done):** `ShowcaseHeroRenderer`, `CtaBannerRenderer`, and `LandingHeroRenderer` + bool slot attrs (`show-badge`, `show-terminal`, `show-cta`, `show-cta2`, `show-subtitle`, `show-media`, …). Editor **include field** still controls which attrs appear in the Markdown tag; bool attrs control server-side slot visibility.
 
 ---
 

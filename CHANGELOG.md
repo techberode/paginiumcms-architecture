@@ -13,6 +13,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
+- **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.
+- **Shortcodes:** Bundled `faq-list` / `faq-item` (native `<details>`), `link-row` / `link-chip`; `landing-hero` v3 slot toggles (`show-subtitle`, `show-cta`, `show-media`).
+- **Widgets:** Built-in `checklist` and `stat-duo` types in `WidgetCatalog` + `pgLayout.css`.
 - **Content editor:** YouTube/Vimeo embed optional **caption** under player (`caption` / `captionAlign`, default left).
 - **Content editor:** Editorial **review workflow** — settings + teams, statuses `pending_review` / `reviewed`, non-leader publish → pending, planner enqueue, leader notifications (`editorialReviewNotifyLeaders` + monitoring content-publish connector), team-lead **Mark as reviewed**, optional `editorialReviewPlanId`.
 - **Content editor:** **Internal link check** — `POST /api/admin/content/link-check` (markdown/html/tiptap, relative `./slug`, `/blog/…`, absolute same-path URLs); flags missing slugs and unpublished targets; editor button, CodeMirror line highlights, live preview `.pg-link-broken`, optional `editorialLinkCheckRequired` gate on save. See [CONTENT_EDITORIAL_WORKFLOW.md](docs/en/architecture/CONTENT_EDITORIAL_WORKFLOW.md).

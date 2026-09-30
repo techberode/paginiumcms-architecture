@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Modules\Messages\Services;
 
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\Services\ContentEditorialReviewService;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
@@ -32,6 +33,8 @@ final class DeskInboxServiceTest extends TestCase
     private DeskInboxService $desk;
     private CommentsRepository $comments;
     private TeamRepository $teams;
+    private FileReader $reader;
+    private FileWriter $writer;
 
     protected function setUp(): void
     {
@@ -43,34 +46,44 @@ final class DeskInboxServiceTest extends TestCase
             JsonHelper::encode(['version' => 1, 'items' => []])
         );
         $validator = new FileValidator($this->baseDir);
-        $reader = new FileReader($validator);
-        $writer = new FileWriter($validator);
-        $this->comments = new CommentsRepository($reader, $writer);
-        $this->teams = new TeamRepository($reader, $writer);
+        $this->reader = new FileReader($validator);
+        $this->writer = new FileWriter($validator);
+        $this->comments = new CommentsRepository($this->reader, $this->writer);
+        $this->teams = new TeamRepository($this->reader, $this->writer);
+        $this->desk = $this->buildDesk(['editorialReviewEnabled' => false]);
+    }
+
+    /**
+     * @param array<string, mixed> $contentSettings
+     */
+    private function buildDesk(array $contentSettings): DeskInboxService
+    {
         /** @var SettingsRepositoryInterface&MockObject $settings */
         $settings = $this->createMock(SettingsRepositoryInterface::class);
         $settings->method('get')->willReturn('sk');
-        $settings->method('group')->willReturn(['editorialReviewEnabled' => false]);
+        $settings->method('group')->willReturnCallback(static function (string $group) use ($contentSettings): array {
+            if ($group === 'content') {
+                return $contentSettings;
+            }
+
+            return [];
+        });
         /** @var ProjectPlanRepositoryInterface&MockObject $plans */
         $plans = $this->createMock(ProjectPlanRepositoryInterface::class);
         $plans->method('findAll')->willReturn([]);
-        $review = new \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService(
-            $settings,
-            $this->teams,
-            $plans
-        );
+        $review = new ContentEditorialReviewService($settings, $this->teams, $plans);
         $index = new ContentIndexService(
-            $reader,
+            $this->reader,
             new LocalizedContentNormalizer($settings),
             new ContentStalenessService($settings),
             'data/index/content.json'
         );
         $editorialDesk = new ContentEditorialDeskService($review, $index, $settings);
 
-        $this->desk = new DeskInboxService(
+        return new DeskInboxService(
             new MessageDeskService(
-                new MessageRepository($reader, $writer),
-                new MessageRoutingStore($reader, $writer),
+                new MessageRepository($this->reader, $this->writer),
+                new MessageRoutingStore($this->reader, $this->writer),
                 $this->teams,
                 $this->createStub(UserRepository::class)
             ),
@@ -134,6 +147,50 @@ final class DeskInboxServiceTest extends TestCase
 
         $this->assertFalse($this->desk->canReplyComments($visitorStaff));
         $this->assertSame([], $this->desk->items($visitorStaff));
+    }
+
+    public function testDeskInboxMergesEditorialReviewForTeamLeader(): void
+    {
+        file_put_contents(
+            $this->baseDir . '/data/index/content.json',
+            JsonHelper::encode([
+                'version' => 1,
+                'items' => [
+                    [
+                        'type' => 'article',
+                        'slug' => 'desk-review-me',
+                        'title' => 'Awaiting leader',
+                        'excerpt' => '',
+                        'tags' => [],
+                        'category' => '',
+                        'author' => 'Author',
+                        'status' => ContentEditorialReviewService::STATUS_PENDING,
+                        'locale' => 'sk',
+                        'createdAt' => '2026-09-30T08:00:00+02:00',
+                        'updatedAt' => '2026-09-30T09:00:00+02:00',
+                        'path' => 'blog/desk-review-me.md',
+                    ],
+                ],
+            ])
+        );
+
+        $leader = new User();
+        $leaderId = $leader->getId();
+        $team = $this->teams->create('Editorial', TeamRepository::TYPE_EDITORIAL, [$leaderId]);
+        $this->teams->update((string) $team['id'], ['teamLeaderUserIds' => [$leaderId]]);
+
+        $desk = $this->buildDesk([
+            'editorialReviewEnabled' => true,
+            'editorialReviewDeskEnabled' => true,
+        ]);
+
+        $items = $desk->items($leader);
+        $kinds = array_map(static fn (array $row): string => (string) ($row['kind'] ?? ''), $items);
+
+        $this->assertContains('content_review', $kinds);
+        $review = array_values(array_filter($items, static fn (array $row): bool => ($row['kind'] ?? '') === 'content_review'))[0] ?? [];
+        $this->assertSame('article:desk-review-me', $review['id'] ?? null);
+        $this->assertSame('/articles/desk-review-me', $review['href'] ?? null);
     }
 
     private function removeTree(string $path): void

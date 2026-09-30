@@ -109,9 +109,8 @@ final class ShortcodeExpanderService
         $attrs = $this->parseAttributes($rawAttrs, $definition);
         if ($name === 'landing-hero') {
             $attrs = $this->overlayDamMediaAttrs($rawAttrs, $attrs);
-            if (LandingHeroRenderer::hasMedia($attrs)) {
-                return $this->sanitizer->sanitizeHtml(LandingHeroRenderer::render($attrs));
-            }
+
+            return $this->sanitizer->sanitizeHtml(LandingHeroRenderer::render($attrs));
         }
 
         if ($name === 'showcase-hero') {

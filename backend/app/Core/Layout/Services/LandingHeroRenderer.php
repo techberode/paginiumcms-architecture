@@ -7,7 +7,7 @@ namespace PaginiumCMS\Core\Layout\Services;
 use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 
 /**
- * Core HTML for landing-hero when DAM image/video attrs are present (It.58f-e).
+ * Core HTML for landing-hero (It.58f-e + Phase 1 slot toggles).
  *
  * Video is muted + looping + playsinline. Never controls. Never autoplay with sound.
  */
@@ -21,7 +21,11 @@ final class LandingHeroRenderer
         $title = self::text($attrs['title'] ?? '');
         $subtitle = self::text($attrs['subtitle'] ?? '');
         $cta = self::text($attrs['cta'] ?? '');
-        $href = self::text($attrs['href'] ?? '');
+        $href = self::text($attrs['href'] ?? '#');
+
+        $showSubtitle = self::flag($attrs['show-subtitle'] ?? 'true', true);
+        $showCta = self::flag($attrs['show-cta'] ?? 'true', true);
+        $showMedia = self::flag($attrs['show-media'] ?? 'true', true);
 
         $image = DamMediaUrl::sanitize($attrs['image'] ?? '');
         $poster = DamMediaUrl::sanitize($attrs['poster'] ?? '');
@@ -34,7 +38,7 @@ final class LandingHeroRenderer
         }
 
         $html = '<section class="pg-hero">';
-        if ($still !== '' || $src !== '') {
+        if ($showMedia && ($still !== '' || $src !== '')) {
             $html .= '<div class="pg-hero-media">';
             if ($still !== '') {
                 $html .= '<img class="pg-hero-photo" src="' . self::text($still) . '" alt="" decoding="async">';
@@ -58,10 +62,10 @@ final class LandingHeroRenderer
         if ($title !== '') {
             $html .= '<h1 class="pg-hero-title">' . $title . '</h1>';
         }
-        if ($subtitle !== '') {
+        if ($showSubtitle && $subtitle !== '') {
             $html .= '<p class="pg-hero-subtitle">' . $subtitle . '</p>';
         }
-        if ($cta !== '') {
+        if ($showCta && $cta !== '') {
             $html .= '<a class="pg-btn pg-btn-primary" href="' . $href . '">' . $cta . '</a>';
         }
         $html .= '</div></section>';
@@ -78,6 +82,16 @@ final class LandingHeroRenderer
             || DamMediaUrl::sanitize($attrs['poster'] ?? '') !== ''
             || DamMediaUrl::sanitize($attrs['src'] ?? '') !== ''
             || DamMediaUrl::sanitize($attrs['srcmobile'] ?? '') !== '';
+    }
+
+    private static function flag(string $value, bool $defaultWhenEmpty): bool
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return $defaultWhenEmpty;
+        }
+
+        return filter_var($trimmed, FILTER_VALIDATE_BOOLEAN);
     }
 
     private static function text(string $value): string
