@@ -86,6 +86,24 @@ class ContentSecuritySanitizerTest extends TestCase
         $this->assertStringNotContainsString('data:', $result);
     }
 
+    public function testPreservesExternalEmbedIframeWhenIframeNotWhitelisted(): void
+    {
+        $sanitizer = $this->makeSanitizer([
+            'sanitizeHtmlOnSave' => true,
+            'allowScriptTags' => false,
+            'allowedHtmlTags' => 'p,div,img',
+        ]);
+
+        $iframe = '<iframe class="paginium-external-embed" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" '
+            . 'title="youtube embed" width="560" height="315" loading="lazy" frameborder="0" '
+            . 'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
+            . 'allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+        $result = $sanitizer->sanitizeHtml('<p>Intro</p>' . $iframe);
+
+        $this->assertStringContainsString('paginium-external-embed', $result);
+        $this->assertStringContainsString('youtube-nocookie.com/embed/dQw4w9WgXcQ', $result);
+    }
+
     public function testPreservesTrustedMermaidFigureSvg(): void
     {
         $sanitizer = $this->makeSanitizer([

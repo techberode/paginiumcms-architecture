@@ -39,20 +39,21 @@ captionPosition: above
 
 Omit `captionPosition` (or use `below`) when the title sits under the player. Public output is a native `<video controls>` player inside a figure when a caption is set.
 
-## YouTube / Vimeo embed (`:::embed`) — not recommended
+## YouTube / Vimeo embed (`:::embed`)
 
-The product can **save** allow-listed YouTube/Vimeo URLs as `:::embed` shortcodes (permission **`content:embed-external`**, CSP `frame-src` on the server). **Playback on the public site is unreliable** in common browsers (reported blank players in Chrome and Floorp even when CSP and permissions are correct). This path is **deferred** — no further investment until a reproducible upstream fix is agreed.
+Allow-listed YouTube (nocookie) and Vimeo URLs can be stored as `:::embed` shortcodes when the role has **`content:embed-external`**. Production must allow **`frame-src`** for those hosts (see deploy CSP snippets).
 
-**Use instead:**
+The public HTML pipeline expands embeds to `<iframe class="paginium-external-embed">` and **preserves** that iframe through content security sanitization (even when `iframe` is not listed in **Settings → Allowed HTML tags**). If an embed still does not show, re-save the page after deploy and verify CSP with `curl -sI … | grep -i content-security-policy`.
+
+**Alternatives:**
 
 | Need | Approach |
 |------|----------|
-| Video in an article | Upload to Media Library → **Insert video** |
-| Link to YouTube | Plain Markdown link `[Watch on YouTube](https://…)` |
-| Screenshot with explanation | Image + **caption** (above or below) |
-| Map | Settings → Company map URL or `[widget type="map-embed"]` (Google embed only) |
+| File you host | Media Library → **Insert video** (`:::video`) |
+| Link only | `[Watch on YouTube](https://…)` |
+| Screenshot | Image + **caption** |
 
-If embed blocks remain in old content, they may show an empty frame; replace them with self-hosted video or a link when editing.
+See [ISS-193](../ISSUES.md#iss-193) for the sanitizer regression that caused blank embeds.
 
 ## Permissions
 

@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Fix:** YouTube/Vimeo `:::embed` blank on public pages — `ContentSecuritySanitizer` now preserves `<iframe class="paginium-external-embed">` through HTML whitelist sanitization (same mechanism as Mermaid/chart figures); [ISS-193](docs/ISSUES.md#iss-193).
 - **Content editor:** Media Library modal — optional **caption** (checkbox + form), **above/below** placement, insert at **text cursor** (images, video, documents, sidebar shortcodes); `<figure>` / `figcaption` in prose; `:::video` supports `caption:` and `captionPosition: above`; same caption text in image lightbox (shown under zoom).
 - **Pages:** Page hero editor matches article hero — **Fill frame / Show full image** (`heroFit` cover/contain) with drag focus preview on public page headers and intro cards.
 - **Docs:** [MEDIA_IN_CONTENT.md](docs/en/user/MEDIA_IN_CONTENT.md) (captions, DAM video, embed policy); [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) updated for page `heroFit`; [ISS-193](docs/ISSUES.md#iss-193) — YouTube/Vimeo public embed **deferred** (use uploaded video or links).

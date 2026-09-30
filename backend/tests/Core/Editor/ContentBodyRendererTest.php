@@ -7,7 +7,9 @@ namespace PaginiumCMS\Tests\Core\Editor;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Core\FlatFile\Contracts\MarkdownContentParserInterface;
+use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
 final class ContentBodyRendererTest extends TestCase
@@ -82,5 +84,33 @@ final class ContentBodyRendererTest extends TestCase
         $html = $renderer->resolveHtml('**bold**', 'markdown', null);
 
         $this->assertSame('<p><strong>bold</strong></p>', $html);
+    }
+
+    public function testMarkdownExternalEmbedSurvivesContentSecuritySanitizer(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->willReturnCallback(
+            static fn (string $group): array => $group === 'contentSecurity'
+                ? [
+                    'sanitizeHtmlOnSave' => true,
+                    'allowScriptTags' => false,
+                    'allowedHtmlTags' => 'p,h1,img,div',
+                ]
+                : []
+        );
+        $sanitizer = new ContentSecuritySanitizer($settings);
+        $renderer = new ContentBodyRenderer(new MarkdownContentParser(), new TiptapHtmlRenderer(), $sanitizer);
+
+        $markdown = <<<MD
+:::embed
+provider: youtube
+id: dQw4w9WgXcQ
+:::
+MD;
+
+        $html = $renderer->resolveHtml($markdown, 'markdown', null);
+
+        $this->assertStringContainsString('paginium-external-embed', $html);
+        $this->assertStringContainsString('youtube-nocookie.com/embed/dQw4w9WgXcQ', $html);
     }
 }

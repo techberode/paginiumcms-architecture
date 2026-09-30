@@ -215,7 +215,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-190](#iss-190) | Markdown editor blocked paste of valid Markdown (false HTML) | Medium (admin UX) | ✅ Fixed — rich HTML clipboard only; plain MD allowed |
 | [ISS-191](#iss-191) | Contact Google Maps iframe blocked; inline theme script vs CSP | Medium (public UX) | ✅ Fixed — nginx `frame-src`; external theme boot JS |
 | [ISS-192](#iss-192) | Article save 400 — iframe in Markdown body | High (admin UX) | ✅ Fixed — normalize embeds before validate |
-| [ISS-193](#iss-193) | YouTube/Vimeo player blank on public site (Chrome, Floorp) | Medium (public UX) | ⏸️ Deferred — use self-hosted video or links |
+| [ISS-193](#iss-193) | YouTube/Vimeo player blank on public site (Chrome, Floorp) | Medium (public UX) | ✅ Fixed — preserve embed iframe in sanitizer |
 
 ## CI failures (GitHub Actions)
 
@@ -5876,25 +5876,29 @@ Requires `content:embed-external` to **save** `:::embed` blocks; normalized ifra
 | Field | Value |
 |---|---|
 | **Severity** | Medium (public UX) |
-| **Status** | ⏸️ **Deferred** (product decision — no active fix track) |
-| **Area** | Public content / external embed shortcode |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Area** | Public content / `ContentSecuritySanitizer` |
 
 ### Symptom
 
-Articles or pages contain a saved `:::embed` block (YouTube nocookie / Vimeo). CSP `frame-src` and permissions are configured, save succeeds, but the **iframe area stays empty** in **Chrome** and **Floorp** (and possibly other engines). Admin preview may also show a blank frame.
+Articles or pages contain a saved `:::embed` block (YouTube nocookie / Vimeo). Save and CSP looked correct, but the **iframe never appeared** on the public site (empty area in Chrome, Floorp, etc.).
 
-### Scope
+### Root cause
 
-- **In scope for save/API:** normalization to `:::embed`, RBAC `content:embed-external`, CSP headers (see [ISS-192](#iss-192)).
-- **Out of scope (deferred):** further debugging or UX investment on third-party iframe players until a reproducible, environment-independent fix exists.
+`MarkdownContentParser` expanded `:::embed` to a safe `<iframe class="paginium-external-embed" …>`, then `ContentBodyRenderer` ran **`ContentSecuritySanitizer::sanitizeHtml()`**. Default **`contentSecurity.allowedHtmlTags`** does not include `iframe`, so `HtmlDomSanitizer` removed the iframe. Mermaid/chart figures were already preserved via `preserveTrustedEditorFigures()`; **external embed iframes were missing from that preserve list**.
 
-### Recommended workaround (documented)
+### Resolution
 
-Use **Media Library video** (`:::video` / editor **Insert video**) or a **plain link** to YouTube/Vimeo. Use **image + caption** for documentation screenshots. User guide: [MEDIA_IN_CONTENT.md](en/user/MEDIA_IN_CONTENT.md).
+- `ContentSecuritySanitizer::preserveTrustedEditorFigures()` also preserves `<iframe class="paginium-external-embed">…</iframe>` through sanitization (same pattern as trusted diagram figures).
+- Regression tests: `ContentSecuritySanitizerTest`, `ContentBodyRendererTest` (markdown → parse → sanitize pipeline).
 
-### Notes
+### Still required for embeds
 
-Removing broken embed markup from existing posts is an editorial task, not a migration. Embed code paths remain in the codebase for sites that still want to experiment; PaginiumCMS production content should not rely on them.
+- Permission **`content:embed-external`** to save `:::embed` blocks ([ISS-192](#iss-192)).
+- CSP **`frame-src`** for YouTube nocookie / Vimeo on production (see [ISS-191](#iss-191)).
+- Self-hosted **`:::video`** remains the preferred option when you control the file; embed is for YouTube/Vimeo URLs.
+
+User guide: [MEDIA_IN_CONTENT.md](en/user/MEDIA_IN_CONTENT.md).
 
 ---
 
