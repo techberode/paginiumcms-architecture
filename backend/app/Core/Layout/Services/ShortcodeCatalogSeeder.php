@@ -115,7 +115,7 @@ final class ShortcodeCatalogSeeder
             ],
             'cta-banner' => [
                 'name' => 'cta-banner',
-                'version' => 1,
+                'version' => 2,
                 'attrs' => [
                     'title' => ['type' => 'string'],
                     'subtitle' => ['type' => 'string'],
@@ -125,6 +125,8 @@ final class ShortcodeCatalogSeeder
                         'type' => 'enum',
                         'options' => ['primary', 'muted'],
                     ],
+                    'show-subtitle' => ['type' => 'bool', 'default' => true],
+                    'show-cta' => ['type' => 'bool', 'default' => true],
                 ],
                 'expand' => '<section class="pg-cta pg-cta-{{tone}}"><div class="pg-cta-inner"><h2 class="pg-cta-title">{{title}}</h2><p class="pg-cta-subtitle">{{subtitle}}</p><a class="pg-btn pg-btn-primary pg-cta-link" href="{{href}}">{{cta}}</a></div></section>',
             ],

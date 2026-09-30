@@ -118,6 +118,10 @@ final class ShortcodeExpanderService
             return $this->sanitizer->sanitizeHtml(ShowcaseHeroRenderer::render($attrs));
         }
 
+        if ($name === 'cta-banner') {
+            return $this->sanitizer->sanitizeHtml(CtaBannerRenderer::render($attrs));
+        }
+
         if ($name === 'feature-gallery') {
             $items = $this->gallery !== null ? $this->gallery->findPublishedOrdered() : [];
 
