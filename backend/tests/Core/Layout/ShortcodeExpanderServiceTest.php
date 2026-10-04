@@ -300,6 +300,30 @@ JSON;
         $this->assertStringNotContainsString('[staff-card', $result);
     }
 
+    public function testExpandsGalleryCarouselIslandMarker(): void
+    {
+        $result = $this->expander->expand('[gallery-carousel title="Work" tag="web" layout="slider" autoplay="true"/]');
+
+        $this->assertStringContainsString('pg-island--gallery-carousel', $result);
+        $this->assertStringContainsString('data-tag="web"', $result);
+        $this->assertStringNotContainsString('[gallery-carousel', $result);
+    }
+
+    public function testExpandsSectionBandWithNestedContent(): void
+    {
+        $markdown = '[section-band anchor="work" radius="rounded" tone="muted"]'
+            . '[alert-box tone="info"]Inside band[/alert-box][/section-band]';
+
+        $result = $this->expander->expand($markdown);
+
+        $this->assertStringContainsString('pg-section-band', $result);
+        $this->assertStringContainsString('id="work"', $result);
+        $this->assertStringContainsString('pg-section-band--radius-rounded', $result);
+        $this->assertStringContainsString('pg-alert', $result);
+        $this->assertStringContainsString('Inside band', $result);
+        $this->assertStringNotContainsString('[section-band', $result);
+    }
+
     public function testExpandsVisualFrameAroundAlertBox(): void
     {
         $markdown = '[visual-frame align="center" max-width="960" bold="true" text-size="lg" tone="primary" mark="soft" italic="false" underline="false"]'

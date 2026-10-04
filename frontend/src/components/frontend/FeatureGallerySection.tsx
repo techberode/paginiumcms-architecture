@@ -7,6 +7,7 @@ import { FeatureGalleryGrid } from './FeatureGalleryGrid';
 import { FeatureGallerySlider } from './FeatureGallerySlider';
 import { FeatureGalleryTagFilter } from './FeatureGalleryTagFilter';
 import { resolveGallerySlideDeepLink } from '../../utils/gallerySlideDeepLink';
+import { resolveFeatureGalleryBlockOptions } from '../../utils/featureGalleryBlockOptions';
 import { PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
 export interface FeatureGallerySectionProps {
@@ -17,6 +18,8 @@ export interface FeatureGallerySectionProps {
   featureTag?: string;
   /** Optional heading for in-body blocks. */
   heading?: string;
+  /** Per-block overrides from `[feature-gallery]` attrs (It.58f-i-a). */
+  blockAttrs?: Record<string, string>;
 }
 
 /**
@@ -29,6 +32,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   previewItems,
   featureTag,
   heading,
+  blockAttrs,
 }) => {
   const { t } = useI18n();
   const { settings } = useSettingsContext();
@@ -132,11 +136,9 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
   }
 
   const showFeatureTags = gallerySettings?.showFeatureTags !== false;
-  const layout = gallerySettings?.layout ?? 'grid';
-  const effectPreset = gallerySettings?.effectPreset ?? 'subtle';
-  const autoplayEnabled = gallerySettings?.autoplayEnabled !== false;
-  const autoplayIntervalMs = gallerySettings?.autoplayIntervalMs ?? 6000;
-  const modalCaptionStyle = gallerySettings?.modalCaptionStyle ?? 'below';
+  const display = resolveFeatureGalleryBlockOptions(blockAttrs ?? {}, gallerySettings);
+  const { layout, columns, modalCaptionStyle, effectPreset, autoplayEnabled, autoplayIntervalMs } =
+    display;
   const headingText = heading?.trim() ?? '';
 
   const body =
@@ -156,6 +158,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
         items={filteredItems}
         showFeatureTags={showFeatureTags}
         modalCaptionStyle={modalCaptionStyle}
+        columns={columns}
         initialModalIndex={deepLinkModalIndex}
       />
     );

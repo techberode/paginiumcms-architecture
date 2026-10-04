@@ -80,6 +80,15 @@ final class ShortcodeExpanderService
             return $this->sanitizer->sanitizeHtml(VisualFramePresentation::render($attrs, $expandedInner));
         }
 
+        if ($name === 'section-band') {
+            $definition = ['attrs' => SectionBandRenderer::attributeSchema()];
+            $attrs = $this->parseAttributes($rawAttrs, $definition);
+            $attrs = $this->overlayDamMediaAttrs($rawAttrs, $attrs);
+            $expandedInner = trim($inner) === '' ? '' : $this->expand($inner);
+
+            return $this->sanitizer->sanitizeHtml(SectionBandRenderer::render($attrs, $expandedInner));
+        }
+
         if ($name === 'widget') {
             $html = ($this->widgets ?? new WidgetCatalog())->render($rawAttrs, $inner);
             if (str_starts_with($html, '[widget')) {
@@ -99,6 +108,12 @@ final class ShortcodeExpanderService
             ]);
 
             return $this->sanitizer->sanitizeHtml(StaffCardRenderer::render($name, $attrs));
+        }
+
+        if ($name === 'gallery-carousel') {
+            $attrs = $this->parseAttributes($rawAttrs, ['attrs' => GalleryCarouselRenderer::attributeSchema()]);
+
+            return $this->sanitizer->sanitizeHtml(GalleryCarouselRenderer::render($attrs));
         }
 
         $definition = $this->loadDefinition($name);

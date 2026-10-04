@@ -1,7 +1,7 @@
 # Page field composer — planned iteration (handoff)
 
 > **Captured:** September 30, 2026  
-> **Status:** ⏳ planned — not started in code  
+> **Status:** 🟡 in progress — **58f-i-a/b** + islands **A–E** shipped ([REACT_SHORTCODE_ISLANDS.md](REACT_SHORTCODE_ISLANDS.md)); optional blocks + Phase F remain  
 > **Extends:** [It.58f](../ITERATION_58f.md) visual blocks, [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) phases 2–4  
 > **User goal (SK summary):** Pages must not all look identical. Operators compose **fields (sections)** and drop **registered components** (galleries, heroes, carousels, text) with per-block styling—rounded corners, background (static vs scroll), gradients, carousel placement—**without editing code or creating a new theme per page**.
 
@@ -54,9 +54,10 @@ Page (landing layout)
 
 | Slice | Deliverable |
 |-------|-------------|
-| **58f-i-a** | `feature-gallery` **v2 attrs**: `layout`, `columns`, `modalCaptionStyle` **per block** (override global `gallery.*` settings) |
-| **58f-i-b** | Shortcode **`section-band`** + `SectionBandRenderer`: `id`, DAM `bg-image`, overlay, `radius`, `bg-attachment`, optional `two-column` inner |
-| **58f-i-c** | Outline forms + `render-markup` preview for new attrs; tests + `pgLayout.css` |
+| **58f-i-a** | ✅ `feature-gallery` **v2 attrs**: `layout`, `columns`, `modal-caption-style` **per block** |
+| **58f-i-b** | ✅ **`section-band`** + `SectionBandRenderer` (v2: `reveal`, `hover-effect`) |
+| **58f-i-c** | ✅ Outline + insert modal + tests + `pgLayout.css` for above |
+| **gallery-carousel** | ✅ Islands Phase D — slider from gallery `tag` |
 | **58f-i-d** (optional) | Core hook: section background crossfade on scroll (sibling to `useLandingReveal`); page flag or section attr |
 | **Later** | **Album** entity (`data/gallery-albums/`) if tags are insufficient—only if customers need many isolated collections |
 

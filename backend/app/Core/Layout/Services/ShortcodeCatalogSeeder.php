@@ -234,6 +234,12 @@ final class ShortcodeCatalogSeeder
                 ],
                 'expand' => '<header class="pg-section-head pg-reveal" id="{{anchor}}"><p class="pg-section-eyebrow">{{eyebrow}}</p><h2 class="pg-section-title">{{title}}</h2><p class="pg-section-subtitle">{{subtitle}}</p></header>',
             ],
+            'section-band' => [
+                'name' => 'section-band',
+                'version' => 2,
+                'attrs' => SectionBandRenderer::attributeSchema(),
+                'expand' => '<section class="pg-section-band"><div class="pg-section-band__inner">{{content}}</div></section>',
+            ],
             'showcase-hero' => [
                 'name' => 'showcase-hero',
                 'version' => 3,
@@ -278,12 +284,30 @@ final class ShortcodeCatalogSeeder
             ],
             'feature-gallery' => [
                 'name' => 'feature-gallery',
-                'version' => 1,
+                'version' => 2,
                 'attrs' => [
                     'title' => ['type' => 'string'],
                     'tag' => ['type' => 'string'],
+                    'layout' => [
+                        'type' => 'enum',
+                        'options' => ['', 'grid', 'slider', 'hero-strip'],
+                    ],
+                    'columns' => [
+                        'type' => 'enum',
+                        'options' => ['', '2', '3', '4'],
+                    ],
+                    'modal-caption-style' => [
+                        'type' => 'enum',
+                        'options' => ['', 'below', 'overlay', 'side'],
+                    ],
                 ],
-                'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}"></section>',
+                'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}" data-layout="{{layout}}" data-columns="{{columns}}" data-modal-caption-style="{{modal-caption-style}}"></section>',
+            ],
+            'gallery-carousel' => [
+                'name' => 'gallery-carousel',
+                'version' => 1,
+                'attrs' => GalleryCarouselRenderer::attributeSchema(),
+                'expand' => '<section class="pg-island pg-island--gallery-carousel pg-gallery-carousel" data-island="gallery-carousel"></section>',
             ],
             'latest-articles' => [
                 'name' => 'latest-articles',

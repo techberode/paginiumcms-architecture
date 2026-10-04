@@ -56,7 +56,22 @@ final class HtmlDomSanitizer
             'height',
         ],
         'source' => ['src', 'type', 'media'],
-        'section' => ['data-tag', 'data-title', 'data-staff-mode', 'data-staff-user', 'data-staff-type', 'data-staff-team'],
+        'section' => [
+            'id',
+            'data-tag',
+            'data-title',
+            'data-layout',
+            'data-columns',
+            'data-modal-caption-style',
+            'data-island',
+            'data-effect',
+            'data-autoplay',
+            'data-layout',
+            'data-staff-mode',
+            'data-staff-user',
+            'data-staff-type',
+            'data-staff-team',
+        ],
     ];
 
     /**

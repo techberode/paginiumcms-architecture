@@ -22,6 +22,14 @@ export function buildShortcodeSampleMarkup(name: string): string {
     return `[${name} title="Selected work" tag=""/]`;
   }
 
+  if (name === 'gallery-carousel') {
+    return `[${name} title="Highlights" tag="" layout="slider" effect="subtle" autoplay="true"/]`;
+  }
+
+  if (name === 'section-band') {
+    return `[${name} anchor="work" layout="contained" radius="rounded" reveal="scroll" hover-effect="lift"]\n## Section title\n\nBody copy and nested shortcodes go here.\n\n[/${name}]`;
+  }
+
   if (name === 'staff-card') {
     return `[${name} user="ada@example.com"/]`;
   }

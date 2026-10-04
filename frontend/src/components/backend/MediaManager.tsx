@@ -9,8 +9,6 @@ import {
   Upload,
   FileText,
   Pencil,
-  Check,
-  X,
   Folder,
   ChevronRight,
   Zap,
@@ -107,7 +105,6 @@ export const MediaManager: React.FC = () => {
     setFolder: setCurrentFolder,
     setTypeFilter,
   } = useMediaListQueryParams('uploadedAt', 'desc');
-  const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [editAlt, setEditAlt] = useState('');
   const [editTitle, setEditTitle] = useState('');
@@ -533,17 +530,10 @@ export const MediaManager: React.FC = () => {
   const startEditMeta = (file: MediaFile) => {
     setEditAlt(file.altText);
     setEditTitle(file.title ?? '');
-    if (viewMode === 'preview') {
-      setEditingPath(file.path);
-      setEditingFile(null);
-      return;
-    }
     setEditingFile(file);
-    setEditingPath(null);
   };
 
   const cancelEditMeta = () => {
-    setEditingPath(null);
     setEditingFile(null);
     setEditAlt('');
     setEditTitle('');
@@ -905,14 +895,7 @@ export const MediaManager: React.FC = () => {
               file={file}
               selected={bulkSelection.isSelected(file.path)}
               onToggleSelect={() => bulkSelection.toggle(file.path)}
-              editing={editingPath === file.path}
-              editAlt={editAlt}
-              editTitle={editTitle}
-              onEditAltChange={setEditAlt}
-              onEditTitleChange={setEditTitle}
               onStartEdit={() => startEditMeta(file)}
-              onCancelEdit={cancelEditMeta}
-              onSaveEdit={() => saveEditMeta(file.path)}
               onCopyUrl={() => handleCopyUrl(file)}
               onDownload={() => void handleDownload(file)}
               onPreview={() => openPreview(file)}
@@ -1007,14 +990,7 @@ interface MediaCardProps {
   file: MediaFile;
   selected: boolean;
   onToggleSelect: () => void;
-  editing: boolean;
-  editAlt: string;
-  editTitle: string;
-  onEditAltChange: (value: string) => void;
-  onEditTitleChange: (value: string) => void;
   onStartEdit: () => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
   onCopyUrl: () => void;
   onDownload: () => void;
   onPreview: () => void;
@@ -1031,14 +1007,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
   file,
   selected,
   onToggleSelect,
-  editing,
-  editAlt,
-  editTitle,
-  onEditAltChange,
-  onEditTitleChange,
   onStartEdit,
-  onCancelEdit,
-  onSaveEdit,
   onCopyUrl,
   onDownload,
   onPreview,
@@ -1125,41 +1094,12 @@ const MediaCard: React.FC<MediaCardProps> = ({
         </p>
         <SeoHealthBadge level={evaluateMediaSeo(file)} className="self-start" />
 
-        {editing ? (
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => onEditTitleChange(e.target.value)}
-              placeholder={t('media.meta.titlePlaceholder')}
-              className="form-input text-sm"
-              aria-label={t('media.meta.titlePlaceholder')}
-            />
-            <input
-              type="text"
-              value={editAlt}
-              onChange={(e) => onEditAltChange(e.target.value)}
-              placeholder={t('media.meta.altPlaceholder')}
-              className="form-input text-sm"
-              aria-label={t('media.meta.altPlaceholder')}
-            />
-            <div className="flex gap-2">
-              <button type="button" className="btn btn-primary text-xs px-2 py-1" onClick={onSaveEdit}>
-                <Check className="w-3 h-3 inline" />
-              </button>
-              <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={onCancelEdit}>
-                <X className="w-3 h-3 inline" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={file.altText || t('media.meta.noAlt')}>
-            {file.altText ? t('media.meta.altPrefix', { text: file.altText }) : t('media.meta.noAlt')}
-          </p>
-        )}
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={file.altText || t('media.meta.noAlt')}>
+          {file.altText ? t('media.meta.altPrefix', { text: file.altText }) : t('media.meta.noAlt')}
+        </p>
 
         <div className="flex gap-2 mt-auto pt-2">
-          {!editing && isImage && (
+          {isImage && (
             <>
               <button
                 type="button"
@@ -1179,7 +1119,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
               </button>
             </>
           )}
-          {!editing && canOptimize && (
+          {canOptimize && (
             <button
               type="button"
               className="btn btn-secondary text-xs px-2 py-1"
@@ -1190,7 +1130,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
               {optimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
             </button>
           )}
-          {!editing && onPreviewPdf ? (
+          {onPreviewPdf ? (
             <button
               type="button"
               className="btn btn-secondary text-xs px-2 py-1"
@@ -1200,7 +1140,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
               PDF
             </button>
           ) : null}
-          {!editing && onEditText ? (
+          {onEditText ? (
             <button
               type="button"
               className="btn btn-secondary text-xs px-2 py-1"
@@ -1210,16 +1150,14 @@ const MediaCard: React.FC<MediaCardProps> = ({
               <Pencil className="w-3 h-3" />
             </button>
           ) : null}
-          {!editing && (
-            <button
-              type="button"
-              className="btn btn-secondary text-xs px-2 py-1"
-              title={t('media.actions.editMeta')}
-              onClick={onStartEdit}
-            >
-              <Pencil className="w-3 h-3" />
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn btn-secondary text-xs px-2 py-1"
+            title={t('media.actions.editMeta')}
+            onClick={onStartEdit}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
           <button
             type="button"
             className="btn btn-secondary text-xs px-2 py-1"

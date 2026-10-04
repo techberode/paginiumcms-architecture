@@ -32,6 +32,18 @@ final class FeatureGalleryRenderer
         if ($title !== '') {
             $html .= ' data-title="' . $title . '"';
         }
+        $layout = self::layout($attrs['layout'] ?? '');
+        if ($layout !== '') {
+            $html .= ' data-layout="' . $layout . '"';
+        }
+        $columns = self::columns($attrs['columns'] ?? '');
+        if ($columns !== '') {
+            $html .= ' data-columns="' . $columns . '"';
+        }
+        $captionStyle = self::modalCaptionStyle($attrs['modal-caption-style'] ?? $attrs['modalCaptionStyle'] ?? '');
+        if ($captionStyle !== '') {
+            $html .= ' data-modal-caption-style="' . $captionStyle . '"';
+        }
         $html .= '>';
 
         if ($title !== '') {
@@ -85,6 +97,27 @@ final class FeatureGalleryRenderer
         $html .= '</div></section>';
 
         return $html;
+    }
+
+    private static function layout(string $raw): string
+    {
+        $value = strtolower(trim($raw));
+
+        return in_array($value, ['grid', 'slider', 'hero-strip'], true) ? $value : '';
+    }
+
+    private static function columns(string $raw): string
+    {
+        $value = trim($raw);
+
+        return in_array($value, ['2', '3', '4'], true) ? $value : '';
+    }
+
+    private static function modalCaptionStyle(string $raw): string
+    {
+        $value = strtolower(trim($raw));
+
+        return in_array($value, ['below', 'overlay', 'side'], true) ? $value : '';
     }
 
     private static function text(string $value): string

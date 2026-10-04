@@ -57,6 +57,9 @@ This section records an engineering/legal **compatibility review** against repos
 | Theme packages / Theme Studio | ✅ maintainer path | **Out of scope** for Site Design |
 | Live preview while editing settings | partial (`settingsPreview`) | **Full-route iframe** preview debounced |
 | Per-block hover / motion presets | basic CSS utilities | **Catalog of effects** (reduced-motion safe) |
+| Per-block **interactive** UI (carousel, tabs, fetch) | **Core React islands** via shortcodes/widgets ([REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md)) | **Not** add-on JS — global token/CSS tuning only |
+
+**October 2026 product split:** Visual variety on pages/articles comes from **Core** shortcode/widget catalog + islands (It.58f-i, composer roadmap). Site Design add-on does **not** ship public `.js` or unblock theme scripts; it layers **enum presets → CSS variables** on top of the same layout AST. Replacing blocked third-party template JS is a **Core island** task, not a Site Design script runtime.
 
 ---
 

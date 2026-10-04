@@ -3,11 +3,16 @@ import type { GalleryItem } from '../../api/gallery';
 import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
 import { FeatureGalleryModal } from './FeatureGalleryModal';
+import {
+  galleryGridColumnClass,
+  type GalleryGridColumns,
+} from '../../utils/featureGalleryBlockOptions';
 
 export interface FeatureGalleryGridProps {
   items: GalleryItem[];
   showFeatureTags?: boolean;
   modalCaptionStyle?: 'below' | 'overlay' | 'side';
+  columns?: GalleryGridColumns;
   /** It.65 Phase 3 — open modal at this index when items load (`?slide=`). */
   initialModalIndex?: number | null;
   className?: string;
@@ -17,6 +22,7 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
   items,
   showFeatureTags = true,
   modalCaptionStyle = 'below',
+  columns = '3',
   initialModalIndex = null,
   className = '',
 }) => {
@@ -43,7 +49,7 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
 
   return (
     <>
-      <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>
+      <div className={`${galleryGridColumnClass(columns)} ${className}`.trim()}>
         {items.map((item, index) => (
           <button
             key={item.id}

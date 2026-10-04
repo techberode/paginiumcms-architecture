@@ -263,6 +263,155 @@
   max-width: 44rem;
 }
 
+/* It.58f-i-b — section shell (background, radius, layout) */
+.pg-section-band {
+  position: relative;
+  isolation: isolate;
+  margin: 2.5rem 0;
+  scroll-margin-top: 5rem;
+  overflow: hidden;
+}
+
+.pg-section-band--layout-full {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.pg-section-band--radius-rounded {
+  border-radius: 1.25rem;
+}
+
+.pg-section-band--radius-pill {
+  border-radius: 2.5rem;
+}
+
+.pg-section-band--tone-muted {
+  background: color-mix(in srgb, var(--color-text-muted) 8%, var(--color-surface));
+}
+
+.pg-section-band--tone-accent {
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+}
+
+.pg-section-band__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.pg-section-band__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.pg-section-band--bg-fixed .pg-section-band__media {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  max-height: none;
+}
+
+.pg-section-band--bg-fixed {
+  min-height: min(70vh, 42rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-section-band--bg-fixed .pg-section-band__media {
+    position: absolute;
+    height: 100%;
+  }
+}
+
+.pg-section-band__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pg-section-band--overlay-light .pg-section-band__scrim {
+  background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+}
+
+.pg-section-band--overlay-dark .pg-section-band__scrim {
+  background: color-mix(in srgb, #0f172a 55%, transparent);
+}
+
+.pg-section-band--overlay-primary .pg-section-band__scrim {
+  background: color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+.pg-section-band__inner {
+  position: relative;
+  z-index: 2;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+}
+
+.pg-section-band:not(.pg-section-band--layout-full) .pg-section-band__inner {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pg-section-band__inner--two-column {
+  display: grid;
+  gap: 1.5rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .pg-section-band__inner--two-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* It.58f-i-e — section effect presets (CSS-only, reduced-motion safe) */
+.pg-section-band--hover-lift .pg-card,
+.pg-section-band--hover-lift .pg-pricing-plan,
+.pg-section-band--hover-lift .pg-feature-gallery-item {
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+}
+
+.pg-section-band--hover-lift .pg-card:hover,
+.pg-section-band--hover-lift .pg-pricing-plan:hover,
+.pg-section-band--hover-lift .pg-feature-gallery-item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+.pg-section-band--hover-glow .pg-card,
+.pg-section-band--hover-glow .pg-pricing-plan {
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.pg-section-band--hover-glow .pg-card:hover,
+.pg-section-band--hover-glow .pg-pricing-plan:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent),
+    0 12px 32px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-section-band--hover-lift .pg-card:hover,
+  .pg-section-band--hover-lift .pg-pricing-plan:hover,
+  .pg-section-band--hover-lift .pg-feature-gallery-item:hover {
+    transform: none;
+  }
+}
+
 .pg-stack-grid {
   display: flex;
   flex-wrap: wrap;

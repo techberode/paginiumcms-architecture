@@ -6,7 +6,7 @@ Constraints (non‑negotiable):
 
 - Public HTML is built on the **server** (`ShortcodeExpanderService`, optional dedicated renderers).
 - Expand templates and classes must pass **`ShortcodeDefinitionPolicy`** (`pg-*`, `prose`, allow‑listed patterns).
-- No arbitrary `<script>` or third‑party JS; motion/hover = **CSS** (`pgLayout.css`, `:hover`, `@media`, `prefers-reduced-motion`, optional `pg-reveal`).
+- No arbitrary `<script>`, theme JS in page bodies, or third‑party behavior CDNs. **Static** motion/hover stays **CSS** (`pgLayout.css`, `pg-reveal`, enums → modifier classes). **Interactive** behaviour (carousel, client fetch, complex gallery modes) uses **first-party React islands** only — see [REACT_SHORTCODE_ISLANDS.md](REACT_SHORTCODE_ISLANDS.md).
 - Stored source remains **shortcode tags** in the page/article body (SSOT).
 
 ---
@@ -91,27 +91,28 @@ Expansion: `ComposedShortcodeRenderer` loads parts, renders enabled slots, wraps
 
 ---
 
-## Phase 4 — “Dynamic” effects without external JS
+## Phase 4 — Effects: CSS presets + React islands
 
-Allowed:
+**CSS (default):**
 
-- **CSS‑only** interaction: `.pg-card:hover`, focus rings, `transition`, `@keyframes` in theme/`pgLayout.css`.
-- **Reveal on scroll:** existing `pg-reveal` + optional `IntersectionObserver` only if ever added to **first‑party bundled** frontend bundle (not author‑supplied)—prefer pure CSS `@starting-style` / `:has()` where sufficient.
-- **Data attributes** on `pg-*` nodes set from shortcode attrs (e.g. `data-accent="primary"`) with fixed CSS selectors—no inline `style=` in author templates (sanitizer strips it).
+- `.pg-card:hover`, focus rings, `transition`, `@keyframes` in `pgLayout.css`.
+- `pg-reveal` + `useLandingReveal` on landing shells (existing).
+- Shortcode attrs → **enum → modifier classes** (`hover-lift`, `radius-lg`); no inline `style=` in author templates.
 
-Not allowed:
+**React (catalog only):**
 
-- User‑uploaded scripts, `onclick=`, external CDNs for behavior.
+- When CSS or server HTML is not enough, add a block to **`PUBLIC_ISLANDS`** (PHP marker + registered component). Same Outline/insert UX as today.
+- Migrate existing islands (gallery, staff) to the generic registry before adding new types.
 
-Composer UI can expose **effect presets** (enum): `none | hover-lift | hover-glow` → adds only allow‑listed modifier classes on the wrapper.
+**Not allowed:** user scripts, `onclick=`, plugin-supplied public components, or JSX stored in page body.
 
 ---
 
-## Phase 5 — Optional React **preview** in admin only
+## Phase 5 — Public hydration + optional admin parity
 
-React may render **admin preview** of a composed block (WYSIWYG parity). **Published site** still uses server HTML from PHP for SSOT and CSP.
+**Published site:** SSOT remains Markdown/shortcodes on disk; PHP emits sanitized HTML + island markers; public SPA hydrates **registered** components ([REACT_SHORTCODE_ISLANDS.md](REACT_SHORTCODE_ISLANDS.md) phases A–F).
 
-If a block needs client hydration on the public site, it must be a **first‑party core feature** (reviewed bundle), not per‑shortcode arbitrary code.
+**Admin:** server `render-markup` preview stays the default; optional later parity using the same registry (Phase F).
 
 ---
 

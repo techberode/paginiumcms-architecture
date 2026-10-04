@@ -86,6 +86,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'feature-card',
                 'feature-gallery',
                 'feature-grid',
+                'gallery-carousel',
                 'landing-hero',
                 'latest-articles',
                 'link-chip',
@@ -93,6 +94,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'pricing-feature',
                 'pricing-plan',
                 'pricing-table',
+                'section-band',
                 'section-head',
                 'showcase-hero',
                 'stack-grid',
@@ -113,10 +115,54 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->seeder->seedIfEmpty();
         $this->seeder->seedMissingBundled();
 
-        $this->assertCount(26, $this->manager->list());
+        $this->assertCount(28, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
         $this->assertNotEmpty($this->manager->get('coming-soon'));
         $this->assertNotEmpty($this->manager->get('feature-gallery'));
+    }
+
+    public function testSeedMissingBundledUpgradesSectionBandToV2EffectAttrs(): void
+    {
+        $this->seeder->seedIfEmpty();
+        $this->manager->save('section-band', json_encode([
+            'name' => 'section-band',
+            'version' => 1,
+            'attrs' => [
+                'anchor' => ['type' => 'string'],
+            ],
+            'expand' => '<section class="pg-section-band"><div class="pg-section-band__inner">{{content}}</div></section>',
+        ], JSON_THROW_ON_ERROR));
+
+        $this->seeder->seedMissingBundled();
+
+        $loaded = $this->manager->get('section-band');
+        $definition = $loaded['definition'];
+        $this->assertIsArray($definition);
+        $this->assertSame(2, (int) ($definition['version'] ?? 0));
+        $this->assertArrayHasKey('hover-effect', $definition['attrs']);
+    }
+
+    public function testSeedMissingBundledUpgradesFeatureGalleryToV2LayoutAttrs(): void
+    {
+        $this->seeder->seedIfEmpty();
+        $this->manager->save('feature-gallery', json_encode([
+            'name' => 'feature-gallery',
+            'version' => 1,
+            'attrs' => [
+                'title' => ['type' => 'string'],
+                'tag' => ['type' => 'string'],
+            ],
+            'expand' => '<section class="pg-feature-gallery" data-tag="{{tag}}" data-title="{{title}}"></section>',
+        ], JSON_THROW_ON_ERROR));
+
+        $this->seeder->seedMissingBundled();
+
+        $loaded = $this->manager->get('feature-gallery');
+        $definition = $loaded['definition'];
+        $this->assertIsArray($definition);
+        $this->assertSame(2, (int) ($definition['version'] ?? 0));
+        $this->assertArrayHasKey('layout', $definition['attrs']);
+        $this->assertSame('enum', $definition['attrs']['layout']['type']);
     }
 
     public function testSeedMissingBundledUpgradesLandingHeroToMediaAttrs(): void

@@ -26,6 +26,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | Order | Item | Priority | Status | Reason |
 |-------|------|----------|--------|--------|
 | 0 | **It.58f-i** Page field composer (sections + gallery display per block) | 🟡 P1 | ⏳ | Handoff 2026-09-30 — [architecture/PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
+| 0b | **It.97** CSP `frame-src 'self'` + embed/map facades | 🔵 | ⏸️ | **Deferred** — keep current embed/map iframe + CSP exceptions; prefer **React islands** for rich UI — [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |
+| 0c | **It.58f-i + islands Phase A–E** Dynamic public React blocks (registry, section-band, carousel) | 🟡 P1 | ✅ A–E shipped | [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) · Phase **F** optional |
 | 1 | Complete bilingual documentation | 🔴 | ✅ | It.18 consolidation shipped; SK detail catch-up deferred |
 | 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | shipped in `v2.1.0-beta.28` (It.68 bundle) — see [ITERATION_68](ITERATION_68.md) |
 | 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | shipped in `v2.1.0-beta.26` — see [ITERATION_69](ITERATION_69.md) |

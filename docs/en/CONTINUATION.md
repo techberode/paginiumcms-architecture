@@ -3,7 +3,7 @@
 > **Purpose:** concise, current handoff for the next development session  
 > **Checkpoint:** September 30, 2026 · `main` @ editorial + layout slices (+ `[Unreleased]`)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
-> **Next planned slice:** **Page field composer (It.58f-i)** — see [architecture/PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md)
+> **Next planned slice:** **Islands Phase F** (admin preview parity) or **composer follow-ups** (pricing-toggle, count-up) — [architecture/REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) · CSP/embed iframe hardening (**It.97**) **deferred**
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -53,8 +53,10 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 
 | Order | Item | Why this order |
 |------:|------|----------------|
-| 0 | **It.58f-i** Page field composer (sections + gallery per-block layout) | User-requested flexibility for portfolio/landing pages without per-page themes — [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
-| 1 | **It.82d** Origin host metrics | Optional maintainer hook |
+| 0 | ✅ **Islands A–E** + **58f-i-a/b** — registry, gallery v2, `section-band`, carousel, effect presets | See [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |
+| 1 | **Islands Phase F** — admin preview hydrates `PUBLIC_ISLANDS` | Parity with public SPA |
+| 2 | **It.58f-i** remainder (optional blocks: pricing-toggle, before-after, …) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
+| 3 | **It.82d** Origin host metrics | Optional maintainer hook |
 
 Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 

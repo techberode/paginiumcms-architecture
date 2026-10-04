@@ -1,10 +1,12 @@
+import {
+  buildIslandSectionPattern,
+  extractIslandAttrs,
+  resolveIslandId,
+} from '../islands/publicIslandDefinitions';
+
 export type PublicHtmlPart =
   | { kind: 'html'; html: string }
-  | { kind: 'gallery'; tag: string; title: string }
-  | { kind: 'staff'; mode: string; user: string; type: string; team: string };
-
-const ISLAND =
-  /<section\b(?=[^>]*\b(?:pg-feature-gallery|pg-staff-cards)\b)[^>]*>[\s\S]*?<\/section>/gi;
+  | { kind: 'island'; id: string; attrs: Record<string, string> };
 
 export function splitPublicHtmlIslands(html: string): PublicHtmlPart[] {
   if (html === '') {
@@ -12,7 +14,8 @@ export function splitPublicHtmlIslands(html: string): PublicHtmlPart[] {
   }
 
   const parts: PublicHtmlPart[] = [];
-  const matcher = new RegExp(ISLAND.source, ISLAND.flags);
+  const islandSection = buildIslandSectionPattern();
+  const matcher = new RegExp(islandSection.source, islandSection.flags);
   let last = 0;
   let match: RegExpExecArray | null = matcher.exec(html);
 
@@ -22,20 +25,15 @@ export function splitPublicHtmlIslands(html: string): PublicHtmlPart[] {
     }
 
     const open = match[0].match(/^<section\b[^>]*>/i)?.[0] ?? '';
-    if (/\bpg-staff-cards\b/.test(open)) {
+    const islandId = resolveIslandId(open);
+    if (islandId !== null) {
       parts.push({
-        kind: 'staff',
-        mode: readAttr(open, 'data-staff-mode'),
-        user: readAttr(open, 'data-staff-user'),
-        type: readAttr(open, 'data-staff-type'),
-        team: readAttr(open, 'data-staff-team'),
+        kind: 'island',
+        id: islandId,
+        attrs: extractIslandAttrs(open, islandId),
       });
     } else {
-      parts.push({
-        kind: 'gallery',
-        tag: readAttr(open, 'data-tag'),
-        title: readAttr(open, 'data-title'),
-      });
+      parts.push({ kind: 'html', html: match[0] });
     }
 
     last = match.index + match[0].length;
@@ -49,21 +47,6 @@ export function splitPublicHtmlIslands(html: string): PublicHtmlPart[] {
   return parts.length > 0 ? parts : [{ kind: 'html', html }];
 }
 
-function readAttr(openTag: string, name: string): string {
-  const double = openTag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, 'i'));
-  if (double) {
-    return decodeHtmlAttr(double[1] ?? '');
-  }
-
-  const single = openTag.match(new RegExp(`\\b${name}\\s*=\\s*'([^']*)'`, 'i'));
-  return single ? decodeHtmlAttr(single[1] ?? '') : '';
-}
-
-function decodeHtmlAttr(value: string): string {
-  return value
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+export function hasPublicHtmlIslands(html: string): boolean {
+  return splitPublicHtmlIslands(html).some((part) => part.kind === 'island');
 }

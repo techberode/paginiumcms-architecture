@@ -13,6 +13,14 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Security:** Bump `league/commonmark` 2.10.0 → 2.10.3 (GHSA-97jj-33gv-5xf9, GHSA-3q6v-r5mr-hxv8 — DisallowedRawHtml bypass, GFM table DoS).
+- **Fix:** Media Library **grid (preview) view** — edit metadata opens the same **MediaMetadataModal** as list modes (optimize, resize, title, alt); removed inline title/alt-only shortcut.
+- **Direction:** **React shortcode islands** for dynamic page blocks (registry, attrs → components); keep CSS/server HTML where it already works; no author/theme JS for effects — It.97 CSP/embed facades **deferred** — [REACT_SHORTCODE_ISLANDS.md](docs/en/architecture/REACT_SHORTCODE_ISLANDS.md).
+- **Islands Phase A:** `PUBLIC_ISLANDS` registry (`frontend/src/islands/`), generic `splitPublicHtmlIslands` + `PublicIslandHost`; legacy `pg-feature-gallery` / `pg-staff-cards` and `pg-island--{id}` markers.
+- **It.58f-i-a:** `[feature-gallery]` v2 attrs — per-block `layout`, `columns`, `modal-caption-style` (override Settings → Feature gallery); PHP `data-*` markers + React island hydration.
+- **It.58f-i-b:** `[section-band]` section shell — DAM background, overlay, radius, layout (full/contained/two-column), `bg-attachment`; `SectionBandRenderer` + `pgLayout.css`; Outline palette **Section band**.
+- **Islands Phase D:** `[gallery-carousel]` shortcode — slider/hero-strip from It.65 gallery (`tag` filter), React island + `FeatureGallerySlider`; Outline + insert modal.
+- **Islands Phase E:** `[section-band]` effect presets — `reveal` (scroll/none), `hover-effect` (lift/glow) on inner cards via `pgLayout.css`; seeder **section-band v2**.
 - **Planned (It.58f-i):** Page field composer — section shells, per-block gallery layout overrides, portfolio-page flexibility without new themes — [PAGE_FIELD_COMPOSER_PLANNED.md](docs/en/architecture/PAGE_FIELD_COMPOSER_PLANNED.md).
 - **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
 - **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.

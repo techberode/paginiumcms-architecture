@@ -58,6 +58,41 @@ final class FeatureGalleryRendererTest extends TestCase
         $this->assertStringContainsString('pg-feature-gallery-empty', $empty);
     }
 
+    public function testEmitsPerBlockLayoutAttrsWhenValid(): void
+    {
+        $item = GalleryItem::fromArray([
+            'title' => 'Shot',
+            'mediaPath' => '/storage/app/content/media/shot.jpg',
+            'status' => GalleryItem::STATUS_PUBLISHED,
+        ], 'gallery_4');
+
+        $html = FeatureGalleryRenderer::render(
+            [
+                'title' => 'Work',
+                'layout' => 'slider',
+                'columns' => '4',
+                'modal-caption-style' => 'overlay',
+            ],
+            [$item]
+        );
+
+        $this->assertStringContainsString('data-layout="slider"', $html);
+        $this->assertStringContainsString('data-columns="4"', $html);
+        $this->assertStringContainsString('data-modal-caption-style="overlay"', $html);
+    }
+
+    public function testOmitsInvalidPerBlockLayoutAttrs(): void
+    {
+        $html = FeatureGalleryRenderer::render(
+            ['layout' => 'masonry', 'columns' => '9', 'modal-caption-style' => 'top'],
+            []
+        );
+
+        $this->assertStringNotContainsString('data-layout=', $html);
+        $this->assertStringNotContainsString('data-columns=', $html);
+        $this->assertStringNotContainsString('data-modal-caption-style=', $html);
+    }
+
     public function testEscapesTitleAndAllowsSafeLinks(): void
     {
         $item = GalleryItem::fromArray([

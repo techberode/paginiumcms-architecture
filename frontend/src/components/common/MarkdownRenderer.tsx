@@ -1,8 +1,7 @@
 import React from 'react';
-import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
-import { StaffCardsSection } from '../frontend/StaffDirectory';
+import { PublicIslandHost } from '../../islands/publicIslandRegistry';
 import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
-import { splitPublicHtmlIslands } from '../../utils/publicHtmlIslands';
+import { hasPublicHtmlIslands, splitPublicHtmlIslands } from '../../utils/publicHtmlIslands';
 import { ProseImageLightboxHost } from './ProseImageLightboxHost';
 
 interface MarkdownRendererProps {
@@ -38,7 +37,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   if (html) {
     const safe = sanitizePublicHtml(html);
     const parts = splitPublicHtmlIslands(safe);
-    if (!parts.some((part) => part.kind === 'gallery' || part.kind === 'staff')) {
+    if (!hasPublicHtmlIslands(safe)) {
       return (
         <ProseRoot className={className} enableImageLightbox={enableImageLightbox}>
           <div dangerouslySetInnerHTML={{ __html: safe }} />
@@ -57,21 +56,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 dangerouslySetInnerHTML={{ __html: part.html }}
               />
             )
-          ) : part.kind === 'staff' ? (
-            <StaffCardsSection
-              key={`staff-${index}`}
-              mode={part.mode}
-              user={part.user}
-              type={part.type}
-              team={part.team}
-            />
           ) : (
-            <FeatureGallerySection
-              key={`gallery-${index}`}
-              variant="block"
-              featureTag={part.tag || undefined}
-              heading={part.title || undefined}
-            />
+            <PublicIslandHost key={`island-${part.id}-${index}`} id={part.id} attrs={part.attrs} />
           )
         )}
       </ProseRoot>

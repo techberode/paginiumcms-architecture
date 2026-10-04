@@ -27,6 +27,16 @@ describe('outlinePalette', () => {
     expect(again[0]).toMatchObject({ kind: 'shortcode', name: 'landing-hero' });
   });
 
+  it('includes section-band in palette', () => {
+    expect(isOutlinePaletteShortcode('section-band')).toBe(true);
+    const block = createPaletteShortcode('section-band');
+    expect(block.kind).toBe('shortcode');
+    if (block.kind === 'shortcode') {
+      expect(block.name).toBe('section-band');
+      expect(block.selfClosing).toBe(false);
+    }
+  });
+
   it('builds a self-closing feature-gallery sample', () => {
     const block = createPaletteShortcode('feature-gallery');
     expect(block.kind).toBe('shortcode');
