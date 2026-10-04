@@ -35,7 +35,7 @@ It.15 zaviedol pravidlá externých rozšírení, registry a hook runtime. Tým 
 | **57** | Auto tags a meta description | ✅ | `v2.1.0-beta.4` |
 | **58b** | Color schemes a themed public site | ✅ | `v2.1.0-beta.8` |
 | **58c** | Layout Switch a page templates | ✅ | `v2.1.0-beta.23` |
-| **58d** | Zostávajúce layout bloky/polish | ⏳ | rozsah treba presne uzamknúť |
+| **58d–58g** | Shortcodes, `pg-*`, outline (58f-a–h), compile s It.48 | ✅ | uzavreté — [ITERATION_58.md](ITERATION_58.md) |
 
 Rozšírené nad pôvodnú mapu:
 

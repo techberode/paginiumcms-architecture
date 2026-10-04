@@ -382,7 +382,8 @@ export const editorSk: MessageTree = {
   outline: {
     title: 'Bloky stránky',
     description: 'Pridajte sekcie z palety a vyplňte polia. Stránka sa stále ukladá ako Markdown.',
-    livePreviewHint: 'Vpravo je živý náhľad (skripty vypnuté). Verejná stránka používa ten istý expander.',
+    livePreviewHint:
+      'Vpravo je živý náhľad (skripty vypnuté). Galéria/karusel sa hydratuje ako na webe; ostatné bloky idú cez sandbox iframe.',
     canvasHint: 'Ľavý stĺpec je plátno blokov. Kliknite na kartu a polia upravíte vpravo. Živý náhľad ostáva nezmenený.',
     selectBlock: 'Kliknite na blok na plátne, aby ste upravili jeho polia.',
     empty: 'Zatiaľ žiadne bloky. Pridajte hero, text alebo karty z palety.',

@@ -131,7 +131,7 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 
 | Track | Status | Timing |
 |-------|--------|--------|
-| **It.58d** — remaining layout blocks/polish | ⏳ | after docs; may run alongside early Hybrid Engine work |
+| **It.58** — layout switch (58b–58g, 58f canvas) | ✅ | shortcodes, `pg-*`, outline, compile with It.48 — [ITERATION_58.md](en/ITERATION_58.md) |
 | **It.67** — untrusted surfaces defense-in-depth | 🔴 | before expanding imports, themes, and generated code |
 | **It.25** — setup wizard and simplified update UX | ✅ M1+ shipped | `beta.62`–`beta.65`; not a stable-tag blocker |
 | **It.48** — static/dynamic rendering | 🟡 | align with It.70 to avoid two publishing pipelines |
@@ -147,7 +147,7 @@ It.87 Project Site Planner (shipped)
     → It.88 Theme Studio
     → It.78 upload security ✅ → It.79 DAM video ✅ → It.90 Editor Workbench ✅ → It.91 trusted HTML (91a/b ✅)
     → It.72 S3 remainder
-    → It.58f/g layout remainder
+    → It.58 layout switch ✅ (58f-i / islands = follow-on composer)
     → It.70 GitHub publish UI
     → It.76/77 translation → It.75 AI agent (human-approved)
     → It.48 static/Jamstack (shared design with It.70)

@@ -35,7 +35,7 @@ It.15 introduced external extension rules, the registry, and hook runtime. This 
 | **57** | Auto tags and meta description | ✅ | `v2.1.0-beta.4` |
 | **58b** | Color schemes and themed public site | ✅ | `v2.1.0-beta.8` |
 | **58c** | Layout Switch and page templates | ✅ | `v2.1.0-beta.23` |
-| **58d** | Remaining layout blocks/polish | ⏳ | scope must be frozen precisely |
+| **58d–58g** | Shortcodes, `pg-*`, outline (58f-a–h), compile with It.48 | ✅ | closed — [ITERATION_58.md](ITERATION_58.md) |
 
 Expanded beyond the original map:
 

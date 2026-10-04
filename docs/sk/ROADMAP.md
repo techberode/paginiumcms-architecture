@@ -129,7 +129,7 @@ Poradie je **It.73 → It.76/77 → It.75**. AI agent smie iba navrhovať zmeny;
 
 | Prúd | Stav | Kedy |
 |------|------|------|
-| **It.58d** — zostávajúce layout bloky/polish | ⏳ | po dokumentácii; môže bežať popri skorom Hybrid Engine |
+| **It.58** — layout switch (58b–58g, 58f canvas) | ✅ | shortcodes, `pg-*`, outline, compile s It.48 — [ITERATION_58.md](ITERATION_58.md) |
 | **It.67** — untrusted surfaces defense-in-depth | 🔴 | pred rozšírením importov, tém a generovaného kódu |
 | **It.25** — setup wizard a zjednodušený update UX | ✅ M1+ dodané | `beta.62`–`beta.65` — preflight + update banner; pred stabilným tagom |
 | **It.48** — static/dynamic render | 🟡 | zosúladiť s It.70, aby nevznikli dve publish pipeline |

@@ -10,7 +10,7 @@ icon: material/history
 
 | Pole | Hodnota |
 |---|---|
-| Stav | 📐 Rozhodnutie; 58c dodané, ďalšie fázy otvorené |
+| Stav | 📐 Rozhodnutie; **58b–58g dodané** (pozri [ITERATION_58.md](ITERATION_58.md)) |
 | Release / obdobie | snapshot 2.1.0-beta.21; 58c neskôr beta.23 |
 | Typ záznamu | historický architecture decision record |
 
@@ -32,6 +32,6 @@ Maximálna ochrana má šesť vrstiev: syntax/JSON parse, security scan, code po
 
 Zdroj bol aktualizovaný pri `v2.1.0-beta.21`, keď bola 58b hotová. Neskorší hlavný dokument potvrdzuje 58c v [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23). Otvorené zostávajú SSOT sync pri prepínaní a presný Monaco placement.
 
-## Aktuálna interpretácia
+## Aktuálna interpretácia (September 2026)
 
-Tento dokument je záväzný architecture decision record pre otvorené 58d–58g. Budúce plugin/theme studios môžu reuse rovnaký pattern, ale nie sú súčasťou It.58.
+Fázy It.58 **58d–58g sú dodané** (shortcodes, `pg-*`, outline canvas, compile s It.48). Dokument zostáva **rozhodovacím záznamom** pre spoločný AST a fail-closed shortcode model. Pokračovanie landing skladania (**It.58f-i**, React islands) rozširuje rovnaké vzory bez nového čísla 58. Budúce plugin/theme studios môžu reuse pattern, ale nie sú súčasťou It.58.

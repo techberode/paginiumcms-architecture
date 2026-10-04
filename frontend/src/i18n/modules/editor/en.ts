@@ -382,7 +382,8 @@ export const editorEn: MessageTree = {
   outline: {
     title: 'Page blocks',
     description: 'Add sections from the palette and fill in the fields. The page is still saved as Markdown.',
-    livePreviewHint: 'The right pane is a live preview (scripts off). The public page still uses the same expander.',
+    livePreviewHint:
+      'The right pane is a live preview (scripts off). Gallery/carousel islands hydrate like the public site; other blocks use a sandbox iframe.',
     canvasHint: 'The left column is the block canvas. Click a card to edit fields on the right. Live preview stays the same.',
     selectBlock: 'Click a block on the canvas to edit its fields.',
     empty: 'No blocks yet. Add a hero, text, or cards from the palette.',

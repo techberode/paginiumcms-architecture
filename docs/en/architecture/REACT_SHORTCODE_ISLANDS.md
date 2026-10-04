@@ -146,7 +146,7 @@ For **section shell** (`section-band`, planned It.58f-i):
 | **C** | ✅ `section-band` shortcode + CSS (server HTML; scroll/fixed via classes) | Outline **Section band** |
 | **D** | ✅ **gallery-carousel** island (gallery tag → `FeatureGallerySlider`) | Palette + modal |
 | **E** | ✅ `[section-band]` `reveal` + `hover-effect` (lift/glow) → CSS + `pg-reveal` / `useLandingReveal` | Outline enums |
-| **F** | Admin React preview uses same registry (parity) | Optional |
+| **F** | ✅ Outline/developer live preview hydrates `PUBLIC_ISLANDS` (static HTML stays sandbox iframe) | Same as public |
 
 Do **not** start with “custom React per customer shortcode” or npm in page body.
 

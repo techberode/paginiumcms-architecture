@@ -4,6 +4,7 @@ import { contentApi } from '../../api/content';
 import { useI18n } from '../../context/I18nContext';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
 import { buildContentPreviewSrcDoc } from '../../utils/contentPreviewSrcDoc';
+import { hasPublicHtmlIslands } from '../../utils/publicHtmlIslands';
 import {
   THEME_STUDIO_PREVIEW_REFERRER,
   THEME_STUDIO_PREVIEW_SANDBOX,
@@ -16,7 +17,10 @@ interface AdminBodyPreviewPanelProps {
   bodyFormat: 'markdown' | 'html' | 'tiptap_json';
   className?: string;
   debounceMs?: number;
-  /** Empty-sandbox iframe (page outline / developer). Inline HTML stays for snippet managers. */
+  /**
+   * Empty-sandbox iframe (page outline / developer) for static expanded HTML.
+   * When the body contains registered React islands, preview hydrates inline (Phase F parity).
+   */
   sandbox?: boolean;
   /** Stretch the iframe to the remaining column instead of a 72vh box. */
   fillViewport?: boolean;
@@ -107,7 +111,7 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         ) : !body.trim() ? (
           <p className="text-sm text-slate-500">{t('platform.preview.empty')}</p>
-        ) : html && sandbox ? (
+        ) : html && sandbox && !hasPublicHtmlIslands(html) ? (
           <iframe
             title={t('platform.preview.frame')}
             sandbox={THEME_STUDIO_PREVIEW_SANDBOX}
@@ -121,7 +125,20 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
             data-testid="admin-body-preview-frame"
           />
         ) : html ? (
-          <MarkdownRenderer content="" html={html} className="paginium-prose pg-shortcode-surface max-w-none" />
+          <div
+            className={
+              fillViewport
+                ? 'min-h-[12rem] flex-1 overflow-auto rounded-lg bg-white p-4 dark:bg-slate-900'
+                : 'max-h-[min(72vh,46rem)] overflow-auto rounded-lg bg-white p-4 dark:bg-slate-900'
+            }
+            data-testid={sandbox ? 'admin-body-preview-hydrated' : undefined}
+          >
+            <MarkdownRenderer
+              content=""
+              html={html}
+              className="paginium-prose pg-shortcode-surface pg-layout-landing max-w-none"
+            />
+          </div>
         ) : null}
       </div>
     </div>

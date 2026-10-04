@@ -47,6 +47,24 @@ describe('AdminBodyPreviewPanel', () => {
     expect(contentApi.renderPreview).not.toHaveBeenCalled();
   });
 
+  it('hydrates registered islands inline instead of a sandbox iframe', async () => {
+    vi.mocked(contentApi.renderPreview).mockResolvedValue(
+      '<section class="pg-island pg-island--feature-gallery" data-feature-tag="demo"></section>'
+    );
+
+    const { getByTestId, queryByTestId } = renderWithProviders(
+      <AdminBodyPreviewPanel
+        body={'[feature-gallery tag="demo" /]'}
+        bodyFormat="markdown"
+        sandbox
+        debounceMs={0}
+      />
+    );
+
+    await waitFor(() => getByTestId('admin-body-preview-hydrated'));
+    expect(queryByTestId('admin-body-preview-frame')).toBeNull();
+  });
+
   it('opens the full page preview from the pane chrome', async () => {
     const onOpenFullPreview = vi.fn();
     const { getByTestId } = renderWithProviders(

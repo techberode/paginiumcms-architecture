@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | 📐 Decision record; 58c shipped, later phases open |
+| Status | 📐 Decision record; **58b–58g shipped** (see [ITERATION_58.md](ITERATION_58.md)) |
 | Release / period | snapshot 2.1.0-beta.21; 58c neskôr beta.23 |
 | Record type | historical architecture decision record |
 
@@ -32,6 +32,6 @@ Maximum protection has six layers: syntax/JSON parsing, security scan, code poli
 
 The source was updated at `v2.1.0-beta.21` with 58b shipped. The later main record confirms 58c in [v2.1.0-beta.23](../../CHANGELOG.md#release-2-1-0-beta-23). Open decisions remain around SSOT synchronization during mode switching and Monaco placement.
 
-## Current interpretation
+## Current interpretation (September 2026)
 
-This document is the governing architecture decision record for open 58d–58g work. Future plugin/theme studios may reuse the pattern but are outside It.58.
+It.58 phases **58d–58g are shipped** (shortcodes, `pg-*`, outline canvas, compile with It.48). This document remains the **decision record** for the shared AST + fail-closed shortcode model. Follow-on landing composition (**It.58f-i**, React islands) extends the same patterns without reopening It.58 numbering. Future plugin/theme studios may reuse the pattern but are outside It.58.
