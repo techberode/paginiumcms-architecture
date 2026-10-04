@@ -74,6 +74,7 @@ final class HtmlDomSanitizer
             'data-billing-toggle',
             'data-label-monthly',
             'data-label-yearly',
+            'data-animate',
         ],
     ];
 

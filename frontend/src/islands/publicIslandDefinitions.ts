@@ -60,6 +60,12 @@ export const PUBLIC_ISLAND_DEFINITIONS: PublicIslandDefinition[] = [
     /** Server-expanded plan cards live inside the section (shell island). */
     preservesInnerHtml: true,
   },
+  {
+    id: 'stats-row',
+    legacyClasses: ['pg-stats--count-up'],
+    attrs: [{ htmlAttr: 'data-animate', propKey: 'animate' }],
+    preservesInnerHtml: true,
+  },
 ];
 
 const DEFINITION_BY_ID = new Map(PUBLIC_ISLAND_DEFINITIONS.map((def) => [def.id, def]));

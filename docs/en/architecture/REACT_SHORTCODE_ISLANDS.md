@@ -148,6 +148,8 @@ For **section shell** (`section-band`, planned It.58f-i):
 | **E** | ✅ `[section-band]` `reveal` + `hover-effect` (lift/glow) → CSS + `pg-reveal` / `useLandingReveal` | Outline enums |
 | **F** | ✅ Outline/developer live preview hydrates `PUBLIC_ISLANDS` (static HTML stays sandbox iframe) | Same as public |
 
+It.58 core is **closed**; islands + **58f-i** continue under [IT_58_COMPOSER_HANDOFF.md](IT_58_COMPOSER_HANDOFF.md).
+
 Do **not** start with “custom React per customer shortcode” or npm in page body.
 
 ---

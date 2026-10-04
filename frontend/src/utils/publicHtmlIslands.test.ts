@@ -87,6 +87,19 @@ describe('splitPublicHtmlIslands', () => {
     ]);
   });
 
+  it('preserves inner html for stats-row count-up island', () => {
+    const html =
+      '<section class="pg-island pg-island--stats-row pg-stats--count-up" data-island="stats-row" data-animate="count-up"><div class="pg-stat"><span class="pg-stat-value">42</span></div></section>';
+    expect(splitPublicHtmlIslands(html)).toEqual([
+      {
+        kind: 'island',
+        id: 'stats-row',
+        attrs: { animate: 'count-up' },
+        innerHtml: '<div class="pg-stat"><span class="pg-stat-value">42</span></div>',
+      },
+    ]);
+  });
+
   it('preserves inner html for pricing-table shell island', () => {
     const html =
       '<section class="pg-island pg-island--pricing-table" data-island="pricing-table" data-columns="2" data-label-monthly="M" data-label-yearly="Y" data-billing-toggle="monthly-yearly"><article class="pg-plan">Pro</article></section>';

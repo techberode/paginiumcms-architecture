@@ -43,7 +43,7 @@ export function buildShortcodeSampleMarkup(name: string): string {
   }
 
   if (name === 'stats-row') {
-    return `[${name}][stat-item value="100%" label="Flat-file SSOT"/][stat-item value="18" label="Permissions"/][stat-item value="0" label="SQL required"/][/${name}]`;
+    return `[${name} animate="count-up"][stat-item value="100%" label="Flat-file SSOT"/][stat-item value="18" label="Permissions"/][stat-item value="0" label="SQL required"/][/${name}]`;
   }
 
   if (name === 'stat-item') {

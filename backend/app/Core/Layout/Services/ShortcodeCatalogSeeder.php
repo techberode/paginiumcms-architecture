@@ -165,8 +165,8 @@ final class ShortcodeCatalogSeeder
             ],
             'stats-row' => [
                 'name' => 'stats-row',
-                'version' => 1,
-                'attrs' => [],
+                'version' => 2,
+                'attrs' => StatsRowRenderer::attributeSchema(),
                 'expand' => '<div class="pg-stats pg-reveal">{{content}}</div>',
             ],
             'stat-item' => [

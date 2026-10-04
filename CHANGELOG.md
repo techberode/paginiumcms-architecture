@@ -24,7 +24,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Islands Phase F:** Admin outline/developer live preview hydrates registered islands via `MarkdownRenderer` + `PUBLIC_ISLANDS` (sandbox iframe only when no islands).
 - **It.58 closure:** Docs/ROADMAP mark **58b–58g** (incl. 58f-a–h canvas, 58g with It.48) as shipped; **It.58f-i** / islands documented as post-58 composer wave — [ITERATION_58.md](docs/en/ITERATION_58.md).
 - **It.58f-i-e:** `[pricing-table]` billing toggle (monthly/yearly) — `pricing-plan` `price-monthly` / `price-yearly`; React `pricing-table` shell island preserves expanded plan HTML; seeder **v2**.
-- **Planned (It.58f-i):** Page field composer — section shells, per-block gallery layout overrides, portfolio-page flexibility without new themes — [PAGE_FIELD_COMPOSER_PLANNED.md](docs/en/architecture/PAGE_FIELD_COMPOSER_PLANNED.md).
+- **It.58f-i-f:** `[stats-row]` `animate="count-up"` — KPI count-up on scroll (shell island, `prefers-reduced-motion` safe); seeder **stats-row v2**.
+- **Planned (It.58f-i-g…k):** **React** image + video gallery (bundled lightbox, thumbnails, mixed slides), insert options, inline grid layouts — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
+- **Docs:** It.58 complete handoff — [IT_58_COMPOSER_HANDOFF.md](docs/en/architecture/IT_58_COMPOSER_HANDOFF.md) (58b–58g + 58f-i shipped slices + React gallery queue).
 - **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
 - **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.
 - **Shortcodes:** Bundled `faq-list` / `faq-item` (native `<details>`), `link-row` / `link-chip`; `landing-hero` v3 slot toggles (`show-subtitle`, `show-cta`, `show-media`).

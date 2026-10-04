@@ -164,4 +164,4 @@ Order: `a → b → d → c → e → f → g → h`. **58f-a–h shipped.** `La
 
 ## Queue note
 
-**58f-a–h are shipped.** **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. Next product queue: [It.95](ITERATION_95.md). Do not invent 58i.
+**58f-a–h are shipped.** **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. **It.58 is closed** — see [ITERATION_58.md](ITERATION_58.md). Post-58 composer/islands (**58f-i**, React gallery planned): [architecture/IT_58_COMPOSER_HANDOFF.md](architecture/IT_58_COMPOSER_HANDOFF.md). Do not invent **58i** or It.94 for page blocks.

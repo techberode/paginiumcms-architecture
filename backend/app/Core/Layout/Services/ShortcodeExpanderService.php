@@ -132,6 +132,14 @@ final class ShortcodeExpanderService
             return $this->sanitizer->sanitizeHtml(PricingPlanRenderer::render($attrs, $expandedInner));
         }
 
+        if ($name === 'stats-row') {
+            $definition = ['attrs' => StatsRowRenderer::attributeSchema()];
+            $attrs = $this->parseAttributes($rawAttrs, $definition);
+            $expandedInner = trim($inner) === '' ? '' : $this->expand($inner);
+
+            return $this->sanitizer->sanitizeHtml(StatsRowRenderer::render($attrs, $expandedInner));
+        }
+
         $definition = $this->loadDefinition($name);
         if ($definition === null) {
             return '[' . $name . $rawAttrs . ']' . $inner . ($inner === '' ? '' : '[/' . $name . ']');

@@ -26,4 +26,4 @@ Hero video (muted, loop, poster, `prefers-reduced-motion`) je blok Core, nie izo
 
 ## 58f-h (hotové)
 
-Outline režim je vizuálne plátno: paleta, `@dnd-kit` stack kariet, inspector polí. `LayoutBuilderCard` ostáva výberom režimu editora. Detail [EN](../en/ITERATION_58f.md#slice-58f-h--visual-block-canvas). Ďalšia fronta: [It.95](ITERATION_95.md). 58i nezakladáme.
+Outline režim je vizuálne plátno: paleta, `@dnd-kit` stack kariet, inspector polí. `LayoutBuilderCard` ostáva výberom režimu editora. Detail [EN](../en/ITERATION_58f.md#slice-58f-h--visual-block-canvas). **It.58 je uzavretá** — [ITERATION_58.md](ITERATION_58.md). Pokračovanie **58f-i** + islands: [IT_58_COMPOSER_HANDOFF.md](../en/architecture/IT_58_COMPOSER_HANDOFF.md), [GALLERY_LIGHTBOX_PLANNED.md](../en/architecture/GALLERY_LIGHTBOX_PLANNED.md). 58i nezakladáme.

@@ -40,4 +40,4 @@ Rozhodnutia a phased plan sú v [ITERATION_58_ALTERNATIVES.md](ITERATION_58_ALTE
 
 **It.58 je uzavretá** pre produktové slicey. **58b–58e** dodané. UX publikovania **[ITERATION_58f](ITERATION_58f.md)** (**58f-a–h**: vizuálne plátno, formuláre, live preview, DAM hero video, feature-gallery, i18n). **58g** compile/cache s [It.48](../en/ITERATION_48.md) v `v2.1.0-beta.89`. Nevymýšľaj 58i ani It.94 pre page bloky.
 
-Rozšírenia landing/portfolio **po uzavretí It.58** (section-band, React islands, per-block gallery attrs) sú samostatná vlna **It.58f-i** — [PAGE_FIELD_COMPOSER_PLANNED.md](../en/architecture/PAGE_FIELD_COMPOSER_PLANNED.md), [REACT_SHORTCODE_ISLANDS.md](../en/architecture/REACT_SHORTCODE_ISLANDS.md); nie sú súčasťou pôvodného čísla 58.
+Rozšírenia **po uzavretí It.58** (58f-i, React islands, plánovaná React image/video galéria) — [IT_58_COMPOSER_HANDOFF.md](../en/architecture/IT_58_COMPOSER_HANDOFF.md), [PAGE_FIELD_COMPOSER_PLANNED.md](../en/architecture/PAGE_FIELD_COMPOSER_PLANNED.md), [GALLERY_LIGHTBOX_PLANNED.md](../en/architecture/GALLERY_LIGHTBOX_PLANNED.md); nie sú súčasťou pôvodného čísla 58.

@@ -121,6 +121,25 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->assertNotEmpty($this->manager->get('feature-gallery'));
     }
 
+    public function testSeedMissingBundledUpgradesStatsRowToV2Animate(): void
+    {
+        $this->seeder->seedIfEmpty();
+        $this->manager->save('stats-row', json_encode([
+            'name' => 'stats-row',
+            'version' => 1,
+            'attrs' => [],
+            'expand' => '<div>{{content}}</div>',
+        ], JSON_THROW_ON_ERROR));
+
+        $this->seeder->seedMissingBundled();
+
+        $loaded = $this->manager->get('stats-row');
+        $definition = $loaded['definition'];
+        $this->assertIsArray($definition);
+        $this->assertSame(2, (int) ($definition['version'] ?? 0));
+        $this->assertArrayHasKey('animate', $definition['attrs']);
+    }
+
     public function testSeedMissingBundledUpgradesPricingTableToV2BillingToggle(): void
     {
         $this->seeder->seedIfEmpty();

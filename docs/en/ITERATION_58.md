@@ -40,6 +40,6 @@ Decisions and the phased plan are in [ITERATION_58_ALTERNATIVES.md](ITERATION_58
 
 It.58 is closed for product slices. **58b–58e shipped.** Publishing UX **[ITERATION_58f.md](ITERATION_58f.md)** (**58f-a–h shipped**: visual canvas, forms, live preview, DAM hero video, feature-gallery, i18n/help). **58g** compile/cache shipped with [It.48](ITERATION_48.md) in `v2.1.0-beta.89`. Do not invent 58i.
 
-Post–It.58 landing extensions (**It.58f-i**, section-band, React islands, per-block gallery attrs) are documented separately — [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md), [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md); they are not part of the original It.58 numbering.
+Post–It.58 landing extensions (**It.58f-i**, section-band, React islands, pricing/stats blocks) are documented separately — [IT_58_COMPOSER_HANDOFF.md](architecture/IT_58_COMPOSER_HANDOFF.md), [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md), [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md), [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md); they are not part of the original It.58 numbering.
 
 Do not invent It.94 for page blocks.

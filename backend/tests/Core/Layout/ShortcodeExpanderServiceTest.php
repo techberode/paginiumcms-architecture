@@ -309,6 +309,26 @@ JSON;
         $this->assertStringNotContainsString('[gallery-carousel', $result);
     }
 
+    public function testExpandsStatsRowWithCountUpAnimation(): void
+    {
+        $this->manager->save('stat-item', json_encode([
+            'name' => 'stat-item',
+            'version' => 1,
+            'attrs' => [
+                'value' => ['type' => 'string'],
+                'label' => ['type' => 'string'],
+            ],
+            'expand' => '<div class="pg-stat"><span class="pg-stat-value">{{value}}</span><span class="pg-stat-label">{{label}}</span></div>',
+        ], JSON_THROW_ON_ERROR));
+
+        $markdown = '[stats-row animate="count-up"][stat-item value="42" label="Teams"/][/stats-row]';
+        $result = $this->expander->expand($markdown);
+
+        $this->assertStringContainsString('pg-island--stats-row', $result);
+        $this->assertStringContainsString('pg-stat-value', $result);
+        $this->assertStringContainsString('42', $result);
+    }
+
     public function testExpandsPricingTableWithBillingToggle(): void
     {
         $markdown = '[pricing-table columns="2" billing-toggle="monthly-yearly"]'
