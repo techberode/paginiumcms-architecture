@@ -71,6 +71,9 @@ final class HtmlDomSanitizer
             'data-staff-user',
             'data-staff-type',
             'data-staff-team',
+            'data-billing-toggle',
+            'data-label-monthly',
+            'data-label-yearly',
         ],
     ];
 

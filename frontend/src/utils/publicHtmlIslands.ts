@@ -1,12 +1,13 @@
 import {
   buildIslandSectionPattern,
   extractIslandAttrs,
+  getPublicIslandDefinition,
   resolveIslandId,
 } from '../islands/publicIslandDefinitions';
 
 export type PublicHtmlPart =
   | { kind: 'html'; html: string }
-  | { kind: 'island'; id: string; attrs: Record<string, string> };
+  | { kind: 'island'; id: string; attrs: Record<string, string>; innerHtml?: string };
 
 export function splitPublicHtmlIslands(html: string): PublicHtmlPart[] {
   if (html === '') {
@@ -27,10 +28,17 @@ export function splitPublicHtmlIslands(html: string): PublicHtmlPart[] {
     const open = match[0].match(/^<section\b[^>]*>/i)?.[0] ?? '';
     const islandId = resolveIslandId(open);
     if (islandId !== null) {
+      const def = getPublicIslandDefinition(islandId);
+      let innerHtml: string | undefined;
+      if (def?.preservesInnerHtml === true) {
+        const innerMatch = match[0].match(/<section\b[^>]*>([\s\S]*)<\/section>/i);
+        innerHtml = innerMatch?.[1] ?? '';
+      }
       parts.push({
         kind: 'island',
         id: islandId,
         attrs: extractIslandAttrs(open, islandId),
+        ...(innerHtml !== undefined ? { innerHtml } : {}),
       });
     } else {
       parts.push({ kind: 'html', html: match[0] });

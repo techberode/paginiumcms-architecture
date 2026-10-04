@@ -138,6 +138,18 @@ Nest self-closing `stat-item` tags inside `stats-row`:
 
 `variant`: `default` or `featured` (highlight border).
 
+**Monthly / yearly toggle (It.58f-i-e):** set `billing-toggle="monthly-yearly"` on `pricing-table` and dual prices on each plan:
+
+```markdown
+[pricing-table columns="3" billing-toggle="monthly-yearly" label-monthly="Monthly" label-yearly="Yearly"]
+[pricing-plan name="Pro" price-monthly="€29" price-yearly="€290" period-monthly="/mo" period-yearly="/yr" cta="Choose" href="/signup"]
+[pricing-feature text="Feature one"/]
+[/pricing-plan]
+[/pricing-table]
+```
+
+Legacy `price` / `period` still work when the toggle is off.
+
 ---
 
 ## 5. Security notes

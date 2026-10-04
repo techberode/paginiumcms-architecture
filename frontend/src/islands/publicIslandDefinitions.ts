@@ -10,6 +10,8 @@ export type PublicIslandDefinition = {
   id: string;
   legacyClasses: string[];
   attrs: IslandAttrBinding[];
+  /** Keep expanded shortcode HTML inside the section for hydration (e.g. pricing plans). */
+  preservesInnerHtml?: boolean;
 };
 
 export const PUBLIC_ISLAND_DEFINITIONS: PublicIslandDefinition[] = [
@@ -45,6 +47,18 @@ export const PUBLIC_ISLAND_DEFINITIONS: PublicIslandDefinition[] = [
       { htmlAttr: 'data-staff-type', propKey: 'type' },
       { htmlAttr: 'data-staff-team', propKey: 'team' },
     ],
+  },
+  {
+    id: 'pricing-table',
+    legacyClasses: ['pg-pricing--billing-toggle'],
+    attrs: [
+      { htmlAttr: 'data-columns', propKey: 'columns' },
+      { htmlAttr: 'data-label-monthly', propKey: 'labelMonthly' },
+      { htmlAttr: 'data-label-yearly', propKey: 'labelYearly' },
+      { htmlAttr: 'data-billing-toggle', propKey: 'billingToggle' },
+    ],
+    /** Server-expanded plan cards live inside the section (shell island). */
+    preservesInnerHtml: true,
   },
 ];
 

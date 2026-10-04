@@ -55,11 +55,11 @@ export function buildShortcodeSampleMarkup(name: string): string {
   }
 
   if (name === 'pricing-table') {
-    return `[${name} columns="3"][pricing-plan name="Starter" price="Free" period="/mo" cta="Start" href="/contact" variant="default"][pricing-feature text="Pages and blog"/][pricing-feature text="Media library"/][/pricing-plan][/${name}]`;
+    return `[${name} columns="3" billing-toggle="monthly-yearly" label-monthly="Monthly" label-yearly="Yearly"][pricing-plan name="Starter" price-monthly="Free" price-yearly="Free" period-monthly="/mo" period-yearly="/yr" cta="Start" href="/contact" variant="default"][pricing-feature text="Pages and blog"/][pricing-feature text="Media library"/][/pricing-plan][/${name}]`;
   }
 
   if (name === 'pricing-plan') {
-    return `[${name} name="Pro" price="€29" period="/mo" cta="Choose Pro" href="/contact" variant="featured"][pricing-feature text="Everything in Starter"/][pricing-feature text="Git publish"/][/${name}]`;
+    return `[${name} name="Pro" price-monthly="€29" price-yearly="€290" period-monthly="/mo" period-yearly="/yr" cta="Choose Pro" href="/contact" variant="featured"][pricing-feature text="Everything in Starter"/][pricing-feature text="Git publish"/][/${name}]`;
   }
 
   if (name === 'pricing-feature') {

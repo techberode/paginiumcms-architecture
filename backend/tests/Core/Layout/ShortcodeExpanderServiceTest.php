@@ -309,6 +309,21 @@ JSON;
         $this->assertStringNotContainsString('[gallery-carousel', $result);
     }
 
+    public function testExpandsPricingTableWithBillingToggle(): void
+    {
+        $markdown = '[pricing-table columns="2" billing-toggle="monthly-yearly"]'
+            . '[pricing-plan name="Pro" price-monthly="€10" price-yearly="€100" period-monthly="/mo" period-yearly="/yr"]'
+            . '[pricing-feature text="Feature"/][/pricing-plan][/pricing-table]';
+
+        $result = $this->expander->expand($markdown);
+
+        $this->assertStringContainsString('pg-island--pricing-table', $result);
+        $this->assertStringContainsString('pg-plan-amount--monthly', $result);
+        $this->assertStringContainsString('pg-plan-amount--yearly', $result);
+        $this->assertStringContainsString('€100', $result);
+        $this->assertStringNotContainsString('[pricing-table', $result);
+    }
+
     public function testExpandsSectionBandWithNestedContent(): void
     {
         $markdown = '[section-band anchor="work" radius="rounded" tone="muted"]'

@@ -158,7 +158,7 @@ Do **not** start with “custom React per customer shortcode” or npm in page b
 2. **PHP:** renderer outputs `<section class="pg-island pg-island--foo" data-…></section>`.
 3. **Policy:** shortcode definition passes `ShortcodeDefinitionPolicy` (`pg-*` only).
 4. **FE:** `FooIsland.tsx` + register in `PUBLIC_ISLANDS`.
-5. **Parser:** extend island split tests (`publicHtmlIslands.test.ts`).
+5. **Parser:** extend island split tests (`publicHtmlIslands.test.ts`); set `preservesInnerHtml: true` when the island wraps server-expanded markup (e.g. `pricing-table` plans).
 6. **Outline:** add to `OUTLINE_PALETTE_SHORTCODES` + sample markup in `shortcodeSampleMarkup.ts`.
 7. **i18n:** `editor.outline.blocks.*` SK/EN.
 8. **Docs:** user shortcode row + marketing draft if public.

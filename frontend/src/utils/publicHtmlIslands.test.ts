@@ -87,6 +87,24 @@ describe('splitPublicHtmlIslands', () => {
     ]);
   });
 
+  it('preserves inner html for pricing-table shell island', () => {
+    const html =
+      '<section class="pg-island pg-island--pricing-table" data-island="pricing-table" data-columns="2" data-label-monthly="M" data-label-yearly="Y" data-billing-toggle="monthly-yearly"><article class="pg-plan">Pro</article></section>';
+    expect(splitPublicHtmlIslands(html)).toEqual([
+      {
+        kind: 'island',
+        id: 'pricing-table',
+        attrs: {
+          columns: '2',
+          labelMonthly: 'M',
+          labelYearly: 'Y',
+          billingToggle: 'monthly-yearly',
+        },
+        innerHtml: '<article class="pg-plan">Pro</article>',
+      },
+    ]);
+  });
+
   it('prefers data-island when present', () => {
     const html =
       '<section class="pg-island" data-island="staff-cards" data-staff-mode="team" data-staff-team="ops"></section>';

@@ -57,7 +57,12 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               />
             )
           ) : (
-            <PublicIslandHost key={`island-${part.id}-${index}`} id={part.id} attrs={part.attrs} />
+            <PublicIslandHost
+              key={`island-${part.id}-${index}`}
+              id={part.id}
+              attrs={part.attrs}
+              innerHtml={part.innerHtml}
+            />
           )
         )}
       </ProseRoot>

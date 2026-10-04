@@ -2,9 +2,10 @@ import React from 'react';
 import { FeatureGallerySection } from '../components/frontend/FeatureGallerySection';
 import { StaffCardsSection } from '../components/frontend/StaffDirectory';
 import { GalleryCarouselIsland } from './GalleryCarouselIsland';
+import { PricingTableIsland } from './PricingTableIsland';
 import type { IslandProps } from './publicIslandDefinitions';
 
-export type PublicIslandComponent = React.ComponentType<{ attrs: IslandProps }>;
+export type PublicIslandComponent = React.ComponentType<{ attrs: IslandProps; innerHtml?: string }>;
 
 const FeatureGalleryIsland: PublicIslandComponent = ({ attrs }) => (
   <FeatureGallerySection
@@ -29,19 +30,22 @@ export const PUBLIC_ISLANDS: Record<string, PublicIslandComponent> = {
   'feature-gallery': FeatureGalleryIsland,
   'gallery-carousel': GalleryCarouselIsland,
   'staff-cards': StaffCardsIsland,
+  'pricing-table': PricingTableIsland,
 };
 
 export function PublicIslandHost({
   id,
   attrs,
+  innerHtml,
 }: {
   id: string;
   attrs: IslandProps;
+  innerHtml?: string;
 }): React.ReactElement | null {
   const Component = PUBLIC_ISLANDS[id];
   if (Component === undefined) {
     return null;
   }
 
-  return <Component attrs={attrs} />;
+  return <Component attrs={attrs} innerHtml={innerHtml} />;
 }

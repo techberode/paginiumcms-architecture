@@ -1068,6 +1068,56 @@
   }
 }
 
+/* It.58f-i-e — billing toggle (hydrated island + CSS fallback before React) */
+.pg-pricing-billing-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  grid-column: 1 / -1;
+}
+
+.pg-pricing-billing-toggle__btn {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.45rem 1.1rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.pg-pricing-billing-toggle__btn.is-active {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+  color: var(--color-primary);
+}
+
+.pg-pricing--billing-toggle .pg-plan-amount--yearly,
+.pg-pricing--billing-toggle .pg-plan-period--yearly {
+  display: none;
+}
+
+.pg-pricing__plans[data-billing='yearly'] .pg-plan-amount--yearly,
+.pg-pricing__plans[data-billing='yearly'] .pg-plan-period--yearly {
+  display: inline;
+}
+
+.pg-pricing__plans[data-billing='yearly'] .pg-plan-amount--monthly,
+.pg-pricing__plans[data-billing='yearly'] .pg-plan-period--monthly {
+  display: none;
+}
+
+.pg-pricing__plans {
+  display: contents;
+}
+
 .pg-plan {
   border: 1px solid var(--color-border);
   border-radius: 1rem;

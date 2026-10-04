@@ -190,29 +190,14 @@ final class ShortcodeCatalogSeeder
             ],
             'pricing-table' => [
                 'name' => 'pricing-table',
-                'version' => 1,
-                'attrs' => [
-                    'columns' => [
-                        'type' => 'enum',
-                        'options' => ['2', '3'],
-                    ],
-                ],
+                'version' => 2,
+                'attrs' => PricingTableRenderer::attributeSchema(),
                 'expand' => '<div class="pg-pricing pg-pricing-cols-{{columns}}">{{content}}</div>',
             ],
             'pricing-plan' => [
                 'name' => 'pricing-plan',
-                'version' => 1,
-                'attrs' => [
-                    'name' => ['type' => 'string'],
-                    'price' => ['type' => 'string'],
-                    'period' => ['type' => 'string'],
-                    'cta' => ['type' => 'string'],
-                    'href' => ['type' => 'string'],
-                    'variant' => [
-                        'type' => 'enum',
-                        'options' => ['default', 'featured'],
-                    ],
-                ],
+                'version' => 2,
+                'attrs' => PricingPlanRenderer::attributeSchema(),
                 'expand' => '<article class="pg-plan pg-plan-{{variant}}"><h3 class="pg-plan-name">{{name}}</h3><p class="pg-plan-price"><span class="pg-plan-amount">{{price}}</span><span class="pg-plan-period">{{period}}</span></p><ul class="pg-plan-list">{{content}}</ul><a class="pg-btn pg-btn-primary pg-plan-cta" href="{{href}}">{{cta}}</a></article>',
             ],
             'pricing-feature' => [
