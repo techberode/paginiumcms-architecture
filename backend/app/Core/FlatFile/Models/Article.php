@@ -9,6 +9,33 @@ namespace PaginiumCMS\Core\FlatFile\Models;
  */
 class Article extends Content
 {
+    public function getNewsRetentionDays(): ?int
+    {
+        $raw = $this->frontMatter['newsRetentionDays'] ?? null;
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        if (!is_int($raw) && !is_string($raw) && !is_float($raw)) {
+            return null;
+        }
+
+        $days = (int) $raw;
+
+        return $days > 0 ? $days : null;
+    }
+
+    public function setNewsRetentionDays(?int $days): self
+    {
+        if ($days === null || $days <= 0) {
+            unset($this->frontMatter['newsRetentionDays']);
+        } else {
+            $this->frontMatter['newsRetentionDays'] = $days;
+        }
+
+        return $this;
+    }
+
     public function getFeaturedImage(): string
     {
         $image = $this->frontMatter['featuredImage']

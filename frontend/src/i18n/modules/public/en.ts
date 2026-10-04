@@ -370,6 +370,8 @@ export const publicEn: MessageTree = {
     resultCount: ':count records',
   },
   blog: {
+    categoryNews: 'News',
+    categoryArchive: 'Archive',
     backToBlog: 'Back to blog',
     backToList: 'Back to article list',
     editorialAuthor: 'Paginium editorial author',

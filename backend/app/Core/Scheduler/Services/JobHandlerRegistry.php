@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Scheduler\Services;
 
 use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\ContentNewsAutoArchiveHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
@@ -26,6 +27,7 @@ final class JobHandlerRegistry
         private MonitoringPipelineHandler $monitoring,
         private MaintenanceCleanupHandler $maintenanceCleanup,
         private ContentScheduledPublishHandler $scheduledPublish,
+        private ContentNewsAutoArchiveHandler $newsAutoArchive,
         private SystemDeployHandler $systemDeploy,
         private NewsletterWeeklyDigestHandler $newsletterWeeklyDigest,
         private GitPublishHandler $gitPublish,
@@ -42,6 +44,7 @@ final class JobHandlerRegistry
             'monitoring.pipeline' => $this->monitoring,
             'maintenance.cleanup' => $this->maintenanceCleanup,
             'content.scheduled_publish' => $this->scheduledPublish,
+            'content.news_auto_archive' => $this->newsAutoArchive,
             'system.deploy' => $this->systemDeploy,
             'newsletter.weekly_digest' => $this->newsletterWeeklyDigest,
             'git.publish' => $this->gitPublish,
@@ -62,6 +65,7 @@ final class JobHandlerRegistry
             ['key' => $this->monitoring->key(), 'label' => $this->monitoring->label()],
             ['key' => $this->maintenanceCleanup->key(), 'label' => $this->maintenanceCleanup->label()],
             ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
+            ['key' => $this->newsAutoArchive->key(), 'label' => $this->newsAutoArchive->label()],
             ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],
             ['key' => $this->newsletterWeeklyDigest->key(), 'label' => $this->newsletterWeeklyDigest->label()],
             ['key' => $this->gitPublish->key(), 'label' => $this->gitPublish->label()],

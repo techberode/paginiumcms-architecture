@@ -765,4 +765,15 @@ export const editorSk: MessageTree = {
     failed: 'Beh asistenta zlyhal.',
     noProposal: 'Beh skončil bez použiteľného návrhu.',
   },
+  newsArchive: {
+    title: 'News a archív',
+    retentionLabel: 'Dní v News (max 45)',
+    retentionPlaceholder: 'Predvolené z nastavení',
+    retentionHelp: 'Prázdne = predvolená hodnota v Nastavenia → Plánovač. Potom sa článok presunie do Archívu (ostane verejný, mimo najnovších/najčítanejších).',
+    moveToArchive: 'Presunúť do archívu',
+    archiving: 'Presúvam…',
+    archived: 'Článok presunutý do Archívu',
+    archiveFailed: 'Presun do archívu zlyhal',
+    inArchiveHint: 'Článok je v Archíve — zostáva verejný, ale neukazuje sa v widgetoch najnovšie/najčítanejšie.',
+  },
 };

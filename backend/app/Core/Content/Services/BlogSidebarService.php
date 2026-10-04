@@ -25,6 +25,7 @@ final class BlogSidebarService
         private ReporterInterface $reporter,
         private CategoryRepository $categories,
         private CategoryCatalogSeeder $categorySeeder,
+        private NewsArchivePolicy $newsArchivePolicy,
     ) {
     }
 
@@ -89,7 +90,8 @@ final class BlogSidebarService
         $articles = $this->repository->findAllArticles($filters);
         $articles = array_values(array_filter(
             $articles,
-            static fn (Article $item): bool => $item->getStatus() === 'published'
+            fn (Article $item): bool => $item->getStatus() === 'published'
+                && !$this->newsArchivePolicy->isHighlightExcludedCategory($item->getCategory())
         ));
 
         $scores = $this->popularViewScores();
@@ -143,7 +145,10 @@ final class BlogSidebarService
      */
     private function loadLatestArticles(int $limit): array
     {
-        $query = new PaginationQuery(1, max(1, min(20, $limit)), '', '-createdAt', ['status' => 'published']);
+        $query = new PaginationQuery(1, max(1, min(20, $limit)), '', '-createdAt', [
+            'status' => 'published',
+            'exclude_category' => NewsArchivePolicy::CATEGORY_ARCHIVE,
+        ]);
         $result = $this->repository->findArticlesPaginated($query);
 
         return array_values($result['items']);
@@ -181,6 +186,9 @@ final class BlogSidebarService
         foreach ($slugs as $slug) {
             $article = $this->repository->findBySlug($slug, 'article');
             if (!$article instanceof Article || $article->getStatus() !== 'published') {
+                continue;
+            }
+            if ($this->newsArchivePolicy->isHighlightExcludedCategory($article->getCategory())) {
                 continue;
             }
             $row = $this->summarizeArticle($article);

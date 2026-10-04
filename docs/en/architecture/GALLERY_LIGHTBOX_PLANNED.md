@@ -1,10 +1,10 @@
 # Gallery & lightbox — planned iteration (It.58f-i continuation)
 
 > **Captured:** October 4, 2026 · **Revised:** React image + video gallery (SPA bundle)  
-> **Status:** ⏳ planned — extends [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md) after **58f-i-a…f**  
+> **Status:** 🟡 in progress — **58f-i-g** shipped; **58f-i-h…k** remain — extends [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md)  
 > **UX target:** Full-screen **React** lightbox with thumbnail strip, counter, prev/next, optional slideshow, **mixed image + video** slides (reference: commercial gallery demos — toolbar extras optional in v1).
 
-Paginium **today:** custom `ProseImageLightboxModal` (zoom, arrows) + `FeatureGalleryModal`; Tailwind; **no** gallery npm kit yet. **Direction:** one **React media gallery** package (or thin wrapper) in the public bundle, shared by prose, feature gallery, and future inline galleries.
+Paginium **58f-i-g:** `PaginiumMediaGallery` (YARL + Captions/Counter/Thumbnails/Zoom/Slideshow) in the public bundle; `ProseImageLightboxHost` and `FeatureGalleryModal` delegate to the facade. **Next:** grouping attrs (**h**), video slides (**j**), inline block (**i**).
 
 ---
 
@@ -49,7 +49,7 @@ PaginiumMediaGallery (facade)
 
 | Slice | ID | Deliverable |
 |-------|-----|-------------|
-| **React gallery foundation** | **58f-i-g** | Add gallery dep; `PaginiumMediaGallery` + slide model; wire **prose** images + **feature-gallery** modal |
+| **React gallery foundation** | **58f-i-g** | ✅ YARL dep; `PaginiumMediaGallery` + slide model; prose + feature-gallery modal |
 | **Per-asset insert opts** | **58f-i-h** | Media picker: lightbox on/off, **gallery group** id, exclude from slideshow; `data-gallery` / attrs → slide groups |
 | **Inline media gallery** | **58f-i-i** | Shortcode/fence `[media-gallery]` — multi-select from Media, grid layouts (columns/rows/masonry CSS), opens same React gallery |
 | **Video gallery** | **58f-i-j** | Mixed slides: image + DAM video + allow-list embed; It.65 or dedicated block; caption under slide |

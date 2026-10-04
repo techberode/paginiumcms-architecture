@@ -50,6 +50,8 @@ use PaginiumCMS\Core\Content\BlogAuthorSettings;
 use PaginiumCMS\Core\Content\Services\ContentEditorialReviewService;
 use PaginiumCMS\Core\Content\Models\CategoryRecord;
 use PaginiumCMS\Core\Content\Services\BlogSidebarService;
+use PaginiumCMS\Core\Content\Services\ContentNewsArchiveService;
+use PaginiumCMS\Core\Content\Services\NewsArchivePolicy;
 use PaginiumCMS\Support\AppTimezone;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
@@ -94,6 +96,8 @@ class ContentController
         private ContentStalenessService $staleness,
         private BlogSidebarService $blogSidebar,
         private ContentEditorialReviewService $editorialReview,
+        private ContentNewsArchiveService $newsArchive,
+        private NewsArchivePolicy $newsArchivePolicy,
     ) {
     }
 
@@ -209,6 +213,29 @@ class ContentController
  */public function deleteArticle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         return $this->deleteContent($request, $response, $args['slug'] ?? '', 'article');
+    }
+
+    /** @param array<string, string> $args
+ */    public function archiveArticleNews(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $slug = (string) ($args['slug'] ?? '');
+        if ($slug === '') {
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
+        }
+
+        $article = $this->repository->findBySlug($slug, 'article');
+        if (!$article instanceof Article) {
+            return $this->json->error($response, Lang::get('not_found', [], 'content'), 404);
+        }
+
+        if (!$this->newsArchive->moveArticleToArchiveBySlug($slug)) {
+            return $this->json->error($response, Lang::get('save_failed', [], 'content'), 500);
+        }
+
+        return $this->json->success($response, [
+            'slug' => $slug,
+            'category' => NewsArchivePolicy::CATEGORY_ARCHIVE,
+        ]);
     }
 
     /** @param array<string, string> $args
@@ -1051,6 +1078,7 @@ class ContentController
                 );
             }
             $this->applyCategoryField($content, $data);
+            $this->applyNewsRetentionDaysField($content, $data);
         }
 
         if ($content instanceof Page) {
@@ -1147,6 +1175,7 @@ class ContentController
                 );
             }
             $this->applyCategoryField($content, $data);
+            $this->applyNewsRetentionDaysField($content, $data);
         }
 
         if ($content instanceof Page) {
@@ -1471,6 +1500,7 @@ class ContentController
             $payload['featuredImage'] = $content->getFeaturedImage();
             $payload['tags'] = $content->getTags();
             $payload['category'] = $content->getCategory();
+            $payload['newsRetentionDays'] = $content->getNewsRetentionDays();
             $payload['excerpt'] = $content->getExcerpt();
             $payload['readingTime'] = $content->getReadingTime();
             $payload['commentsEnabled'] = $content->getCommentsEnabled();
@@ -1751,10 +1781,10 @@ class ContentController
     ): ResponseInterface {
         $defaultPerPage = (int) $this->settings->get('content.itemsPerPage', PaginationQuery::DEFAULT_PER_PAGE);
         $query = PaginationQuery::fromRequest($request, max(1, min(100, $defaultPerPage)));
-        $query = $this->applyPublicFilters($request, $query);
+        $query = $this->applyPublicArticleFeedFilters($request, $this->applyPublicFilters($request, $query), $type);
 
         if (!$this->isPaginationRequested($request)) {
-            $filters = $this->extractFilters($request);
+            $filters = $this->applyPublicArticleListFilters($request, $this->extractFilters($request), $type);
             $cacheKey = array_merge($filters, ['legacy' => true]);
             $loader = fn () => $this->serializeContentList(
                 $this->filterContentByAcl(
@@ -2007,6 +2037,70 @@ class ContentController
 
         $slug = CategoryRecord::normalizeSlug((string) $data['category']);
         $content->setCategory($slug);
+    }
+
+    /**
+     * @param array<int|string, mixed> $data
+     */
+    private function applyNewsRetentionDaysField(Article $article, array $data): void
+    {
+        if (!array_key_exists('newsRetentionDays', $data)) {
+            return;
+        }
+
+        $raw = $data['newsRetentionDays'];
+        if ($raw === null || $raw === '') {
+            $article->setNewsRetentionDays(null);
+
+            return;
+        }
+
+        $days = $this->newsArchivePolicy->clampRetentionDays((int) $raw);
+        $article->setNewsRetentionDays($days);
+    }
+
+    /**
+     * @param array<int|string, mixed> $filters
+     * @return array<int|string, mixed>
+     */
+    private function applyPublicArticleListFilters(
+        ServerRequestInterface $request,
+        array $filters,
+        string $type
+    ): array {
+        if ($type !== 'article' || $this->isAuthenticated($request)) {
+            return $filters;
+        }
+
+        if (!empty($filters['category'])) {
+            return $filters;
+        }
+
+        $filters['exclude_category'] = NewsArchivePolicy::CATEGORY_ARCHIVE;
+
+        return $filters;
+    }
+
+    private function applyPublicArticleFeedFilters(
+        ServerRequestInterface $request,
+        PaginationQuery $query,
+        string $type
+    ): PaginationQuery {
+        if ($type !== 'article' || $this->isAuthenticated($request)) {
+            return $query;
+        }
+
+        if (!empty($query->filters['category'])) {
+            return $query;
+        }
+
+        return new PaginationQuery(
+            $query->page,
+            $query->perPage,
+            $query->search,
+            $query->sort,
+            array_merge($query->filters, ['exclude_category' => NewsArchivePolicy::CATEGORY_ARCHIVE])
+        );
     }
 
     private function emitContentHook(

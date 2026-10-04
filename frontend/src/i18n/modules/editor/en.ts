@@ -765,4 +765,15 @@ export const editorEn: MessageTree = {
     failed: 'The assistant run failed.',
     noProposal: 'The run finished without a usable proposal.',
   },
+  newsArchive: {
+    title: 'News & archive',
+    retentionLabel: 'Days in News (max 45)',
+    retentionPlaceholder: 'Site default',
+    retentionHelp: 'Empty = default from Settings → Scheduler. After this period the article moves to Archive (still public, hidden from latest/popular).',
+    moveToArchive: 'Move to archive now',
+    archiving: 'Moving…',
+    archived: 'Article moved to Archive',
+    archiveFailed: 'Could not move to archive',
+    inArchiveHint: 'This article is in Archive — it stays public but is excluded from latest and popular widgets.',
+  },
 };

@@ -1524,6 +1524,21 @@ return [
             get(\PaginiumCMS\Modules\Security\Services\UserRepository::class),
         ),
 
+    \PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class => create(
+        \PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class
+    )
+        ->constructor(get(SettingsRepositoryInterface::class)),
+
+    \PaginiumCMS\Core\Content\Services\ContentNewsArchiveService::class => create(
+        \PaginiumCMS\Core\Content\Services\ContentNewsArchiveService::class
+    )
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(\PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class),
+            get(ContentVersioningService::class),
+            get(ContentCacheService::class),
+        ),
+
     BlogSidebarService::class => create(BlogSidebarService::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -1531,6 +1546,7 @@ return [
             get(ReporterInterface::class),
             get(CategoryRepository::class),
             get(CategoryCatalogSeeder::class),
+            get(\PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class),
         ),
 
     CategoryRepository::class => create(CategoryRepository::class)
@@ -1586,6 +1602,8 @@ return [
             get(ContentStalenessService::class),
             get(BlogSidebarService::class),
             get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class),
+            get(\PaginiumCMS\Core\Content\Services\ContentNewsArchiveService::class),
+            get(\PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class),
         ),
     \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class => create(
         \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class

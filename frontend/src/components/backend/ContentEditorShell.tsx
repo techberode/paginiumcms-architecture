@@ -24,6 +24,7 @@ import type { ArticleCommentsSettings } from '../../utils/articleCommentsSetting
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { ArticleTagsEditor } from './ArticleTagsEditor';
 import { ArticleCategoryPicker } from './ArticleCategoryPicker';
+import { ArticleNewsArchiveFields } from './ArticleNewsArchiveFields';
 import { ArticleAuthorPicker } from './ArticleAuthorPicker';
 import type { ArticleAuthorSettings } from '../../utils/articleAuthorSettings';
 import { ContentMetaSuggestPanel } from './ContentMetaSuggestPanel';
@@ -111,6 +112,9 @@ interface ContentEditorShellProps {
   onArticleAuthorSettingsChange?: (value: ArticleAuthorSettings) => void;
   articleCategory?: string;
   onArticleCategoryChange?: (value: string) => void;
+  articleNewsRetentionDays?: number | null;
+  onArticleNewsRetentionDaysChange?: (value: number | null) => void;
+  onArticleArchived?: () => void;
   defaultBlogAuthor?: string;
   globalCommentsRequireApproval?: boolean;
   globalCommentsAllowGuests?: boolean;
@@ -174,6 +178,9 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
   onArticleAuthorSettingsChange,
   articleCategory = '',
   onArticleCategoryChange,
+  articleNewsRetentionDays = null,
+  onArticleNewsRetentionDaysChange,
+  onArticleArchived,
   defaultBlogAuthor = '',
   globalCommentsRequireApproval = true,
   globalCommentsAllowGuests = true,
@@ -741,6 +748,17 @@ export const ContentEditorShell: React.FC<ContentEditorShellProps> = ({
             <ArticleCategoryPicker
               value={articleCategory}
               onChange={onArticleCategoryChange}
+              disabled={!canEdit}
+            />
+          ) : null}
+
+          {type === 'article' && onArticleNewsRetentionDaysChange && onArticleArchived ? (
+            <ArticleNewsArchiveFields
+              slug={editSlug}
+              category={articleCategory}
+              newsRetentionDays={articleNewsRetentionDays}
+              onRetentionChange={onArticleNewsRetentionDaysChange}
+              onArchived={onArticleArchived}
               disabled={!canEdit}
             />
           ) : null}

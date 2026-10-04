@@ -528,6 +528,16 @@ export const BlogRenderer: React.FC = () => {
             <ComingSoonCountdown kind="article" slug={activeArticle.slug} />
             <header className="py-6">
           <div className="flex flex-wrap items-center gap-2 mb-4 pg-no-print">
+            {activeArticle.category?.trim().toLowerCase() === 'news' ? (
+              <span className="text-xs font-extrabold uppercase tracking-wide px-3 py-1 rounded-lg bg-sky-500/15 text-sky-700 dark:text-sky-300">
+                {t('public.blog.categoryNews')}
+              </span>
+            ) : null}
+            {activeArticle.category?.trim().toLowerCase() === 'archive' ? (
+              <span className="text-xs font-extrabold uppercase tracking-wide px-3 py-1 rounded-lg bg-slate-500/15 text-slate-700 dark:text-slate-300">
+                {t('public.blog.categoryArchive')}
+              </span>
+            ) : null}
             {activeArticle.tags?.map((tag) => (
               <span
                 key={tag}

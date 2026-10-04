@@ -343,6 +343,8 @@ export const publicSk: MessageTree = {
     resultCount: ':count záznamov',
   },
   blog: {
+    categoryNews: 'News',
+    categoryArchive: 'Archív',
     backToBlog: 'Späť na blog',
     backToList: 'Späť na prehľad článkov',
     editorialAuthor: 'Autor redakcie Paginium',

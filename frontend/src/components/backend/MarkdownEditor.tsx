@@ -165,6 +165,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     DEFAULT_ARTICLE_AUTHOR
   );
   const [articleCategory, setArticleCategory] = useState('');
+  const [articleNewsRetentionDays, setArticleNewsRetentionDays] = useState<number | null>(null);
   const [articleComments, setArticleComments] = useState<ArticleCommentsSettings>(
     DEFAULT_ARTICLE_COMMENTS_SETTINGS
   );
@@ -531,6 +532,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             })
           );
           setArticleCategory(String(response.data.category ?? fm.category ?? ''));
+          const retention = response.data.newsRetentionDays;
+          setArticleNewsRetentionDays(
+            typeof retention === 'number' && retention > 0 ? retention : null
+          );
         }
       }
 
@@ -724,6 +729,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
           Object.assign(data, articleAuthorToPayload(articleAuthorSettings));
           Object.assign(data, articleHeroFocusToFrontMatter(articleHeroFocus));
           data.category = articleCategory.trim();
+          if (articleNewsRetentionDays !== null) {
+            data.newsRetentionDays = articleNewsRetentionDays;
+          } else {
+            data.newsRetentionDays = null;
+          }
         }
 
         const response = isNew
@@ -1183,6 +1193,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         onArticleAuthorSettingsChange={type === 'article' ? setArticleAuthorSettings : undefined}
         articleCategory={type === 'article' ? articleCategory : undefined}
         onArticleCategoryChange={type === 'article' ? setArticleCategory : undefined}
+        articleNewsRetentionDays={type === 'article' ? articleNewsRetentionDays : undefined}
+        onArticleNewsRetentionDaysChange={type === 'article' ? setArticleNewsRetentionDays : undefined}
+        onArticleArchived={
+          type === 'article'
+            ? () => {
+                void loadContent();
+              }
+            : undefined
+        }
         defaultBlogAuthor={String(settings.content?.blogAuthorName ?? settings.general?.siteName ?? '')}
         globalCommentsRequireApproval={settings.comments?.requireApproval !== false}
         globalCommentsAllowGuests={settings.comments?.allowGuestComments !== false}

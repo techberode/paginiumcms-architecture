@@ -25,7 +25,9 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.58 closure:** Docs/ROADMAP mark **58b–58g** (incl. 58f-a–h canvas, 58g with It.48) as shipped; **It.58f-i** / islands documented as post-58 composer wave — [ITERATION_58.md](docs/en/ITERATION_58.md).
 - **It.58f-i-e:** `[pricing-table]` billing toggle (monthly/yearly) — `pricing-plan` `price-monthly` / `price-yearly`; React `pricing-table` shell island preserves expanded plan HTML; seeder **v2**.
 - **It.58f-i-f:** `[stats-row]` `animate="count-up"` — KPI count-up on scroll (shell island, `prefers-reduced-motion` safe); seeder **stats-row v2**.
-- **Planned (It.58f-i-g…k):** **React** image + video gallery (bundled lightbox, thumbnails, mixed slides), insert options, inline grid layouts — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
+- **It.58f-i-g:** Unified public lightbox — `yet-another-react-lightbox` behind `PaginiumMediaGallery` (thumbnails, counter, zoom, slideshow when motion allowed); prose images + feature gallery modal share facade — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
+- **News → Archive:** Scheduler job moves published **News** articles to **Archive** after configurable retention (default 21d, per-article max 45d); manual move in editor; archive stays public but excluded from blog latest/popular; header badges.
+- **Planned (It.58f-i-h…k):** Insert/group attrs, inline `[media-gallery]`, video slides, feature-gallery polish — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
 - **Docs:** It.58 complete handoff — [IT_58_COMPOSER_HANDOFF.md](docs/en/architecture/IT_58_COMPOSER_HANDOFF.md) (58b–58g + 58f-i shipped slices + React gallery queue).
 - **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
 - **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.

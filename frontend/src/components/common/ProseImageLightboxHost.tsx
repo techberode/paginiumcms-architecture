@@ -1,5 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { ProseImageLightboxModal } from '../frontend/ProseImageLightboxModal';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { PaginiumMediaGallery } from '../frontend/mediaGallery/PaginiumMediaGallery';
+import { proseLightboxSlidesToMedia } from '../frontend/mediaGallery/slides';
 import {
   collectProseLightboxSlides,
   isProseLightboxClickTarget,
@@ -16,6 +17,8 @@ export const ProseImageLightboxHost: React.FC<ProseImageLightboxHostProps> = ({ 
   const containerRef = useRef<HTMLDivElement>(null);
   const [slides, setSlides] = useState<ProseLightboxSlide[]>([]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const mediaSlides = useMemo(() => proseLightboxSlidesToMedia(slides), [slides]);
 
   const handleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const target = event.target;
@@ -48,8 +51,8 @@ export const ProseImageLightboxHost: React.FC<ProseImageLightboxHostProps> = ({ 
       >
         {children}
       </div>
-      <ProseImageLightboxModal
-        slides={slides}
+      <PaginiumMediaGallery
+        slides={mediaSlides}
         activeIndex={activeIndex}
         onClose={close}
         onChangeIndex={setActiveIndex}

@@ -1,0 +1,62 @@
+/* Paginium token overrides for Yet Another React Lightbox (public bundle only). */
+
+.paginium-media-gallery.yarl__root {
+  --yarl__color_backdrop: rgb(0 0 0 / 0.88);
+  --yarl__color_button: hsl(0 0% 100% / 0.82);
+  --yarl__color_button_active: hsl(0 0% 100% / 1);
+  --yarl__color_button_disabled: hsl(0 0% 100% / 0.38);
+}
+
+.paginium-media-gallery .paginium-media-gallery__tag {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-primary, #6366f1) 85%, white);
+}
+
+.paginium-media-gallery .paginium-media-gallery__link {
+  display: inline-flex;
+  margin-top: 0.5rem;
+  color: color-mix(in srgb, var(--color-primary, #818cf8) 90%, white);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.paginium-media-gallery .paginium-media-gallery__link:hover {
+  color: color-mix(in srgb, var(--color-primary, #a5b4fc) 95%, white);
+}
+
+/* Feature gallery caption layouts (It.65 modal parity). */
+.paginium-media-gallery--caption-overlay .yarl__slide_captions_container {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.45), transparent);
+  padding-top: 2rem;
+}
+
+.paginium-media-gallery--caption-side.yarl__root {
+  --yarl__slide_captions_container_padding: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .paginium-media-gallery--caption-side .yarl__carousel {
+    width: calc(100% - 20rem);
+    margin-inline-end: 20rem;
+  }
+
+  .paginium-media-gallery--caption-side .yarl__slide_captions_container {
+    position: fixed;
+    top: 3.5rem;
+    bottom: 0;
+    inset-inline-end: 0;
+    width: 20rem;
+    max-width: 100%;
+    overflow-y: auto;
+    border-inline-start: 1px solid hsl(0 0% 100% / 0.12);
+    background: rgb(0 0 0 / 0.55);
+  }
+}

@@ -39,6 +39,7 @@ export interface ContentEditorLoadData {
   noIndex?: boolean;
   tags?: string[];
   category?: string;
+  newsRetentionDays?: number | null;
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;
   commentsAllowGuests?: boolean | null;

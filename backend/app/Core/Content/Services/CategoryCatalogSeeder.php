@@ -45,6 +45,7 @@ final class CategoryCatalogSeeder
     {
         return [
             'news' => 'News',
+            'archive' => 'Archive',
             'security' => 'Security',
             'tutorials' => 'Tutorials',
             'product' => 'Product',

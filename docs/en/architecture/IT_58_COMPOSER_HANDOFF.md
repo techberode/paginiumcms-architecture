@@ -30,6 +30,7 @@
 | **gallery-carousel** | Island + shortcode | same |
 | **58f-i-e** | `[pricing-table]` billing toggle island | same |
 | **58f-i-f** | `[stats-row]` count-up island | same |
+| **58f-i-g** | `PaginiumMediaGallery` (YARL) — prose + feature gallery lightbox | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 
 **Admin:** after deploy, open editor or `GET /api/admin/shortcodes` once so `seedMissingBundled()` upgrades **feature-gallery v2**, **section-band v2**, **pricing-table/plan v2**, **stats-row v2**.
 
@@ -39,7 +40,7 @@
 
 | Priority | Item | Doc |
 |----------|------|-----|
-| 1 | **58f-i-g…k** — React image + video gallery (bundled lightbox) | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| 1 | **58f-i-h…k** — gallery insert/group, inline block, video slides | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | 2 | **58f-i-d** (optional) — section background crossfade | [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 3 | Callout colors → `--color-primary` (optional) | [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) |
 

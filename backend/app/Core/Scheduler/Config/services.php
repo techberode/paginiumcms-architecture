@@ -6,6 +6,7 @@ use PaginiumCMS\Core\Scheduler\Commands\ProcessWorkerCommand;
 use PaginiumCMS\Core\Scheduler\Commands\RunJobCommand;
 use PaginiumCMS\Core\Scheduler\Commands\RunSchedulerCommand;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\ContentNewsAutoArchiveHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
@@ -59,6 +60,8 @@ return [
             get(\PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService::class),
             get(\PaginiumCMS\Core\Content\Services\ContentPublishNotificationService::class)
         ),
+    ContentNewsAutoArchiveHandler::class => create(ContentNewsAutoArchiveHandler::class)
+        ->constructor(get(\PaginiumCMS\Core\Content\Services\ContentNewsArchiveService::class)),
     SystemDeployHandler::class => create(SystemDeployHandler::class)
         ->constructor(get(\PaginiumCMS\Core\SystemUpdate\Services\SystemDeployService::class)),
     NewsletterWeeklyDigestHandler::class => create(NewsletterWeeklyDigestHandler::class)
@@ -78,6 +81,7 @@ return [
             get(MonitoringPipelineHandler::class),
             get(MaintenanceCleanupHandler::class),
             get(ContentScheduledPublishHandler::class),
+            get(ContentNewsAutoArchiveHandler::class),
             get(SystemDeployHandler::class),
             get(NewsletterWeeklyDigestHandler::class),
             get(GitPublishHandler::class),

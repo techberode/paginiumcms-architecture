@@ -158,6 +158,15 @@ final class JobRegistryStore
                     'payload' => [],
                 ],
                 [
+                    'id' => 'content-news-auto-archive',
+                    'name' => 'News → archive (retention)',
+                    'handler' => 'content.news_auto_archive',
+                    'cron' => '15 4 * * *',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
+                [
                     'id' => 'system-deploy',
                     'name' => 'System code deploy',
                     'handler' => 'system.deploy',

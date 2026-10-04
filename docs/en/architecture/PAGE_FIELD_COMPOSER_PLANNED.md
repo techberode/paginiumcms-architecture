@@ -1,7 +1,7 @@
 # Page field composer — planned iteration (handoff)
 
 > **Captured:** September 30, 2026  
-> **Status:** 🟡 in progress — **58f-i-a/b/e/f** + islands **A–F** shipped; **gallery/lightbox wave** ⏳ — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md)  
+> **Status:** 🟡 in progress — **58f-i-a/b/e/f/g** + islands **A–F** shipped; **gallery/lightbox h…k** ⏳ — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md)  
 > **Extends:** [It.58f](../ITERATION_58f.md) visual blocks, [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) phases 2–4  
 > **User goal (SK summary):** Pages must not all look identical. Operators compose **fields (sections)** and drop **registered components** (galleries, heroes, carousels, text) with per-block styling—rounded corners, background (static vs scroll), gradients, carousel placement—**without editing code or creating a new theme per page**.
 
@@ -60,11 +60,12 @@ Page (landing layout)
 | **gallery-carousel** | ✅ Islands Phase D — slider from gallery `tag` |
 | **58f-i-e** | ✅ `pricing-table` v2 **billing-toggle** (monthly/yearly) + `pricing-plan` dual prices + `pricing-table` shell island |
 | **58f-i-f** | ✅ `[stats-row]` **count-up** animation island |
-| **58f-i-g…k** | ⏳ **React** image/video gallery (bundled lightbox), insert opts, grid layouts — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| **58f-i-g** | ✅ **PaginiumMediaGallery** (YARL) — prose + feature gallery modal |
+| **58f-i-h…k** | ⏳ Insert/group attrs, inline block, video slides — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | **58f-i-d** (optional) | Core hook: section background crossfade on scroll (sibling to `useLandingReveal`); page flag or section attr |
 | **Later** | **Album** entity (`data/gallery-albums/`) if tags are insufficient—only if customers need many isolated collections |
 
-**Lightbox UX:** **58f-i-g** targets one **React media gallery** (e.g. YARL + video plugin) for prose, feature gallery, and mixed slides — bundled in the public SPA only.
+**Lightbox UX:** **58f-i-g** ships **PaginiumMediaGallery** (YARL) for prose + feature gallery; **58f-i-j** adds video/embed slides.
 
 ---
 

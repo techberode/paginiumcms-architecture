@@ -76,6 +76,7 @@ return function (App $app): void {
     $app->group('/api/articles', function (RouteCollectorProxy $group) use ($controller) {
         $group->put('/{slug}', [$controller, 'updateArticle']);
         $group->patch('/{slug}/status', [$controller, 'updateArticleStatus']);
+        $group->post('/{slug}/archive-news', [$controller, 'archiveArticleNews']);
     })
         ->add(new PermissionMiddleware($authz, 'content:edit'))
         ->add($auth);

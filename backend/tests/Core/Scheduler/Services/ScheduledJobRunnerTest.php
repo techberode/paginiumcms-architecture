@@ -30,6 +30,8 @@ use PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService;
 use PaginiumCMS\Core\Agent\Contracts\AgentRunExecutorInterface;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
+use PaginiumCMS\Core\Content\Services\ContentNewsArchiveService;
+use PaginiumCMS\Core\Scheduler\Handlers\ContentNewsAutoArchiveHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
@@ -120,6 +122,7 @@ final class ScheduledJobRunnerTest extends TestCase
                 $scheduledPublish,
                 $this->noopPublishNotifications()
             ),
+            new ContentNewsAutoArchiveHandler($this->createStub(ContentNewsArchiveService::class)),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
@@ -168,6 +171,7 @@ final class ScheduledJobRunnerTest extends TestCase
                 $scheduledPublish,
                 $this->noopPublishNotifications()
             ),
+            new ContentNewsAutoArchiveHandler($this->createStub(ContentNewsArchiveService::class)),
             $systemDeploy,
             new NewsletterWeeklyDigestHandler($this->makeNewsletterMailService($settings)),
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),

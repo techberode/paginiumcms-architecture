@@ -480,6 +480,14 @@ final class ContentIndexService
             ));
         }
 
+        if (!empty($filters['exclude_category'])) {
+            $exclude = mb_strtolower(trim((string) $filters['exclude_category']));
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => mb_strtolower(trim($e->category)) !== $exclude
+            ));
+        }
+
         if (!empty($filters['author'])) {
             $needle = mb_strtolower($filters['author']);
             $entries = array_values(array_filter(

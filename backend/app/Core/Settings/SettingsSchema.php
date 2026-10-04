@@ -319,6 +319,8 @@ final class SettingsSchema
                 'fields' => [
                     ['key' => 'enabled', 'type' => 'bool', 'label' => 'Enable job scheduler', 'default' => true, 'rules' => ['bool'], 'help' => 'Master switch for scheduler:run CLI. Individual jobs can still be toggled in Plánovač.'],
                     ['key' => 'retainRuns', 'type' => 'int', 'label' => 'Retain run history entries', 'default' => 200, 'rules' => ['int', 'min:50', 'max:500']],
+                    ['key' => 'newsAutoArchiveEnabled', 'type' => 'bool', 'label' => 'Auto-archive News articles', 'default' => true, 'rules' => ['bool'], 'help' => 'Daily job moves published articles in category News to Archive after retention days (still public, hidden from latest/popular widgets).'],
+                    ['key' => 'newsRetentionDaysDefault', 'type' => 'int', 'label' => 'News retention (days, default)', 'default' => 21, 'rules' => ['int', 'min:1', 'max:45'], 'help' => 'Per-article override in editor (max 45). Counted from article date / publish date.'],
                 ],
             ],
             'codePolicy' => [

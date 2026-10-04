@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Core\Content\Services;
 
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Content\Services\BlogSidebarService;
+use PaginiumCMS\Core\Content\Services\NewsArchivePolicy;
 use PaginiumCMS\Core\Content\Services\CategoryCatalogSeeder;
 use PaginiumCMS\Core\Content\Services\CategoryRepository;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
@@ -60,7 +61,8 @@ final class BlogSidebarServiceTest extends TestCase
             $repository,
             $reporter,
             $this->categories,
-            $this->categorySeeder
+            $this->categorySeeder,
+            new NewsArchivePolicy($settings)
         );
         $payload = $service->buildPublicPayload();
 
@@ -100,7 +102,8 @@ final class BlogSidebarServiceTest extends TestCase
             $repository,
             $reporter,
             $this->categories,
-            $this->categorySeeder
+            $this->categorySeeder,
+            new NewsArchivePolicy($settings)
         );
         $result = $service->findArticlesByPopularity(new PaginationQuery(1, 10, '', '-popular', ['status' => 'published']));
 

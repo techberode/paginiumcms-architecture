@@ -3,7 +3,7 @@
 > **Purpose:** concise, current handoff for the next development session  
 > **Checkpoint:** September 30, 2026 · `main` @ editorial + layout slices (+ `[Unreleased]`)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
-> **Next planned slice:** **It.58f-i-g…k** React image/video gallery (SPA bundle) — [architecture/GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) · **It.97** **deferred**
+> **Next planned slice:** **It.58f-i-h** (gallery insert/group attrs) — [architecture/GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) · **It.97** **deferred**
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -54,7 +54,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | Order | Item | Why this order |
 |------:|------|----------------|
 | 0 | ✅ **Islands A–F** + **58f-i-a/b** — registry, gallery v2, `section-band`, carousel, effects, admin preview parity | See [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |
-| 1 | **It.58f-i-g…k** React image/video gallery, insert opts, inline layouts | [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
+| 1 | **It.58f-i-h** gallery insert/group attrs (then j, i, k) | [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 2 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 3 | **It.82d** Origin host metrics | Optional maintainer hook |
 
