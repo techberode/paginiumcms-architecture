@@ -7,6 +7,8 @@
 # Private local docs (NEVER commit) — personal ops / QA checklists only
 ###############################################################################
 SECURITY_ISSUES.md
+# Maintainer control audits (internal only — public record stays in docs/ISSUES.md)
+docs/en/security/CONTROL_AUDIT_*.md
 stable-release-audit.canvas.tsx
 PRIVATE_OPS_CHECKLIST.md
 LOCAL_PROJECT_CHECKLIST.md

@@ -1,9 +1,9 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** September 30, 2026 · `main` @ editorial + layout slices (+ `[Unreleased]`)  
+> **Checkpoint:** October 5, 2026 · `main` @ **`v2.1.0-beta.94`** (It.58 / 58f-i-g/h composer wave)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
-> **Next planned slice:** **It.58f-i-h** (gallery insert/group attrs) — [architecture/GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) · **It.97** **deferred**
+> **Next planned slice:** **It.58f-i-i** (inline `[media-gallery]`) — [architecture/GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) · **It.97** **deferred**
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -29,8 +29,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ `v2.1.0-beta.89` — It.48 static compile + `/static-html` · ISS-173 gitleaks · ISS-174 desk role · AppVersion floor |
-| Unreleased | **58f-h** canvas · **It.95** playground · **93l-2** · **It.69 Redis** (optional cache + prod compose) · desk/log deploy fixes |
+| Latest tag | ✅ **`v2.1.0-beta.94`** — It.58f-i islands + lightbox g/h · custom 404 · editorial/link-check · live preview fix — [RELEASE_2_1_0_BETA_94.md](RELEASE_2_1_0_BETA_94.md) |
+| Unreleased | **58f-i-i…k** gallery inline/video · **It.82d** host metrics · optional 58f-i-d crossfade |
 | Origin Panel | Today snapshot as of 2026-09-22 · latest tag `2.1.0-beta.89` · remaining: It.82d host metrics |
 | Previous tag | `v2.1.0-beta.88` — It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount |
 | It.48 | ✅ compile + public HTML serve in `beta.89` |
@@ -54,7 +54,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | Order | Item | Why this order |
 |------:|------|----------------|
 | 0 | ✅ **Islands A–F** + **58f-i-a/b** — registry, gallery v2, `section-band`, carousel, effects, admin preview parity | See [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |
-| 1 | **It.58f-i-h** gallery insert/group attrs (then j, i, k) | [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
+| 1 | **It.58f-i-i** inline `[media-gallery]` (then j, k) | [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 2 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 3 | **It.82d** Origin host metrics | Optional maintainer hook |
 

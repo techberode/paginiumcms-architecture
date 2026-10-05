@@ -12,6 +12,16 @@ describe('buildInlineImageMarkup', () => {
     expect(snippet).not.toContain('![');
   });
 
+  it('emits gallery group and slideshow attrs when set', () => {
+    const snippet = buildInlineImageMarkup('/storage/a.png', 'Alt', true, undefined, 'below', {
+      galleryGroup: 'chapter-1',
+      excludeFromSlideshow: true,
+    });
+    expect(snippet).toContain('data-gallery="chapter-1"');
+    expect(snippet).toContain('data-slideshow="off"');
+    expect(snippet).not.toContain('![');
+  });
+
   it('wraps captioned images in figure with figcaption', () => {
     const snippet = buildInlineImageMarkup('/storage/a.png', 'Alt', true, 'Obr. 1.1');
     expect(snippet).toContain('<figure class="paginium-figure">');

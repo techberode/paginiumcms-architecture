@@ -141,10 +141,14 @@ Editor charts (Mermaid, etc.) remain in the **article editor**; body widgets abo
 
 **Settings → Layout → Rozloženie stránky**
 
-- **notFoundPageSlug** — published page slug shown when a public slug does not exist (nav + footer intact).
+- **notFoundPageSlug** — published page slug shown when a public slug does not exist (nav + footer intact). Also used for missing blog articles and deep unknown paths (e.g. `/old/nested/link`).
 - **serverErrorPageSlug** — published page shown when the public React tree throws during render.
 
 Leave empty to use the built-in Paginium error panels (`PublicSystemErrorPanel`). Create dedicated pages (e.g. layout `landing`) for branded errors.
+
+**Alternative (no custom slug field):** publish a normal page (e.g. slug `404`) and add a **Redirect manager** rule `301/302` from `/404` only if needed; for missing URLs the SPA resolves `notFoundPageSlug` automatically — do not rely on nginx alone unless hybrid static mode is configured.
+
+**Checklist when custom 404 “does nothing”:** page **published**; slug in settings matches exactly (no leading `/`); hard refresh after save; confirm `/api/settings/public` includes `layout.notFoundPageSlug`; reserved routes (`blog`, `features`, `cookies`) are not used as the missing slug target.
 
 ---
 

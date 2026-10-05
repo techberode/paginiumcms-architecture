@@ -305,3 +305,5 @@ Do not submit a complete `.env`, user JSON, TOTP seed, cookie, or production dum
 ## 18. Reporting
 
 Follow the root [SECURITY.md](../../SECURITY.md). After a fix is released, the public record is linked from [ISSUES.md](ISSUES.md) with cause, resolution, test, and release where available.
+
+**Control audits (maintainer):** Full round notes live only in the local, gitignored `SECURITY_ISSUES.md` at the repository root. Do not commit `docs/en/security/CONTROL_AUDIT_*.md` or duplicate audit narratives in public docs; ship fixes and regressions via `ISSUES.md` when disclosure applies.

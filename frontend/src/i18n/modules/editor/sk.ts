@@ -307,6 +307,13 @@ export const editorSk: MessageTree = {
     lightboxEnableLabel: 'Po kliknutí otvoriť lightbox',
     lightboxEnableHelp:
       'Vypnuté = obrázok len v texte (bez modalu). Zapnuté = klik zväčší obrázok; v modale môžeš približovať lupou.',
+    galleryGroupLabel: 'Skupina lightbox galérie (voliteľné)',
+    galleryGroupPlaceholder: 'napr. kapitola-1',
+    galleryGroupHelp:
+      'Obrázky rovnakej skupiny sa posúvajú spolu v prev/next. Prázdne = predvolená galéria stránky.',
+    slideshowExcludeLabel: 'Vylúčiť z autoplay slideshow',
+    slideshowExcludeHelp:
+      'Snímka sa stále otvorí v lightboxe ručne; autoplay ju pri slideshow preskočí.',
     insertOptionsTitle: 'Pred vložením (voliteľné)',
     pickAssetHint: 'Klikni na súbor — vloží sa na pozíciu kurzora v texte.',
     captionEnableLabelImage: 'Pridať popis / titulok obrázka',

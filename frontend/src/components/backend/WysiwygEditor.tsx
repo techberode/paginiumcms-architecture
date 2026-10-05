@@ -34,6 +34,10 @@ import {
   proseFigureClassNames,
   type MediaCaptionPosition,
 } from '../../utils/mediaCaption';
+import {
+  buildProseImageDataAttrs,
+  type ProseImageLightboxExtras,
+} from '../../utils/proseImageAttrs';
 
 type WysiwygBlockedReason = 'images' | 'videos' | 'tables' | 'codeBlock' | 'scripts' | 'links' | 'uploadUnavailable';
 
@@ -43,7 +47,8 @@ export interface WysiwygEditorHandle {
     alt?: string,
     openInLightbox?: boolean,
     caption?: string,
-    captionPosition?: MediaCaptionPosition
+    captionPosition?: MediaCaptionPosition,
+    lightboxExtras?: ProseImageLightboxExtras
   ) => void;
   insertVideo: (url: string, poster?: string, caption?: string, captionPosition?: MediaCaptionPosition) => void;
   insertSnippet: (snippet: string) => void;
@@ -285,7 +290,8 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
       alt = t('editor.wysiwyg.defaultImageAlt'),
       openInLightbox = true,
       caption?: string,
-      captionPosition?: MediaCaptionPosition
+      captionPosition?: MediaCaptionPosition,
+      lightboxExtras?: ProseImageLightboxExtras
     ) => {
       if (!profileAllows(profile, 'image')) {
         onBlockedAction?.(blockedMessage('images'));
@@ -294,10 +300,10 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
       const cap = caption?.trim() ?? '';
       if (cap !== '') {
         const position = normalizeMediaCaptionPosition(captionPosition);
-        const lightboxAttr = openInLightbox ? '' : ' data-lightbox="off"';
+        const dataAttrs = buildProseImageDataAttrs(openInLightbox, lightboxExtras);
         const figureClass = proseFigureClassNames({ captionPosition: position });
         const safeCap = cap.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const img = `<img src="${url.replace(/"/g, '&quot;')}" alt="${alt.replace(/"/g, '&quot;')}" class="max-w-full h-auto rounded-lg"${lightboxAttr} />`;
+        const img = `<img src="${url.replace(/"/g, '&quot;')}" alt="${alt.replace(/"/g, '&quot;')}" class="max-w-full h-auto rounded-lg"${dataAttrs} />`;
         const fig = `<figcaption>${safeCap}</figcaption>`;
         const html =
           position === 'above'
@@ -306,7 +312,17 @@ export const WysiwygEditor = forwardRef<WysiwygEditorHandle, WysiwygEditorProps>
         editor?.chain().focus().insertContent(html).run();
         return;
       }
-      editor?.chain().focus().setImage({ src: url, alt, lightbox: openInLightbox }).run();
+      editor
+        ?.chain()
+        .focus()
+        .setImage({
+          src: url,
+          alt,
+          lightbox: openInLightbox,
+          galleryGroup: lightboxExtras?.galleryGroup,
+          excludeFromSlideshow: lightboxExtras?.excludeFromSlideshow,
+        })
+        .run();
     },
     insertVideo: (url: string, poster?: string, caption?: string, captionPosition?: MediaCaptionPosition) => {
       if (!profileAllows(profile, 'video')) {

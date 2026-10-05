@@ -16,7 +16,7 @@
 | **58f-a–h** | Outline canvas, live preview, DAM hero, feature-gallery block, i18n | ✅ |
 | **58g** | Static HTML compile/cache with [It.48](../ITERATION_48.md) | ✅ `beta.89` |
 
-**Not included in It.58:** per-block gallery layouts beyond It.65 settings, unified media lightbox, pricing/stats motion — those are **58f-i** slices below.
+**Not included in original It.58 close:** per-block gallery layouts beyond It.65 settings — shipped later as **58f-i** (lightbox, pricing/stats motion, islands). User-facing drafts: `docs/marketing/ARTICLE_30–32_*.md`.
 
 ---
 
@@ -31,6 +31,9 @@
 | **58f-i-e** | `[pricing-table]` billing toggle island | same |
 | **58f-i-f** | `[stats-row]` count-up island | same |
 | **58f-i-g** | `PaginiumMediaGallery` (YARL) — prose + feature gallery lightbox | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| **58f-i-h** | Prose insert: `data-gallery` groups + `data-slideshow="off"` | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+
+**Release:** **`v2.1.0-beta.94`** (2026-10-05) — [RELEASE_2_1_0_BETA_94.md](../RELEASE_2_1_0_BETA_94.md).
 
 **Admin:** after deploy, open editor or `GET /api/admin/shortcodes` once so `seedMissingBundled()` upgrades **feature-gallery v2**, **section-band v2**, **pricing-table/plan v2**, **stats-row v2**.
 
@@ -40,7 +43,7 @@
 
 | Priority | Item | Doc |
 |----------|------|-----|
-| 1 | **58f-i-h…k** — gallery insert/group, inline block, video slides | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| 1 | **58f-i-i…k** — inline `[media-gallery]`, video slides, feature parity | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | 2 | **58f-i-d** (optional) — section background crossfade | [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 3 | Callout colors → `--color-primary` (optional) | [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) |
 

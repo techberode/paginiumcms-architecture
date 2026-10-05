@@ -59,6 +59,7 @@ function buildYarlSlides(
       alt: slide.alt ?? slide.title ?? '',
       title,
       description,
+      ...(slide.excludeFromSlideshow ? { slideshow: false as const } : {}),
     };
   });
 }

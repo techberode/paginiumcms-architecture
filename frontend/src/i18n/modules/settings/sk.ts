@@ -295,6 +295,9 @@ export const settingsSk: MessageTree = {
     "templatesTitle": "Predvolená layout šablóna",
     "templatesHint": "Pre nové stránky a živý náhľad nižšie (štruktúra, nie chrome šablóny Home/Kontakt).",
     "previewTitle": "Náhľad layoutu",
+    "errorPagesTitle": "Chybové stránky (404 / 500)",
+    "errorPagesHint": "Slug publikovanej stránky (bez úvodného /). Navigácia a pätička ostávajú. Platí pre neexistujúce URL, vnorené cesty a chýbajúce články na blogu.",
+    "errorPageSlugPlaceholder": "napr. 404",
     "developerRequiresAdmin": "Developer (Monaco) režim len pre ADMIN a SUPER_ADMIN",
     "developerLocked": "Dostupné len pre ADMIN / SUPER_ADMIN, kým je toto obmedzenie zapnuté.",
     "builders": {
@@ -1800,6 +1803,22 @@ export const settingsSk: MessageTree = {
       "developerRequiresAdmin": {
         "label": "Developer režim len pre ADMIN+",
         "help": "Ak je zapnuté, builderMode=developer môžu vybrať len ADMIN / SUPER_ADMIN."
+      },
+      "notFoundPageSlug": {
+        "label": "Vlastná stránka 404 (slug)",
+        "help": "Voliteľný slug publikovanej stránky (layout landing/single). Prázdna = vestavný Paginium 404 panel."
+      },
+      "serverErrorPageSlug": {
+        "label": "Vlastná stránka 500 (slug)",
+        "help": "Zobrazí sa pri chybe React renderu na verejnom webe. Prázdna = vestavný 500 panel."
+      },
+      "breadcrumbsEnabled": {
+        "label": "Zobraziť drobčekovú navigáciu",
+        "help": "Verejný web: Domov → sekcia → názov stránky alebo článku."
+      },
+      "breadcrumbsOnHome": {
+        "label": "Drobčeky aj na úvodnej stránke",
+        "help": "Vypnuté = na domovskej stránke sa drobčeky nezobrazia."
       }
     },
     "projectPlanner": {

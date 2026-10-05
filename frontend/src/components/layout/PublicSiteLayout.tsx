@@ -32,8 +32,7 @@ import { PublicHeaderStack } from './PublicHeaderStack';
 import { PublicBreadcrumbs } from '../frontend/PublicBreadcrumbs';
 import { isAdminAppRoute } from '../../utils/appRoutes';
 import { resolveSiteHomePage } from '../../utils/siteHomePage';
-import { resolvePublicErrorPage } from '../../utils/publicErrorPages';
-import { PublicSystemErrorPanel } from '../frontend/PublicSystemErrorPanel';
+import { PublicNotFoundContent } from '../frontend/PublicNotFoundContent';
 import { PublicRouteErrorBoundary } from './PublicRouteErrorBoundary';
 
 export function PublicHomePage() {
@@ -72,6 +71,13 @@ export function PublicHomePage() {
   );
 }
 
+/** Deep paths (e.g. /old/nested/url) — same custom 404 as missing slug. */
+export function PublicNotFoundCatchAll() {
+  const { pathname } = useLocation();
+  const hint = pathname.replace(/^\//, '').trim();
+  return <PublicNotFoundContent missingSlug={hint || undefined} />;
+}
+
 export function PublicSlugPage() {
   const { slug } = useParams<{ slug: string }>();
   const { getPageBySlug, loading } = usePublicSite();
@@ -102,12 +108,7 @@ export function PublicSlugPage() {
   }
 
   if (!page) {
-    const resolved = resolvePublicErrorPage('notFound', settings.layout, getPageBySlug, slug ?? '');
-    if (resolved.page) {
-      return <PageRenderer page={resolved.page} />;
-    }
-
-    return <PublicSystemErrorPanel kind="notFound" missingSlug={slug} />;
+    return <PublicNotFoundContent missingSlug={slug} />;
   }
 
   return <PageRenderer page={page} />;

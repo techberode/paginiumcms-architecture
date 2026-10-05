@@ -20,7 +20,7 @@ final class HtmlDomSanitizer
     /** @var array<string, list<string>> */
     private const TAG_ATTRS = [
         'a' => ['href', 'target', 'rel', 'hreflang'],
-        'img' => ['src', 'alt', 'width', 'height', 'loading', 'decoding', 'data-lightbox'],
+        'img' => ['src', 'alt', 'width', 'height', 'loading', 'decoding', 'data-lightbox', 'data-gallery', 'data-slideshow'],
         'td' => ['colspan', 'rowspan'],
         'th' => ['colspan', 'rowspan', 'scope'],
         'ol' => ['start', 'type', 'reversed'],
@@ -179,8 +179,36 @@ final class HtmlDomSanitizer
             $element->removeAttribute($name);
         }
 
+        if ($tag === 'img') {
+            $this->sanitizeProseImageDataAttributes($element);
+        }
+
         if ($tag === 'a' && strtolower($element->getAttribute('target')) === '_blank') {
             $element->setAttribute('rel', 'noopener noreferrer');
+        }
+    }
+
+    private function sanitizeProseImageDataAttributes(DOMElement $img): void
+    {
+        $lightbox = strtolower(trim($img->getAttribute('data-lightbox')));
+        if ($lightbox !== '' && $lightbox !== 'off') {
+            $img->removeAttribute('data-lightbox');
+        }
+
+        $gallery = trim($img->getAttribute('data-gallery'));
+        if ($gallery !== '') {
+            $normalized = preg_replace('/[^a-zA-Z0-9_-]/', '', $gallery) ?? '';
+            $normalized = substr($normalized, 0, 64);
+            if ($normalized === '') {
+                $img->removeAttribute('data-gallery');
+            } else {
+                $img->setAttribute('data-gallery', $normalized);
+            }
+        }
+
+        $slideshow = strtolower(trim($img->getAttribute('data-slideshow')));
+        if ($slideshow !== 'off') {
+            $img->removeAttribute('data-slideshow');
         }
     }
 

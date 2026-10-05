@@ -1250,6 +1250,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
             const openInLightbox = options?.openInLightbox !== false;
             const caption = options?.caption?.trim() || undefined;
             const captionPosition = options?.captionPosition ?? 'below';
+            const lightboxExtras =
+              options?.galleryGroup !== undefined || options?.excludeFromSlideshow
+                ? {
+                    galleryGroup: options.galleryGroup,
+                    excludeFromSlideshow: options.excludeFromSlideshow,
+                  }
+                : undefined;
             if (editorMode === 'wysiwyg') {
               if (mediaPickerMode === 'video') {
                 wysiwygRef.current?.insertVideo(url, undefined, caption, captionPosition);
@@ -1262,7 +1269,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
                   wysiwygRef.current?.insertSnippet(snippet);
                 }
               } else {
-                wysiwygRef.current?.insertImage(url, alt, openInLightbox, caption, captionPosition);
+                wysiwygRef.current?.insertImage(
+                  url,
+                  alt,
+                  openInLightbox,
+                  caption,
+                  captionPosition,
+                  lightboxExtras
+                );
               }
             } else if (mediaPickerMode === 'video') {
               const storageUrl = url.includes('/storage/')
@@ -1279,7 +1293,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               }
             } else {
               insertBodySnippet(
-                buildInlineImageMarkup(url, alt, openInLightbox, caption, captionPosition)
+                buildInlineImageMarkup(
+                  url,
+                  alt,
+                  openInLightbox,
+                  caption,
+                  captionPosition,
+                  lightboxExtras
+                )
               );
             }
           }}

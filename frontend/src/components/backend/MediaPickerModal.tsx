@@ -12,6 +12,7 @@ import {
 } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
 import type { MediaCaptionPosition } from '../../utils/mediaCaption';
+import type { ProseImageLightboxExtras } from '../../utils/proseImageAttrs';
 
 export type MediaPickerUrlFormat = 'absolute' | 'storage';
 
@@ -25,7 +26,7 @@ interface MediaPickerModalProps {
       openInLightbox?: boolean;
       caption?: string;
       captionPosition?: MediaCaptionPosition;
-    }
+    } & ProseImageLightboxExtras
   ) => void;
   title?: string;
   urlFormat?: MediaPickerUrlFormat;
@@ -52,6 +53,8 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
   const [items, setItems] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [openInLightbox, setOpenInLightbox] = useState(true);
+  const [galleryGroup, setGalleryGroup] = useState('');
+  const [excludeFromSlideshow, setExcludeFromSlideshow] = useState(false);
   const [captionEnabled, setCaptionEnabled] = useState(false);
   const [captionPosition, setCaptionPosition] = useState<MediaCaptionPosition>('below');
   const [caption, setCaption] = useState('');
@@ -70,6 +73,8 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
     setCaptionEnabled(false);
     setCaptionPosition('below');
     setOpenInLightbox(true);
+    setGalleryGroup('');
+    setExcludeFromSlideshow(false);
     setLoading(true);
     const filters =
       mediaMode === 'document'
@@ -96,9 +101,18 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
       openInLightbox?: boolean;
       caption?: string;
       captionPosition?: MediaCaptionPosition;
-    } = {};
+    } & ProseImageLightboxExtras = {};
     if (showImageLightboxOption && mediaMode === 'image') {
       options.openInLightbox = openInLightbox;
+      if (openInLightbox) {
+        const group = galleryGroup.trim();
+        if (group !== '') {
+          options.galleryGroup = group;
+        }
+        if (excludeFromSlideshow) {
+          options.excludeFromSlideshow = true;
+        }
+      }
     }
     if (showCaptionUi && captionEnabled && caption.trim() !== '') {
       options.caption = caption.trim();
@@ -225,20 +239,59 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
             ) : null}
 
             {showImageLightboxOption && mediaMode === 'image' ? (
-              <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 rounded border-gray-300"
-                  checked={openInLightbox}
-                  onChange={(event) => setOpenInLightbox(event.target.checked)}
-                />
-                <span>
-                  <span className="font-medium block">{t('editor.mediaPicker.lightboxEnableLabel')}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('editor.mediaPicker.lightboxEnableHelp')}
+              <>
+                <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 rounded border-gray-300"
+                    checked={openInLightbox}
+                    onChange={(event) => setOpenInLightbox(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium block">{t('editor.mediaPicker.lightboxEnableLabel')}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('editor.mediaPicker.lightboxEnableHelp')}
+                    </span>
                   </span>
-                </span>
-              </label>
+                </label>
+                {openInLightbox ? (
+                  <div className="space-y-3 pl-6 border-l-2 border-indigo-200 dark:border-indigo-800">
+                    <label className="block text-sm">
+                      <span className="font-medium text-gray-800 dark:text-gray-100">
+                        {t('editor.mediaPicker.galleryGroupLabel')}
+                      </span>
+                      <input
+                        type="text"
+                        className="form-input mt-1 text-sm font-mono"
+                        value={galleryGroup}
+                        onChange={(event) => setGalleryGroup(event.target.value)}
+                        placeholder={t('editor.mediaPicker.galleryGroupPlaceholder')}
+                        data-testid="media-picker-gallery-group"
+                      />
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                        {t('editor.mediaPicker.galleryGroupHelp')}
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 rounded border-gray-300"
+                        checked={excludeFromSlideshow}
+                        onChange={(event) => setExcludeFromSlideshow(event.target.checked)}
+                        data-testid="media-picker-slideshow-exclude"
+                      />
+                      <span>
+                        <span className="font-medium block">
+                          {t('editor.mediaPicker.slideshowExcludeLabel')}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {t('editor.mediaPicker.slideshowExcludeHelp')}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </div>
         ) : null}

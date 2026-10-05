@@ -7,6 +7,7 @@ import {
   PublicSiteLayout,
   PublicHomePage,
   PublicSlugPage,
+  PublicNotFoundCatchAll,
 } from './components/layout/PublicSiteLayout';
 import { DashboardView } from './components/backend/DashboardView';
 import { AnalyticsView } from './components/backend/AnalyticsView';
@@ -299,6 +300,7 @@ function App() {
         <Route path="blog" element={<BlogRenderer />} />
         <Route path="blog/:slug" element={<BlogRenderer />} />
         <Route path=":slug" element={<PublicSlugPage />} />
+        <Route path="*" element={<PublicNotFoundCatchAll />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

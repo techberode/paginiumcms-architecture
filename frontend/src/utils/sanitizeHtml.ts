@@ -14,6 +14,8 @@ const ALLOWED_ATTR = [
   'data-tag', 'data-title',
   'data-staff-mode', 'data-staff-user', 'data-staff-type', 'data-staff-team',
   'data-lightbox',
+  'data-gallery',
+  'data-slideshow',
 ];
 
 /**

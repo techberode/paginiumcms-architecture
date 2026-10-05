@@ -12,6 +12,8 @@ export interface PaginiumMediaSlide {
   linkUrl?: string;
   linkLabel?: string;
   featureTag?: string;
+  /** When true, YARL slideshow autoplay skips this slide (58f-i-h). */
+  excludeFromSlideshow?: boolean;
 }
 
 export type PaginiumMediaGalleryCaptionStyle = 'below' | 'overlay' | 'side';

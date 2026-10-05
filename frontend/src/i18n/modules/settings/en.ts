@@ -295,6 +295,9 @@ export const settingsEn: MessageTree = {
     "templatesTitle": "Default page layout template",
     "templatesHint": "Used for new pages and the live layout preview below (structure, not chrome templates like Home/Contact).",
     "previewTitle": "Layout preview",
+    "errorPagesTitle": "Error pages (404 / 500)",
+    "errorPagesHint": "Use a published page slug (no leading slash). Navigation and footer stay visible. Applies to missing page URLs, deep unknown paths, and missing blog articles.",
+    "errorPageSlugPlaceholder": "e.g. 404",
     "developerRequiresAdmin": "Restrict Developer (Monaco) builder to ADMIN and SUPER_ADMIN",
     "developerLocked": "Available only to ADMIN / SUPER_ADMIN while this restriction is on.",
     "builders": {
@@ -1223,6 +1226,22 @@ export const settingsEn: MessageTree = {
       "developerRequiresAdmin": {
         "label": "Developer mode for ADMIN+ only",
         "help": "When on, only ADMIN / SUPER_ADMIN can select builderMode=developer."
+      },
+      "notFoundPageSlug": {
+        "label": "Custom 404 page (slug)",
+        "help": "Optional slug of a published page (landing/single layout). Empty = built-in Paginium 404 panel."
+      },
+      "serverErrorPageSlug": {
+        "label": "Custom 500 page (slug)",
+        "help": "Optional slug shown when the public site hits a render error. Empty = built-in 500 panel."
+      },
+      "breadcrumbsEnabled": {
+        "label": "Show breadcrumb navigation",
+        "help": "Public site: Home → section → page or article title."
+      },
+      "breadcrumbsOnHome": {
+        "label": "Breadcrumbs on home page",
+        "help": "Off = hide breadcrumbs on the home page only."
       }
     },
     "projectPlanner": {

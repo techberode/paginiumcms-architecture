@@ -3,6 +3,11 @@ import {
   proseFigureClassNames,
   type MediaCaptionPosition,
 } from './mediaCaption';
+import {
+  buildProseImageDataAttrs,
+  proseImageRequiresHtmlMarkup,
+  type ProseImageLightboxExtras,
+} from './proseImageAttrs';
 
 function escapeHtml(text: string): string {
   return text
@@ -22,23 +27,24 @@ export function buildInlineImageMarkup(
   alt: string,
   openInLightbox: boolean,
   caption?: string,
-  captionPosition: MediaCaptionPosition = 'below'
+  captionPosition: MediaCaptionPosition = 'below',
+  lightboxExtras?: ProseImageLightboxExtras
 ): string {
   const displayCaption = caption?.trim() ?? '';
   const shortAlt = alt.trim() || displayCaption || 'Image';
   const position = normalizeMediaCaptionPosition(captionPosition);
+  const dataAttrs = buildProseImageDataAttrs(openInLightbox, lightboxExtras);
 
   if (displayCaption === '') {
-    if (openInLightbox) {
+    if (openInLightbox && !proseImageRequiresHtmlMarkup(openInLightbox, undefined, lightboxExtras)) {
       return `\n\n![${shortAlt}](${url})\n`;
     }
 
-    return `\n\n<img src="${escapeAttr(url)}" alt="${escapeAttr(shortAlt)}" class="max-w-full h-auto rounded-lg" data-lightbox="off" />\n`;
+    return `\n\n<img src="${escapeAttr(url)}" alt="${escapeAttr(shortAlt)}" class="max-w-full h-auto rounded-lg"${dataAttrs} />\n`;
   }
 
-  const lightboxAttr = openInLightbox ? '' : ' data-lightbox="off"';
   const figureClass = proseFigureClassNames({ captionPosition: position });
-  const imgLine = `<img src="${escapeAttr(url)}" alt="${escapeAttr(shortAlt)}" class="max-w-full h-auto rounded-lg"${lightboxAttr} />\n`;
+  const imgLine = `<img src="${escapeAttr(url)}" alt="${escapeAttr(shortAlt)}" class="max-w-full h-auto rounded-lg"${dataAttrs} />\n`;
   const capLine = `<figcaption>${escapeHtml(displayCaption)}</figcaption>\n`;
   const body = position === 'above' ? capLine + imgLine : imgLine + capLine;
 

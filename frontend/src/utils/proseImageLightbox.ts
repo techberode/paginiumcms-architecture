@@ -1,5 +1,12 @@
 /** Public prose images: same allow-list as embedded media in content. */
 
+import {
+  getProseImageGalleryGroup,
+  isProseSlideshowExcluded,
+} from './proseImageAttrs';
+
+export { getProseImageGalleryGroup } from './proseImageAttrs';
+
 export function isProseLightboxImagePath(pathname: string): boolean {
   if (!pathname.startsWith('/')) {
     return false;
@@ -54,6 +61,7 @@ export interface ProseLightboxSlide {
   src: string;
   alt: string;
   caption: string;
+  excludeFromSlideshow: boolean;
 }
 
 export function isProseLightboxDisabled(img: Pick<HTMLImageElement, 'getAttribute' | 'dataset'>): boolean {
@@ -69,14 +77,28 @@ export function isProseLightboxClickTarget(img: HTMLImageElement): boolean {
   return full !== '' && isProseLightboxImageSrc(full);
 }
 
-export function collectProseLightboxSlides(container: HTMLElement): ProseLightboxSlide[] {
+export interface CollectProseLightboxSlidesOptions {
+  /** When set, only images with the same `data-gallery` value are included. */
+  galleryGroup?: string;
+}
+
+export function collectProseLightboxSlides(
+  container: HTMLElement,
+  options?: CollectProseLightboxSlidesOptions
+): ProseLightboxSlide[] {
   const slides: ProseLightboxSlide[] = [];
   const seen = new Set<string>();
+  const targetGroup = options?.galleryGroup;
 
   container.querySelectorAll('img').forEach((img) => {
     if (!(img instanceof HTMLImageElement) || isProseLightboxDisabled(img)) {
       return;
     }
+
+    if (targetGroup !== undefined && getProseImageGalleryGroup(img) !== targetGroup) {
+      return;
+    }
+
     const full = proseImageFullSizeSrc(img.currentSrc || img.src);
     if (full === '' || seen.has(full)) {
       return;
@@ -91,6 +113,7 @@ export function collectProseLightboxSlides(container: HTMLElement): ProseLightbo
       src: full,
       alt: img.alt ?? '',
       caption: figCaption,
+      excludeFromSlideshow: isProseSlideshowExcluded(img),
     });
   });
 

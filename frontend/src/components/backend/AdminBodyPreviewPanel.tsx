@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, Loader2 } from 'lucide-react';
 import { contentApi } from '../../api/content';
 import { useI18n } from '../../context/I18nContext';
@@ -29,6 +29,9 @@ interface AdminBodyPreviewPanelProps {
   brokenLinkUrls?: readonly string[];
 }
 
+/** Stable default — `brokenLinkUrls = []` in params would be a new array every render and retrigger preview forever. */
+const EMPTY_BROKEN_LINK_URLS: readonly string[] = [];
+
 export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
   body,
   bodyFormat,
@@ -37,12 +40,17 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
   sandbox = false,
   fillViewport = false,
   onOpenFullPreview,
-  brokenLinkUrls = [],
+  brokenLinkUrls,
 }) => {
   const { t } = useI18n();
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const resolvedBrokenLinks = brokenLinkUrls ?? EMPTY_BROKEN_LINK_URLS;
+  const brokenLinksKey = useMemo(
+    () => resolvedBrokenLinks.join('\0'),
+    [resolvedBrokenLinks]
+  );
 
   useEffect(() => {
     if (!body.trim()) {
@@ -59,7 +67,7 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
       void contentApi
         .renderPreview({ body, bodyFormat })
         .then((rendered) => {
-          setHtml(markBrokenLinksInPreviewHtml(rendered, brokenLinkUrls));
+          setHtml(markBrokenLinksInPreviewHtml(rendered, resolvedBrokenLinks));
           setError(null);
         })
         .catch(() => {
@@ -74,7 +82,7 @@ export const AdminBodyPreviewPanel: React.FC<AdminBodyPreviewPanelProps> = ({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [body, bodyFormat, brokenLinkUrls, debounceMs, t]);
+  }, [body, bodyFormat, brokenLinksKey, debounceMs, t]);
 
   return (
     <div

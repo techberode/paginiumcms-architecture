@@ -65,6 +65,23 @@ describe('AdminBodyPreviewPanel', () => {
     expect(queryByTestId('admin-body-preview-frame')).toBeNull();
   });
 
+  it('does not restart preview fetch when parent re-renders without brokenLinkUrls', async () => {
+    const { getByTestId, rerender } = renderWithProviders(
+      <AdminBodyPreviewPanel body="Hello preview" bodyFormat="markdown" sandbox debounceMs={0} />
+    );
+
+    await waitFor(() => getByTestId('admin-body-preview-frame'));
+    expect(contentApi.renderPreview).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <AdminBodyPreviewPanel body="Hello preview" bodyFormat="markdown" sandbox debounceMs={0} />
+    );
+
+    await waitFor(() => {
+      expect(contentApi.renderPreview).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('opens the full page preview from the pane chrome', async () => {
     const onOpenFullPreview = vi.fn();
     const { getByTestId } = renderWithProviders(

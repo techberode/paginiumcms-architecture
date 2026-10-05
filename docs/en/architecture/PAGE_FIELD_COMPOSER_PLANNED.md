@@ -61,7 +61,8 @@ Page (landing layout)
 | **58f-i-e** | ✅ `pricing-table` v2 **billing-toggle** (monthly/yearly) + `pricing-plan` dual prices + `pricing-table` shell island |
 | **58f-i-f** | ✅ `[stats-row]` **count-up** animation island |
 | **58f-i-g** | ✅ **PaginiumMediaGallery** (YARL) — prose + feature gallery modal |
-| **58f-i-h…k** | ⏳ Insert/group attrs, inline block, video slides — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| **58f-i-h** | ✅ Insert/group attrs — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| **58f-i-i…k** | ⏳ Inline block, video slides — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | **58f-i-d** (optional) | Core hook: section background crossfade on scroll (sibling to `useLandingReveal`); page flag or section attr |
 | **Later** | **Album** entity (`data/gallery-albums/`) if tags are insufficient—only if customers need many isolated collections |
 

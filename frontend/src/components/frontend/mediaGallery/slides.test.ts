@@ -5,7 +5,7 @@ import { galleryItemsToMediaSlides, proseLightboxSlidesToMedia } from './slides'
 describe('mediaGallery slides', () => {
   it('maps prose slides with caption', () => {
     const media = proseLightboxSlidesToMedia([
-      { src: '/storage/a.png', alt: 'A', caption: 'Caption' },
+      { src: '/storage/a.png', alt: 'A', caption: 'Caption', excludeFromSlideshow: false },
     ]);
     expect(media[0]).toMatchObject({
       type: 'image',
@@ -15,7 +15,16 @@ describe('mediaGallery slides', () => {
   });
 
   it('falls back prose description to alt when caption empty', () => {
-    const media = proseLightboxSlidesToMedia([{ src: '/storage/a.png', alt: 'Alt only', caption: '' }]);
+    const media = proseLightboxSlidesToMedia([
+      { src: '/storage/a.png', alt: 'Alt only', caption: '', excludeFromSlideshow: true },
+    ]);
+    expect(media[0]?.excludeFromSlideshow).toBe(true);
+  });
+
+  it('maps prose slideshow flag when false', () => {
+    const media = proseLightboxSlidesToMedia([
+      { src: '/storage/a.png', alt: 'Alt only', caption: '', excludeFromSlideshow: false },
+    ]);
     expect(media[0]?.description).toBe('Alt only');
   });
 

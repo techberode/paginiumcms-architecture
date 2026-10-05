@@ -307,6 +307,13 @@ export const editorEn: MessageTree = {
     lightboxEnableLabel: 'Open in lightbox on click',
     lightboxEnableHelp:
       'Off = inline image only (no modal). On = click opens the image; use zoom controls in the modal.',
+    galleryGroupLabel: 'Lightbox gallery group (optional)',
+    galleryGroupPlaceholder: 'e.g. chapter-1',
+    galleryGroupHelp:
+      'Images with the same group open together in prev/next. Leave empty for the default page gallery.',
+    slideshowExcludeLabel: 'Exclude from autoplay slideshow',
+    slideshowExcludeHelp:
+      'Slide still opens in the lightbox manually; autoplay skips it when slideshow is enabled.',
     insertOptionsTitle: 'Before insert (optional)',
     pickAssetHint: 'Click a file — it is inserted at the text cursor.',
     captionEnableLabelImage: 'Add image caption / title',

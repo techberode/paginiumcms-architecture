@@ -18,6 +18,10 @@ import {
   isColorSchemeId,
   type AppearanceMode,
 } from '../../theme/colorSchemes';
+import {
+  translateSettingFieldHelp,
+  translateSettingFieldLabel,
+} from '../../i18n/modules/settings/helpers';
 
 interface LayoutSettingsPanelProps {
   watch: (name: string) => unknown;
@@ -39,6 +43,8 @@ export const LayoutSettingsPanel: React.FC<LayoutSettingsPanelProps> = ({
   const builderModeRaw = String(watch('builderMode') ?? DEFAULT_LAYOUT_BUILDER_MODE);
   const defaultTemplateRaw = String(watch('defaultTemplate') ?? DEFAULT_LAYOUT_TEMPLATE_ID);
   const developerRequiresAdmin = Boolean(watch('developerRequiresAdmin'));
+  const notFoundPageSlug = String(watch('notFoundPageSlug') ?? '').trim();
+  const serverErrorPageSlug = String(watch('serverErrorPageSlug') ?? '').trim();
 
   const builderMode: LayoutBuilderMode = isLayoutBuilderMode(builderModeRaw)
     ? builderModeRaw
@@ -157,6 +163,69 @@ export const LayoutSettingsPanel: React.FC<LayoutSettingsPanelProps> = ({
           mode={appearanceMode}
           className="max-w-md"
         />
+      </section>
+
+      <section className="space-y-4 border-t border-slate-200 dark:border-slate-700 pt-6">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            {t('settings.layout.errorPagesTitle')}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            {t('settings.layout.errorPagesHint')}
+          </p>
+        </div>
+        <label className="block text-sm">
+          <span className="font-medium text-slate-800 dark:text-slate-100">
+            {translateSettingFieldLabel(t, 'layout', 'notFoundPageSlug', 'Custom 404 page (slug)')}
+          </span>
+          <input
+            type="text"
+            className="form-input mt-1 font-mono text-sm"
+            value={notFoundPageSlug}
+            placeholder={t('settings.layout.errorPageSlugPlaceholder')}
+            data-testid="layout-not-found-page-slug"
+            onChange={(event) =>
+              setValue('notFoundPageSlug', event.target.value.trim(), {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+          <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
+            {translateSettingFieldHelp(
+              t,
+              'layout',
+              'notFoundPageSlug',
+              'Published page slug for missing URLs. Empty = built-in 404 panel.'
+            )}
+          </span>
+        </label>
+        <label className="block text-sm">
+          <span className="font-medium text-slate-800 dark:text-slate-100">
+            {translateSettingFieldLabel(t, 'layout', 'serverErrorPageSlug', 'Custom 500 page (slug)')}
+          </span>
+          <input
+            type="text"
+            className="form-input mt-1 font-mono text-sm"
+            value={serverErrorPageSlug}
+            placeholder={t('settings.layout.errorPageSlugPlaceholder')}
+            data-testid="layout-server-error-page-slug"
+            onChange={(event) =>
+              setValue('serverErrorPageSlug', event.target.value.trim(), {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+          <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
+            {translateSettingFieldHelp(
+              t,
+              'layout',
+              'serverErrorPageSlug',
+              'Shown when the public React tree throws during render.'
+            )}
+          </span>
+        </label>
       </section>
     </div>
   );

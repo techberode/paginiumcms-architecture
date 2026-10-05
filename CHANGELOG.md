@@ -13,89 +13,16 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Security:** Bump `league/commonmark` 2.10.0 → 2.10.3 (GHSA-97jj-33gv-5xf9, GHSA-3q6v-r5mr-hxv8 — DisallowedRawHtml bypass, GFM table DoS).
-- **Fix:** Media Library **grid (preview) view** — edit metadata opens the same **MediaMetadataModal** as list modes (optimize, resize, title, alt); removed inline title/alt-only shortcut.
-- **Direction:** **React shortcode islands** for dynamic page blocks (registry, attrs → components); keep CSS/server HTML where it already works; no author/theme JS for effects — It.97 CSP/embed facades **deferred** — [REACT_SHORTCODE_ISLANDS.md](docs/en/architecture/REACT_SHORTCODE_ISLANDS.md).
-- **Islands Phase A:** `PUBLIC_ISLANDS` registry (`frontend/src/islands/`), generic `splitPublicHtmlIslands` + `PublicIslandHost`; legacy `pg-feature-gallery` / `pg-staff-cards` and `pg-island--{id}` markers.
-- **It.58f-i-a:** `[feature-gallery]` v2 attrs — per-block `layout`, `columns`, `modal-caption-style` (override Settings → Feature gallery); PHP `data-*` markers + React island hydration.
-- **It.58f-i-b:** `[section-band]` section shell — DAM background, overlay, radius, layout (full/contained/two-column), `bg-attachment`; `SectionBandRenderer` + `pgLayout.css`; Outline palette **Section band**.
-- **Islands Phase D:** `[gallery-carousel]` shortcode — slider/hero-strip from It.65 gallery (`tag` filter), React island + `FeatureGallerySlider`; Outline + insert modal.
-- **Islands Phase E:** `[section-band]` effect presets — `reveal` (scroll/none), `hover-effect` (lift/glow) on inner cards via `pgLayout.css`; seeder **section-band v2**.
-- **Islands Phase F:** Admin outline/developer live preview hydrates registered islands via `MarkdownRenderer` + `PUBLIC_ISLANDS` (sandbox iframe only when no islands).
-- **It.58 closure:** Docs/ROADMAP mark **58b–58g** (incl. 58f-a–h canvas, 58g with It.48) as shipped; **It.58f-i** / islands documented as post-58 composer wave — [ITERATION_58.md](docs/en/ITERATION_58.md).
-- **It.58f-i-e:** `[pricing-table]` billing toggle (monthly/yearly) — `pricing-plan` `price-monthly` / `price-yearly`; React `pricing-table` shell island preserves expanded plan HTML; seeder **v2**.
-- **It.58f-i-f:** `[stats-row]` `animate="count-up"` — KPI count-up on scroll (shell island, `prefers-reduced-motion` safe); seeder **stats-row v2**.
-- **It.58f-i-g:** Unified public lightbox — `yet-another-react-lightbox` behind `PaginiumMediaGallery` (thumbnails, counter, zoom, slideshow when motion allowed); prose images + feature gallery modal share facade — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
-- **News → Archive:** Scheduler job moves published **News** articles to **Archive** after configurable retention (default 21d, per-article max 45d); manual move in editor; archive stays public but excluded from blog latest/popular; header badges.
-- **Planned (It.58f-i-h…k):** Insert/group attrs, inline `[media-gallery]`, video slides, feature-gallery polish — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
-- **Docs:** It.58 complete handoff — [IT_58_COMPOSER_HANDOFF.md](docs/en/architecture/IT_58_COMPOSER_HANDOFF.md) (58b–58g + 58f-i shipped slices + React gallery queue).
-- **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
-- **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.
-- **Shortcodes:** Bundled `faq-list` / `faq-item` (native `<details>`), `link-row` / `link-chip`; `landing-hero` v3 slot toggles (`show-subtitle`, `show-cta`, `show-media`).
-- **Widgets:** Built-in `checklist` and `stat-duo` types in `WidgetCatalog` + `pgLayout.css`.
-- **Content editor:** YouTube/Vimeo embed optional **caption** under player (`caption` / `captionAlign`, default left).
-- **Content editor:** Editorial **review workflow** — settings + teams, statuses `pending_review` / `reviewed`, non-leader publish → pending, planner enqueue, leader notifications (`editorialReviewNotifyLeaders` + monitoring content-publish connector), team-lead **Mark as reviewed**, optional `editorialReviewPlanId`.
-- **Content editor:** **Internal link check** — `POST /api/admin/content/link-check` (markdown/html/tiptap, relative `./slug`, `/blog/…`, absolute same-path URLs); flags missing slugs and unpublished targets; editor button, CodeMirror line highlights, live preview `.pg-link-broken`, optional `editorialLinkCheckRequired` gate on save. See [CONTENT_EDITORIAL_WORKFLOW.md](docs/en/architecture/CONTENT_EDITORIAL_WORKFLOW.md).
-- **Settings:** Content → **Project plan for review queue** dropdown (`editorialReviewPlanId`) with SK/EN labels for editorial workflow fields.
-- **Editorial:** Team leaders see `pending_review` content in **admin desk** queue (`content_review`, `editorialReviewDeskEnabled`); marketing drafts `docs/marketing/ARTICLE_27–29_*.md`.
-- **Content editor:** **Modal workspace** toggle (localStorage) on shortcode/widget insert panels — visual dialog with preview vs compact Markdown quick insert; per-field **include** checkboxes in insert modal and widget picker (omit disabled attrs from generated tags).
-- **Content editor:** Visual **shortcode insert modal** (server live preview, attribute fields) + shared **layout/typography** controls for shortcodes/widgets (`[visual-frame]` wrapper); Settings → Editor toggles `visualInsertModalsEnabled` / `visualInsertTypographyEnabled`; `POST /api/admin/shortcodes/render-markup`; bundled `visual-frame` uses policy-safe `pg-visual-frame` class.
-- **Fix:** Shortcode catalog list / render for editors — `GET /api/admin/shortcodes`, definition fetch, and `render-markup` require `content:edit` (not `settings:manage`).
-- **Shortcodes:** `showcase-hero` v3 — `ShowcaseHeroRenderer` + bool attrs `show-badge`, `show-terminal`, `show-cta`, `show-cta2`; empty slots omitted; insert modal renders bool fields as checkboxes.
-- **Shortcodes:** `cta-banner` v2 — `CtaBannerRenderer` + `show-subtitle` / `show-cta` bool attrs.
-- **Fix:** External embed with `align` / layout classes stripped again on publish — sanitizer preserve regex now matches iframes whose `class` includes `paginium-external-embed` (not only a single-class attribute).
-- **Content editor:** **Insert YouTube/Vimeo** modal — horizontal alignment, player width (280–1280 px), live layout preview between sample paragraphs; stored as `align` / `maxWidth` on `:::embed`; public CSS classes + optional inline `max-width`.
-- **Fix:** YouTube/Vimeo `:::embed` blank on public pages — `ContentSecuritySanitizer` now preserves `<iframe class="paginium-external-embed">` through HTML whitelist sanitization (same mechanism as Mermaid/chart figures); [ISS-193](docs/ISSUES.md#iss-193).
-- **Content editor:** Media Library modal — optional **caption** (checkbox + form), **above/below** placement, insert at **text cursor** (images, video, documents, sidebar shortcodes); `<figure>` / `figcaption` in prose; `:::video` supports `caption:` and `captionPosition: above`; same caption text in image lightbox (shown under zoom).
-- **Pages:** Page hero editor matches article hero — **Fill frame / Show full image** (`heroFit` cover/contain) with drag focus preview on public page headers and intro cards.
-- **Docs:** [MEDIA_IN_CONTENT.md](docs/en/user/MEDIA_IN_CONTENT.md) (captions, DAM video, embed layout + theme overrides); [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) updated for page `heroFit`.
-- **Fix:** YouTube/Vimeo embed player blank on site and in preview — removed restrictive `sandbox` on allow-listed embed iframes (CSP `frame-src` already gates hosts).
-- **Fix:** YouTube/Vimeo embed blank in admin content preview — sandbox iframe CSP now includes `frame-src` for nocookie YouTube and Vimeo.
-- **Fix:** Settings → Access control showed raw permission keys (`content:embed-external`) — added sk/en labels and `translateAccessControlPermission` helper.
-- **Fix:** Editors with stale `permissionsEditor` in Settings missing `content:embed-external` — role guard auto-grants embed when the role can edit content.
-- **Fix:** Video upload rejected above ~5 MB despite **Max. video upload** setting — unified policy no longer applies global `uploadSecurity.maxUploadSizeKb` to the video profile; size errors show effective limit in MB; `/api/media/formats` exposes effective byte caps; video detected from file header when MIME is wrong.
-- **Fix:** Video MIME allow-list no longer empty when `uploadSecurity.allowedMimeTypes` omits `video/*` but media settings allow video.
-- **Fix:** Media Library `.webm` / video invisible in OS file picker when unified upload policy (It.78) is on — `accept` merges image + video (+ documents); `/api/media/formats` adds explicit `videoAccept`; default `media.allowedMimeTypes` includes `video/mp4,video/webm`.
-- **Fix:** YouTube/Vimeo embed for editors — default **EDITOR** role includes `content:embed-external`; public `.paginium-external-embed` styling. Custom ACL in Settings → Access control may need the permission enabled once.
-- **Fix:** Article save rejected pasted YouTube iframe — normalize embeds before validation; convert allowed iframe HTML / standalone video URLs to `:::embed`; strip embed blocks in security scan ([ISS-192](docs/ISSUES.md#iss-192)).
-- **Fix:** Markdown save false positive when prose documents `<iframe>` or HTML inside fenced/inline code (e.g. marketing article copy).
-- **Ops:** Refresh [ROADMAP.md](docs/ROADMAP.md) for It.70–77; [ROADMAP_SYNC.md](docs/en/operations/ROADMAP_SYNC.md) + `scripts/check-roadmap-stale.sh` guard against stale ⏳ rows.
-- **Security:** Privilege escalation alerts via `IncidentNotifier::notifySecurityEvent` (replaces SecurityLogger TODO).
-- **Fix:** YouTube/Vimeo in Markdown — CSP `frame-src` allows `youtube-nocookie.com` and `player.vimeo.com`; embed modal accepts full URLs; standalone YouTube/Vimeo URL on its own line renders as `:::embed` player (not a plain link).
-- **Fix:** Markdown editor paste — no longer blocks plain Markdown containing `<https://…>` or inline HTML; rich clipboard HTML falls back to `text/plain` (matches WYSIWYG); toast only when HTML is pasted without plain text ([ISS-190](docs/ISSUES.md#iss-190)).
-- **Fix:** Google Maps contact embed blocked by CSP — `frame-src` allows `https://www.google.com` in PHP middleware, Apache `.htaccess`, and **nginx** deploy snippets (`docs/deploy/nginx-security-headers-*.conf`, `docker/nginx/security-headers.conf`); rebuild FE after `public-theme-boot.js` replaces inline theme script (CSP `script-src 'self'`) ([ISS-191](docs/ISSUES.md#iss-191)).
-- **Analytics geography:** Visitor map uses Natural Earth land outline, corrected equirectangular positions (~143 country centroids + optional GeoIP lat/lon on visits), zoom/pan, and hover tooltips with masked sample IPs; tracker persists latitude/longitude/region from GeoIP.
-- **Admin dashboard:** Overview loads first (KPIs, health, analytics, log severity counts from `AdminCountsService`); audit stats / APM / scheduler chart defer until after first paint (`requestIdleCallback`) so heavy log scans no longer block the shell.
-- **Docs:** [PUBLIC_SITE_WORKLOG_2026-09-24_28.md](docs/en/operations/PUBLIC_SITE_WORKLOG_2026-09-24_28.md) — production incidents (footer version, blog CLS/404 flash, deploy CRLF, theme reload, showcase-hero, CTA); [ISSUES.md](docs/ISSUES.md) ISS-178–ISS-186.
-- **Widgets:** Public `[widget]` types `map-embed`, `data-table`, `bar-chart`, `form-cta` (server expand + `pgLayout.css`); Google Maps embed allow-list shared with contact page (`MapEmbedUrlGuard`).
-- **Public errors:** Settings → Layout slugs for custom **404** / **500** pages; built-in Paginium panels + `PublicRouteErrorBoundary` fallback.
-- **Analytics:** Geography tab — visitor dot map (country centroids, no third-party API) alongside country bar chart.
-- **Blog:** Article hero crop — editor drag preview + `heroFocusX/Y` / `heroFit`; detail defaults to letterbox (`contain`) so OG images are not random center-cropped; optional fill-frame crop; **article list cards** use the same contain/cover + focus rules (fixes 21:9 heroes cropped in `/blog` grid); docs [BLOG_ARTICLE_HERO.md](docs/en/user/BLOG_ARTICLE_HERO.md).
-- **Docs:** [ISSUES.md](docs/ISSUES.md) ISS-187–ISS-189 (dashboard defer, analytics geo map, blog list hero).
-- **Fix:** Landing shortcode primary CTA unreadable — `.paginium-prose a` no longer overrides `.pg-btn-primary` text color.
-- **Docs:** [SHORTCODES_AND_WIDGETS.md](docs/en/user/SHORTCODES_AND_WIDGETS.md) — syntax, inner markdown, widgets; landing page § `showcase-hero`; blog mini-series outline in `docs/marketing/ARTICLE_SERIES_SK.md`.
-- **Fix:** Landing `showcase-hero` invisible on public site — block no longer uses scroll-reveal (`pg-reveal`); CSS keeps legacy installs visible; bundled shortcode definition v2 via `seedMissingBundled`.
-- **Fix:** Landing `showcase-hero` / `.pg-reveal` blocks invisible on first paint — admin preview forced `opacity:1`; public site now reveals above-fold blocks immediately and re-binds scroll-reveal when page HTML loads.
-- **Fix:** Public light/dark mode survives reload — theme preference in `localStorage` is no longer blocked or cleared when functional cookies are declined; early `index.html` boot applies stored theme before React loads.
-- **Fix:** Public footer CMS version — `GET /api/settings/public` `cmsInfo.version` uses `AppVersion::current()` (was stuck on `VERSION` constant, e.g. beta.90); `AppVersion::VERSION` fallback stays aligned with the latest **tagged** release (`2.1.0-beta.93` until `v2.1.0-beta.94` ships).
-- **Fix:** Blog article-to-article navigation — no transient 404 when slug changes before fetch (skeleton + `useLayoutEffect` loading flag; stale `activeArticle` treated as in-flight).
-- **Fix:** Blog article-to-article navigation — stable skeleton instead of full-page spinner (lower CLS); reserved hero aspect ratio; in-prose `/blog/*` links use client routing.
-- **Fix:** Blog CLS follow-up — preserve measured article shell min-height across slug changes; comments loading placeholder; public layout flex-1 content well; theme shells fill viewport (`100dvh`).
-- **Fix:** PHPStan — `NormalizedImportRow` type lives on `ImportRowTypes` (import alias no longer conflicts with `ContentImportRowFactory` class).
-- **CMS migration:** Admin **Migrácia z CMS** (`/content-migration`) + CLI `content:import` — WordPress WXR (1.0–1.2), **Grav** `user/pages`, **Jekyll**, **Hugo** `content/`, **Ghost** JSON, Paginium JSON; ZIP auto-detect; dry-run default; slug collision → `import-{slug}`; media URLs unchanged (phase 1).
-- **Translations:** Admin **Apply edited translations** loads on-disk frontend catalogs via `GET /api/i18n/frontend-catalog` (sk + en) without `npm run build`; updated prod hints; save/restore still auto-refresh runtime i18n.
-- **Pages:** Unified header hero (auto / single / carousel / none) with **placement** (`auto`, `full-header`, `intro-card`, `landing-inline`), drag crop preview, home/landing routing fixes; backend `heroPlacement`; docs [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md).
-- **Fix:** Locale-scoped page saves (`locale` in PUT body) now persist hero front matter and SEO via `applyGlobalContentFields` (regression: placement reset to Auto after reload).
-- **Fix:** Page editor save always sent stale hero mode/placement (`pageHero` missing from `handleSave` dependencies); hero settings now persist on save and in full draft snapshots.
-- **Fix:** Public hero **full-header** and **landing-inline** rendering — embed/blog intro now shows full-width header band; landing-inline on non-landing layouts falls back to header band instead of hiding the image.
-- **Fix:** Blog landing loads `/api/pages/blog` (locale-aware) so hero front matter is not stuck on list defaults; full-header hero image spans the header band edge-to-edge.
-- **Pages:** **Full header** placement uses cover layout (full-bleed photo + centered title panel, Wix-style); blog intro breaks cover to viewport width while the text card stays in the nav content width.
-- **Docs:** [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) — 21:9 / 2560×1097 hero specs, safe zone, AI prompt, OG notes (SK: `docs/sk/user/PAGE_HERO_IMAGES.md`).
+- **Planned:** It.58f-i-i…k — inline `[media-gallery]`, video slides, feature-gallery polish — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md)
+- **Optional:** 58f-i-d section background crossfade; callout colors → `--color-primary`
+- **Deferred:** It.97 CSP/embed facades
+- **Marketing (SK drafts):** publish `docs/marketing/ARTICLE_30–33_*.md` after tag when ready.
 
 ## Release index
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.94`](#release-2-1-0-beta-94) | 2026-10-05 | It.58f-i islands + lightbox g/h · custom 404 · editorial · live preview fix · composer handoff |
 | [`2.1.0-beta.93`](#release-2-1-0-beta-93) | 2026-09-24 | Footer tech stack · desk inbox sync · text scale · blog layout · Vitest/palette fixes · Site Design docs |
 | [`2.1.0-beta.92`](#release-2-1-0-beta-92) | 2026-09-22 | Admin status badges · getting-started SSOT · media upload compression · prod Redis compose follow-up |
 | [`2.1.0-beta.91`](#release-2-1-0-beta-91) | 2026-09-22 | It.69 Redis cache · latest-articles · breadcrumbs · media folders · Origin probes · AI/translation ops docs |
@@ -256,6 +183,97 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Queue:** It.69 Redis driver (optional). Handoff: [CONTINUATION.md](docs/en/CONTINUATION.md).
 
 ---
+
+
+<a id="release-2-1-0-beta-94"></a>
+
+## [2.1.0-beta.94] – 2026-10-05
+
+It.58 **composer wave** (React islands, 58f-i-a–h), editorial workflow, public error pages, media/embed fixes, and admin live preview repair.
+
+Release notes: [RELEASE_2_1_0_BETA_94.md](docs/en/RELEASE_2_1_0_BETA_94.md) · Handoff: [IT_58_COMPOSER_HANDOFF.md](docs/en/architecture/IT_58_COMPOSER_HANDOFF.md)
+
+### Shipped (summary)
+
+- **Security:** Bump `league/commonmark` 2.10.0 → 2.10.3 (GHSA-97jj-33gv-5xf9, GHSA-3q6v-r5mr-hxv8 — DisallowedRawHtml bypass, GFM table DoS).
+- **Fix:** Media Library **grid (preview) view** — edit metadata opens the same **MediaMetadataModal** as list modes (optimize, resize, title, alt); removed inline title/alt-only shortcut.
+- **Direction:** **React shortcode islands** for dynamic page blocks (registry, attrs → components); keep CSS/server HTML where it already works; no author/theme JS for effects — It.97 CSP/embed facades **deferred** — [REACT_SHORTCODE_ISLANDS.md](docs/en/architecture/REACT_SHORTCODE_ISLANDS.md).
+- **Islands Phase A:** `PUBLIC_ISLANDS` registry (`frontend/src/islands/`), generic `splitPublicHtmlIslands` + `PublicIslandHost`; legacy `pg-feature-gallery` / `pg-staff-cards` and `pg-island--{id}` markers.
+- **It.58f-i-a:** `[feature-gallery]` v2 attrs — per-block `layout`, `columns`, `modal-caption-style` (override Settings → Feature gallery); PHP `data-*` markers + React island hydration.
+- **It.58f-i-b:** `[section-band]` section shell — DAM background, overlay, radius, layout (full/contained/two-column), `bg-attachment`; `SectionBandRenderer` + `pgLayout.css`; Outline palette **Section band**.
+- **Islands Phase D:** `[gallery-carousel]` shortcode — slider/hero-strip from It.65 gallery (`tag` filter), React island + `FeatureGallerySlider`; Outline + insert modal.
+- **Islands Phase E:** `[section-band]` effect presets — `reveal` (scroll/none), `hover-effect` (lift/glow) on inner cards via `pgLayout.css`; seeder **section-band v2**.
+- **Islands Phase F:** Admin outline/developer live preview hydrates registered islands via `MarkdownRenderer` + `PUBLIC_ISLANDS` (sandbox iframe only when no islands).
+- **It.58 closure:** Docs/ROADMAP mark **58b–58g** (incl. 58f-a–h canvas, 58g with It.48) as shipped; **It.58f-i** / islands documented as post-58 composer wave — [ITERATION_58.md](docs/en/ITERATION_58.md).
+- **It.58f-i-e:** `[pricing-table]` billing toggle (monthly/yearly) — `pricing-plan` `price-monthly` / `price-yearly`; React `pricing-table` shell island preserves expanded plan HTML; seeder **v2**.
+- **It.58f-i-f:** `[stats-row]` `animate="count-up"` — KPI count-up on scroll (shell island, `prefers-reduced-motion` safe); seeder **stats-row v2**.
+- **It.58f-i-g:** Unified public lightbox — `yet-another-react-lightbox` behind `PaginiumMediaGallery` (thumbnails, counter, zoom, slideshow when motion allowed); prose images + feature gallery modal share facade — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md).
+- **It.58f-i-h:** Prose image insert — optional `data-gallery` group + `data-slideshow="off"`; Media Library picker fields; grouped slide collection in `ProseImageLightboxHost`; allow-listed attrs in `HtmlDomSanitizer`.
+- **News → Archive:** Scheduler job moves published **News** articles to **Archive** after configurable retention (default 21d, per-article max 45d); manual move in editor; archive stays public but excluded from blog latest/popular; header badges.
+- **Docs:** It.58 complete handoff — [IT_58_COMPOSER_HANDOFF.md](docs/en/architecture/IT_58_COMPOSER_HANDOFF.md) (58b–58g + 58f-i shipped slices + React gallery queue).
+- **Ops:** `scripts/check-roadmap-stale.sh` runs in CI (`backend` job) to block stale ⏳ rows in `docs/ROADMAP.md`.
+- **Desk:** Integration test — `DeskInboxService` merges `content_review` items from `ContentEditorialDeskService` for team leaders.
+- **Shortcodes:** Bundled `faq-list` / `faq-item` (native `<details>`), `link-row` / `link-chip`; `landing-hero` v3 slot toggles (`show-subtitle`, `show-cta`, `show-media`).
+- **Widgets:** Built-in `checklist` and `stat-duo` types in `WidgetCatalog` + `pgLayout.css`.
+- **Content editor:** YouTube/Vimeo embed optional **caption** under player (`caption` / `captionAlign`, default left).
+- **Content editor:** Editorial **review workflow** — settings + teams, statuses `pending_review` / `reviewed`, non-leader publish → pending, planner enqueue, leader notifications (`editorialReviewNotifyLeaders` + monitoring content-publish connector), team-lead **Mark as reviewed**, optional `editorialReviewPlanId`.
+- **Content editor:** **Internal link check** — `POST /api/admin/content/link-check` (markdown/html/tiptap, relative `./slug`, `/blog/…`, absolute same-path URLs); flags missing slugs and unpublished targets; editor button, CodeMirror line highlights, live preview `.pg-link-broken`, optional `editorialLinkCheckRequired` gate on save. See [CONTENT_EDITORIAL_WORKFLOW.md](docs/en/architecture/CONTENT_EDITORIAL_WORKFLOW.md).
+- **Settings:** Content → **Project plan for review queue** dropdown (`editorialReviewPlanId`) with SK/EN labels for editorial workflow fields.
+- **Editorial:** Team leaders see `pending_review` content in **admin desk** queue (`content_review`, `editorialReviewDeskEnabled`); marketing drafts `docs/marketing/ARTICLE_27–29_*.md`.
+- **Content editor:** **Modal workspace** toggle (localStorage) on shortcode/widget insert panels — visual dialog with preview vs compact Markdown quick insert; per-field **include** checkboxes in insert modal and widget picker (omit disabled attrs from generated tags).
+- **Content editor:** Visual **shortcode insert modal** (server live preview, attribute fields) + shared **layout/typography** controls for shortcodes/widgets (`[visual-frame]` wrapper); Settings → Editor toggles `visualInsertModalsEnabled` / `visualInsertTypographyEnabled`; `POST /api/admin/shortcodes/render-markup`; bundled `visual-frame` uses policy-safe `pg-visual-frame` class.
+- **Fix:** Shortcode catalog list / render for editors — `GET /api/admin/shortcodes`, definition fetch, and `render-markup` require `content:edit` (not `settings:manage`).
+- **Shortcodes:** `showcase-hero` v3 — `ShowcaseHeroRenderer` + bool attrs `show-badge`, `show-terminal`, `show-cta`, `show-cta2`; empty slots omitted; insert modal renders bool fields as checkboxes.
+- **Shortcodes:** `cta-banner` v2 — `CtaBannerRenderer` + `show-subtitle` / `show-cta` bool attrs.
+- **Fix:** External embed with `align` / layout classes stripped again on publish — sanitizer preserve regex now matches iframes whose `class` includes `paginium-external-embed` (not only a single-class attribute).
+- **Content editor:** **Insert YouTube/Vimeo** modal — horizontal alignment, player width (280–1280 px), live layout preview between sample paragraphs; stored as `align` / `maxWidth` on `:::embed`; public CSS classes + optional inline `max-width`.
+- **Fix:** YouTube/Vimeo `:::embed` blank on public pages — `ContentSecuritySanitizer` now preserves `<iframe class="paginium-external-embed">` through HTML whitelist sanitization (same mechanism as Mermaid/chart figures); [ISS-193](docs/ISSUES.md#iss-193).
+- **Content editor:** Media Library modal — optional **caption** (checkbox + form), **above/below** placement, insert at **text cursor** (images, video, documents, sidebar shortcodes); `<figure>` / `figcaption` in prose; `:::video` supports `caption:` and `captionPosition: above`; same caption text in image lightbox (shown under zoom).
+- **Pages:** Page hero editor matches article hero — **Fill frame / Show full image** (`heroFit` cover/contain) with drag focus preview on public page headers and intro cards.
+- **Docs:** [MEDIA_IN_CONTENT.md](docs/en/user/MEDIA_IN_CONTENT.md) (captions, DAM video, embed layout + theme overrides); [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) updated for page `heroFit`.
+- **Fix:** YouTube/Vimeo embed player blank on site and in preview — removed restrictive `sandbox` on allow-listed embed iframes (CSP `frame-src` already gates hosts).
+- **Fix:** YouTube/Vimeo embed blank in admin content preview — sandbox iframe CSP now includes `frame-src` for nocookie YouTube and Vimeo.
+- **Fix:** Settings → Access control showed raw permission keys (`content:embed-external`) — added sk/en labels and `translateAccessControlPermission` helper.
+- **Fix:** Editors with stale `permissionsEditor` in Settings missing `content:embed-external` — role guard auto-grants embed when the role can edit content.
+- **Fix:** Video upload rejected above ~5 MB despite **Max. video upload** setting — unified policy no longer applies global `uploadSecurity.maxUploadSizeKb` to the video profile; size errors show effective limit in MB; `/api/media/formats` exposes effective byte caps; video detected from file header when MIME is wrong.
+- **Fix:** Video MIME allow-list no longer empty when `uploadSecurity.allowedMimeTypes` omits `video/*` but media settings allow video.
+- **Fix:** Media Library `.webm` / video invisible in OS file picker when unified upload policy (It.78) is on — `accept` merges image + video (+ documents); `/api/media/formats` adds explicit `videoAccept`; default `media.allowedMimeTypes` includes `video/mp4,video/webm`.
+- **Fix:** YouTube/Vimeo embed for editors — default **EDITOR** role includes `content:embed-external`; public `.paginium-external-embed` styling. Custom ACL in Settings → Access control may need the permission enabled once.
+- **Fix:** Article save rejected pasted YouTube iframe — normalize embeds before validation; convert allowed iframe HTML / standalone video URLs to `:::embed`; strip embed blocks in security scan ([ISS-192](docs/ISSUES.md#iss-192)).
+- **Fix:** Markdown save false positive when prose documents `<iframe>` or HTML inside fenced/inline code (e.g. marketing article copy).
+- **Ops:** Refresh [ROADMAP.md](docs/ROADMAP.md) for It.70–77; [ROADMAP_SYNC.md](docs/en/operations/ROADMAP_SYNC.md) + `scripts/check-roadmap-stale.sh` guard against stale ⏳ rows.
+- **Security:** Privilege escalation alerts via `IncidentNotifier::notifySecurityEvent` (replaces SecurityLogger TODO).
+- **Fix:** YouTube/Vimeo in Markdown — CSP `frame-src` allows `youtube-nocookie.com` and `player.vimeo.com`; embed modal accepts full URLs; standalone YouTube/Vimeo URL on its own line renders as `:::embed` player (not a plain link).
+- **Fix:** Markdown editor paste — no longer blocks plain Markdown containing `<https://…>` or inline HTML; rich clipboard HTML falls back to `text/plain` (matches WYSIWYG); toast only when HTML is pasted without plain text ([ISS-190](docs/ISSUES.md#iss-190)).
+- **Fix:** Google Maps contact embed blocked by CSP — `frame-src` allows `https://www.google.com` in PHP middleware, Apache `.htaccess`, and **nginx** deploy snippets (`docs/deploy/nginx-security-headers-*.conf`, `docker/nginx/security-headers.conf`); rebuild FE after `public-theme-boot.js` replaces inline theme script (CSP `script-src 'self'`) ([ISS-191](docs/ISSUES.md#iss-191)).
+- **Analytics geography:** Visitor map uses Natural Earth land outline, corrected equirectangular positions (~143 country centroids + optional GeoIP lat/lon on visits), zoom/pan, and hover tooltips with masked sample IPs; tracker persists latitude/longitude/region from GeoIP.
+- **Admin dashboard:** Overview loads first (KPIs, health, analytics, log severity counts from `AdminCountsService`); audit stats / APM / scheduler chart defer until after first paint (`requestIdleCallback`) so heavy log scans no longer block the shell.
+- **Docs:** [PUBLIC_SITE_WORKLOG_2026-09-24_28.md](docs/en/operations/PUBLIC_SITE_WORKLOG_2026-09-24_28.md) — production incidents (footer version, blog CLS/404 flash, deploy CRLF, theme reload, showcase-hero, CTA); [ISSUES.md](docs/ISSUES.md) ISS-178–ISS-186.
+- **Widgets:** Public `[widget]` types `map-embed`, `data-table`, `bar-chart`, `form-cta` (server expand + `pgLayout.css`); Google Maps embed allow-list shared with contact page (`MapEmbedUrlGuard`).
+- **Public errors:** Settings → Layout slugs for custom **404** / **500** pages; built-in Paginium panels + `PublicRouteErrorBoundary` fallback.
+- **Analytics:** Geography tab — visitor dot map (country centroids, no third-party API) alongside country bar chart.
+- **Blog:** Article hero crop — editor drag preview + `heroFocusX/Y` / `heroFit`; detail defaults to letterbox (`contain`) so OG images are not random center-cropped; optional fill-frame crop; **article list cards** use the same contain/cover + focus rules (fixes 21:9 heroes cropped in `/blog` grid); docs [BLOG_ARTICLE_HERO.md](docs/en/user/BLOG_ARTICLE_HERO.md).
+- **Docs:** [ISSUES.md](docs/ISSUES.md) ISS-187–ISS-189 (dashboard defer, analytics geo map, blog list hero).
+- **Fix:** Landing shortcode primary CTA unreadable — `.paginium-prose a` no longer overrides `.pg-btn-primary` text color.
+- **Docs:** [SHORTCODES_AND_WIDGETS.md](docs/en/user/SHORTCODES_AND_WIDGETS.md) — syntax, inner markdown, widgets; landing page § `showcase-hero`; blog mini-series outline in `docs/marketing/ARTICLE_SERIES_SK.md`.
+- **Fix:** Landing `showcase-hero` invisible on public site — block no longer uses scroll-reveal (`pg-reveal`); CSS keeps legacy installs visible; bundled shortcode definition v2 via `seedMissingBundled`.
+- **Fix:** Landing `showcase-hero` / `.pg-reveal` blocks invisible on first paint — admin preview forced `opacity:1`; public site now reveals above-fold blocks immediately and re-binds scroll-reveal when page HTML loads.
+- **Fix:** Public light/dark mode survives reload — theme preference in `localStorage` is no longer blocked or cleared when functional cookies are declined; early `index.html` boot applies stored theme before React loads.
+- **Fix:** Public footer CMS version — `GET /api/settings/public` `cmsInfo.version` uses `AppVersion::current()` (was stuck on `VERSION` constant, e.g. beta.90); `AppVersion::VERSION` fallback stays aligned with the latest **tagged** release (`2.1.0-beta.94` until next tag ships).
+- **Fix:** Blog article-to-article navigation — no transient 404 when slug changes before fetch (skeleton + `useLayoutEffect` loading flag; stale `activeArticle` treated as in-flight).
+- **Fix:** Blog article-to-article navigation — stable skeleton instead of full-page spinner (lower CLS); reserved hero aspect ratio; in-prose `/blog/*` links use client routing.
+- **Fix:** Blog CLS follow-up — preserve measured article shell min-height across slug changes; comments loading placeholder; public layout flex-1 content well; theme shells fill viewport (`100dvh`).
+- **Fix:** PHPStan — `NormalizedImportRow` type lives on `ImportRowTypes` (import alias no longer conflicts with `ContentImportRowFactory` class).
+- **CMS migration:** Admin **Migrácia z CMS** (`/content-migration`) + CLI `content:import` — WordPress WXR (1.0–1.2), **Grav** `user/pages`, **Jekyll**, **Hugo** `content/`, **Ghost** JSON, Paginium JSON; ZIP auto-detect; dry-run default; slug collision → `import-{slug}`; media URLs unchanged (phase 1).
+- **Translations:** Admin **Apply edited translations** loads on-disk frontend catalogs via `GET /api/i18n/frontend-catalog` (sk + en) without `npm run build`; updated prod hints; save/restore still auto-refresh runtime i18n.
+- **Pages:** Unified header hero (auto / single / carousel / none) with **placement** (`auto`, `full-header`, `intro-card`, `landing-inline`), drag crop preview, home/landing routing fixes; backend `heroPlacement`; docs [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md).
+- **Fix:** Locale-scoped page saves (`locale` in PUT body) now persist hero front matter and SEO via `applyGlobalContentFields` (regression: placement reset to Auto after reload).
+- **Fix:** Page editor save always sent stale hero mode/placement (`pageHero` missing from `handleSave` dependencies); hero settings now persist on save and in full draft snapshots.
+- **Fix:** Public hero **full-header** and **landing-inline** rendering — embed/blog intro now shows full-width header band; landing-inline on non-landing layouts falls back to header band instead of hiding the image.
+- **Fix:** Blog landing loads `/api/pages/blog` (locale-aware) so hero front matter is not stuck on list defaults; full-header hero image spans the header band edge-to-edge.
+- **Pages:** **Full header** placement uses cover layout (full-bleed photo + centered title panel, Wix-style); blog intro breaks cover to viewport width while the text card stays in the nav content width.
+- **Docs:** [PAGE_HERO_IMAGES.md](docs/en/user/PAGE_HERO_IMAGES.md) — 21:9 / 2560×1097 hero specs, safe zone, AI prompt, OG notes (SK: `docs/sk/user/PAGE_HERO_IMAGES.md`).
+- **Fix:** Admin live preview stuck on “Rendering…” — stable default for `brokenLinkUrls` in `AdminBodyPreviewPanel` ([ISS-194](docs/ISSUES.md#iss-194)).
 
 <a id="release-2-1-0-beta-93"></a>
 

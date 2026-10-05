@@ -172,6 +172,42 @@ Legacy `price` / `period` still work when the toggle is off.
 
 ---
 
+## 7. Agency-style site (Kebite / Webflow template parity)
+
+Webflow **Kebite**-style agency templates combine hero, services, portfolio, team, pricing, FAQ, blog, and contact. PaginiumCMS does not ship a 1:1 clone, but the same **page structure** is achievable with bundled shortcodes, widgets, and normal pages/blog.
+
+| Kebite-style section | PaginiumCMS building blocks |
+|----------------------|----------------------------|
+| Hero + dual CTA | `[landing-hero …]` or `[showcase-hero …]` — bool toggles hide subtitle/CTA/media |
+| Logo / trust metrics | `[stats-row]` + `[stat-item]` or `[widget type="kpi-row" …/]` |
+| Services grid | `[feature-grid columns="3"]` + `[feature-card]` (inner markdown) |
+| “How we work” / steps | `[widget type="timeline" …/]` or numbered `[feature-card]` rows |
+| Portfolio / projects | It.65 **Feature gallery** → `[feature-gallery tag="portfolio" layout="grid" columns="3"/]` or `[gallery-carousel tag="…"/]` |
+| Team | Staff cards island (bundled shortcode with `data-feature-tag`) or `[feature-grid]` + photos in cards |
+| Testimonials | `[testimonial quote="…" author="…" role="…"/]` (repeat or alternate in `[section-band]`) |
+| Pricing | `[pricing-table billing-toggle="monthly-yearly" …]` + `[pricing-plan]` / `[pricing-feature]` |
+| FAQ | `[faq-list]` + `[faq-item question="…" answer="…"/]` |
+| CTA band | `[cta-banner title="…" cta="…" href="/contact"/]` or `[widget type="form-cta" href="/contact"/]` |
+| Contact / map | Contact page + `[widget type="map-embed" src="…"/]` (Google embed allow-list) |
+| Blog | Built-in `/blog` + article heroes; link from `[link-row]` + `[link-chip]` |
+| 404 | Publish page slug `404` → **Settings → Layout → notFoundPageSlug** |
+| Full-bleed band + motion | `[section-band]` — background image, overlay, `reveal` / `hover-effect` presets |
+
+**Suggested home page flow (markdown body):**
+
+1. `[landing-hero]` or `[showcase-hero]` with DAM hero image (`show-media="true"`).
+2. `[stats-row]` (clients, projects, years).
+3. `[section-head]` + `[feature-grid]` for services.
+4. `[feature-gallery]` or `[gallery-carousel]` for selected work.
+5. `[testimonial]` × 2–3 inside `[section-band]` for social proof.
+6. `[pricing-table]` if you sell packages.
+7. `[faq-list]` before footer CTA.
+8. `[cta-banner]` → `/contact`.
+
+Use **Layout template** `landing`, **Appearance** preset with strong primary color, and **Block outline** palette to drag the same blocks without typing tags. Live preview must finish loading after **beta.94** ([ISS-194](../../ISSUES.md#iss-194)).
+
+---
+
 ## Related
 
 - [Appearance and color schemes](THEMES.md)

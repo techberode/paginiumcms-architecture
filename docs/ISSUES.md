@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 29 September 2026 · register **ISS-001–ISS-193** · public-site batch **2.1.0-beta.93+** (Unreleased)
+> **Last updated:** 5 October 2026 · register **ISS-001–ISS-194** · public-site batch **`v2.1.0-beta.94`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -216,6 +216,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-191](#iss-191) | Contact Google Maps iframe blocked; inline theme script vs CSP | Medium (public UX) | ✅ Fixed — nginx `frame-src`; external theme boot JS |
 | [ISS-192](#iss-192) | Article save 400 — iframe in Markdown body | High (admin UX) | ✅ Fixed — normalize embeds before validate |
 | [ISS-193](#iss-193) | YouTube/Vimeo player blank on public site (Chrome, Floorp) | Medium (public UX) | ✅ Fixed — preserve embed iframe in sanitizer |
+| [ISS-194](#iss-194) | Admin live preview stuck on “Rendering…” | High (editor UX) | ✅ Fixed — stable preview effect deps |
 
 ## CI failures (GitHub Actions)
 
@@ -5876,7 +5877,7 @@ Requires `content:embed-external` to **save** `:::embed` blocks; normalized ifra
 | Field | Value |
 |---|---|
 | **Severity** | Medium (public UX) |
-| **Status** | ✅ Fixed (Unreleased) |
+| **Status** | ✅ Fixed (`v2.1.0-beta.94`) |
 | **Area** | Public content / `ContentSecuritySanitizer` |
 
 ### Symptom
@@ -5900,6 +5901,37 @@ Articles or pages contain a saved `:::embed` block (YouTube nocookie / Vimeo). S
 - Self-hosted **`:::video`** remains the preferred option when you control the file; embed is for YouTube/Vimeo URLs.
 
 User guide: [MEDIA_IN_CONTENT.md](en/user/MEDIA_IN_CONTENT.md).
+
+---
+
+## ISS-194 – Admin live preview stuck on “Rendering…”
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | High (editor UX) |
+| **Status** | ✅ Fixed (`v2.1.0-beta.94`) |
+| **Area** | Admin content preview / `AdminBodyPreviewPanel` |
+
+### Symptom
+
+Shortcodes, snippets, pages, and articles showed **ŽIVÝ NÁHĽAD / Renderujem náhľad…** indefinitely. `POST /api/admin/content/render-preview` often never completed from the UI perspective.
+
+### Root cause
+
+`AdminBodyPreviewPanel` used default parameter `brokenLinkUrls = []`. In JavaScript, that creates a **new array reference on every render** when the prop is omitted. The preview `useEffect` depended on `brokenLinkUrls`, so it re-ran continuously: debounce timers cleared, `loading` reset to `true`, and the fetch never reached `finally`.
+
+### Resolution
+
+- Stable module constant `EMPTY_BROKEN_LINK_URLS` when prop is omitted.
+- Effect dependency on `brokenLinksKey` (joined URLs) instead of array identity.
+- Vitest: parent re-render without `brokenLinkUrls` does not double-fetch.
+
+### Verification
+
+- `frontend/src/components/backend/AdminBodyPreviewPanel.test.tsx`
+- Manual: Shortcodes manager live preview completes after deploy.
 
 ---
 

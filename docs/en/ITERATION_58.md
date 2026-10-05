@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | ✅ 58b–58f + **58f-h** canvas shipped; **58g** compile/cache with It.48 in `beta.89` |
+| Status | ✅ 58b–58g + **58f-i** composer wave (islands, lightbox) in **`v2.1.0-beta.94`** |
 | Release / period | 58c: 2.1.0-beta.23 |
 | Record type | historical product and architecture record |
 

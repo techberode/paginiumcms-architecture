@@ -6,6 +6,7 @@ import { useI18n } from '../../context/I18nContext';
 import apiClient, { type PaginationMeta } from '../../api/client';
 import { Article, Page } from '../../api/types';
 import { MarkdownRenderer } from '../common/MarkdownRenderer';
+import { PublicNotFoundContent } from './PublicNotFoundContent';
 import { ArticleComments } from './ArticleComments';
 import {
   Calendar,
@@ -456,19 +457,7 @@ export const BlogRenderer: React.FC = () => {
   }
 
   if (slug && !detailLoading && !articleMatchesRoute && !articleSlugStale) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-theme-text">{t('public.errors.notFoundCode')}</h1>
-        <p className="mt-2 text-theme-text-muted">{t('public.blog.errors.articleNotFound')}</p>
-        <button
-          type="button"
-          onClick={() => navigate('/blog')}
-          className={`mt-6 ${BTN_PRIMARY} px-6 py-2.5 text-sm`}
-        >
-          {t('public.blog.backToBlog')}
-        </button>
-      </div>
-    );
+    return <PublicNotFoundContent missingSlug={`blog/${slug}`} />;
   }
 
   if (articleMatchesRoute && activeArticle) {

@@ -36,4 +36,26 @@ describe('LayoutSettingsPanel', () => {
       shouldValidate: true,
     });
   });
+
+  it('exposes custom 404 and 500 slug fields', () => {
+    const values: Record<string, unknown> = {
+      builderMode: 'templates',
+      defaultTemplate: 'hero-content',
+      developerRequiresAdmin: true,
+      notFoundPageSlug: '404',
+    };
+
+    renderWithProviders(
+      <LayoutSettingsPanel
+        watch={(name) => values[name]}
+        setValue={(name, value) => {
+          values[name] = value;
+        }}
+      />
+    );
+
+    expect(screen.getByTestId('layout-not-found-page-slug')).toHaveValue('404');
+    fireEvent.change(screen.getByTestId('layout-not-found-page-slug'), { target: { value: 'strateny' } });
+    expect(values.notFoundPageSlug).toBe('strateny');
+  });
 });

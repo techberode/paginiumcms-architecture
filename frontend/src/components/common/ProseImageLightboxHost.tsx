@@ -3,6 +3,7 @@ import { PaginiumMediaGallery } from '../frontend/mediaGallery/PaginiumMediaGall
 import { proseLightboxSlidesToMedia } from '../frontend/mediaGallery/slides';
 import {
   collectProseLightboxSlides,
+  getProseImageGalleryGroup,
   isProseLightboxClickTarget,
   proseImageFullSizeSrc,
   type ProseLightboxSlide,
@@ -30,8 +31,9 @@ export const ProseImageLightboxHost: React.FC<ProseImageLightboxHostProps> = ({ 
       return;
     }
     const fullSrc = proseImageFullSizeSrc(target.currentSrc || target.src);
+    const galleryGroup = getProseImageGalleryGroup(target);
 
-    const collected = collectProseLightboxSlides(containerRef.current);
+    const collected = collectProseLightboxSlides(containerRef.current, { galleryGroup });
     const index = collected.findIndex((slide) => slide.src === fullSrc);
     setSlides(collected);
     setActiveIndex(index >= 0 ? index : 0);

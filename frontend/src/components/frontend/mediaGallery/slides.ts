@@ -11,6 +11,7 @@ export function proseLightboxSlidesToMedia(slides: ProseLightboxSlide[]): Pagini
       src: slide.src,
       alt: slide.alt,
       description: caption !== '' ? caption : alt !== '' ? alt : undefined,
+      excludeFromSlideshow: slide.excludeFromSlideshow,
     };
   });
 }
