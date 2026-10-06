@@ -1,6 +1,6 @@
 ---
 title: Shortcode cookbook
-description: Plain-language examples for every bundled shortcode and widget (beta.95)
+description: Plain-language examples for every bundled shortcode and widget (beta.96)
 icon: material/book-open-page-variant
 ---
 
@@ -56,7 +56,7 @@ Link visitors with `https://yoursite/pricing#pricing`.
 ### `section-band` — full-width wrapper (nested blocks inside)
 
 ```markdown
-[section-band tone="muted" padding="lg"]
+[section-band tone="muted" padding="lg" reveal="scroll-stagger" hover-effect="lift"]
 [stats-row animate="count-up"]
 [stat-item value="99.9%" label="Uptime"/]
 [stat-item value="SK/EN" label="Locales"/]
@@ -64,7 +64,21 @@ Link visitors with `https://yoursite/pricing#pricing`.
 [/section-band]
 ```
 
-Open the insert modal for allowed `tone`, `padding`, and motion attrs.
+**Motion (beta.96):** `reveal` — `scroll` (default fade-up), `scroll-stagger`, `slide-left`, `slide-right`, `scale-in`, `none`. **Hover on nested cards:** `hover-effect` — `lift`, `glow`, `tilt-3d`, `border-sweep`, `none`. Respects `prefers-reduced-motion`.
+
+Open the insert modal for `tone`, `padding`, background, and the attrs above.
+
+### `visual-frame` — typography + scroll motion (beta.96)
+
+Wrap any inner shortcode when the insert modal offers **Scroll effect**:
+
+```markdown
+[visual-frame motion="fade-up" motion-delay="short"]
+[alert-box tone="info" title="Tip"]Save often — flat files are your database.[/alert-box]
+[/visual-frame]
+```
+
+`motion`: `none`, `fade-up`, `stagger` (delays direct children). Same public hook as section-band (`useLandingReveal`).
 
 ### `stats-row` + `stat-item`
 
@@ -162,6 +176,17 @@ Migration note: re-save the page after upgrading CMS so bundled shortcode versio
 [feature-card title="Centered card"]Narrow column for readability.[/feature-card]
 [/visual-frame]
 ```
+
+**Scroll effect (Phase B):** in the insert modal, **Scroll effect** → `motion="fade-up"` or `stagger` (animates direct children inside the frame). Stored on the wrapper:
+
+```markdown
+[visual-frame align="center" max-width="960" motion="stagger" motion-delay="short"]
+[stat-item value="24/7" label="Support"/]
+[stat-item value="SK/EN" label="Locales"/]
+[/visual-frame]
+```
+
+Public site: `useLandingReveal` adds `pg-motion-visible` when the block enters the viewport; respects `prefers-reduced-motion`.
 
 ---
 

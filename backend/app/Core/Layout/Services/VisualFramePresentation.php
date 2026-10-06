@@ -25,6 +25,12 @@ final class VisualFramePresentation
     /** @var list<string> */
     public const MARKS = ['none', 'soft', 'strong'];
 
+    /** @var list<string> */
+    public const MOTIONS = ['none', 'fade-up', 'stagger'];
+
+    /** @var list<string> */
+    public const MOTION_DELAYS = ['normal', 'short'];
+
     /**
      * @return array<string, array<string, mixed>>
      */
@@ -39,6 +45,8 @@ final class VisualFramePresentation
             'bold' => ['type' => 'bool'],
             'italic' => ['type' => 'bool'],
             'underline' => ['type' => 'bool'],
+            'motion' => ['type' => 'enum', 'options' => self::MOTIONS],
+            'motion-delay' => ['type' => 'enum', 'options' => self::MOTION_DELAYS],
         ];
     }
 
@@ -77,6 +85,16 @@ final class VisualFramePresentation
         }
         if ($maxWidth !== null) {
             $classes[] = 'pg-visual-frame--max-' . $maxWidth;
+        }
+
+        $motion = self::normalizeMotion($attrs['motion'] ?? 'none');
+        $motionDelay = self::normalizeMotionDelay($attrs['motion-delay'] ?? 'normal');
+        if ($motion !== 'none') {
+            $classes[] = 'pg-motion';
+            $classes[] = 'pg-motion--' . $motion;
+            if ($motionDelay === 'short') {
+                $classes[] = 'pg-motion-delay-short';
+            }
         }
 
         $classAttr = htmlspecialchars(implode(' ', $classes), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -132,5 +150,19 @@ final class VisualFramePresentation
     public static function isTruthy(string $raw): bool
     {
         return filter_var(trim($raw), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    public static function normalizeMotion(string $raw): string
+    {
+        $value = strtolower(trim($raw));
+
+        return in_array($value, self::MOTIONS, true) ? $value : 'none';
+    }
+
+    public static function normalizeMotionDelay(string $raw): string
+    {
+        $value = strtolower(trim($raw));
+
+        return in_array($value, self::MOTION_DELAYS, true) ? $value : 'normal';
     }
 }

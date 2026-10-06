@@ -51,6 +51,12 @@ final class SectionBandRendererTest extends TestCase
         $static = SectionBandRenderer::render(['reveal' => 'none', 'hover-effect' => 'glow'], '<p>x</p>');
         $this->assertStringNotContainsString('pg-reveal', $static);
         $this->assertStringContainsString('pg-section-band--hover-glow', $static);
+
+        $scale = SectionBandRenderer::render(['reveal' => 'scale-in'], '<p>x</p>');
+        $this->assertStringContainsString('pg-reveal--scale-in', $scale);
+
+        $tilt = SectionBandRenderer::render(['hover-effect' => 'tilt-3d'], '<p>x</p>');
+        $this->assertStringContainsString('pg-section-band--hover-tilt-3d', $tilt);
     }
 
     public function testRejectsInvalidAnchorAndExternalImage(): void

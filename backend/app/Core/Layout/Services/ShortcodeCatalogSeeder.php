@@ -221,7 +221,7 @@ final class ShortcodeCatalogSeeder
             ],
             'section-band' => [
                 'name' => 'section-band',
-                'version' => 2,
+                'version' => 3,
                 'attrs' => SectionBandRenderer::attributeSchema(),
                 'expand' => '<section class="pg-section-band"><div class="pg-section-band__inner">{{content}}</div></section>',
             ],
@@ -338,7 +338,7 @@ final class ShortcodeCatalogSeeder
             ],
             'visual-frame' => [
                 'name' => 'visual-frame',
-                'version' => 1,
+                'version' => 2,
                 'attrs' => VisualFramePresentation::attributeSchema(),
                 'expand' => '<div class="pg-visual-frame">{{content}}</div>',
             ],

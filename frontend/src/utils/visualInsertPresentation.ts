@@ -1,5 +1,7 @@
 /** Mirrors backend VisualFramePresentation for insert modals. */
 
+import type { VisualMotionDelay, VisualMotionPreset } from '../motion/motionPresets';
+
 export type VisualAlign = 'left' | 'center' | 'right';
 export type VisualTextSize = 'sm' | 'md' | 'lg' | 'xl';
 export type VisualTone = 'default' | 'muted' | 'primary' | 'danger';
@@ -14,6 +16,8 @@ export interface VisualInsertPresentation {
   bold: boolean;
   italic: boolean;
   underline: boolean;
+  motion: VisualMotionPreset;
+  motionDelay: VisualMotionDelay;
 }
 
 export const VISUAL_MAX_WIDTH_MIN = 280;
@@ -29,6 +33,8 @@ export const DEFAULT_VISUAL_PRESENTATION: VisualInsertPresentation = {
   bold: false,
   italic: false,
   underline: false,
+  motion: 'none',
+  motionDelay: 'normal',
 };
 
 export function isDefaultVisualPresentation(presentation: VisualInsertPresentation): boolean {
@@ -41,6 +47,7 @@ export function isDefaultVisualPresentation(presentation: VisualInsertPresentati
     && !presentation.bold
     && !presentation.italic
     && !presentation.underline
+    && presentation.motion === 'none'
   );
 }
 
@@ -55,6 +62,13 @@ export function buildVisualFrameAttrString(presentation: VisualInsertPresentatio
     `italic="${presentation.italic ? 'true' : 'false'}"`,
     `underline="${presentation.underline ? 'true' : 'false'}"`,
   ];
+
+  if (presentation.motion !== 'none') {
+    parts.push(`motion="${presentation.motion}"`);
+    if (presentation.motionDelay === 'short') {
+      parts.push('motion-delay="short"');
+    }
+  }
 
   return parts.join(' ');
 }

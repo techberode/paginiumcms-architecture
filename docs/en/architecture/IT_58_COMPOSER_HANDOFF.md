@@ -33,7 +33,7 @@
 | **58f-i-g** | `PaginiumMediaGallery` (YARL) — prose + feature gallery lightbox | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | **58f-i-h** | Prose insert: `data-gallery` groups + `data-slideshow="off"` | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 
-**Release:** **`v2.1.0-beta.95`** (2026-10-06) — gallery/lightbox wave — [RELEASE_2_1_0_BETA_95.md](../RELEASE_2_1_0_BETA_95.md) (prior **`beta.94`**: [RELEASE_2_1_0_BETA_94.md](../RELEASE_2_1_0_BETA_94.md)).
+**Release:** **`v2.1.0-beta.96`** (2026-10-06) — Experience B1–B2 motion — [RELEASE_2_1_0_BETA_96.md](../RELEASE_2_1_0_BETA_96.md) · gallery/lightbox **`beta.95`**: [RELEASE_2_1_0_BETA_95.md](../RELEASE_2_1_0_BETA_95.md).
 
 **Admin:** after deploy, open editor or `GET /api/admin/shortcodes` once so `seedMissingBundled()` upgrades **feature-gallery v2**, **section-band v2**, **pricing-table/plan v2**, **stats-row v2**.
 

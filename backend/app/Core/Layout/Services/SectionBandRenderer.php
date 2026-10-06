@@ -29,10 +29,10 @@ final class SectionBandRenderer
     private const TONES = ['none', 'muted', 'accent'];
 
     /** @var list<string> */
-    private const REVEALS = ['none', 'scroll'];
+    private const REVEALS = ['none', 'scroll', 'scroll-stagger', 'slide-left', 'slide-right', 'scale-in'];
 
     /** @var list<string> */
-    private const HOVER_EFFECTS = ['none', 'lift', 'glow'];
+    private const HOVER_EFFECTS = ['none', 'lift', 'glow', 'tilt-3d', 'border-sweep'];
 
     /**
      * @return array<string, array<string, mixed>>
@@ -47,8 +47,8 @@ final class SectionBandRenderer
             'bg-attachment' => ['type' => 'enum', 'options' => ['', 'scroll', 'fixed']],
             'layout' => ['type' => 'enum', 'options' => ['', 'full', 'contained', 'two-column']],
             'tone' => ['type' => 'enum', 'options' => ['', 'none', 'muted', 'accent']],
-            'reveal' => ['type' => 'enum', 'options' => ['', 'scroll', 'none']],
-            'hover-effect' => ['type' => 'enum', 'options' => ['', 'none', 'lift', 'glow']],
+            'reveal' => ['type' => 'enum', 'options' => ['', 'scroll', 'scroll-stagger', 'slide-left', 'slide-right', 'scale-in', 'none']],
+            'hover-effect' => ['type' => 'enum', 'options' => ['', 'none', 'lift', 'glow', 'tilt-3d', 'border-sweep']],
         ];
     }
 
@@ -68,8 +68,8 @@ final class SectionBandRenderer
         $hoverEffect = self::enum($attrs['hover-effect'] ?? '', self::HOVER_EFFECTS, 'none');
 
         $classes = ['pg-section-band'];
-        if ($reveal === 'scroll') {
-            $classes[] = 'pg-reveal';
+        foreach (self::revealClasses($reveal) as $revealClass) {
+            $classes[] = $revealClass;
         }
         if ($hoverEffect !== 'none') {
             $classes[] = 'pg-section-band--hover-' . $hoverEffect;
@@ -114,6 +114,23 @@ final class SectionBandRenderer
         $html .= '<div class="' . $innerClass . '">' . $innerHtml . '</div></section>';
 
         return $html;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function revealClasses(string $reveal): array
+    {
+        if ($reveal === 'none') {
+            return [];
+        }
+
+        $classes = ['pg-reveal'];
+        if ($reveal === 'scroll') {
+            return $classes;
+        }
+
+        return [...$classes, 'pg-reveal--' . $reveal];
     }
 
     private static function anchorId(string $raw): string

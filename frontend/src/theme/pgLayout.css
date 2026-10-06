@@ -45,8 +45,94 @@
   transform: translateY(0);
 }
 
+.pg-reveal--scale-in {
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.pg-reveal--scale-in.pg-reveal-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.pg-reveal--slide-left {
+  opacity: 0;
+  transform: translateX(-2rem);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
+}
+
+.pg-reveal--slide-left.pg-reveal-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pg-reveal--slide-right {
+  opacity: 0;
+  transform: translateX(2rem);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
+}
+
+.pg-reveal--slide-right.pg-reveal-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *,
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pg-reveal--scroll-stagger .pg-section-band__inner > *,
+.pg-reveal--scroll-stagger .pg-visual-frame__inner > * {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *:nth-child(1),
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > *:nth-child(1) {
+  transition-delay: 0ms;
+}
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *:nth-child(2),
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > *:nth-child(2) {
+  transition-delay: 80ms;
+}
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *:nth-child(3),
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > *:nth-child(3) {
+  transition-delay: 160ms;
+}
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *:nth-child(4),
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > *:nth-child(4) {
+  transition-delay: 240ms;
+}
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *:nth-child(5),
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > *:nth-child(5) {
+  transition-delay: 320ms;
+}
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-section-band__inner > *:nth-child(6),
+.pg-reveal--scroll-stagger.pg-reveal-visible .pg-visual-frame__inner > *:nth-child(6) {
+  transition-delay: 400ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pg-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .pg-reveal--scroll-stagger .pg-section-band__inner > *,
+  .pg-reveal--scroll-stagger .pg-visual-frame__inner > * {
     opacity: 1;
     transform: none;
     transition: none;
@@ -404,11 +490,72 @@
     0 12px 32px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
+.pg-section-band--hover-tilt-3d .pg-card,
+.pg-section-band--hover-tilt-3d .pg-pricing-plan,
+.pg-section-band--hover-tilt-3d .pg-feature-gallery-item {
+  transition: transform 0.2s ease;
+  transform-style: preserve-3d;
+}
+
+.pg-section-band--hover-tilt-3d .pg-card:hover,
+.pg-section-band--hover-tilt-3d .pg-pricing-plan:hover,
+.pg-section-band--hover-tilt-3d .pg-feature-gallery-item:hover {
+  transform: perspective(600px) rotateX(2deg) rotateY(-2deg) translateY(-2px);
+}
+
+.pg-section-band--hover-border-sweep .pg-card,
+.pg-section-band--hover-border-sweep .pg-pricing-plan {
+  position: relative;
+  overflow: hidden;
+}
+
+.pg-section-band--hover-border-sweep .pg-card::after,
+.pg-section-band--hover-border-sweep .pg-pricing-plan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--pg-sweep-angle, 0deg),
+    transparent 70%,
+    color-mix(in srgb, var(--color-primary) 85%, white) 100%
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.pg-section-band--hover-border-sweep .pg-card:hover::after,
+.pg-section-band--hover-border-sweep .pg-pricing-plan:hover::after {
+  opacity: 1;
+  animation: pg-sweep-rotate 2s linear infinite;
+}
+
+@keyframes pg-sweep-rotate {
+  to {
+    --pg-sweep-angle: 360deg;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pg-section-band--hover-lift .pg-card:hover,
   .pg-section-band--hover-lift .pg-pricing-plan:hover,
-  .pg-section-band--hover-lift .pg-feature-gallery-item:hover {
+  .pg-section-band--hover-lift .pg-feature-gallery-item:hover,
+  .pg-section-band--hover-tilt-3d .pg-card:hover,
+  .pg-section-band--hover-tilt-3d .pg-pricing-plan:hover,
+  .pg-section-band--hover-tilt-3d .pg-feature-gallery-item:hover {
     transform: none;
+  }
+
+  .pg-section-band--hover-border-sweep .pg-card:hover::after,
+  .pg-section-band--hover-border-sweep .pg-pricing-plan:hover::after {
+    animation: none;
+    opacity: 0;
   }
 }
 
@@ -632,6 +779,58 @@
 .paginium-prose .pg-visual-frame--bold .pg-visual-frame__inner { font-weight: 700; }
 .paginium-prose .pg-visual-frame--italic .pg-visual-frame__inner { font-style: italic; }
 .paginium-prose .pg-visual-frame--underline .pg-visual-frame__inner { text-decoration: underline; }
+
+/* [visual-frame] motion presets (Experience Phase B — useLandingReveal). */
+.paginium-prose .pg-motion--fade-up {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
+}
+
+.paginium-prose .pg-motion--fade-up.pg-motion-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.paginium-prose .pg-motion--stagger .pg-visual-frame__inner > * {
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+
+.paginium-prose .pg-motion--stagger.pg-motion-delay-short .pg-visual-frame__inner > * {
+  transition-duration: 0.35s;
+}
+
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > *:nth-child(1) { transition-delay: 0ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > *:nth-child(2) { transition-delay: 80ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > *:nth-child(3) { transition-delay: 160ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > *:nth-child(4) { transition-delay: 240ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > *:nth-child(5) { transition-delay: 320ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-visible .pg-visual-frame__inner > *:nth-child(6) { transition-delay: 400ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-delay-short.pg-motion-visible .pg-visual-frame__inner > *:nth-child(2) { transition-delay: 50ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-delay-short.pg-motion-visible .pg-visual-frame__inner > *:nth-child(3) { transition-delay: 100ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-delay-short.pg-motion-visible .pg-visual-frame__inner > *:nth-child(4) { transition-delay: 150ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-delay-short.pg-motion-visible .pg-visual-frame__inner > *:nth-child(5) { transition-delay: 200ms; }
+.paginium-prose .pg-motion--stagger.pg-motion-delay-short.pg-motion-visible .pg-visual-frame__inner > *:nth-child(6) { transition-delay: 250ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .paginium-prose .pg-motion--fade-up,
+  .paginium-prose .pg-motion--stagger .pg-visual-frame__inner > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
 
 .paginium-prose .paginium-figure {
   margin: 1.25rem 0;

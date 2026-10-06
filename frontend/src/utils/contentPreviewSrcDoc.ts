@@ -18,7 +18,7 @@ const PREVIEW_BASE_CSS = [
   'h2{font-size:1.5rem;font-weight:700;margin:1.5rem 0 0.75rem;}',
   'p{margin:0 0 1rem;}',
   '/* Landing reveal is JS-driven on the public site; keep blocks visible in the sandbox. */',
-  '.pg-reveal,.pg-reveal-visible{opacity:1!important;transform:none!important;transition:none!important;}',
+  '.pg-reveal,.pg-reveal-visible,.pg-motion,.pg-motion-visible,.pg-motion--stagger .pg-visual-frame__inner>*{opacity:1!important;transform:none!important;transition:none!important;}',
 ].join('');
 
 function embedPreviewCss(css: string): string {

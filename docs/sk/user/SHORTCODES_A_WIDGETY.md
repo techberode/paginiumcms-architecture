@@ -59,7 +59,7 @@ Ak na webe vidíš surový text `[showcase-hero`, tag je vypnutý, preklep, aleb
 | `faq-list` + `faq-item` | FAQ (`<details>`) |
 | `link-row` + `link-chip` | Riadok pill odkazov |
 | `coming-soon` | „Pripravujeme“ panel |
-| `visual-frame` | Zarovnanie / max šírka (často z insert modalu) |
+| `visual-frame` | Zarovnanie / max šírka + **efekt scrollu** (`motion="fade-up"` / `stagger`) |
 
 Ukážka hero:
 

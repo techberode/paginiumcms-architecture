@@ -98,6 +98,40 @@ export const VisualInsertTypographyControls: React.FC<VisualInsertTypographyCont
         </select>
       </label>
 
+      <label className="block text-sm text-gray-700 dark:text-gray-300">
+        {t('editor.visualInsert.motionLabel')}
+        <select
+          className="form-input mt-1 w-full"
+          value={value.motion}
+          onChange={(e) =>
+            onChange({ ...value, motion: e.target.value as VisualInsertPresentation['motion'] })
+          }
+        >
+          <option value="none">{t('editor.visualInsert.motionNone')}</option>
+          <option value="fade-up">{t('editor.visualInsert.motionFadeUp')}</option>
+          <option value="stagger">{t('editor.visualInsert.motionStagger')}</option>
+        </select>
+      </label>
+
+      {value.motion !== 'none' ? (
+        <label className="block text-sm text-gray-700 dark:text-gray-300">
+          {t('editor.visualInsert.motionDelayLabel')}
+          <select
+            className="form-input mt-1 w-full"
+            value={value.motionDelay}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                motionDelay: e.target.value as VisualInsertPresentation['motionDelay'],
+              })
+            }
+          >
+            <option value="normal">{t('editor.visualInsert.motionDelayNormal')}</option>
+            <option value="short">{t('editor.visualInsert.motionDelayShort')}</option>
+          </select>
+        </label>
+      ) : null}
+
       <div className="flex flex-wrap gap-3 text-sm text-gray-700 dark:text-gray-300">
         <label className="inline-flex items-center gap-2">
           <input

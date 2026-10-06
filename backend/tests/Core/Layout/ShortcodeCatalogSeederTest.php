@@ -160,7 +160,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->assertArrayHasKey('billing-toggle', $definition['attrs']);
     }
 
-    public function testSeedMissingBundledUpgradesSectionBandToV2EffectAttrs(): void
+    public function testSeedMissingBundledUpgradesSectionBandToV3MotionAttrs(): void
     {
         $this->seeder->seedIfEmpty();
         $this->manager->save('section-band', json_encode([
@@ -177,8 +177,9 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $loaded = $this->manager->get('section-band');
         $definition = $loaded['definition'];
         $this->assertIsArray($definition);
-        $this->assertSame(2, (int) ($definition['version'] ?? 0));
+        $this->assertSame(3, (int) ($definition['version'] ?? 0));
         $this->assertArrayHasKey('hover-effect', $definition['attrs']);
+        $this->assertArrayHasKey('reveal', $definition['attrs']);
     }
 
     public function testSeedMissingBundledUpgradesFeatureGalleryToV2LayoutAttrs(): void

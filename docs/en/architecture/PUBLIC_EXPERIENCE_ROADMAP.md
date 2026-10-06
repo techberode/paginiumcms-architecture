@@ -90,19 +90,23 @@ Do **not** invent new iteration numbers unless added to [CONTINUATION.md](../CON
 
 ### Phase B — **Motion preset library** (highest agency impact)
 
-**User story:** When inserting any shortcode or widget in the visual modal, operator selects **Effect: None | Fade up | Stagger children | …** once; effect applies on **public** site everywhere that block appears (pages, articles, snippets).
+**Status:** ✅ **B1 + B2 shipped** (`beta.96`) — `[visual-frame]` motion; `[section-band]` extended `reveal` / `hover-effect` (seeder v3); public `useLandingReveal` + `pgLayout.css`.
 
-**Recommended storage:** extend **`[visual-frame]`** (already used for layout/typography in insert modals):
+**User story:** When inserting any shortcode or widget in the visual modal, operator selects **Effect: None | Fade up | Stagger children** once; effect applies on the **public** site wherever that wrapped block appears.
 
-- New attrs: `motion`, optional `motion-delay` (enum: `none|short|normal`), `motion-scope` (`self|children` where safe).
-- PHP: `VisualFramePresentation` emits `pg-motion--{preset}` + allow-listed `data-motion` ([`HtmlDomSanitizer.php`](../../../backend/app/Core/Security/Services/HtmlDomSanitizer.php)).
-- FE public: **`MotionFrameHost`** or enhance island split—`IntersectionObserver` + CSS variables for stagger; one module `frontend/src/motion/` (registry + tests).
-- FE admin: extend `visualInsertPresentation.ts`, `ShortcodeInsertModal`, `WidgetPicker`; SK/EN labels.
-- **Reduced motion:** preset `none` or CSS `@media (prefers-reduced-motion: reduce)`.
+**Storage:** **`[visual-frame]`** wrapper (layout/typography + motion):
 
-**Out of scope for v1:** custom easing curves, per-element timeline editor, author keyframes.
+- Attrs: `motion` (`none|fade-up|stagger`), `motion-delay` (`normal|short`).
+- PHP: `VisualFramePresentation` → classes `pg-motion`, `pg-motion--{preset}`.
+- FE public: extended `useLandingReveal` (`pg-motion-visible`); CSS stagger up to 6 direct children.
+- FE admin: `VisualInsertTypographyControls`, SK/EN labels.
+- **Reduced motion:** CSS `@media (prefers-reduced-motion: reduce)` + IO fallback.
 
-**Exit:** two different client landings can share the same blocks but **feel** different via motion + composition, not only `primary` color.
+**Still planned (B3+):** reading progress + View Transitions — [PRODUCT_GROWTH_PROPOSALS.md](PRODUCT_GROWTH_PROPOSALS.md) §2.3–2.4; Phase C reference seeds.
+
+**Out of scope:** custom easing editor, author keyframes, CDN animation libs.
+
+**Exit:** two landings can share blocks but **feel** different via motion + composition, not only `primary` color.
 
 ### Phase C — **Reference compositions** (anti–spreadsheet proof)
 

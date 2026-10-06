@@ -7,13 +7,13 @@ function revealAll(nodes: Iterable<HTMLElement>): void {
 }
 
 /** Blocks already on screen should not stay at opacity:0 (admin preview forces this; public IO can miss above-fold heroes). */
-function revealIfInViewport(node: HTMLElement): boolean {
+function revealIfInViewport(node: HTMLElement, visibleClass: 'pg-reveal-visible' | 'pg-motion-visible'): boolean {
   const rect = node.getBoundingClientRect();
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
   if (rect.bottom <= 0 || rect.top >= viewportHeight) {
     return false;
   }
-  node.classList.add('pg-reveal-visible');
+  node.classList.add(visibleClass);
   return true;
 }
 
@@ -38,14 +38,18 @@ export function useLandingReveal(
     }
 
     const attach = (): (() => void) | undefined => {
-      const nodes = root.querySelectorAll<HTMLElement>('.pg-reveal');
-      if (nodes.length === 0) {
+      const revealNodes = root.querySelectorAll<HTMLElement>('.pg-reveal');
+      const motionNodes = root.querySelectorAll<HTMLElement>('.pg-motion');
+      if (revealNodes.length === 0 && motionNodes.length === 0) {
         return undefined;
       }
 
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (reducedMotion || typeof IntersectionObserver === 'undefined') {
-        revealAll(nodes);
+        revealAll(revealNodes);
+        for (const node of motionNodes) {
+          node.classList.add('pg-motion-visible');
+        }
         return undefined;
       }
 
@@ -53,16 +57,26 @@ export function useLandingReveal(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
-              entry.target.classList.add('pg-reveal-visible');
-              observer.unobserve(entry.target);
+              const el = entry.target;
+              if (el.classList.contains('pg-motion')) {
+                el.classList.add('pg-motion-visible');
+              } else {
+                el.classList.add('pg-reveal-visible');
+              }
+              observer.unobserve(el);
             }
           });
         },
         { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
       );
 
-      nodes.forEach((node) => {
-        if (!revealIfInViewport(node)) {
+      revealNodes.forEach((node) => {
+        if (!revealIfInViewport(node, 'pg-reveal-visible')) {
+          observer.observe(node);
+        }
+      });
+      motionNodes.forEach((node) => {
+        if (!revealIfInViewport(node, 'pg-motion-visible')) {
           observer.observe(node);
         }
       });

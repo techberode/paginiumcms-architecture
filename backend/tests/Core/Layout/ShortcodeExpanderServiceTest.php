@@ -407,6 +407,17 @@ JSON;
         $this->assertStringNotContainsString('[visual-frame', $result);
     }
 
+    public function testExpandsVisualFrameWithMotionPreset(): void
+    {
+        $markdown = '[visual-frame motion="fade-up" align="center" max-width="720" text-size="md" tone="default" mark="none" bold="false" italic="false" underline="false"]'
+            . '[alert-box tone="info"]Motion frame[/alert-box][/visual-frame]';
+
+        $result = $this->expander->expand($markdown);
+
+        $this->assertStringContainsString('pg-motion--fade-up', $result);
+        $this->assertStringContainsString('pg-alert', $result);
+    }
+
     private function removeDir(string $dir): void
     {
         if (!is_dir($dir)) {

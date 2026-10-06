@@ -13,15 +13,15 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Docs:** [PUBLIC_EXPERIENCE_ROADMAP.md](docs/en/architecture/PUBLIC_EXPERIENCE_ROADMAP.md) — Phase B motion presets (next).
+- **Experience Phase C:** reference landing seeds — [PUBLIC_EXPERIENCE_ROADMAP.md](docs/en/architecture/PUBLIC_EXPERIENCE_ROADMAP.md).
 - **Optional:** 58f-i-d section background crossfade; callout colors → `--color-primary`
-- **Deferred:** It.97 CSP/embed facades
-- **Marketing (SK drafts):** publish `docs/marketing/ARTICLE_30–33_*.md` when ready.
+- **Deferred:** It.97 CSP/embed facades · in-CMS docs portal — [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md)
 
 ## Release index
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.96`](#release-2-1-0-beta-96) | 2026-10-06 | Experience B1 visual-frame motion · B2 section-band reveal/hover v3 · It.98/growth/docs portal plan · SK marketing drafts |
 | [`2.1.0-beta.95`](#release-2-1-0-beta-95) | 2026-10-06 | It.58f-i-i/j/k media gallery + unified lightbox · feature gallery deep links · shortcode cookbook docs |
 | [`2.1.0-beta.94`](#release-2-1-0-beta-94) | 2026-10-05 | It.58f-i islands + lightbox g/h · custom 404 · editorial · live preview fix · composer handoff |
 | [`2.1.0-beta.93`](#release-2-1-0-beta-93) | 2026-09-24 | Footer tech stack · desk inbox sync · text scale · blog layout · Vitest/palette fixes · Site Design docs |
@@ -185,6 +185,20 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ---
 
+
+<a id="release-2-1-0-beta-96"></a>
+
+## [2.1.0-beta.96] – 2026-10-06
+
+Experience **Phase B1–B2** motion, planning docs, and SK publication drafts with GitHub doc links.
+
+Release notes: [RELEASE_2_1_0_BETA_96.md](docs/en/RELEASE_2_1_0_BETA_96.md)
+
+### Shipped (summary)
+
+- **Experience B1:** `[visual-frame]` attrs `motion` / `motion-delay` — `VisualFramePresentation`, insert modal **Scroll effect**, `useLandingReveal` + `pgLayout.css`; seeder **visual-frame v2**.
+- **Experience B2:** `[section-band]` — `reveal` (`scroll`, `scroll-stagger`, `slide-left`, `slide-right`, `scale-in`, `none`); `hover-effect` adds `tilt-3d`, `border-sweep`; `SectionBandRenderer` + seeder **section-band v3**; PHPUnit + reduced-motion CSS.
+- **Docs:** [ITERATION_98.md](docs/en/ITERATION_98.md) · [PRODUCT_GROWTH_PROPOSALS.md](docs/en/architecture/PRODUCT_GROWTH_PROPOSALS.md) · [PUBLIC_EXPERIENCE_ROADMAP.md](docs/en/architecture/PUBLIC_EXPERIENCE_ROADMAP.md) (B1/B2 status) · [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md) · cookbook motion sections · SK [docs/sk/marketing/](docs/sk/marketing/README.md) articles 34–36.
 
 <a id="release-2-1-0-beta-95"></a>
 
