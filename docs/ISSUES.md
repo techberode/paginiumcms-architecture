@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 5 October 2026 · register **ISS-001–ISS-194** · public-site batch **`v2.1.0-beta.94`**
+> **Last updated:** 6 October 2026 · register **ISS-001–ISS-194** · latest public release tag **`v2.1.0-beta.96`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 

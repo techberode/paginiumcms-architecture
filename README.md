@@ -1,20 +1,18 @@
 # PaginiumCMS
 
-> **Final consolidated edition — 2026-08-02.** This tree contains the complete English documentation, historical iterations, the Hybrid Engine design, and the latest security changes including ISS-120. [Open the complete navigation](docs/NAVIGATION.md).
-> **Slovenská dokumentácia:** [docs/sk/NAVIGATION.md](docs/sk/NAVIGATION.md)
+> **Documentation index:** [docs/NAVIGATION.md](docs/NAVIGATION.md) · **Slovak:** [docs/sk/NAVIGATION.md](docs/sk/NAVIGATION.md)  
+> **Version:** **`v2.1.0-beta.96`** · **Public Beta** · October 2026  
+> **Direction:** Hybrid Headless Content Engine · flat-file source of truth · API-first
 
-> **Version:** 2.1.0-beta.78 · **Public Beta** · September 2026  
-> **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first
+PaginiumCMS is an open-source **Hybrid Headless Content Engine** built with PHP 8.5, Slim 4, and a React administration SPA (Vite 8).
 
-PaginiumCMS is an open-source **Hybrid Headless Content Engine** built with PHP 8.5, Slim 4, and a React administration SPA powered by Vite 8.
+Content, configuration, and operational state stay in **files** (JSON, Markdown, YAML). Derived layers — optional SQLite query index, Redis cache, Git publish — accelerate reads and distribution but must remain rebuildable from files.
 
-The project retains the defining property of a flat-file CMS: content, configuration, and operational state remain in files. It adds professional layers for indexing, caching, versioning, Git-based distribution, multilingual content, and future AI-assisted workflows.
-
-> **Immutable rule:** neither SQL nor an external document database may replace files as the primary CMS source of truth. Redis, APCu, and similar technologies may be used only as derived cache or temporary coordination layers.
+> **Immutable rule:** neither SQL nor an external document database may replace files as the primary CMS source of truth.
 
 **Architecture:** [docs/architecture/HYBRID_ENGINE.md](docs/architecture/HYBRID_ENGINE.md) · **Philosophy:** [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) · **No-SQL mandate:** [docs/architecture/NOSQL_MANDATE.md](docs/architecture/NOSQL_MANDATE.md)
 
-**Full documentation:** [`docs/README.md`](docs/README.md) · **Public Beta 1:** [`docs/PUBLIC_BETA1.md`](docs/PUBLIC_BETA1.md) · **Tester guide:** [`docs/user/BETA_TESTER.md`](docs/user/BETA_TESTER.md) · **Security review:** [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md)
+**Handoff:** [docs/en/CONTINUATION.md](docs/en/CONTINUATION.md) · **Releases:** [CHANGELOG.md](CHANGELOG.md) · **Latest notes:** [docs/en/RELEASE_2_1_0_BETA_96.md](docs/en/RELEASE_2_1_0_BETA_96.md)
 
 ---
 
@@ -54,7 +52,7 @@ docker compose --profile dev up -d          # or: cd frontend && npm run dev
 # → http://localhost:3025
 ```
 
-Details: [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) · [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) · [docs/user/FIRST_STEPS.md](docs/user/FIRST_STEPS.md)
+Details: [docs/en/developer/LOCAL_SETUP.md](docs/en/developer/LOCAL_SETUP.md) · [docs/en/user/INSTALLATION.md](docs/en/user/INSTALLATION.md) · [docs/en/user/FIRST_STEPS.md](docs/en/user/FIRST_STEPS.md)
 
 ---
 
@@ -66,35 +64,28 @@ cd backend/public && php -S localhost:8080    # API :8080
 cd frontend && npm install && npm run dev     # SPA :3025
 ```
 
-Quality gate:
+Quality gate (required before commit/push):
 
 ```bash
-composer test && composer stan
-cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && npm test
+./scripts/iteration-gate.sh
 ```
 
 ---
 
-## Current status
+## Current status (October 2026)
 
 | Area | Status |
 |------|--------|
 | Backend API | ✅ Slim 4, route auto-discovery, `JsonResponder`, PHPStan L8 |
-| Authentication and security | ✅ Session, CSRF, 2FA, RBAC, password confirmation, WAF |
-| Administration and public site | ✅ React SPA, SK/EN i18n, content, media, navigation, newsletter |
-| File source of truth | ✅ JSON / Markdown / YAML, index, locks, OCC, and versioning |
-| Public Beta | ✅ latest tag `v2.1.0-beta.70` — see [CHANGELOG.md](CHANGELOG.md) |
-| Hybrid Engine foundation | ✅ It.68–74 shipped (local storage, cache/ETag, Git publish, APM, media local, locales, API keys) |
-| Stabilization freeze | ⏹️ closed 2026-09-09 — no `v2.2.0` gate |
-| Next implementation | ⏳ It.89 plugin capabilities · It.92 query index — [docs/en/CONTINUATION.md](docs/en/CONTINUATION.md) |
+| Authentication and security | ✅ Session, CSRF, 2FA, RBAC, WAF, upload policy, extension Code Policy |
+| Administration and public site | ✅ React SPA, SK/EN i18n, content, media, desk, newsletter |
+| File source of truth | ✅ JSON / Markdown / YAML, index, locks, OCC, versioning |
+| Hybrid Engine **It.68–77** | ✅ Core shipped (storage, cache/Redis, Git publish, APM, S3 media, locales, API keys, AI propose/apply, translation) — verify probes in Origin Panel |
+| **It.58** composer wave | ✅ React shortcode islands, section-band, pricing/stats motion, unified lightbox — [IT_58_COMPOSER_HANDOFF.md](docs/en/architecture/IT_58_COMPOSER_HANDOFF.md) |
+| **Latest tag** | ✅ **`v2.1.0-beta.96`** — Experience B1–B2 motion (`visual-frame`, section-band v3); gallery wave in **beta.95** |
+| **Next slices** | ⏳ Experience Phase C (reference landing seeds) · **It.98** workspace + CLI · optional B3 (reading progress, View Transitions) |
 
-### Target model
-
-1. **Files on disk** remain the only source of truth.
-2. **Indexes and caches** accelerate reads but must be rebuildable from files.
-3. The **REST API** provides validation, authorization, and a consistent contract.
-4. **Git distribution** may publish content immediately or in batches.
-5. **Deployment modes** allow the same core to operate as a classic CMS, hybrid website, or Git-headless/Jamstack engine.
+Public beta installs should use the **latest** `v2.1.0-beta.*` tag from [CHANGELOG.md](CHANGELOG.md), not an old beta number.
 
 ---
 
@@ -102,19 +93,18 @@ cd frontend && npm run type-check && npm run lint && npm run lint:api-barrel && 
 
 | Audience / area | Document |
 |-----------------|----------|
-| Vision and immutable principles | [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) |
+| Vision and principles | [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) |
 | Target architecture | [docs/architecture/HYBRID_ENGINE.md](docs/architecture/HYBRID_ENGINE.md) |
-| No-SQL rule | [docs/architecture/NOSQL_MANDATE.md](docs/architecture/NOSQL_MANDATE.md) |
-| Deployment modes | [docs/architecture/DEPLOYMENT_MODES.md](docs/architecture/DEPLOYMENT_MODES.md) |
-| Beta tester / administrator | [docs/user/README.md](docs/user/README.md) |
-| Installation | [docs/user/INSTALLATION.md](docs/user/INSTALLATION.md) |
-| Local development | [docs/developer/LOCAL_SETUP.md](docs/developer/LOCAL_SETUP.md) |
-| Contributing | [docs/developer/CONTRIBUTING.md](docs/developer/CONTRIBUTING.md) |
+| Shortcodes (operators) | [docs/en/user/SHORTCODE_COOKBOOK.md](docs/en/user/SHORTCODE_COOKBOOK.md) |
+| Beta tester / administrator | [docs/en/user/README.md](docs/en/user/README.md) |
+| Local development | [docs/en/developer/LOCAL_SETUP.md](docs/en/developer/LOCAL_SETUP.md) |
+| Contributing | [docs/en/developer/CONTRIBUTING.md](docs/en/developer/CONTRIBUTING.md) |
 | API contract | [docs/architecture/API_CONTRACT.md](docs/architecture/API_CONTRACT.md) |
-| Releases | [docs/developer/RELEASE.md](docs/developer/RELEASE.md) |
+| Releases | [docs/en/developer/RELEASE.md](docs/en/developer/RELEASE.md) |
 | Production cron | [docs/deploy/CRON.md](docs/deploy/CRON.md) |
 | Change history | [CHANGELOG.md](CHANGELOG.md) |
+| Known incidents | [docs/ISSUES.md](docs/ISSUES.md) |
 
 ---
 
-> **Documentation First:** when code and documentation diverge, document the actual state precisely first, then make the next code change deliberately close the gap.
+> **Documentation First:** when code and documentation diverge, document the actual state precisely first, then close the gap in the next deliberate code change.

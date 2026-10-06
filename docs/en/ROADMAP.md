@@ -1,6 +1,6 @@
 # PaginiumCMS — project roadmap
 
-> **Documentation checkpoint:** September 29, 2026  
+> **Documentation checkpoint:** October 6, 2026  
 > **Latest release:** see [`CHANGELOG.md`](CHANGELOG.md) (tagged **`v2.1.0-beta.96`**) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
 > **Code status:** Hybrid Engine layers **It.68–77 largely shipped** — verify live wiring in **Origin Panel** (`/platform/origin`) before trusting table rows below.  
@@ -42,8 +42,9 @@ PaginiumCMS is evolving from a production-capable flat-file CMS into a **Hybrid 
 | Deployment modes | ✅ | Classic, Hybrid, and Git-headless profiles |
 | Roadmap and backlog | ✅ this iteration | stale priorities and duplicate iteration numbers removed |
 | Bilingual documentation | 🚧 | separate, structurally matching `SK/` and `EN/` trees |
-| Hybrid Engine foundation (It.68) | ✅ | `[Unreleased]` — storage abstraction, schema registry, engine settings |
-| Hybrid Engine layers It.69–77 | ✅ core shipped | probes: `it.71.performance_guard`, `it.74`-class API keys, multi-locale; remainder = polish/docs |
+| Hybrid Engine foundation (It.68) | ✅ | shipped `beta.28+` — storage abstraction, schema registry, engine settings |
+| Hybrid Engine layers It.69–77 | ✅ core shipped | probes: `it.71.performance_guard`, API keys/JWT, multi-locale, translation, AI; remainder = polish/docs |
+| Public experience (It.58f-i, motion) | ✅ | gallery/lightbox **beta.95**; B1–B2 motion **beta.96** — [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) |
 
 The **documentation gate is complete** when the SK and EN editions do not contradict each other, feature states match, and planned capabilities are not presented as shipped.
 
@@ -72,8 +73,8 @@ Detailed inventory: [FEATURE_OVERVIEW.md](FEATURE_OVERVIEW.md).
 
 | It. | Topic | Priority | Status | Dependencies / note |
 |-----|-------|----------|--------|---------------------|
-| **68** | Storage abstraction, schema registry, and engine settings | 🔴 | ✅ `[Unreleased]` | local driver; settings + JSON content write slice |
-| **69** | Unified cache, Redis, `ETag`, `Last-Modified` | 🔴 | ✅ | absorbs legacy It.45 and It.49; Redis driver deferred |
+| **68** | Storage abstraction, schema registry, and engine settings | 🔴 | ✅ | local driver; settings + JSON content write slice |
+| **69** | Unified cache, Redis, `ETag`, `Last-Modified` | 🔴 | ✅ | file/memory/auto + optional Redis derived cache |
 | **70** | Git publish — immediate and queued | 🟡 | ✅ | `LocalGitPublisher`, `GitHubApiPublisher`; UI polish in backlog |
 | **71** | Performance Guard APM | 🟡 | ✅ | `PerformanceSampleStore`, metrics API; probe `it.71.performance_guard` |
 | **72** | Flysystem media drivers, S3/CDN | 🟡 | ✅ | `S3MediaStorageDriver`; **local** remains default |

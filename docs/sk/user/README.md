@@ -8,7 +8,7 @@ icon: material/book-open-page-variant
 
 > Táto vetva dokumentácie opisuje používateľské a administrátorské workflow pre release rodinu **`v2.1.0-beta.*`**. Presný tag inštalácie vždy over v release poznámkach a v `CHANGELOG.md`.
 
-PaginiumCMS sa vyvíja smerom k **Hybrid Headless Content Engineu**, ale povinným zdrojom pravdy zostávajú súbory. Používateľská príručka preto oddeľuje dnešné stabilné beta workflow od schopností plánovaných v It.68–77.
+PaginiumCMS je **Hybrid Headless Content Engine** — zdrojom pravdy zostávajú súbory. Jadro It.68–77 a composer vlna It.58 (shortcody, galérie, motion) sú v aktuálnych tagoch **`v2.1.0-beta.*`** — presnú verziu over v [CHANGELOG.md](../../../CHANGELOG.md).
 
 ## 1. Ako používať príručku
 
@@ -18,7 +18,8 @@ PaginiumCMS sa vyvíja smerom k **Hybrid Headless Content Engineu**, ale povinn�
 | 2 | [Prvé kroky](FIRST_STEPS.md) | nový administrátor alebo editor |
 | 3 | [Príručka administrátora](ADMIN_GUIDE.md) | každodenná správa CMS |
 | 4 | [Editor obsahu](CONTENT_EDITOR.md) | editor stránok a článkov |
-| 4c | [Shortcodes a widgety](SHORTCODES_A_WIDGETY.md) | príklady bundled shortcodov (beta.95) |
+| 4c | [Shortcodes a widgety](SHORTCODES_A_WIDGETY.md) | príklady bundled shortcodov (beta.96) |
+| 4d | [Marketing drafty](../sk/marketing/README.md) | SK články s odkazmi na GitHub docs |
 | 5 | [Galéria funkcií](GALLERY.md) | spoločný katalóg fotiek na stránke |
 | 6 | [Oprávnenia a Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN a bezpečnostný správca |
 | 7 | [Firewall](FIREWALL.md) a [Logy](LOGGING.md) | prevádzka a incident response |
@@ -32,7 +33,7 @@ Doplňujúce používateľské príručky pokrývajú [branding](BRANDING.md), [
 |---|---|
 | **Implementované** | workflow je súčasťou aktuálnej beta vetvy; konkrétny build môže obsahovať opravu alebo menší rozdiel UI |
 | **Prechodné** | funkcia existuje, ale kontrakt alebo obrazovka sa ešte konsoliduje |
-| **Plánované** | cieľová schopnosť It.68–77; nepovažuj ju za dostupnú bez potvrdenia v release notes |
+| **Plánované** | budúca iterácia (napr. It.98); nie je v produkcii, kým to nepotvrdí release tag |
 | **Environment-gated** | zobrazí sa iba pri správnej roli, konfigurácii alebo profile nasadenia |
 
 Ak UI a dokumentácia nesúhlasia, za rozhodujúci považuj konkrétny release, API odpoveď a serverové logy. Rozdiel nahlás ako dokumentačný bug.

@@ -2,7 +2,7 @@
 
 > **Finálna konsolidácia:** úplný index je v [NAVIGATION.md](NAVIGATION.md). Stavové tvrdenia rozlišujú implementované, prechodné a plánované schopnosti.
 
-> **Verzia:** 2.1.0-beta.71 · **Posledná aktualizácia:** september 2026  
+> **Verzia:** **`v2.1.0-beta.96`** · **Posledná aktualizácia:** október 2026  
 > **Hybrid Headless Content Engine** — No-SQL súborový zdroj pravdy, API-first administrácia a verejný React web.
 
 ---
@@ -47,39 +47,21 @@ Pravidlá dvojjazyčnej dokumentácie:
 
 ---
 
-## 📊 Aktuálny stav projektu — august 2026
+## 📊 Aktuálny stav projektu — október 2026
 
 | Oblasť | Stav | Poznámka |
 |--------|------|----------|
-| **Architektonický pivot** | ✅ Fáza 0 | Hybrid Engine a No-SQL mandát sú definované |
-| **Backend API** | ✅ Stabilné beta jadro | Slim 4, PHP-DI, automatické načítanie trás |
-| **No-SQL SSOT** | ✅ Vynútené | súbory, bezpečné zápisy, index a diagnostika |
-| **Autentifikácia administrácie** | ✅ Funkčná | session + CSRF + RBAC + 2FA |
-| **Obsahový index a OCC** | ✅ Dodané | `content.json`, konflikty 409, verzovanie |
-| **Cache** | 🟡 Čiastočná | súbor/pamäť; zjednotená Redis vrstva → It.69 |
-| **Git distribúcia** | 🟡 Čiastočná | GitHub API sync; plný publish workflow → It.70 |
-| **Verejný a admin frontend** | ✅ Dodané | React, TypeScript, Vite 8, SK/EN i18n |
-| **Automatické testy** | ✅ 838+ PHPUnit | PHPStan L8; frontend gate podľa `developer/TESTING.md` |
-| **Najnovšie zdokumentované vydanie** | ✅ `v2.1.0-beta.71` | It.79 DAM video, stack bootstrap |
-| **Nasledujúci kód** | ⏸️ Pozastavený | pokračuje po dokončení dvojjazyčnej dokumentácie |
-| **Prvá Hybrid Engine implementácia** | ⏳ It.68 | storage abstraction + schema registry + engine settings |
+| **Architektonický pivot** | ✅ | Hybrid Engine + No-SQL mandát v produkčných cestách |
+| **Backend API** | ✅ | Slim 4, PHP-DI, auto-discovery, PHPStan L8 |
+| **No-SQL SSOT** | ✅ | súbory, index, OCC, verzovanie |
+| **Hybrid Engine It.68–77** | ✅ jadro | cache/Redis, Git publish, APM, S3, locale, API kľúče, AI, preklady — [ROADMAP.md](ROADMAP.md) |
+| **It.58 composer / islands** | ✅ | section-band, galérie, lightbox, motion B1–B2 — [IT_58_COMPOSER_HANDOFF.md](../en/architecture/IT_58_COMPOSER_HANDOFF.md) |
+| **Verejný a admin frontend** | ✅ | React, Vite 8, SK/EN i18n |
+| **Automatické testy** | ✅ | `./scripts/iteration-gate.sh` |
+| **Najnovšie vydanie** | ✅ **`v2.1.0-beta.96`** | [RELEASE_2_1_0_BETA_96.md](../en/RELEASE_2_1_0_BETA_96.md) · [CHANGELOG.md](../../CHANGELOG.md) |
+| **Ďalšia práca** | ⏳ | Experience Phase C · It.98 workspace — [CONTINUATION.md](../CONTINUATION.md) |
 
-### Plánovaná vlna Hybrid Engine
-
-| Iterácia | Funkcia |
-|----------|---------|
-| **68** | Abstrakcia úložiska, registry schém a nastavenia enginu |
-| **69** | Jednotná cache, Redis, `ETag` a `Last-Modified` |
-| **70** | Okamžitý a dávkový Git publish |
-| **71** | Performance Guard — APM middleware |
-| **72** | Ovládače médií cez Flysystem, S3/CDN |
-| **73** | Viac jazykov v jednom obsahovom dokumente |
-| **74** | Aditívne API kľúče a JWT pre headless klientov |
-| **75** | AI agent naprieč modulmi CMS |
-| **76** | Asistovaný preklad cez self-hosted LibreTranslate |
-| **77** | Asistovaný preklad cez cloud providerov |
-
-Mapa vlny: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md) · Celkový backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
+Jadro It.68–77 je v repozitári; voliteľné brokery (Redis, S3, prekladové API) závisia od prostredia. Mapa: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md)
 
 ---
 
@@ -344,7 +326,7 @@ Mapa novej vlny: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.
 - Nie všetky historické dokumenty boli v pôvodnom balíku jazykovo jednotné; prebieha ich samostatné SK/EN spracovanie.
 - Súbory `architecture/EVENTS.md`, `architecture/FRONTEND.md`, `architecture/MODULES.md`, `developer/DEVELOPMENT.md`, `user/PLUGINS.md` a `user/THEMES.md` sú v zdrojovom balíku prázdne a vyžadujú doplnenie obsahu, nie iba preklad.
 - Niektoré staršie prehľady uvádzajú zastarané verzie alebo stav iterácií; dvojjazyčná revízia ich zjednotí podľa changelogu a kódu.
-- Implementácia Hybrid Engine je cieľový návrh, nie tvrdenie, že It.68–77 sú už hotové.
+- Pre presný stav funkcie vždy over **git tag**, Origin probes a [CHANGELOG.md](../../CHANGELOG.md); staršie iterácie môžu uvádzať historický kontext.
 - Právny rozsah open-source a komerčného použitia musí byť v súlade s aktuálnym `LICENSE` súborom repozitára.
 
 ---

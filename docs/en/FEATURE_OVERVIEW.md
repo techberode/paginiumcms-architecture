@@ -1,7 +1,7 @@
 # PaginiumCMS — feature overview
 
 > **Purpose:** one living inventory of what is shipped, partial, and planned  
-> **Snapshot:** `v2.1.0-beta.23` · August 2, 2026 *(historical inventory; current release: see [CONTINUATION.md](CONTINUATION.md) or [CHANGELOG.md](../../CHANGELOG.md))*  
+> **Snapshot:** historical sections below reference **`v2.1.0-beta.23`** (August 2026). **Current release:** **`v2.1.0-beta.96`** — see [CONTINUATION.md](CONTINUATION.md) and [CHANGELOG.md](../../CHANGELOG.md).  
 > **Architecture:** React/Vite SPA ↔ Slim REST API ↔ PHP Core ↔ No-SQL file SSOT
 
 **Related:** [ROADMAP.md](ROADMAP.md) · [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) · [PUBLIC_BETA1.md](PUBLIC_BETA1.md) · [architecture/HYBRID_ENGINE.md](architecture/HYBRID_ENGINE.md)
@@ -24,7 +24,7 @@
 | Public Beta 1 | `v2.1.0-beta.1` | first public beta gate and tester path |
 | Beta patch series | `beta.2` through `beta.23` | hardening, UX, demo, newsletter, update, gallery, layout |
 | Latest release in this snapshot | **`v2.1.0-beta.23`** | It.58c Layout Switch |
-| Hybrid Engine | It.68 foundation ✅ `[Unreleased]` | storage abstraction, schema registry, engine settings; It.69+ planned |
+| Hybrid Engine | It.68–77 ✅ core shipped | verify optional Redis/S3/translation in your environment; It.58f-i + motion through **beta.96** |
 | Final 1.0 | no tag | scope must be confirmed by a separate release gate |
 
 ---

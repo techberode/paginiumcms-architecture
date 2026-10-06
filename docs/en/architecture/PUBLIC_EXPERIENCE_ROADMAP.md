@@ -1,7 +1,7 @@
 # Public experience roadmap — beyond “recolored template”
 
 > **Captured:** October 5, 2026  
-> **Status:** 🟡 active product direction (post **It.58** / **beta.94**)  
+> **Status:** 🟡 active product direction (post **It.58**; gallery **beta.95**, motion **beta.96**)  
 > **Audience:** maintainers, agency implementers  
 > **Related:** [REACT_SHORTCODE_ISLANDS.md](REACT_SHORTCODE_ISLANDS.md) · [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) · [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md) · [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) · [LANDING_PAGE.md](../user/LANDING_PAGE.md)
 

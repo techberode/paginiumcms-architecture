@@ -3,7 +3,7 @@
 > **Purpose:** concise, current handoff for the next development session  
 > **Checkpoint:** October 6, 2026 · `main` @ **`v2.1.0-beta.96`** (Experience B1–B2 motion + docs)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
-> **Next planned slice:** **Experience Phase C** (reference seeds) or **B2** (section-band reveal/hover) — [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) · **It.98** workspace+CLI spec ready — [ITERATION_98.md](ITERATION_98.md) · **It.97** **deferred**
+> **Next planned slice:** **Experience Phase C** (reference landing seeds) · **It.98** workspace+CLI — [ITERATION_98.md](ITERATION_98.md) · optional **B3** / 58f-i-d — [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) · **It.97** **deferred**
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -25,14 +25,14 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 ---
 
-## 3. Current state (September 2026)
+## 3. Current state (October 2026)
 
 | Area | Status |
 |------|--------|
 | Latest tag | ✅ **`v2.1.0-beta.96`** — visual-frame + section-band motion · planning docs · SK marketing 34–36 — [RELEASE_2_1_0_BETA_96.md](RELEASE_2_1_0_BETA_96.md) (gallery wave: [beta.95](RELEASE_2_1_0_BETA_95.md)) |
-| Unreleased | **Experience B2/C** · **It.82d** host metrics · optional 58f-i-d crossfade |
-| Origin Panel | Today snapshot as of 2026-09-22 · latest tag `2.1.0-beta.89` · remaining: It.82d host metrics |
-| Previous tag | `v2.1.0-beta.88` — It.75 CMS AI assistant · contact E.164 + SMTP reply · discussion ratings · deploy-key remount |
+| Unreleased | **Experience Phase C** · **It.82d** host metrics · optional 58f-i-d crossfade · in-CMS docs portal proposal |
+| Origin Panel | Refresh “today” snapshot after deploy; canonical version = **`AppVersion::current()`** / latest git tag |
+| Previous tag | `v2.1.0-beta.95` — `[media-gallery]` · unified lightbox · feature gallery `?slide=` · shortcode cookbook |
 | It.48 | ✅ compile + public HTML serve in `beta.89` |
 | It.92 | ✅ SQLite **derived catalog index only** (`beta.83`–`85`) — not SSOT; Classic default stays `content.json` |
 | It.69 | ✅ file/memory/auto + optional **Redis** derived cache + HTTP validators (never SSOT; shared hosting OK without Redis) |
@@ -56,11 +56,12 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | 0 | ✅ **Islands A–F** + **58f-i-a/b** — registry, gallery v2, `section-band`, carousel, effects, admin preview parity | See [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |
 | 1 | ✅ **58f-i-i…k** gallery + lightbox (`beta.95`) | [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 2 | ✅ **Experience B1** — `[visual-frame]` motion presets | [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) |
-| 3 | **Experience C** — reference landing seeds + outline starters | same |
-| 4 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
-| 4 | **It.82d** Origin host metrics | Optional maintainer hook |
-| 5 | **It.98** Multi-site workspace + CLI content ops (WP-style, phased) | [ITERATION_98.md](ITERATION_98.md) |
-| 6 | **Growth proposals** (A/B, related posts, TOC, cross-post, visual B2–B3) | [PRODUCT_GROWTH_PROPOSALS.md](architecture/PRODUCT_GROWTH_PROPOSALS.md) |
+| 3 | ✅ **Experience B2** — section-band reveal/hover v3 (`beta.96`) | same |
+| 4 | **Experience C** — reference landing seeds + outline starters | same |
+| 5 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
+| 6 | **It.82d** Origin host metrics | Optional maintainer hook |
+| 7 | **It.98** Multi-site workspace + CLI content ops (WP-style, phased) | [ITERATION_98.md](ITERATION_98.md) |
+| 8 | **Growth proposals** (A/B, related posts, TOC, cross-post, visual B3) | [PRODUCT_GROWTH_PROPOSALS.md](architecture/PRODUCT_GROWTH_PROPOSALS.md) |
 
 Isolated-origin widgets are **not** queued (cancelled iteration; archive only: [ISOLATED_ORIGIN.md](architecture/ISOLATED_ORIGIN.md)).
 
@@ -98,10 +99,13 @@ Frontend Vite: **`:3025`** (not 3026). White screen on the wrong port is not a C
 
 | Doc | Content |
 |-----|---------|
-| [RELEASE_2_1_0_BETA_89.md](RELEASE_2_1_0_BETA_89.md) | Latest release — It.48 · ISS-173/174 |
+| [RELEASE_2_1_0_BETA_96.md](RELEASE_2_1_0_BETA_96.md) | Latest release — Experience B1–B2 motion |
+| [RELEASE_2_1_0_BETA_95.md](RELEASE_2_1_0_BETA_95.md) | Gallery/lightbox completion |
+| [SHORTCODE_COOKBOOK.md](user/SHORTCODE_COOKBOOK.md) | Operator examples for all bundled shortcodes |
+| [DOCS_PORTAL_PLANNED.md](developer/DOCS_PORTAL_PLANNED.md) | Future in-CMS Markdown docs module |
 | [ITERATION_48.md](ITERATION_48.md) | Static compile + `/static-html` serve |
-| [ITERATION_58f.md](ITERATION_58f.md) | Visual blocks; **58f-h** canvas shipped (Unreleased) |
-| [ITERATION_69.md](ITERATION_69.md) | Unified cache; Redis driver deferred |
+| [ITERATION_58f.md](ITERATION_58f.md) | Visual blocks; **58f-i** gallery/motion shipped through **beta.96** |
+| [ITERATION_69.md](ITERATION_69.md) | Unified cache; optional Redis derived layer |
 | [ITERATION_92.md](ITERATION_92.md) | SQLite derived query index |
 | [ITERATION_70.md](ITERATION_70.md) | Git publish (`local` + `github_api`) |
 | [ITERATION_75.md](ITERATION_75.md) | CMS AI assistant (`beta.88`) |

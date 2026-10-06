@@ -55,7 +55,7 @@
 
 - `./scripts/iteration-gate.sh` before every push.  
 - SK/EN user-facing strings for new editor fields.  
-- [CHANGELOG.md](../../CHANGELOG.md) `[Unreleased]` for shipped slices.
+- [CHANGELOG.md](../../CHANGELOG.md) — latest **`v2.1.0-beta.96`**; `[Unreleased]` for in-flight slices only.
 
 ---
 

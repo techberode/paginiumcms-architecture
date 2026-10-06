@@ -1,10 +1,10 @@
-# Gallery & lightbox — planned iteration (It.58f-i continuation)
+# Gallery & lightbox — It.58f-i (complete)
 
-> **Captured:** October 4, 2026 · **Revised:** React image + video gallery (SPA bundle)  
-> **Status:** ✅ **58f-i-g…k** complete — feature gallery grid/slider + `?slide=` sync + video thumbs; extends [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md)  
-> **UX target:** Full-screen **React** lightbox with thumbnail strip, counter, prev/next, optional slideshow, **mixed image + video** slides (reference: commercial gallery demos — toolbar extras optional in v1).
+> **Captured:** October 4, 2026 · **Closed:** October 6, 2026 — release **`v2.1.0-beta.95`**  
+> **Status:** ✅ **58f-i-g…k** complete — unified `PaginiumMediaGallery`, prose + feature gallery + `[media-gallery]`, video/embed slides, `?slide=` deep links  
+> **Release notes:** [RELEASE_2_1_0_BETA_95.md](../RELEASE_2_1_0_BETA_95.md) · **Operators:** [GALLERY.md](../user/GALLERY.md), [MEDIA_IN_CONTENT.md](../user/MEDIA_IN_CONTENT.md)
 
-Paginium **58f-i-g:** `PaginiumMediaGallery` (YARL + Captions/Counter/Thumbnails/Zoom/Slideshow) in the public bundle; `ProseImageLightboxHost` and `FeatureGalleryModal` delegate to the facade. **Next:** grouping attrs (**h**), video slides (**j**), inline block (**i**).
+`PaginiumMediaGallery` (YARL + Captions/Counter/Thumbnails/Zoom/Slideshow) lives in the public bundle; prose hosts and feature gallery share the facade. Legacy `ProseImageLightboxModal` removed in **beta.95**.
 
 ---
 

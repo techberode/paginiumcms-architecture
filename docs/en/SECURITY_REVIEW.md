@@ -8,7 +8,7 @@ icon: material/shield-search
 
 > **Target documentation snapshot:** `v2.1.0-beta.23`  
 > **Audience:** external auditors, beta testers, and maintainers.  
-> Always verify an exact tag or commit. Do not test planned It.68–77 capabilities as implemented until a concrete release marks them as delivered.
+> Always verify an exact tag or commit (`v2.1.0-beta.96` or newer on `main`). Hybrid Engine **It.68–77** core is shipped; optional integrations (Redis, S3, cloud translation, Ollama) require explicit configuration — treat unconfigured paths as unavailable.
 
 ## 1. Preparing an isolated lab
 

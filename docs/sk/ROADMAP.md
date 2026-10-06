@@ -1,9 +1,10 @@
 # PaginiumCMS — roadmapa projektu
 
-> **Dokumentačný checkpoint:** 2. august 2026  
-> **Najnovšie vydanie:** `v2.1.0-beta.69` · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Dokumentačný checkpoint:** 6. október 2026  
+> **Najnovšie vydanie:** [`CHANGELOG.md`](../../CHANGELOG.md) — tag **`v2.1.0-beta.96`** · handoff: [CONTINUATION.md](../CONTINUATION.md)  
 > **Smerovanie:** Hybrid Headless Content Engine · No-SQL súborový zdroj pravdy · API-first  
-> **Stav kódu:** implementácia It.68+ je pozastavená do dokončenia dvojjazyčnej dokumentácie
+> **Stav kódu:** Hybrid Engine **It.68–77** — jadro dodané; over wiring v Origin Panel pred produkciou  
+> **Anglická kanonická roadmapa:** [docs/en/ROADMAP.md](../en/ROADMAP.md)
 
 Táto roadmapa je kanonická mapa **budúceho smerovania**. História jednotlivých vydaní patrí do [`CHANGELOG.md`](../../CHANGELOG.md), detailné implementačné špecifikácie do `ITERATION_*.md` a incidenty do [`ISSUES.md`](ISSUES.md).
 

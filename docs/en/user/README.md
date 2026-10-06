@@ -8,7 +8,7 @@ icon: material/book-open-page-variant
 
 > This documentation branch describes user and administrator workflows for the **`v2.1.0-beta.*`** release family. Always verify the exact installation tag in release notes and `CHANGELOG.md`.
 
-PaginiumCMS is evolving into a **Hybrid Headless Content Engine**, while files remain the mandatory source of truth. The user guide therefore separates current beta workflows from capabilities planned for It.68–77.
+PaginiumCMS is a **Hybrid Headless Content Engine**: files remain the mandatory source of truth. Core Hybrid Engine capabilities (**It.68–77**) and the **It.58** composer wave (shortcodes, islands, galleries, motion) are available in current **`v2.1.0-beta.*`** tags — always confirm your install version in [CHANGELOG.md](../../../CHANGELOG.md).
 
 ## 1. How to use this guide
 
@@ -20,6 +20,7 @@ PaginiumCMS is evolving into a **Hybrid Headless Content Engine**, while files r
 | 4 | [Content editor](CONTENT_EDITOR.md) | page and article editors |
 | 4b | [Media in content](MEDIA_IN_CONTENT.md) | images, captions, video, embed policy |
 | 4c | [Shortcode cookbook](SHORTCODE_COOKBOOK.md) | every bundled shortcode/widget with examples |
+| 4d | [SK marketing drafts](../../sk/marketing/README.md) | publication drafts linking to GitHub docs |
 | 5 | [Feature gallery](GALLERY.md) | shared photo catalog on pages |
 | 6 | [Permissions and Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN and security operator |
 | 7 | [Firewall](FIREWALL.md) and [Logging](LOGGING.md) | operations and incident response |
@@ -33,7 +34,7 @@ Additional guides cover [branding](BRANDING.md), [plugins](PLUGINS.md), [themes]
 |---|---|
 | **Implemented** | workflow is part of the current beta branch; a particular build may contain a fix or small UI difference |
 | **Transitional** | capability exists, but its contract or screen is still being consolidated |
-| **Planned** | target It.68–77 capability; do not assume availability without release-note confirmation |
+| **Planned** | documented future slice (e.g. It.98 workspace); not shipped until a release tag says so |
 | **Environment-gated** | visible only with the required role, configuration, or deployment profile |
 
 When the UI and guide disagree, the concrete release, API response, and server logs are authoritative. Report the difference as a documentation bug.

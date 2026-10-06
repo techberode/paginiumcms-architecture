@@ -2,7 +2,7 @@
 
 > **Final consolidation:** the complete index is in [NAVIGATION.md](NAVIGATION.md). Status claims distinguish implemented, transitional, and planned capabilities.
 
-> **Version:** 2.1.0-beta.69 · **Last updated:** September 2026  
+> **Version:** **`v2.1.0-beta.96`** · **Last updated:** October 2026  
 > **Hybrid Headless Content Engine** — No-SQL file source of truth, API-first administration, and a public React site.
 
 ---
@@ -47,39 +47,24 @@ Bilingual documentation rules:
 
 ---
 
-## 📊 Current project status — August 2026
+## 📊 Current project status — October 2026
 
 | Area | Status | Notes |
 |------|--------|-------|
-| **Architecture pivot** | ✅ Phase 0 | Hybrid Engine and the No-SQL mandate are defined |
-| **Backend API** | ✅ Stable beta Core | Slim 4, PHP-DI, route auto-discovery |
-| **No-SQL SSOT** | ✅ Enforced | files, safe writes, index, and diagnostics |
-| **Administration authentication** | ✅ Functional | session + CSRF + RBAC + 2FA |
-| **Content index and OCC** | ✅ Shipped | `content.json`, 409 conflicts, versioning |
-| **Cache** | 🟡 Partial | file/memory; unified Redis layer → It.69 |
-| **Git distribution** | 🟡 Partial | GitHub API sync; full publishing workflow → It.70 |
-| **Public and admin frontend** | ✅ Shipped | React, TypeScript, Vite 8, SK/EN i18n |
-| **Automated tests** | ✅ 838+ PHPUnit | PHPStan L8; frontend gate in `developer/TESTING.md` |
-| **Latest documented release** | ✅ `v2.1.0-beta.69` | It.88 Theme Studio, incremental backups; see [CHANGELOG.md](../CHANGELOG.md) |
-| **Next code work** | ⏸️ Paused | resumes after the bilingual documentation pass |
-| **First Hybrid Engine implementation** | ⏳ It.68 | storage abstraction + schema registry + engine settings |
+| **Architecture pivot** | ✅ | Hybrid Engine + No-SQL mandate in production code paths |
+| **Backend API** | ✅ | Slim 4, PHP-DI, route auto-discovery, PHPStan L8 |
+| **No-SQL SSOT** | ✅ | files, safe writes, index, OCC, versioning |
+| **Administration authentication** | ✅ | session + CSRF + RBAC + 2FA |
+| **Hybrid Engine It.68–77** | ✅ core | storage, cache/Redis, Git publish, APM, S3 media, locales, API keys, AI, translation — see [ROADMAP.md](ROADMAP.md) |
+| **It.58 composer / islands** | ✅ | section-band, galleries, unified lightbox, motion B1–B2 — [IT_58_COMPOSER_HANDOFF.md](en/architecture/IT_58_COMPOSER_HANDOFF.md) |
+| **Public and admin frontend** | ✅ | React, TypeScript, Vite 8, SK/EN i18n |
+| **Automated tests** | ✅ | `./scripts/iteration-gate.sh` — PHPUnit, PHPStan, tsc, ESLint, Vitest |
+| **Latest documented release** | ✅ **`v2.1.0-beta.96`** | [RELEASE_2_1_0_BETA_96.md](en/RELEASE_2_1_0_BETA_96.md) · [CHANGELOG.md](../CHANGELOG.md) |
+| **Next implementation** | ⏳ | Experience Phase C · It.98 workspace · B3 polish — [CONTINUATION.md](CONTINUATION.md) |
 
-### Planned Hybrid Engine wave
+### Hybrid Engine wave (shipped foundation)
 
-| Iteration | Feature |
-|-----------|---------|
-| **68** | Storage abstraction, schema registry, and engine settings |
-| **69** | Unified cache, Redis, `ETag`, and `Last-Modified` |
-| **70** | Immediate and queued Git publish |
-| **71** | Performance Guard — APM middleware |
-| **72** | Flysystem media drivers, S3/CDN |
-| **73** | Multiple locales in one content document |
-| **74** | Additive API keys and JWT for headless clients |
-| **75** | Cross-module CMS AI agent |
-| **76** | Assisted translation through self-hosted LibreTranslate |
-| **77** | Assisted translation through cloud providers |
-
-Wave map: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md) · Full backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
+It.68–77 core capabilities are in the tree; optional brokers (Redis, S3, translation APIs) remain environment-gated. Wave map: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md) · backlog: [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md)
 
 ---
 
@@ -90,7 +75,7 @@ Wave map: [ITERATION_WAVE_HYBRID_ENGINE.md](ITERATION_WAVE_HYBRID_ENGINE.md) · 
 - **Frontend:** React, TypeScript, Vite 8, TailwindCSS
 - **Primary storage:** JSON / Markdown / YAML files
 - **Index:** `data/index/content.json`, safe rebuild and concurrent writes
-- **Cache:** file and memory; Redis is a planned derived layer
+- **Cache:** file, memory, optional **Redis** (derived only; It.69)
 - **Operations:** Docker Compose or classic PHP/nginx deployment
 - **Testing:** PHPUnit, PHPStan, TypeScript type-check, ESLint, Vitest
 

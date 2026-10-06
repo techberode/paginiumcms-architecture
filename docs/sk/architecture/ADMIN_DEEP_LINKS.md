@@ -189,7 +189,7 @@ Legacy alias dostane test a deprecation záznam. Nemá sa držať navždy, preto
 
 Pri zmene route názvu sa použije interný redirect/alias na kanonický path počas migračného obdobia.
 
-Aktuálne aliasy (unreleased po `v2.1.0-beta.78`):
+Aktuálne aliasy (od `v2.1.0-beta.78`):
 
 | Starý path | Kanonický |
 |------------|-----------|

@@ -1,7 +1,7 @@
 # Page field composer — planned iteration (handoff)
 
 > **Captured:** September 30, 2026  
-> **Status:** 🟡 in progress — **58f-i-a/b/e/f/g** + islands **A–F** shipped; **gallery/lightbox h…k** ⏳ — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md)  
+> **Status:** 🟡 mostly shipped — **58f-i-a…k** + islands **A–F** + motion **B1–B2** (`beta.96`); remainder = optional **58f-i-d**, before/after, callout theme — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md)  
 > **Extends:** [It.58f](../ITERATION_58f.md) visual blocks, [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) phases 2–4  
 > **User goal (SK summary):** Pages must not all look identical. Operators compose **fields (sections)** and drop **registered components** (galleries, heroes, carousels, text) with per-block styling—rounded corners, background (static vs scroll), gradients, carousel placement—**without editing code or creating a new theme per page**.
 
@@ -55,7 +55,7 @@ Page (landing layout)
 | Slice | Deliverable |
 |-------|-------------|
 | **58f-i-a** | ✅ `feature-gallery` **v2 attrs**: `layout`, `columns`, `modal-caption-style` **per block** |
-| **58f-i-b** | ✅ **`section-band`** + `SectionBandRenderer` (v2: `reveal`, `hover-effect`) |
+| **58f-i-b** | ✅ **`section-band`** + `SectionBandRenderer` (v3: extended `reveal`, `hover-effect` — **beta.96**) |
 | **58f-i-c** | ✅ Outline + insert modal + tests + `pgLayout.css` for above |
 | **gallery-carousel** | ✅ Islands Phase D — slider from gallery `tag` |
 | **58f-i-e** | ✅ `pricing-table` v2 **billing-toggle** (monthly/yearly) + `pricing-plan` dual prices + `pricing-table` shell island |
@@ -63,7 +63,7 @@ Page (landing layout)
 | **58f-i-g** | ✅ **PaginiumMediaGallery** (YARL) — prose + feature gallery modal |
 | **58f-i-h** | ✅ Insert/group attrs — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | **58f-i-i** | ✅ `[media-gallery]` inline DAM block — [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
-| **58f-i-j…k** | ⏳ Video slides, feature parity — same doc |
+| **58f-i-j…k** | ✅ Video/embed slides, feature parity, `[media-gallery]` — **beta.95** |
 | **58f-i-d** (optional) | Core hook: section background crossfade on scroll (sibling to `useLandingReveal`); page flag or section attr |
 | **Later** | **Album** entity (`data/gallery-albums/`) if tags are insufficient—only if customers need many isolated collections |
 

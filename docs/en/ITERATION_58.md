@@ -10,7 +10,7 @@ icon: material/history
 
 | Field | Value |
 |---|---|
-| Status | ✅ 58b–58g + **58f-i** composer wave (islands, lightbox) in **`v2.1.0-beta.94`** |
+| Status | ✅ 58b–58g + **58f-i** composer wave through **`v2.1.0-beta.96`** (lightbox **beta.95**, motion **beta.96**) |
 | Release / period | 58c: 2.1.0-beta.23 |
 | Record type | historical product and architecture record |
 

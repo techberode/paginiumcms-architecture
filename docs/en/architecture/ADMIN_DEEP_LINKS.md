@@ -193,7 +193,7 @@ A legacy alias receives a test and deprecation entry. It should not remain forev
 
 When a route name changes, use an internal redirect/alias to the canonical path during the migration period.
 
-Current aliases (unreleased after `v2.1.0-beta.78`):
+Current aliases (shipped since `v2.1.0-beta.78`):
 
 | Legacy | Canonical |
 |--------|-----------|

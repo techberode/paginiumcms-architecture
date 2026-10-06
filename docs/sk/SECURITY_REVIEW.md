@@ -6,9 +6,9 @@ icon: material/shield-search
 
 # Príručka bezpečnostného auditu
 
-> **Cieľový dokumentačný snapshot:** `v2.1.0-beta.23`  
+> **Odporúčaný tag:** **`v2.1.0-beta.96`** (alebo novší na `main`)  
 > **Publikum:** externí audítori, beta testeri a maintainers.  
-> Overuj vždy presný tag alebo commit. Plánované schopnosti It.68–77 netestuj ako implementované, kým ich konkrétny release neoznačí za dodané.
+> Overuj vždy presný tag alebo commit. Jadro It.68–77 je dodané; voliteľné integrácie (Redis, S3, cloud preklady, Ollama) vyžadujú konfiguráciu — bez nej ich považuj za nedostupné.
 
 ## 1. Príprava izolovaného labu
 

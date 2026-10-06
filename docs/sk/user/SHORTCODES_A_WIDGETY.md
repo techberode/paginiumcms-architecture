@@ -1,6 +1,6 @@
 ---
 title: Shortcodes a widgety — príručka
-description: Ako fungujú bloky na stránke, príklady pre každý bundled shortcode (beta.95)
+description: Ako fungujú bloky na stránke, príklady pre každý bundled shortcode (beta.96)
 icon: material/code-braces
 ---
 
@@ -125,12 +125,14 @@ Skupina albumu: v media pickeri **Gallery group** = rovnaké `data-gallery="port
 
 ---
 
-## Po upgrade na beta.95
+## Po upgrade na beta.96
 
-1. Admin → **Shortcodes** — otvor raz (doplní bundled definície).
-2. Ulož znova dôležité landing stránky.
+1. Admin → **Shortcodes** — otvor raz (`section-band` v3, `visual-frame` v2).
+2. Ulož znova dôležité landing stránky (motion / galérie).
 3. Na produkcii rebuild frontendu.
 4. Prípadne purge content cache.
+
+Anglický cookbook: [SHORTCODE_COOKBOOK.md](../../en/user/SHORTCODE_COOKBOOK.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Iteration 98 — Multi-site / workspace + CLI content operations
 
-> **Status:** ⏳ planned (separate from `beta.95` gallery/lightbox and Experience Phase B1 motion)  
+> **Status:** ⏳ planned (separate from shipped gallery/lightbox **beta.95** and Experience **B1–B2** **beta.96**)  
 > **Priority:** strategic — largest item from the “growth proposals” list  
 > **SSOT:** flat files remain authoritative; no SQL layout engine  
 > **Related:** [NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md) · [CONTENT_EDITORIAL_WORKFLOW.md](architecture/CONTENT_EDITORIAL_WORKFLOW.md) · existing `content:import` / `content:export`
