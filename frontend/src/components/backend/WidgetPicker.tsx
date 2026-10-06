@@ -12,8 +12,11 @@ import {
   wrapWithVisualFrame,
   type VisualInsertPresentation,
 } from '../../utils/visualInsertPresentation';
+import { parseFaqItems, serializeFaqItems } from '../../utils/widgetFaqItems';
 import { ShortcodeInsertField } from './ShortcodeInsertField';
 import { VisualInsertTypographyControls } from './VisualInsertTypographyControls';
+import { WidgetFaqItemsEditor } from './WidgetFaqItemsEditor';
+import { WidgetMediaField } from './WidgetMediaField';
 
 interface WidgetPickerProps {
   actionLabel: string;
@@ -183,6 +186,36 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
                             </option>
                           ))}
                         </select>
+                      ) : field.kind === 'avatar-size' ? (
+                        <select
+                          className={`mt-1 ${ADMIN_INPUT}`}
+                          value={values[field.key] ?? 'md'}
+                          disabled={disabled || !enabled}
+                          onChange={(event) =>
+                            setValues((prev) => ({ ...prev, [field.key]: event.target.value }))
+                          }
+                        >
+                          {(field.options ?? ['sm', 'md', 'lg', 'xl']).map((option) => (
+                            <option key={option} value={option}>
+                              {t(`platform.widgets.avatarSizes.${option}`)}
+                            </option>
+                          ))}
+                        </select>
+                      ) : field.kind === 'media' ? (
+                        <WidgetMediaField
+                          value={values[field.key] ?? ''}
+                          disabled={disabled || !enabled}
+                          previewName={values.name ?? values.alt ?? label}
+                          onChange={(url) => setValues((prev) => ({ ...prev, [field.key]: url }))}
+                        />
+                      ) : field.kind === 'faq-items' ? (
+                        <WidgetFaqItemsEditor
+                          disabled={disabled || !enabled}
+                          items={faqEditorRows(values[field.key] ?? selected.defaults[field.key] ?? '')}
+                          onChange={(pairs) =>
+                            setValues((prev) => ({ ...prev, [field.key]: serializeFaqItems(pairs) }))
+                          }
+                        />
                       ) : (
                         <input
                           className={`mt-1 ${ADMIN_INPUT}`}
@@ -242,6 +275,11 @@ export const WidgetPicker: React.FC<WidgetPickerProps> = ({
     </div>
   );
 };
+
+function faqEditorRows(raw: string): { question: string; answer: string }[] {
+  const parsed = parseFaqItems(raw);
+  return parsed.length > 0 ? parsed : [{ question: '', answer: '' }];
+}
 
 function defaultWidgetFieldEnabled(type: WidgetTypeDefinition): Record<string, boolean> {
   const enabled: Record<string, boolean> = {};

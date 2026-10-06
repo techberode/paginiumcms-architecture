@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Layout\Services;
 
+use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 use PaginiumCMS\Support\MapEmbedUrlGuard;
 
 /**
@@ -14,6 +15,9 @@ use PaginiumCMS\Support\MapEmbedUrlGuard;
 final class WidgetCatalog
 {
     private const TONES = ['primary', 'success', 'warn', 'muted'];
+
+    /** @var list<string> */
+    private const AVATAR_SIZES = ['sm', 'md', 'lg', 'xl'];
 
     public function __construct(
         private ?WidgetDefinitionRepository $custom = null,
@@ -106,13 +110,37 @@ final class WidgetCatalog
                 'tone' => 'primary',
             ]),
             $this->type('profile', true, [
+                'avatar' => 'media',
+                'avatar-size' => 'avatar-size',
                 'name' => 'string',
                 'role' => 'string',
                 'href' => 'href',
             ], [
+                'avatar' => '/storage/app/content/media/defaults/author-avatar.png',
+                'avatar-size' => 'md',
                 'name' => 'Jordan K.',
                 'role' => 'Support lead',
                 'href' => '/contact',
+            ]),
+            $this->type('avatar', true, [
+                'src' => 'media',
+                'alt' => 'string',
+                'size' => 'avatar-size',
+                'href' => 'href',
+            ], [
+                'src' => '/storage/app/content/media/defaults/author-avatar.png',
+                'alt' => 'Team member',
+                'size' => 'lg',
+                'href' => '',
+            ]),
+            $this->type('faq', true, [
+                'title' => 'string',
+                'items' => 'faq-items',
+            ], [
+                'title' => 'FAQ',
+                'items' => 'What is PaginiumCMS?::A hybrid flat-file CMS with a React admin SPA and public site — content lives as UTF-8 files, not in SQL.'
+                    . ' | Do I need a database?::No. Pages, articles, settings, and media metadata are stored on disk; optional index/cache layers speed up reads.'
+                    . ' | Is it safe to self-host?::Yes. CSRF on mutating APIs, RBAC, upload allow-lists, CodePolicy for extensions, and encrypted secrets at rest are part of the baseline.',
             ]),
             $this->type('list', true, [
                 'title' => 'string',
@@ -215,6 +243,8 @@ final class WidgetCatalog
             'timeline',
             'icon-box',
             'profile',
+            'avatar',
+            'faq',
             'list',
             'kpi-row',
             'map-embed',
@@ -263,6 +293,8 @@ final class WidgetCatalog
             'timeline' => $this->renderTimeline($attrs),
             'icon-box' => $this->renderIconBox($attrs),
             'profile' => $this->renderProfile($attrs),
+            'avatar' => $this->renderAvatar($attrs),
+            'faq' => $this->renderFaq($attrs),
             'list' => $this->renderList($attrs),
             'kpi-row' => '<div class="pg-widget pg-widget-kpis">' . $inner . '</div>',
             'map-embed' => $this->renderMapEmbed($attrs),
@@ -287,6 +319,9 @@ final class WidgetCatalog
             $field = ['key' => $key, 'kind' => $kind];
             if ($kind === 'tone') {
                 $field['options'] = self::TONES;
+            }
+            if ($kind === 'avatar-size') {
+                $field['options'] = self::AVATAR_SIZES;
             }
             $schema[] = $field;
         }
@@ -456,14 +491,67 @@ final class WidgetCatalog
     {
         $href = $this->href($attrs['href'] ?? '');
         $name = $this->e($attrs['name'] ?? '');
-        $inner = '<p class="pg-widget-title">' . $name . '</p>'
-            . '<p class="pg-widget-hint">' . $this->e($attrs['role'] ?? '') . '</p>';
+        $avatarHtml = $this->avatarImageHtml(
+            $attrs['avatar'] ?? '',
+            $attrs['avatar-size'] ?? 'md',
+            (string) ($attrs['name'] ?? '')
+        );
+        $text = '<div class="pg-widget-profile-text">'
+            . '<p class="pg-widget-title">' . $name . '</p>'
+            . '<p class="pg-widget-hint">' . $this->e($attrs['role'] ?? '') . '</p>'
+            . '</div>';
+        $inner = $avatarHtml . $text;
 
         if ($href !== '#') {
-            return '<div class="pg-widget pg-widget-profile"><a class="pg-widget-link" href="' . $href . '">' . $inner . '</a></div>';
+            return '<div class="pg-widget pg-widget-profile pg-widget-profile-has-avatar">'
+                . '<a class="pg-widget-link pg-widget-profile-link" href="' . $href . '">' . $inner . '</a></div>';
         }
 
-        return '<div class="pg-widget pg-widget-profile">' . $inner . '</div>';
+        return '<div class="pg-widget pg-widget-profile pg-widget-profile-has-avatar">' . $inner . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderAvatar(array $attrs): string
+    {
+        $size = $this->avatarSize($attrs['size'] ?? 'md');
+        $alt = $this->e($attrs['alt'] ?? '');
+        $src = DamMediaUrl::sanitize(trim($attrs['src'] ?? ''));
+        if ($src === '') {
+            return '<div class="pg-widget pg-widget-avatar pg-widget-empty" role="note"><p class="pg-widget-hint">'
+                . $alt . ' — image URL missing or not allow-listed.</p></div>';
+        }
+
+        $img = '<img class="pg-widget-avatar-img pg-widget-avatar-size-' . $size . '" src="' . $this->e($src)
+            . '" alt="' . $alt . '" loading="lazy" decoding="async" />';
+        $href = $this->href($attrs['href'] ?? '');
+        if ($href !== '#') {
+            return '<div class="pg-widget pg-widget-avatar"><a class="pg-widget-avatar-link" href="' . $href . '">' . $img . '</a></div>';
+        }
+
+        return '<div class="pg-widget pg-widget-avatar">' . $img . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderFaq(array $attrs): string
+    {
+        $title = trim($attrs['title'] ?? '');
+        $titleHtml = $title === '' ? '' : '<p class="pg-widget-title">' . $this->e($title) . '</p>';
+        $itemsHtml = '';
+        foreach ($this->splitFaqPairs($attrs['items'] ?? '') as $pair) {
+            $itemsHtml .= '<details class="pg-faq-item"><summary class="pg-faq-question">'
+                . $this->e($pair[0]) . '</summary><div class="pg-faq-answer"><p>'
+                . $this->e($pair[1]) . '</p></div></details>';
+        }
+
+        if ($itemsHtml === '') {
+            return '<div class="pg-widget pg-widget-faq pg-widget-empty"><p class="pg-widget-hint">FAQ items required (question::answer pairs).</p></div>';
+        }
+
+        return '<div class="pg-widget pg-widget-faq">' . $titleHtml . '<div class="pg-faq-list">' . $itemsHtml . '</div></div>';
     }
 
     /**
@@ -659,6 +747,50 @@ final class WidgetCatalog
             . '</div>';
     }
 
+    private function avatarImageHtml(string $url, string $sizeRaw, string $altText): string
+    {
+        $src = DamMediaUrl::sanitize(trim($url));
+        if ($src === '') {
+            return '';
+        }
+
+        $size = $this->avatarSize($sizeRaw);
+        $alt = $this->e($altText);
+
+        return '<img class="pg-widget-avatar-img pg-widget-avatar-size-' . $size . '" src="' . $this->e($src)
+            . '" alt="' . $alt . '" loading="lazy" decoding="async" />';
+    }
+
+    private function avatarSize(string $value): string
+    {
+        $value = strtolower(trim($value));
+
+        return in_array($value, self::AVATAR_SIZES, true) ? $value : 'md';
+    }
+
+    /**
+     * @return list<array{0: string, 1: string}>
+     */
+    private function splitFaqPairs(string $value): array
+    {
+        $segments = $this->splitPipeList($value);
+        $pairs = [];
+        foreach ($segments as $segment) {
+            $pos = strpos($segment, '::');
+            if ($pos === false) {
+                continue;
+            }
+            $question = trim(substr($segment, 0, $pos));
+            $answer = trim(substr($segment, $pos + 2));
+            if ($question === '') {
+                continue;
+            }
+            $pairs[] = [$question, $answer];
+        }
+
+        return $pairs;
+    }
+
     private function tone(string $value): string
     {
         $value = strtolower(trim($value));
@@ -731,6 +863,9 @@ final class WidgetCatalog
             'tone' => $this->tone($raw),
             'percent' => (string) $this->percent($raw),
             'href' => $this->href($raw),
+            'media' => $this->e(DamMediaUrl::sanitize($raw)),
+            'avatar-size' => $this->avatarSize($raw),
+            'faq-items' => $this->e($raw),
             default => $this->e($raw),
         };
     }

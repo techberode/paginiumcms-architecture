@@ -5,7 +5,7 @@
 # používateľmi, settings.json, logs/, backups/) je mimo docrootu a NIKDY sa
 # nemá servírovať web serverom priamo. Toto .htaccess je len defense-in-depth
 # pre prípad chybnej konfigurácie Apache (docroot omylom nad public/).
-# Nginx ekvivalent: `location ~ ^/storage/ { deny all; }` (viď SECURITY_ISSUES.md).
+# Nginx: deny script URLs under /storage/ + proxy to PHP. Apache: docs/deploy/apache-storage.htaccess
 
 # Apache 2.4+ (mod_authz_core) – úplný zákaz.
 <IfModule mod_authz_core.c>
@@ -17,18 +17,6 @@
     Order Deny,Allow
     Deny from all
 </IfModule>
-
-# Povolenie prístupu len pre PHP súbory (nie je potrebné)
-# <FilesMatch "\.(php)$">
-#     Order Deny,Allow
-#     Deny from all
-# </FilesMatch>
-
-# Alebo povoliť len index.php v storage (ak existuje)
-<FilesMatch "index\.php$">
-    Order Allow,Deny
-    Allow from all
-</FilesMatch>
 
 # Blokovanie prístupu k .env a .git
 <FilesMatch "^\.">

@@ -18,7 +18,15 @@ import { widgetTypeIcon } from '../../utils/widgetMarkup';
 const DEFAULT_EXPAND =
   '<div class="pg-widget pg-widget-custom">\n  <p class="pg-widget-title">{{title}}</p>\n  <p class="pg-widget-hint">{{body}}</p>\n</div>';
 
-const KINDS: WidgetFieldKind[] = ['string', 'tone', 'percent', 'href'];
+const KINDS: WidgetFieldKind[] = [
+  'string',
+  'tone',
+  'percent',
+  'href',
+  'media',
+  'avatar-size',
+  'faq-items',
+];
 
 type DraftField = WidgetFieldSchema & { rowId: string };
 

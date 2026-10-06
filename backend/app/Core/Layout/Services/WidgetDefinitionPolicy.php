@@ -14,7 +14,7 @@ final class WidgetDefinitionPolicy
     private const MAX_ID_LEN = 40;
     private const MAX_EXPAND_LEN = 20000;
     private const MAX_FIELDS = 12;
-    private const KINDS = ['string', 'tone', 'percent', 'href'];
+    private const KINDS = ['string', 'tone', 'percent', 'href', 'media', 'avatar-size', 'faq-items'];
 
     /** @var list<string> */
     private const FORBIDDEN_EXPAND_PATTERNS = [
@@ -65,7 +65,7 @@ final class WidgetDefinitionPolicy
                     $errors['schema'][] = 'Invalid field key: ' . $key;
                 }
                 if (!in_array($kind, self::KINDS, true)) {
-                    $errors['schema'][] = 'Field kind must be string|tone|percent|href: ' . $key;
+                    $errors['schema'][] = 'Field kind must be string|tone|percent|href|media|avatar-size|faq-items: ' . $key;
                 }
             }
         }

@@ -593,6 +593,10 @@ final class SettingsSchema
                     ['key' => 'unifiedPolicyEnabled', 'type' => 'bool', 'label' => 'Unified upload policy (It.78)', 'default' => true, 'rules' => ['bool'], 'help' => 'Jednotná upload policy pre media, avatar, zálohy a importy.'],
                     ['key' => 'auditUploads', 'type' => 'bool', 'label' => 'Auditovať uploady', 'default' => true, 'rules' => ['bool'], 'help' => 'Zapisuje sanitizované upload udalosti do security auditu.'],
                     ['key' => 'dailyQuotaBytesPerUser', 'type' => 'int', 'label' => 'Denný upload limit na používateľa (B)', 'default' => 0, 'rules' => ['int', 'min:0', 'max:1073741824'], 'help' => '0 = vypnuté. Flat-file quota counter.'],
+                    ['key' => 'polyglotMarkerScanEnabled', 'type' => 'bool', 'label' => 'Polyglot scan (It.99)', 'default' => true, 'rules' => ['bool'], 'help' => 'Skenuje vzorku uploadu (obrázky/video) na HTML/script markery.'],
+                    ['key' => 'polyglotMarkerScanMaxBytes', 'type' => 'int', 'label' => 'Polyglot scan — max. bajtov vzorky', 'default' => 65536, 'rules' => ['int', 'min:4096', 'max:262144'], 'help' => '65536 = 64 KB. Väčšia vzorka = pomalší upload scan.'],
+                    ['key' => 'reencodeRasterUploads', 'type' => 'bool', 'label' => 'Prekódovať rastre po upload-e (It.99)', 'default' => false, 'rules' => ['bool'], 'help' => 'GD re-encode JPEG/PNG/WebP/GIF — odstráni skrytý payload. Viac CPU pri upload-e. Avatary sa normalizujú vždy.'],
+                    ['key' => 'secureMediaFileNaming', 'type' => 'bool', 'label' => 'Bezpečné názvy súborov v médiách', 'default' => true, 'rules' => ['bool'], 'help' => 'Uloží image_YYYYMMDD_id.jpg / video_YYYYMMDD_id.mp4; pôvodný názov zostane v knižnici.'],
                 ],
             ],
             'accessControl' => [

@@ -105,6 +105,7 @@ final class MediaMigrationServiceTest extends TestCase
             $this->storageFactory,
             new MediaImageOptimizer(),
             new MediaOptimizePreviewStore($reader, $writer),
+            new \PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard($settings),
         );
 
         $this->migration = new MediaMigrationService(

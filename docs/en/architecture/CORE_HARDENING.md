@@ -251,7 +251,7 @@ Trash operations validate origin path and conflicts. Bulk restore/purge has coun
 - RBAC/path ACL for HTTP, queue, and restore,
 - WAF bypass/false-positive tests,
 - rate limiting and trusted-proxy spoofing,
-- path traversal/symlink/Zip-Slip/upload polyglot,
+- path traversal/symlink/Zip-Slip/upload polyglot ([ISS-195](../../ISSUES.md#iss-195) · planned [It.99](../ITERATION_99.md): Tier 1 marker scan + optional raster re-encode),
 - SSRF redirect/DNS-rebinding scenarios where supported by the harness,
 - secret redaction in API/log/export,
 - broken/readonly/disk-full storage,

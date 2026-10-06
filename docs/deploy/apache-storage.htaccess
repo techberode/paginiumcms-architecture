@@ -1,0 +1,28 @@
+# PaginiumCMS — Apache rules for /storage/ (copy into your vhost or backend/public/.htaccess)
+#
+# Normal deployment: DocumentRoot = backend/public, /storage/* is routed to index.php
+# (StorageController streams files — no PHP execution as script).
+#
+# Use this snippet so operators do not need custom hardening for script extensions.
+# Nginx equivalent: location ~* ^/storage/.+\.(php|phtml|php5|phar)$ { deny all; }
+
+# --- Option A: DocumentRoot backend/public (recommended) — merge into public/.htaccess ---
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^storage/.+\.(php|phtml|php5|phar)$ - [F,L]
+</IfModule>
+
+# --- Option B: VirtualHost / Directory context (when /storage is visible to Apache) ---
+# <LocationMatch "^/storage/.+\.(php|phtml|php5|phar)$">
+#     <IfModule mod_authz_core.c>
+#         Require all denied
+#     </IfModule>
+#     <IfModule !mod_authz_core.c>
+#         Order Deny,Allow
+#         Deny from all
+#     </IfModule>
+# </LocationMatch>
+
+# --- Option C: Wrong Alias directly to backend/storage/app/content/media (discouraged) ---
+# Place as backend/storage/app/content/media/.htaccess (shipped in repo).
+# See backend/storage/app/content/media/.htaccess

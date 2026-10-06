@@ -33,7 +33,7 @@ Uses [It.78](ITERATION_78.md) `UploadPolicyEngine` profile `media-video`:
 - Separate size cap: `media.maxVideoUploadSizeKb` (default e.g. 102400 = 100 MB; configurable, max ceiling in schema).
 - Same filename guards, auth (`media:write`), CSRF, and audit as image upload.
 - Optional per-site daily video quota (bytes) via It.78 quota guard.
-- Reject polyglot files (e.g. MP4 with embedded HTML/script markers in metadata — strip or reject per probe rules).
+- Reject polyglot files (e.g. MP4 with embedded HTML/script markers in metadata — **reject** via 64 KB marker probe; raster/SVG/PDF gaps tracked in [ISS-195](../ISSUES.md#iss-195), planned [It.99](ITERATION_99.md)).
 
 ---
 

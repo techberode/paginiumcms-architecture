@@ -115,6 +115,7 @@ final class MediaImageOptimizer
         ?int $jpegQuality = null,
         ?int $webpQuality = null,
         bool $allowUnchanged = false,
+        bool $forceReencode = false,
     ): array {
         $this->assertGdAvailable();
 
@@ -135,8 +136,13 @@ final class MediaImageOptimizer
         }
 
         $detectedMime = $this->detectMime($info);
-        if (!$this->supportsMime($detectedMime)) {
+        if (!$this->supportsMime($detectedMime)
+            && !($forceReencode && $this->supportsSecurityReencodeMime($detectedMime))) {
             throw new FlatFileException(Lang::get('optimize_unsupported_type', [], 'media'));
+        }
+
+        if ($this->supportsSecurityReencodeMime($detectedMime) && $forceReencode) {
+            $detectedMime = 'image/png';
         }
 
         $this->assertFormatSupported($detectedMime);
@@ -175,7 +181,7 @@ final class MediaImageOptimizer
         $afterBytes = strlen($encoded);
         $resized = $targetW < $beforeWidth || $targetH < $beforeHeight;
 
-        if (!$resized && $afterBytes >= $beforeBytes) {
+        if (!$forceReencode && !$resized && $afterBytes >= $beforeBytes) {
             if ($allowUnchanged) {
                 return $this->unchangedResult($binary, $detectedMime, $beforeBytes, $beforeWidth, $beforeHeight);
             }
@@ -183,7 +189,7 @@ final class MediaImageOptimizer
             throw new FlatFileException(Lang::get('optimize_no_reduction', [], 'media'));
         }
 
-        if ($resized && $afterBytes >= $beforeBytes) {
+        if (!$forceReencode && $resized && $afterBytes >= $beforeBytes) {
             if ($allowUnchanged) {
                 return $this->unchangedResult($binary, $detectedMime, $beforeBytes, $beforeWidth, $beforeHeight);
             }
@@ -257,6 +263,46 @@ final class MediaImageOptimizer
             $webpQuality,
             true
         );
+    }
+
+    /**
+     * Decode and re-encode raster bytes to strip metadata / trailing polyglot payload (It.99).
+     *
+     * @return array{binary: string, mimeType: string, applied: bool}
+     */
+    public function forceSecurityReencode(
+        string $binary,
+        string $mimeType,
+        int $jpegQuality = self::JPEG_QUALITY,
+        int $webpQuality = self::WEBP_QUALITY,
+    ): array {
+        if (!$this->supportsMime($mimeType) && !$this->supportsSecurityReencodeMime($mimeType)) {
+            return ['binary' => $binary, 'mimeType' => $mimeType, 'applied' => false];
+        }
+
+        $this->assertGdAvailable();
+
+        $result = $this->optimize(
+            $binary,
+            $mimeType,
+            null,
+            null,
+            $jpegQuality,
+            $webpQuality,
+            false,
+            true,
+        );
+
+        return [
+            'binary' => $result['binary'],
+            'mimeType' => $result['mimeType'],
+            'applied' => true,
+        ];
+    }
+
+    public function supportsSecurityReencodeMime(string $mimeType): bool
+    {
+        return strtolower(trim($mimeType)) === 'image/gif';
     }
 
     /**

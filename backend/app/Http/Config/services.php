@@ -204,6 +204,7 @@ use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
 use PaginiumCMS\Core\Security\Upload\UploadArchiveValidator;
 use PaginiumCMS\Core\Security\Upload\UploadAuditLogger;
 use PaginiumCMS\Core\Security\Upload\UploadFilenameGuard;
+use PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard;
 use PaginiumCMS\Core\Security\Upload\UploadMagicByteInspector;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyProfile;
@@ -501,6 +502,8 @@ return [
             get(SettingsRepositoryInterface::class),
             get(SecurityAuditStore::class)
         ),
+    PolyglotUploadGuard::class => create(PolyglotUploadGuard::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
     UploadPolicyEngine::class => create(UploadPolicyEngine::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -509,7 +512,8 @@ return [
             get(UploadMagicByteInspector::class),
             get(UploadArchiveValidator::class),
             get(UploadQuotaGuard::class),
-            get(UploadAuditLogger::class)
+            get(UploadAuditLogger::class),
+            get(PolyglotUploadGuard::class)
         ),
     UploadSecurityValidator::class => create(UploadSecurityValidator::class)
         ->constructor(
@@ -1166,7 +1170,8 @@ return [
             get(UploadPolicyEngine::class),
             get(MediaStorageFactory::class),
             get(MediaImageOptimizer::class),
-            get(MediaOptimizePreviewStore::class)
+            get(MediaOptimizePreviewStore::class),
+            get(PolyglotUploadGuard::class)
         ),
 
     StockImageCatalog::class => create(StockImageCatalog::class),

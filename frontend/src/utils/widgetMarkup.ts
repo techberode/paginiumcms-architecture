@@ -5,12 +5,14 @@ import {
   Bookmark,
   Box,
   LayoutGrid,
+  HelpCircle,
   List,
   Megaphone,
   Package,
   Quote,
   Sparkles,
   User,
+  UserCircle2,
 } from 'lucide-react';
 import type { WidgetTypeDefinition } from '../api/widgets';
 
@@ -26,6 +28,8 @@ const WIDGET_ICONS: Record<string, LucideIcon> = {
   timeline: Bookmark,
   'icon-box': Box,
   profile: User,
+  avatar: UserCircle2,
+  faq: HelpCircle,
   list: List,
   'kpi-row': LayoutGrid,
 };

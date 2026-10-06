@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 6 October 2026 · register **ISS-001–ISS-194** · latest public release tag **`v2.1.0-beta.96`**
+> **Last updated:** 6 October 2026 · register **ISS-001–ISS-195** · latest public release tag **`v2.1.0-beta.97`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -217,6 +217,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-192](#iss-192) | Article save 400 — iframe in Markdown body | High (admin UX) | ✅ Fixed — normalize embeds before validate |
 | [ISS-193](#iss-193) | YouTube/Vimeo player blank on public site (Chrome, Floorp) | Medium (public UX) | ✅ Fixed — preserve embed iframe in sanitizer |
 | [ISS-194](#iss-194) | Admin live preview stuck on “Rendering…” | High (editor UX) | ✅ Fixed — stable preview effect deps |
+| [ISS-195](#iss-195) | Upload polyglot gaps on raster images / SVG / PDF | **Medium (security)** | 🟡 **It.99** shipped — Tier 1 + naming; PDF + optional re-encode residual |
 
 ## CI failures (GitHub Actions)
 
@@ -5932,6 +5933,59 @@ Shortcodes, snippets, pages, and articles showed **ŽIVÝ NÁHĽAD / Renderujem 
 
 - `frontend/src/components/backend/AdminBodyPreviewPanel.test.tsx`
 - Manual: Shortcodes manager live preview completes after deploy.
+
+---
+
+## ISS-195 – Upload polyglot gaps (raster / SVG / PDF)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | **Medium (security)** — elevated concern if untrusted users can upload to media; lower immediate impact when only trusted editors upload and PHP execution is disabled under `/storage/` |
+| **Status** | 🟡 **It.99 shipped** — marker scan + SVG reject + secure filenames; optional GD re-encode; PDF deep scan still open |
+| **Area** | Upload pipeline · `UploadPolicyEngine` · `MediaFormats` · public media serve |
+
+### Symptom / risk
+
+An attacker (or compromised editor account) may upload a file that **passes** extension + magic-byte checks while still carrying a **second payload** (classic **polyglot** / GIFAR-style append, SVG script handlers, or PDF active content). PaginiumCMS is not a binary analyzer; residual risk depends on how the file is **served** and whether anything executes user-controlled bytes as code.
+
+### What is already in place (It.78 / It.79)
+
+- Unified upload: filename guards, MIME allow-list, extension ↔ MIME match, optional **magic bytes** (`uploadSecurity.scanMagicBytes`).
+- **Video:** first 64 KB scanned for HTML/script markers; mismatch rejected.
+- **Plain text / markdown uploads:** null bytes and script markers in sample rejected.
+- **Serve-time:** SVG/HTML/XML and documents use **attachment** + **`nosniff`** + CSP **sandbox** where applicable (`StorageController`).
+- **Embed surface:** public content uses allow-listed media URLs (`DamMediaUrl`), not arbitrary paths.
+
+### Gaps (why this issue stays open)
+
+| Asset type | Gap |
+|------------|-----|
+| JPEG/PNG/GIF/WebP | Header validated only — **no** full-file or re-encode strip of trailing/metadata payload |
+| SVG | Upload accepts valid SVG markup; reliance on **serve** hardening, not upload normalization |
+| PDF | `%PDF-` prefix only — no embedded JS/HTML probe |
+| Large polyglot tail | Marker scan today is **video-centric**; raster paths lack the same sample probe |
+
+### Remediation shipped (It.99)
+
+**[Iteration 99](en/ITERATION_99.md)** — `PolyglotUploadGuard`, settings under **Bezpečnosť uploadu**:
+
+1. **Tier 1 (default ON):** `polyglotMarkerScanEnabled` — HTML/script markers in sample (images + video); SVG `script` / `on*` / `javascript:` reject.
+2. **Tier 2 (default OFF):** `reencodeRasterUploads` — GD force re-encode on media upload; avatars still normalized via `AvatarImageProcessor`.
+3. **Naming (default ON):** `secureMediaFileNaming` → `image_YYYYMMDD_{id}.ext` / `video_…` on disk; original label in Media Library UI.
+4. **Residual:** PDF embedded JS not scanned; polyglot tail **after** scan window unless re-encode enabled; `nosniff` at serve (already present).
+
+### Verification
+
+- `backend/tests/Core/Security/Upload/PolyglotUploadGuardTest.php`
+- `backend/tests/Modules/Media/Services/MediaSecureUploadNamingTest.php`
+- `./scripts/iteration-gate.sh`
+
+### Cross-links
+
+- Architecture test gate: [CORE_HARDENING.md](en/architecture/CORE_HARDENING.md) §17 (upload polyglot).
+- Shipped baseline: [ITERATION_78.md](en/ITERATION_78.md), [ITERATION_79.md](en/ITERATION_79.md) (video marker reject).
 
 ---
 

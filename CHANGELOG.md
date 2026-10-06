@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Security (It.99):** Upload polyglot hardening — `PolyglotUploadGuard`, secure media filenames, optional `reencodeRasterUploads` — [ISS-195](docs/ISSUES.md#iss-195)
 - **Optional:** 58f-i-d section background crossfade; callout colors → `--color-primary`
 - **Deferred:** It.97 CSP/embed facades · in-CMS docs portal — [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md)
 

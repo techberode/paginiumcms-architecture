@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Security\Upload\UploadArchiveValidator;
 use PaginiumCMS\Core\Security\Upload\UploadAuditLogger;
 use PaginiumCMS\Core\Security\Upload\UploadFilenameGuard;
 use PaginiumCMS\Core\Security\Upload\UploadMagicByteInspector;
+use PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyProfile;
@@ -259,7 +260,8 @@ final class UploadPolicyEngineTest extends TestCase
             new UploadMagicByteInspector(),
             new UploadArchiveValidator(new ZipEntryGuard()),
             new UploadQuotaGuard($settings, $reader, $writer),
-            new UploadAuditLogger($settings, null)
+            new UploadAuditLogger($settings, null),
+            new PolyglotUploadGuard($settings)
         );
     }
 

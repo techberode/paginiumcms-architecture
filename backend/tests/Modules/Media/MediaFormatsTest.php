@@ -117,6 +117,7 @@ class MediaFormatsTest extends TestCase
         $bytes = "\x00\x00\x00\x18ftypisom<script>alert(1)</script>";
 
         $this->expectException(FlatFileException::class);
+        $this->expectExceptionMessage('podozrivé HTML/script');
 
         MediaFormats::validate('evil.mp4', $bytes, 'video/mp4', ['video/mp4']);
     }

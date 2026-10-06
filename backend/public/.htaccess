@@ -5,6 +5,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Block script-like URLs under /storage/ (Apache parity with nginx It.99 deploy templates).
+    RewriteRule ^storage/.+\.(php|phtml|php5|phar)$ - [F,L]
+
     # Redirect na HTTPS (produkcia)
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]

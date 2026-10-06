@@ -113,6 +113,8 @@ Pre **prezentáciu platformy** otvorte [PaginiumCMS landing](/paginium-cms) — 
 
 **Referenčné landingy (Experience Phase C, EN):** [Agentúra](/reference-agency) · [SaaS](/reference-saas) · [Lokálny biznis](/reference-local)
 
+**FAQ (EN):** [PaginiumCMS FAQ](/faq) — accordion widget s otázkami o platforme.
+
 Toto je **demo domov** — plnohodnotný CMS na vyskúšanie adminu aj verejného webu.
 
 ## Čo vyskúšať
@@ -127,6 +129,7 @@ MD,
             'pages/reference-agency.md' => ContentSeedLoader::load('reference-agency.en.md'),
             'pages/reference-saas.md' => ContentSeedLoader::load('reference-saas.en.md'),
             'pages/reference-local.md' => ContentSeedLoader::load('reference-local-craft.en.md'),
+            'pages/faq.md' => ContentSeedLoader::load('faq-paginium.en.md'),
             'pages/about.md' => <<<'MD'
 ---
 title: O demo module

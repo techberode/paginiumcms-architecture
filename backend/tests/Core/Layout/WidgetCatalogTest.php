@@ -100,4 +100,36 @@ final class WidgetCatalogTest extends TestCase
         $this->assertStringContainsString('99%', $html);
         $this->assertStringContainsString('Posts', $html);
     }
+
+    public function testProfileRendersAvatarWhenAllowListed(): void
+    {
+        $html = (new WidgetCatalog())->render(
+            ' type="profile" name="Alex" role="Editor" avatar="/storage/app/content/media/defaults/author-avatar.png" avatar-size="lg" href=""',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-profile', $html);
+        $this->assertStringContainsString('pg-widget-avatar-size-lg', $html);
+        $this->assertStringContainsString('author-avatar.png', $html);
+    }
+
+    public function testFaqRendersAccordionDetails(): void
+    {
+        $html = (new WidgetCatalog())->render(
+            ' type="faq" title="Help" items="Q one?::Answer one | Q two?::Answer two"',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-faq', $html);
+        $this->assertStringContainsString('<details class="pg-faq-item">', $html);
+        $this->assertStringContainsString('Q one?', $html);
+        $this->assertStringContainsString('Answer two', $html);
+    }
+
+    public function testAvatarWidgetBlocksExternalSrc(): void
+    {
+        $html = (new WidgetCatalog())->render(
+            ' type="avatar" src="https://evil.example/x.png" alt="X" size="md" href=""',
+            ''
+        );
+        $this->assertStringContainsString('pg-widget-empty', $html);
+    }
 }

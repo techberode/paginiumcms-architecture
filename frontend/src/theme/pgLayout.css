@@ -2447,6 +2447,65 @@
   gap: 0.75rem;
 }
 
+.pg-widget-profile-has-avatar .pg-widget-profile-link,
+.pg-widget-profile-has-avatar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.pg-widget-profile-text {
+  min-width: 0;
+}
+
+.pg-widget-avatar-img {
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-border, #e2e8f0) 40%, transparent);
+}
+
+.pg-widget-avatar-size-sm {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.pg-widget-avatar-size-md {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.pg-widget-avatar-size-lg {
+  width: 5rem;
+  height: 5rem;
+}
+
+.pg-widget-avatar-size-xl {
+  width: 7rem;
+  height: 7rem;
+}
+
+.pg-widget-avatar {
+  display: inline-flex;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.pg-widget-avatar-link {
+  display: inline-flex;
+  border-radius: 999px;
+}
+
+.pg-widget-faq {
+  padding-bottom: 0.85rem;
+}
+
+.pg-widget-faq > .pg-faq-list {
+  margin-top: 0.75rem;
+}
+
 .pg-widget-stat-cell {
   padding: 0.75rem;
   border-radius: 0.65rem;

@@ -70,7 +70,8 @@ class StockImageImporterTest extends TestCase
             $policyEngine,
             $storageFactory,
             new MediaImageOptimizer(),
-            new MediaOptimizePreviewStore($reader, $writer)
+            new MediaOptimizePreviewStore($reader, $writer),
+            new \PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard($settings)
         );
         $importer = new StockImageImporter($repository, $settings, $catalog, $policyEngine);
 

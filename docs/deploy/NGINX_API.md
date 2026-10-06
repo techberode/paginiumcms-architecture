@@ -119,6 +119,43 @@ public media request
 
 An nginx alias to the entire storage root would violate the Core storage contract.
 
+All shipped vhost templates (`nginx-paginiumcms.com.conf`, demo, test, dev) include the script deny block **before** `location /storage/`. Reference pattern:
+
+```nginx
+# Optional defense-in-depth: never execute script extensions under /storage/
+# (Paginium serves files via StorageController — stream only, no PHP run-as-script.
+#  This block helps if the tree ever contains a mis-uploaded .php name.)
+location ~* ^/storage/.+\.(php|phtml|php5|phar)$ {
+    deny all;
+    return 403;
+}
+
+location /storage/ {
+    proxy_pass http://paginium_php;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Connection "";
+    proxy_hide_header X-Powered-By;
+}
+```
+
+Place the regex **`location` above** `location /storage/` so nginx matches script-like paths first. Real media URLs look like `/storage/app/content/media/…/image_20261006_abc.jpg` — not `/storage/uploads/…` (WordPress-style paths are unused).
+
+Do **not** replace `proxy_pass` with a filesystem `alias` to `backend/storage/` unless you replicate PHP allow-list logic in nginx (not recommended).
+
+## 7b. Apache (`mod_rewrite` / `.htaccess`)
+
+When **DocumentRoot** is `backend/public`, the shipped [`backend/public/.htaccess`](../../backend/public/.htaccess) already returns **403** for `/storage/…/*.php` (and `.phtml`, `.php5`, `.phar`) before routing to `index.php`.
+
+Copy-paste reference and vhost alternatives: [`apache-storage.htaccess`](apache-storage.htaccess).
+
+If Apache **Alias**es the media tree directly (discouraged), the repo includes [`backend/storage/app/content/media/.htaccess`](../../backend/storage/app/content/media/.htaccess) — disables PHP engine and denies script extensions in that folder.
+
+The parent [`backend/storage/.htaccess`](../../backend/storage/.htaccess) keeps **deny all** when the whole storage tree is accidentally exposed.
+
 ## 8. Security headers
 
 The artifacts provide separate HTTP/LAN and HTTPS snippets. Important nginx behavior:

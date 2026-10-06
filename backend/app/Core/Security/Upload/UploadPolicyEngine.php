@@ -21,6 +21,7 @@ final class UploadPolicyEngine
         private UploadArchiveValidator $archiveValidator,
         private UploadQuotaGuard $quotaGuard,
         private UploadAuditLogger $auditLogger,
+        private PolyglotUploadGuard $polyglotGuard,
     ) {
     }
 
@@ -85,6 +86,12 @@ final class UploadPolicyEngine
                     $allowedMimeTypes,
                     $this->profiles->requiresMagicBytes($profileId)
                 );
+            } catch (FlatFileException $exception) {
+                throw new UploadPolicyException($exception->getMessage(), 0, $exception);
+            }
+
+            try {
+                $this->polyglotGuard->assertClean($binary, $validatedMime);
             } catch (FlatFileException $exception) {
                 throw new UploadPolicyException($exception->getMessage(), 0, $exception);
             }

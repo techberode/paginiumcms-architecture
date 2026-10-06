@@ -92,7 +92,8 @@ class MediaRepositoryTest extends TestCase
             $policyEngine,
             $storageFactory,
             $imageOptimizer,
-            $previewStore
+            $previewStore,
+            new \PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard($settings)
         );
     }
 
@@ -324,7 +325,8 @@ class MediaRepositoryTest extends TestCase
         $this->assertNull($found);
         $moved = $this->repository->findAll(['folder' => 'dest']);
         $this->assertCount(1, $moved);
-        $this->assertStringContainsString('logo.png', $moved[0]->getPath());
+        $this->assertStringStartsWith('media/dest/image_', $moved[0]->getPath());
+        $this->assertSame('logo.png', $moved[0]->getFileName());
     }
 
     public function testCopyFolderDuplicatesFiles(): void

@@ -59,6 +59,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | 3 | ✅ **Experience B2** — section-band reveal/hover v3 (`beta.96`) | same |
 | 4 | ✅ **Experience C** — reference landing seeds + outline starters | [LANDING_PAGE.md](user/LANDING_PAGE.md) |
 | 5 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
+| 5b | ✅ **It.99** Upload polyglot hardening (marker scan, secure filenames, opt-in re-encode) | [ISS-195](../ISSUES.md#iss-195) · [ITERATION_99.md](ITERATION_99.md) |
 | 6 | **It.82d** Origin host metrics | Optional maintainer hook |
 | 7 | **It.98** Multi-site workspace + CLI content ops (WP-style, phased) | [ITERATION_98.md](ITERATION_98.md) |
 | 8 | **Growth proposals** (A/B, related posts, TOC, cross-post, visual B3) | [PRODUCT_GROWTH_PROPOSALS.md](architecture/PRODUCT_GROWTH_PROPOSALS.md) |

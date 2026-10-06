@@ -28,5 +28,9 @@ final class ContentSeedLoaderTest extends TestCase
 
         $local = ContentSeedLoader::load('reference-local-craft.en.md');
         $this->assertStringContainsString('[gallery-carousel', $local);
+
+        $faq = ContentSeedLoader::load('faq-paginium.en.md');
+        $this->assertStringContainsString('slug: faq', $faq);
+        $this->assertStringContainsString('[widget type="faq"', $faq);
     }
 }

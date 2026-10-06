@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Media;
 
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard;
 
 /**
  * Single source of truth for allowed media MIME types, extensions, and content validation.
@@ -264,7 +265,7 @@ final class MediaFormats
         }
 
         if ($verifyContent && self::isVideoMime($declaredMime)) {
-            self::assertNoEmbeddedHtmlMarkers($bytes);
+            PolyglotUploadGuard::assertNoHtmlScriptMarkersStatic($bytes);
         }
 
         return $declaredMime;
@@ -364,16 +365,6 @@ final class MediaFormats
     private static function looksLikeWebm(string $bytes): bool
     {
         return str_starts_with($bytes, "\x1A\x45\xDF\xA3");
-    }
-
-    private static function assertNoEmbeddedHtmlMarkers(string $bytes): void
-    {
-        $sample = strtolower(substr($bytes, 0, 65536));
-        foreach (['<script', '<html', '<?php', 'javascript:'] as $marker) {
-            if (str_contains($sample, $marker)) {
-                throw new FlatFileException('Video súbor obsahuje podozrivé HTML/script značky');
-            }
-        }
     }
 
     private static function looksLikeSvg(string $bytes): bool

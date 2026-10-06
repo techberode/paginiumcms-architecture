@@ -1,6 +1,13 @@
 import { apiClient } from './client';
 
-export type WidgetFieldKind = 'string' | 'tone' | 'percent' | 'href';
+export type WidgetFieldKind =
+  | 'string'
+  | 'tone'
+  | 'percent'
+  | 'href'
+  | 'media'
+  | 'avatar-size'
+  | 'faq-items';
 
 export interface WidgetFieldSchema {
   key: string;

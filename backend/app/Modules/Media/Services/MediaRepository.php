@@ -9,6 +9,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Core\Security\Services\UploadSecurityValidator;
+use PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyException;
 use PaginiumCMS\Core\Security\Upload\UploadSurfaceRegistry;
@@ -40,6 +41,7 @@ class MediaRepository implements MediaRepositoryInterface
         private MediaStorageFactory $storageFactory,
         private MediaImageOptimizer $imageOptimizer,
         private MediaOptimizePreviewStore $optimizePreviewStore,
+        private PolyglotUploadGuard $polyglotGuard,
     ) {
     }
 
@@ -117,6 +119,7 @@ class MediaRepository implements MediaRepositoryInterface
                 $allowedMimeTypes,
                 $this->uploadSecurity->shouldScanMagicBytes()
             );
+            $this->polyglotGuard->assertClean($binary, $mimeType);
         }
 
         $folder = $this->normalizeFolder($folder);
@@ -124,7 +127,6 @@ class MediaRepository implements MediaRepositoryInterface
         $media = new MediaFile();
 
         $prefix = self::MEDIA_DIR . ($folder !== '' ? '/' . $folder : '');
-        $relativePath = $prefix . '/' . $media->getId() . '_' . $safeName;
 
         if (!$this->uploadPolicy->isUnifiedEnabled()) {
             $isVideo = MediaFormats::isVideoMime($mimeType);
@@ -140,6 +142,14 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         [$binary, $mimeType] = $this->applyUploadImageCompression($binary, $mimeType);
+
+        $storageFileName = MediaSecureUploadNaming::build(
+            $media->getId(),
+            $mimeType,
+            $safeName,
+            $this->polyglotGuard->shouldUseSecureMediaFileNaming()
+        );
+        $relativePath = $prefix . '/' . $storageFileName;
 
         $storage = $this->storage();
         $storage->put($relativePath, $binary);
@@ -869,11 +879,32 @@ class MediaRepository implements MediaRepositoryInterface
      */
     private function applyUploadImageCompression(string $binary, string $mimeType): array
     {
-        if (!$this->imageOptimizer->supportsMime($mimeType) || !MediaImageOptimizer::isAvailable()) {
+        if (!MediaImageOptimizer::isAvailable()) {
             return [$binary, $mimeType];
         }
 
         $media = $this->settings->group('media');
+
+        if ($this->polyglotGuard->shouldReencodeRasterUploads()) {
+            try {
+                $forced = $this->imageOptimizer->forceSecurityReencode(
+                    $binary,
+                    $mimeType,
+                    max(60, min(95, (int) ($media['jpegQuality'] ?? MediaImageOptimizer::JPEG_QUALITY))),
+                    max(60, min(95, (int) ($media['webpQuality'] ?? MediaImageOptimizer::WEBP_QUALITY))),
+                );
+                if ($forced['applied'] === true) {
+                    return [$forced['binary'], $forced['mimeType']];
+                }
+            } catch (FlatFileException) {
+                throw new FlatFileException('Nepodarilo sa bezpečne prekódovať obrázok');
+            }
+        }
+
+        if (!$this->imageOptimizer->supportsMime($mimeType)) {
+            return [$binary, $mimeType];
+        }
+
         if (($media['autoOptimizeOnUpload'] ?? true) !== true) {
             return [$binary, $mimeType];
         }

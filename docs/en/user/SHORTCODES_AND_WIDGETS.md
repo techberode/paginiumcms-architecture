@@ -151,7 +151,10 @@ Widgets are intended for structured data displays; shortcodes are for marketing 
 | `form-cta` | `href="/contact"` optional `subject="…"` | CTA to contact form |
 | `checklist` | `items="A \| B \| C"` | Checkmarked bullet list (CSS) |
 | `stat-duo` | `label1` / `value1` / `label2` / `value2` | Two-up stat strip |
-| `brand`, `cta`, `quote`, `timeline`, `icon-box`, `profile`, `list` | see **Widgets** admin | Marketing / dashboard blocks |
+| `profile` | `avatar`, `avatar-size` (sm–xl), name, role | Team card with photo from media library |
+| `avatar` | `src`, `size`, optional `href` | Standalone round photo block |
+| `faq` | `title`, `items` (`Question::Answer \| …`) | Native `<details>` accordion (editor: add Q&A rows) |
+| `brand`, `cta`, `quote`, `timeline`, `icon-box`, `list` | see **Widgets** admin | Marketing / dashboard blocks |
 
 Editor charts (Mermaid, etc.) remain in the **article editor**; body widgets above expand on the server for public HTML.
 
