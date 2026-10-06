@@ -1,6 +1,6 @@
 // frontend/src/components/layout/PublicSiteLayout.tsx
 import React, { useMemo, useState } from 'react';
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 import { Navbar } from '../frontend/Navbar';
 import { Footer } from '../frontend/Footer';
 import { SideNav } from '../frontend/SideNav';
@@ -19,6 +19,9 @@ import { MaintenanceGate } from '../maintenance/MaintenanceGate';
 import { CookieConsentProvider } from '../../context/CookieConsentContext';
 import { CookieConsentBanner } from '../frontend/CookieConsentBanner';
 import { BackToTopButton } from '../frontend/BackToTopButton';
+import { ReadingProgressBar } from '../frontend/ReadingProgressBar';
+import { usePublicNavigate } from '../../hooks/usePublicNavigate';
+import { shouldShowReadingProgress } from '../../utils/readingProgressRoute';
 import { SupportChatPresenceBubble } from '../backend/SupportChatPresenceBubble';
 import { useAnalyticsPageview } from '../../hooks/useAnalyticsPageview';
 import { galleryPublicSlug } from '../../utils/galleryPublicRoute';
@@ -119,7 +122,7 @@ export const PublicSiteLayout: React.FC = () => {
   useAnalyticsPageview();
   const [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
-  const navigate = useNavigate();
+  const navigate = usePublicNavigate();
   const { user, pendingTwoFactor } = useAuth();
   const { getPageBySlug, getArticleBySlug, navigation, secondaryNavigation, pages } = usePublicSite();
   const { settings } = useSettingsContext();
@@ -240,6 +243,11 @@ export const PublicSiteLayout: React.FC = () => {
     </div>
   ) : null;
 
+  const readingProgressEnabled = shouldShowReadingProgress(
+    pathname,
+    settings.layout?.showReadingProgress ?? true
+  );
+
   const serverErrorPage = useMemo(() => {
     const slug = settings.layout?.serverErrorPageSlug?.trim();
     if (!slug) {
@@ -297,6 +305,7 @@ export const PublicSiteLayout: React.FC = () => {
         }
       >
       <DemoPublicStrip />
+      <ReadingProgressBar enabled={readingProgressEnabled} />
       <ThemeScriptLoader />
       {ThemeShell ? (
         <div className="flex flex-1 flex-col min-h-0 w-full">

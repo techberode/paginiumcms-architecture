@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { usePublicNavigate } from '../../hooks/usePublicNavigate';
 import type { PublicNavItem } from '../../context/PublicSiteContext';
 import { useI18n } from '../../context/I18nContext';
 import { NavHoverPreview, NavItemContent } from './navbarShared';
@@ -225,7 +226,7 @@ export const SideNav: React.FC<SideNavProps> = ({
 }) => {
   const { t } = useI18n();
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = usePublicNavigate();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
 
   const sortedItems = useMemo(

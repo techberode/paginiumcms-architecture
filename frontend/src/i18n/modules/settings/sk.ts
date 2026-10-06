@@ -1819,6 +1819,14 @@ export const settingsSk: MessageTree = {
       "breadcrumbsOnHome": {
         "label": "Drobčeky aj na úvodnej stránke",
         "help": "Vypnuté = na domovskej stránke sa drobčeky nezobrazia."
+      },
+      "showReadingProgress": {
+        "label": "Indikátor čítania",
+        "help": "Tenká lišta navrchu pri článkoch a stránkach. Skryté pri prefers-reduced-motion."
+      },
+      "viewTransitionsEnabled": {
+        "label": "View Transitions pri navigácii",
+        "help": "Jemný prechod medzi verejnými trasami (Chromium, Safari 18+). Inak okamžitá navigácia."
       }
     },
     "projectPlanner": {

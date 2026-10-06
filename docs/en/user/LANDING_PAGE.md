@@ -24,6 +24,20 @@ PaginiumCMS landing pages are **markdown + shortcodes**. Outline is a form view 
 
 **Bundled seed:** copy `backend/resources/content-seeds/paginium-cms-landing.sk.md` into your content tree as `pages/paginium-cms.md`, or create the page in admin and paste the body from that file.
 
+### Reference compositions (Experience Phase C)
+
+Three **English** landing seeds show different information architecture (not only color):
+
+| Seed file | Slug | Story |
+|-----------|------|--------|
+| `reference-agency.en.md` | `reference-agency` | Portfolio — gallery + stagger band + testimonial |
+| `reference-saas.en.md` | `reference-saas` | Product — pricing toggle + metrics + feature grid |
+| `reference-local-craft.en.md` | `reference-local` | Local craft — story grid + stats band + carousel |
+
+Copy into `data/content/pages/<slug>.md` (adjust frontmatter author/dates) or paste the body into a new **landing** page. In **Outline**, use starter packs **Agency**, **SaaS**, or **Local business** for a quick block skeleton.
+
+Demo mode seeds all three at `/reference-agency`, `/reference-saas`, and `/reference-local` (links from demo home).
+
 Demo installs include a sample page at `/paginium-cms` when demo mode seeds content (dark `mono-zinc` appearance).
 
 ---

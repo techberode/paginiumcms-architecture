@@ -250,6 +250,8 @@ export interface PublicSettings {
     breadcrumbsOnHome?: boolean;
     notFoundPageSlug?: string;
     serverErrorPageSlug?: string;
+    showReadingProgress?: boolean;
+    viewTransitionsEnabled?: boolean;
   };
   company?: {
     showOnContactPage?: boolean;

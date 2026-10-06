@@ -179,6 +179,27 @@ export const PageOutlineEditor: React.FC<PageOutlineEditorProps> = ({
             testId="page-outline-starter-landing"
             onClick={() => applyStarter('landing')}
           />
+          <PaletteButton
+            disabled={disabled}
+            label={t('editor.outline.starter.agency')}
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            testId="page-outline-starter-agency"
+            onClick={() => applyStarter('agency')}
+          />
+          <PaletteButton
+            disabled={disabled}
+            label={t('editor.outline.starter.saas')}
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            testId="page-outline-starter-saas"
+            onClick={() => applyStarter('saas')}
+          />
+          <PaletteButton
+            disabled={disabled}
+            label={t('editor.outline.starter.local')}
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            testId="page-outline-starter-local"
+            onClick={() => applyStarter('local')}
+          />
         </div>
         <div className="flex flex-wrap gap-2" data-testid="page-outline-palette">
           <PaletteButton

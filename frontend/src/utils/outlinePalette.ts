@@ -80,10 +80,45 @@ export const OUTLINE_PORTFOLIO_STARTER = ['landing-hero', 'feature-grid', 'cta-b
 /** Alternate landing stack: showcase hero + cards + CTA. */
 export const OUTLINE_LANDING_STARTER = ['showcase-hero', 'feature-grid', 'cta-banner'] as const;
 
-export type OutlineStarterPackId = 'portfolio' | 'landing';
+/** Experience Phase C — agency / portfolio IA (gallery + social proof). */
+export const OUTLINE_AGENCY_STARTER = [
+  'landing-hero',
+  'feature-gallery',
+  'stats-row',
+  'testimonial',
+  'cta-banner',
+] as const;
+
+/** Experience Phase C — SaaS IA (pricing + metrics first). */
+export const OUTLINE_SAAS_STARTER = [
+  'showcase-hero',
+  'pricing-table',
+  'stats-row',
+  'feature-grid',
+  'cta-banner',
+] as const;
+
+/** Experience Phase C — local business IA (sections + trust). */
+export const OUTLINE_LOCAL_STARTER = [
+  'landing-hero',
+  'section-head',
+  'feature-grid',
+  'testimonial',
+  'cta-banner',
+] as const;
+
+export type OutlineStarterPackId = 'portfolio' | 'landing' | 'agency' | 'saas' | 'local';
+
+const STARTER_PACKS: Record<OutlineStarterPackId, readonly string[]> = {
+  portfolio: OUTLINE_PORTFOLIO_STARTER,
+  landing: OUTLINE_LANDING_STARTER,
+  agency: OUTLINE_AGENCY_STARTER,
+  saas: OUTLINE_SAAS_STARTER,
+  local: OUTLINE_LOCAL_STARTER,
+};
 
 export function outlineStarterNames(pack: OutlineStarterPackId): readonly string[] {
-  return pack === 'landing' ? OUTLINE_LANDING_STARTER : OUTLINE_PORTFOLIO_STARTER;
+  return STARTER_PACKS[pack];
 }
 
 export function createOutlineStarterPack(pack: OutlineStarterPackId = 'portfolio'): OutlineBlock[] {

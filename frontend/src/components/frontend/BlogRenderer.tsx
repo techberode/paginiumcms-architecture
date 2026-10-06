@@ -1,6 +1,7 @@
 // frontend/src/components/frontend/BlogRenderer.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { usePublicNavigate } from '../../hooks/usePublicNavigate';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import apiClient, { type PaginationMeta } from '../../api/client';
@@ -65,7 +66,7 @@ export const BlogRenderer: React.FC = () => {
     [t]
   );
   const { slug } = useParams<{ slug?: string }>();
-  const navigate = useNavigate();
+  const navigate = usePublicNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { settings } = useSettingsContext();
   const { getPageBySlug, pages } = usePublicSite();

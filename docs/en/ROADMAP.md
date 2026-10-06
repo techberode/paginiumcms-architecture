@@ -1,7 +1,7 @@
 # PaginiumCMS — project roadmap
 
 > **Documentation checkpoint:** October 6, 2026  
-> **Latest release:** see [`CHANGELOG.md`](CHANGELOG.md) (tagged **`v2.1.0-beta.96`**) · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Latest release:** see [`CHANGELOG.md`](CHANGELOG.md) (tagged **`v2.1.0-beta.97`**) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
 > **Code status:** Hybrid Engine layers **It.68–77 largely shipped** — verify live wiring in **Origin Panel** (`/platform/origin`) before trusting table rows below.  
 > **Source of truth for “does it run?”:** Origin feature probes + [CHANGELOG.md](CHANGELOG.md), not stale ⏳ symbols alone — see [en/operations/ROADMAP_SYNC.md](en/operations/ROADMAP_SYNC.md).

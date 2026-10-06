@@ -47,7 +47,7 @@ Current assets (keep this pattern):
 
 `HOVER_EFFECTS`: `tilt-3d`, `border-sweep` + reduced-motion disables transform/animation.
 
-### 2.3 Reading progress bar (**B3**)
+### 2.3 Reading progress bar — ✅ **B3 shipped** (`beta.97`)
 
 | Piece | Approach |
 |-------|----------|
@@ -57,11 +57,11 @@ Current assets (keep this pattern):
 
 Optional setting: `layout.showReadingProgress`.
 
-### 2.4 View Transitions API (**B3**)
+### 2.4 View Transitions API — ✅ **B3 shipped**
 
 SPA navigation wrapper in React Router — `document.startViewTransition` when supported; CSS `::view-transition-old/new`; fallback immediate navigate. **One** central helper, not per-page. Test Safari 18+ / Chromium.
 
-### 2.5 Glass utility (**B3**)
+### 2.5 Glass utility — ✅ **B3 shipped**
 
 `.pg-glass` in `pgLayout.css` using `color-mix` + `backdrop-filter`; use on section-band overlays or cards — keep allow-list in `ShortcodeDefinitionPolicy` if referenced from templates.
 

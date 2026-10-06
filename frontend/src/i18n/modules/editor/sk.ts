@@ -472,6 +472,12 @@ export const editorSk: MessageTree = {
       portfolioHint: 'Vloží hero, karty a výzvu k akcii. Stále ide o Markdown shortcody.',
       landing: 'Landing starter',
       landingHint: 'Vloží showcase hero, karty a výzvu k akcii.',
+      agency: 'Agentúra starter',
+      agencyHint: 'Hero, galéria, stats, citát a CTA — porfolio poradie.',
+      saas: 'SaaS starter',
+      saasHint: 'Showcase hero, cenník, stats, mriežka funkcií a CTA.',
+      local: 'Lokálny biznis starter',
+      localHint: 'Hero, nadpis sekcie, karty, citát a CTA.',
     },
     palette: {
       prose: 'Text',

@@ -1,9 +1,9 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** October 6, 2026 · `main` @ **`v2.1.0-beta.96`** (Experience B1–B2 motion + docs)  
+> **Checkpoint:** October 6, 2026 · `main` @ **`v2.1.0-beta.97`** (Experience Phase C + B3)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
-> **Next planned slice:** **Experience Phase C** (reference landing seeds) · **It.98** workspace+CLI — [ITERATION_98.md](ITERATION_98.md) · optional **B3** / 58f-i-d — [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) · **It.97** **deferred**
+> **Next planned slice:** **It.98** workspace+CLI — [ITERATION_98.md](ITERATION_98.md) · optional **B3** / 58f-i-d — [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) · **It.97** **deferred**
 
 This document replaces the old chronological “log of everything.” Historical detail remains in [`CHANGELOG.md`](../../CHANGELOG.md), [`ISSUES.md`](ISSUES.md), and individual `ITERATION_*.md` files.
 
@@ -29,8 +29,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ **`v2.1.0-beta.96`** — visual-frame + section-band motion · planning docs · SK marketing 34–36 — [RELEASE_2_1_0_BETA_96.md](RELEASE_2_1_0_BETA_96.md) (gallery wave: [beta.95](RELEASE_2_1_0_BETA_95.md)) |
-| Unreleased | **Experience Phase C** · **It.82d** host metrics · optional 58f-i-d crossfade · in-CMS docs portal proposal |
+| Latest tag | ✅ **`v2.1.0-beta.97`** — reference landing seeds + reading progress + view transitions — [RELEASE_2_1_0_BETA_97.md](RELEASE_2_1_0_BETA_97.md) (prior: [beta.96](RELEASE_2_1_0_BETA_96.md)) |
+| Unreleased | **It.82d** host metrics · optional 58f-i-d crossfade · in-CMS docs portal proposal · Experience **B3** |
 | Origin Panel | Refresh “today” snapshot after deploy; canonical version = **`AppVersion::current()`** / latest git tag |
 | Previous tag | `v2.1.0-beta.95` — `[media-gallery]` · unified lightbox · feature gallery `?slide=` · shortcode cookbook |
 | It.48 | ✅ compile + public HTML serve in `beta.89` |
@@ -57,7 +57,7 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | 1 | ✅ **58f-i-i…k** gallery + lightbox (`beta.95`) | [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 2 | ✅ **Experience B1** — `[visual-frame]` motion presets | [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) |
 | 3 | ✅ **Experience B2** — section-band reveal/hover v3 (`beta.96`) | same |
-| 4 | **Experience C** — reference landing seeds + outline starters | same |
+| 4 | ✅ **Experience C** — reference landing seeds + outline starters | [LANDING_PAGE.md](user/LANDING_PAGE.md) |
 | 5 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 6 | **It.82d** Origin host metrics | Optional maintainer hook |
 | 7 | **It.98** Multi-site workspace + CLI content ops (WP-style, phased) | [ITERATION_98.md](ITERATION_98.md) |

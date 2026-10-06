@@ -1,6 +1,7 @@
 // frontend/src/components/frontend/Navbar.tsx
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { usePublicNavigate } from '../../hooks/usePublicNavigate';
 import { ChevronDown, Search, Shield, Menu, X } from 'lucide-react';
 import { usePublicSite, type PublicNavItem } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
@@ -174,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user } = useAuth();
   const { t } = useI18n();
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = usePublicNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isPathActive = (navPath: string) => {

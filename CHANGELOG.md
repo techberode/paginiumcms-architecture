@@ -13,8 +13,6 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Docs:** README, CONTINUATION, ROADMAP, user guides, and architecture handoffs synced to **`v2.1.0-beta.96`** (October 2026).
-- **Experience Phase C:** reference landing seeds — [PUBLIC_EXPERIENCE_ROADMAP.md](docs/en/architecture/PUBLIC_EXPERIENCE_ROADMAP.md).
 - **Optional:** 58f-i-d section background crossfade; callout colors → `--color-primary`
 - **Deferred:** It.97 CSP/embed facades · in-CMS docs portal — [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md)
 
@@ -22,6 +20,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.97`](#release-2-1-0-beta-97) | 2026-10-06 | Experience Phase C reference seeds · B3 reading progress + View Transitions + pg-glass |
 | [`2.1.0-beta.96`](#release-2-1-0-beta-96) | 2026-10-06 | Experience B1 visual-frame motion · B2 section-band reveal/hover v3 · It.98/growth/docs portal plan · SK marketing drafts |
 | [`2.1.0-beta.95`](#release-2-1-0-beta-95) | 2026-10-06 | It.58f-i-i/j/k media gallery + unified lightbox · feature gallery deep links · shortcode cookbook docs |
 | [`2.1.0-beta.94`](#release-2-1-0-beta-94) | 2026-10-05 | It.58f-i islands + lightbox g/h · custom 404 · editorial · live preview fix · composer handoff |
@@ -186,6 +185,19 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ---
 
+
+<a id="release-2-1-0-beta-97"></a>
+
+## [2.1.0-beta.97] – 2026-10-06
+
+Experience **Phase C** reference landings and **Phase B3** public UX polish.
+
+Release notes: [RELEASE_2_1_0_BETA_97.md](docs/en/RELEASE_2_1_0_BETA_97.md)
+
+### Shipped (summary)
+
+- **Phase C:** `reference-agency.en.md`, `reference-saas.en.md`, `reference-local-craft.en.md`; Outline starters **agency / saas / local**; demo seeds + home links; [LANDING_PAGE.md](docs/en/user/LANDING_PAGE.md).
+- **B3:** `ReadingProgressBar` + `useScrollProgress`; `usePublicNavigate` + View Transitions API; Settings `layout.showReadingProgress`, `layout.viewTransitionsEnabled`; `.pg-scroll-progress`, view-transition CSS, `.pg-glass` in `pgLayout.css`.
 
 <a id="release-2-1-0-beta-96"></a>
 

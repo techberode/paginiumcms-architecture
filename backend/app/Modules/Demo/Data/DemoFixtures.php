@@ -111,6 +111,8 @@ updatedAt: 2026-07-01T08:00:00+02:00
 
 Pre **prezentáciu platformy** otvorte [PaginiumCMS landing](/paginium-cms) — hero, stats, tech stack a sekcie postavené zo shortcodes.
 
+**Referenčné landingy (Experience Phase C, EN):** [Agentúra](/reference-agency) · [SaaS](/reference-saas) · [Lokálny biznis](/reference-local)
+
 Toto je **demo domov** — plnohodnotný CMS na vyskúšanie adminu aj verejného webu.
 
 ## Čo vyskúšať
@@ -122,6 +124,9 @@ Toto je **demo domov** — plnohodnotný CMS na vyskúšanie adminu aj verejnéh
 > Produkčný obsah na `paginiumcms.com` sa **nikdy** neprepíše.
 MD,
             'pages/paginium-cms.md' => ContentSeedLoader::load('paginium-cms-landing.sk.md'),
+            'pages/reference-agency.md' => ContentSeedLoader::load('reference-agency.en.md'),
+            'pages/reference-saas.md' => ContentSeedLoader::load('reference-saas.en.md'),
+            'pages/reference-local.md' => ContentSeedLoader::load('reference-local-craft.en.md'),
             'pages/about.md' => <<<'MD'
 ---
 title: O demo module

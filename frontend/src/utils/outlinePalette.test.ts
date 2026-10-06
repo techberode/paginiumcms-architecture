@@ -101,6 +101,16 @@ describe('outlinePalette', () => {
 
     const landing = createOutlineStarterPack('landing');
     expect(landing[0]).toMatchObject({ kind: 'shortcode', name: 'showcase-hero' });
+
+    expect(outlineStarterNames('agency')).toEqual([
+      'landing-hero',
+      'feature-gallery',
+      'stats-row',
+      'testimonial',
+      'cta-banner',
+    ]);
+    expect(outlineStarterNames('saas')[1]).toBe('pricing-table');
+    expect(outlineStarterNames('local')[1]).toBe('section-head');
   });
 
   it('reorders outline rows without dropping items', () => {

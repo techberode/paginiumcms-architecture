@@ -81,6 +81,8 @@ final class SettingsSchema
                     ['key' => 'breadcrumbsOnHome', 'type' => 'bool', 'label' => 'Drobčeky aj na úvodnej stránke', 'default' => false, 'rules' => ['bool'], 'help' => 'Vypnuté = na domovskej stránke sa drobčeky nezobrazia.'],
                     ['key' => 'notFoundPageSlug', 'type' => 'string', 'label' => 'Vlastná stránka 404 (slug)', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Voliteľný slug publikovanej stránky (layout landing/single). Prázdna = vestavný Paginium 404 panel.'],
                     ['key' => 'serverErrorPageSlug', 'type' => 'string', 'label' => 'Vlastná stránka 500 (slug)', 'default' => '', 'rules' => ['string', 'max:120'], 'help' => 'Zobrazí sa pri chybe React renderu na verejnom webe. Prázdna = vestavný 500 panel.'],
+                    ['key' => 'showReadingProgress', 'type' => 'bool', 'label' => 'Reading progress bar (public)', 'default' => true, 'rules' => ['bool'], 'help' => 'Fixed top bar on article detail and long pages. Off when prefers-reduced-motion.'],
+                    ['key' => 'viewTransitionsEnabled', 'type' => 'bool', 'label' => 'View Transitions (public SPA)', 'default' => true, 'rules' => ['bool'], 'help' => 'Smooth cross-fade on in-site navigation when the browser supports View Transitions API.'],
                 ],
             ],
             'projectPlanner' => [

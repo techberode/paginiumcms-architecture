@@ -1242,6 +1242,14 @@ export const settingsEn: MessageTree = {
       "breadcrumbsOnHome": {
         "label": "Breadcrumbs on home page",
         "help": "Off = hide breadcrumbs on the home page only."
+      },
+      "showReadingProgress": {
+        "label": "Reading progress bar",
+        "help": "Shows a thin progress line at the top on blog articles and published pages. Hidden when prefers-reduced-motion is on."
+      },
+      "viewTransitionsEnabled": {
+        "label": "View Transitions on navigation",
+        "help": "Subtle cross-fade when moving between public routes (Chromium, Safari 18+). Falls back to instant navigation."
       }
     },
     "projectPlanner": {

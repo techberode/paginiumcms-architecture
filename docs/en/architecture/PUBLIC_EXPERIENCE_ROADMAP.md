@@ -90,7 +90,7 @@ Do **not** invent new iteration numbers unless added to [CONTINUATION.md](../CON
 
 ### Phase B — **Motion preset library** (highest agency impact)
 
-**Status:** ✅ **B1 + B2 shipped** (`beta.96`) — `[visual-frame]` motion; `[section-band]` extended `reveal` / `hover-effect` (seeder v3); public `useLandingReveal` + `pgLayout.css`.
+**Status:** ✅ **B1–B3 shipped** (`beta.97`) — motion presets, section-band effects, reading progress, View Transitions, `.pg-glass`; public `useLandingReveal` + `pgLayout.css`.
 
 **User story:** When inserting any shortcode or widget in the visual modal, operator selects **Effect: None | Fade up | Stagger children** once; effect applies on the **public** site wherever that wrapped block appears.
 
@@ -102,21 +102,21 @@ Do **not** invent new iteration numbers unless added to [CONTINUATION.md](../CON
 - FE admin: `VisualInsertTypographyControls`, SK/EN labels.
 - **Reduced motion:** CSS `@media (prefers-reduced-motion: reduce)` + IO fallback.
 
-**Still planned (B3+):** reading progress + View Transitions — [PRODUCT_GROWTH_PROPOSALS.md](PRODUCT_GROWTH_PROPOSALS.md) §2.3–2.4; Phase C reference seeds.
+**B3 shipped** (`beta.97`): reading progress bar, View Transitions on public navigate, `.pg-glass` utility — Settings → Layout. **Phase C** reference seeds shipped in same wave — see below.
 
 **Out of scope:** custom easing editor, author keyframes, CDN animation libs.
 
 **Exit:** two landings can share blocks but **feel** different via motion + composition, not only `primary` color.
 
-### Phase C — **Reference compositions** (anti–spreadsheet proof)
+### Phase C — **Reference compositions** ✅ shipped (post **beta.96**)
 
-| Deliverable | Purpose |
-|-------------|---------|
-| **3 publishable seed pages** | Agency, SaaS, local craft—**distinct block order** and copy (EN; SK optional in seeds). |
-| **Outline starter packs** | Extend `outlinePalette.ts` — `agency`, `saas`, `local` (not only `portfolio` / `landing`). |
-| **Demo mode** | Optional seed on install so evaluators see variety, not one template. |
+| Deliverable | Status |
+|-------------|--------|
+| **3 publishable seed pages** | ✅ `reference-agency.en.md`, `reference-saas.en.md`, `reference-local-craft.en.md` |
+| **Outline starter packs** | ✅ `agency`, `saas`, `local` in `outlinePalette.ts` + Outline UI |
+| **Demo mode** | ✅ Demo fixtures seed `/reference-agency`, `/reference-saas`, `/reference-local` |
 
-Paths: `backend/resources/content-seeds/` + docs in [LANDING_PAGE.md](../user/LANDING_PAGE.md).
+Paths: `backend/resources/content-seeds/` · [LANDING_PAGE.md](../user/LANDING_PAGE.md).
 
 **Exit:** a maintainer can pitch “here are three unlike demos” without forking React.
 

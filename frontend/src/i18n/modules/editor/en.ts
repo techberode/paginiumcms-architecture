@@ -472,6 +472,12 @@ export const editorEn: MessageTree = {
       portfolioHint: 'Inserts a hero, cards, and a call to action. Still Markdown shortcodes.',
       landing: 'Landing starter',
       landingHint: 'Inserts a showcase hero, cards, and a call to action.',
+      agency: 'Agency starter',
+      agencyHint: 'Hero, gallery, stats, testimonial, and CTA — portfolio-style order.',
+      saas: 'SaaS starter',
+      saasHint: 'Showcase hero, pricing, stats, feature grid, and CTA.',
+      local: 'Local business starter',
+      localHint: 'Hero, section head, cards, testimonial, and CTA.',
     },
     palette: {
       prose: 'Text',
