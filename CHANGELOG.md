@@ -13,15 +13,16 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Planned:** It.58f-i-i…k — inline `[media-gallery]`, video slides, feature-gallery polish — [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md)
+- **Docs:** [PUBLIC_EXPERIENCE_ROADMAP.md](docs/en/architecture/PUBLIC_EXPERIENCE_ROADMAP.md) — Phase B motion presets (next).
 - **Optional:** 58f-i-d section background crossfade; callout colors → `--color-primary`
 - **Deferred:** It.97 CSP/embed facades
-- **Marketing (SK drafts):** publish `docs/marketing/ARTICLE_30–33_*.md` after tag when ready.
+- **Marketing (SK drafts):** publish `docs/marketing/ARTICLE_30–33_*.md` when ready.
 
 ## Release index
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.95`](#release-2-1-0-beta-95) | 2026-10-06 | It.58f-i-i/j/k media gallery + unified lightbox · feature gallery deep links · shortcode cookbook docs |
 | [`2.1.0-beta.94`](#release-2-1-0-beta-94) | 2026-10-05 | It.58f-i islands + lightbox g/h · custom 404 · editorial · live preview fix · composer handoff |
 | [`2.1.0-beta.93`](#release-2-1-0-beta-93) | 2026-09-24 | Footer tech stack · desk inbox sync · text scale · blog layout · Vitest/palette fixes · Site Design docs |
 | [`2.1.0-beta.92`](#release-2-1-0-beta-92) | 2026-09-22 | Admin status badges · getting-started SSOT · media upload compression · prod Redis compose follow-up |
@@ -184,6 +185,21 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ---
 
+
+<a id="release-2-1-0-beta-95"></a>
+
+## [2.1.0-beta.95] – 2026-10-06
+
+It.58f-i **gallery/lightbox completion**: inline `[media-gallery]`, video/embed slides, feature gallery parity, operator shortcode docs.
+
+Release notes: [RELEASE_2_1_0_BETA_95.md](docs/en/RELEASE_2_1_0_BETA_95.md)
+
+### Shipped (summary)
+
+- **It.58f-i-i:** `[media-gallery]` — DAM `ids` (images + video), grid/masonry, `MediaGalleryRenderer` + `MediaGalleryIsland` + `PaginiumMediaGallery`.
+- **It.58f-i-j:** Mixed lightbox slides — YARL Video plugin; prose `<video>` + allow-listed YouTube nocookie / Vimeo; sanitizer attrs for gallery/video/iframes.
+- **It.58f-i-k:** Feature gallery — shared image/video thumbs, live `?slide=` URL sync with lightbox index; removed deprecated `ProseImageLightboxModal`.
+- **Docs:** [SHORTCODE_COOKBOOK.md](docs/en/user/SHORTCODE_COOKBOOK.md), [SHORTCODES_A_WIDGETY.md](docs/sk/user/SHORTCODES_A_WIDGETY.md); expanded [GALLERY.md](docs/en/user/GALLERY.md), [MEDIA_IN_CONTENT.md](docs/en/user/MEDIA_IN_CONTENT.md), [GALLERY_LIGHTBOX_PLANNED.md](docs/en/architecture/GALLERY_LIGHTBOX_PLANNED.md) (58f-i-g…k complete).
 
 <a id="release-2-1-0-beta-94"></a>
 

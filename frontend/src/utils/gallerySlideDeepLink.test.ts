@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { GalleryItem } from '../api/gallery';
-import { resolveGallerySlideDeepLink } from './gallerySlideDeepLink';
+import {
+  applyGallerySlideToSearchParams,
+  gallerySlideQueryValueForItem,
+  resolveGallerySlideDeepLink,
+} from './gallerySlideDeepLink';
 
 const items: GalleryItem[] = [
   {
@@ -54,5 +58,13 @@ describe('resolveGallerySlideDeepLink', () => {
       activeTag: null,
       modalIndex: null,
     });
+  });
+
+  it('sets slide param to item id for sharing', () => {
+    expect(gallerySlideQueryValueForItem(items[1]!)).toBe('gallery_2');
+    const params = applyGallerySlideToSearchParams(new URLSearchParams('foo=1'), items[0]!);
+    expect(params.get('slide')).toBe('gallery_1');
+    expect(params.get('foo')).toBe('1');
+    expect(applyGallerySlideToSearchParams(params, null).has('slide')).toBe(false);
   });
 });

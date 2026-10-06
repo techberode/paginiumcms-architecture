@@ -35,3 +35,25 @@ export function resolveGallerySlideDeepLink(
 
   return { activeTag: null, modalIndex: null };
 }
+
+/** Query value when the lightbox focuses a specific gallery item (58f-i-k). */
+export function gallerySlideQueryValueForItem(item: GalleryItem): string {
+  return item.id;
+}
+
+/**
+ * Update `slide` search param for shareable modal state.
+ * Pass `null` to remove the param when the lightbox closes.
+ */
+export function applyGallerySlideToSearchParams(
+  params: URLSearchParams,
+  item: GalleryItem | null
+): URLSearchParams {
+  const next = new URLSearchParams(params);
+  if (item === null) {
+    next.delete('slide');
+    return next;
+  }
+  next.set('slide', gallerySlideQueryValueForItem(item));
+  return next;
+}

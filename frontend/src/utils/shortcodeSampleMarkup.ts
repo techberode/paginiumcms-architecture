@@ -26,6 +26,10 @@ export function buildShortcodeSampleMarkup(name: string): string {
     return `[${name} title="Highlights" tag="" layout="slider" effect="subtle" autoplay="true"/]`;
   }
 
+  if (name === 'media-gallery') {
+    return `[${name} title="Selected photos" ids="media/example.jpg|media/example-2.jpg" columns="3" layout="grid"/]`;
+  }
+
   if (name === 'section-band') {
     return `[${name} anchor="work" layout="contained" radius="rounded" reveal="scroll" hover-effect="lift"]\n## Section title\n\nBody copy and nested shortcodes go here.\n\n[/${name}]`;
   }

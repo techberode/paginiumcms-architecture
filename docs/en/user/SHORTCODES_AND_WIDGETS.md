@@ -8,7 +8,17 @@ icon: material/code-braces
 
 PaginiumCMS pages and articles share one **body** field. Marketing sections use **shortcodes** (tags like `[feature-card]…[/feature-card]`). Dashboard-style blocks use **widgets** (`[widget type="…" …/]`). Both expand to HTML on the **server** when the public site loads content — the editor stores the shortcode source, not the final layout.
 
-**Related:** [Landing page guide](LANDING_PAGE.md) · [Content editor](CONTENT_EDITOR.md) · [Gallery shortcode](GALLERY.md) · Admin **Shortcodes** and **Widgets** screens.
+**Related:** [Shortcode cookbook](SHORTCODE_COOKBOOK.md) (every bundled tag + examples) · [Landing page guide](LANDING_PAGE.md) · [Content editor](CONTENT_EDITOR.md) · [Galleries](GALLERY.md) · Admin **Shortcodes** and **Widgets** screens.
+
+---
+
+## 0. How tags become the public page (plain language)
+
+1. You save **shortcode text** in the page body (Outline is the same string with forms).
+2. On preview and on the public site, PHP **expands** tags to HTML (classes like `pg-showcase-hero`, islands like `data-island="media-gallery"`).
+3. The public React app **hydrates islands** (feature gallery lightbox, media gallery, carousel). Everything else is static HTML + `pgLayout.css`.
+
+You do not need to understand PHP or React to compose landings — only valid tag syntax and published media/gallery items.
 
 ---
 
@@ -99,13 +109,23 @@ Markdown inside paired blocks is converted when the page HTML is built. Keep one
 | `testimonial` | self-closing | `quote`, `author`, `role` |
 | `cta-banner` | self-closing | Bottom band CTA |
 | `pricing-table` + `pricing-plan` + `pricing-feature` | paired | See [LANDING_PAGE.md](LANDING_PAGE.md) |
-| `feature-gallery` | self-closing | Published gallery items — [GALLERY.md](GALLERY.md) |
+| `feature-gallery` | self-closing | Admin **Feature gallery** catalog — grid/slider, lightbox, `?slide=` deep links — [GALLERY.md](GALLERY.md) |
+| `media-gallery` | self-closing | Hand-picked DAM **images + video** — `ids="media/a.jpg\|media/b.mp4"`, `columns`, `layout="grid\|masonry"` — [SHORTCODE_COOKBOOK.md](SHORTCODE_COOKBOOK.md#media-gallery--hand-picked-dam-files-not-the-feature-catalog) |
+| `gallery-carousel` | self-closing | Carousel island — attrs in admin catalog |
+| `section-band` | paired | Full-width section wrapper + nested blocks |
+| `latest-articles` | self-closing | Dynamic blog ticker/list |
+| `staff-card` / `staff-team` | self-closing | Team/contact cards from users registry |
+| `document-link` | self-closing | Download link to allow-listed file URL |
+| `visual-frame` | paired | Alignment / max-width wrapper (insert modal) |
+| `coming-soon` | self-closing | Restricted / teaser panel |
 | `alert-box` | paired | `tone="info|warn|success"` + inner markdown |
 | `faq-list` + `faq-item` | paired + self-closing | FAQ accordion via native `<details>` (`question`, `answer`) |
 | `link-row` + `link-chip` | paired + self-closing | Pill link row (`label`, `href`) |
 | `landing-hero` | self-closing | Optional DAM image/video; bool toggles `show-subtitle`, `show-cta`, `show-media` |
 
 Full landing walkthrough: [LANDING_PAGE.md](LANDING_PAGE.md). Seed body: `backend/resources/content-seeds/paginium-cms-landing.sk.md`.
+
+**Per-shortcode copy-paste examples:** [SHORTCODE_COOKBOOK.md](SHORTCODE_COOKBOOK.md). Slovak summary: [docs/sk/user/SHORTCODES_A_WIDGETY.md](../../sk/user/SHORTCODES_A_WIDGETY.md).
 
 ---
 

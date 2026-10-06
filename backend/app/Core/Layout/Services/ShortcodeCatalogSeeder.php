@@ -294,6 +294,12 @@ final class ShortcodeCatalogSeeder
                 'attrs' => GalleryCarouselRenderer::attributeSchema(),
                 'expand' => '<section class="pg-island pg-island--gallery-carousel pg-gallery-carousel" data-island="gallery-carousel"></section>',
             ],
+            'media-gallery' => [
+                'name' => 'media-gallery',
+                'version' => 1,
+                'attrs' => MediaGalleryRenderer::attributeSchema(),
+                'expand' => '<section class="pg-island pg-island--media-gallery pg-media-gallery" data-island="media-gallery"></section>',
+            ],
             'latest-articles' => [
                 'name' => 'latest-articles',
                 'version' => 1,

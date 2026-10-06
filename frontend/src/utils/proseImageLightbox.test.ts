@@ -53,4 +53,27 @@ describe('proseImageLightbox', () => {
     const slides = collectProseLightboxSlides(root, { galleryGroup: '' });
     expect(slides[0]?.excludeFromSlideshow).toBe(true);
   });
+
+  it('collects DAM video in document order with images', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <img src="/storage/media/a.png" alt="A" />
+      <video src="/storage/media/b.mp4"></video>
+    `;
+    const slides = collectProseLightboxSlides(root, { galleryGroup: '' });
+    expect(slides.map((s) => s.type)).toEqual(['image', 'video']);
+  });
+
+  it('collects allow-listed embed iframes in a gallery group', () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <iframe class="paginium-external-embed" data-gallery="g1"
+        src="https://www.youtube-nocookie.com/embed/abc123"></iframe>
+      <iframe class="paginium-external-embed" data-gallery="g1"
+        src="https://player.vimeo.com/video/999"></iframe>
+    `;
+    const slides = collectProseLightboxSlides(root, { galleryGroup: 'g1' });
+    expect(slides).toHaveLength(2);
+    expect(slides[0]?.type).toBe('embed');
+  });
 });

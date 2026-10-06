@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { GalleryItem } from '../../api/gallery';
-import { resolvePublicMediaUrl } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
+import { FeatureGalleryMediaThumb } from './FeatureGalleryMediaThumb';
 import { FeatureGalleryModal } from './FeatureGalleryModal';
 
 export type GalleryEffectPreset = 'subtle' | 'cinematic' | 'minimal';
@@ -18,6 +18,8 @@ export interface FeatureGallerySliderProps {
   modalCaptionStyle?: 'below' | 'overlay' | 'side';
   /** It.65 Phase 3 — open modal at this index when items load (`?slide=`). */
   initialModalIndex?: number | null;
+  /** Sync `?slide=` when modal opens or slide changes (58f-i-k). */
+  onActiveItemChange?: (item: GalleryItem | null) => void;
   className?: string;
 }
 
@@ -34,6 +36,7 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
   autoplayIntervalMs = 6000,
   modalCaptionStyle = 'below',
   initialModalIndex = null,
+  onActiveItemChange,
   className = '',
 }) => {
   const { t } = useI18n();
@@ -43,6 +46,14 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
   const [reducedMotion, setReducedMotion] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const deepLinkApplied = useRef(false);
+
+  const setLightboxIndex = useCallback(
+    (index: number | null) => {
+      setModalIndex(index);
+      onActiveItemChange?.(index !== null && items[index] !== undefined ? items[index] : null);
+    },
+    [items, onActiveItemChange]
+  );
 
   useEffect(() => {
     setReducedMotion(prefersReducedMotion());
@@ -61,8 +72,8 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
     }
     deepLinkApplied.current = true;
     setActiveIndex(initialModalIndex);
-    setModalIndex(initialModalIndex);
-  }, [initialModalIndex, items.length]);
+    setLightboxIndex(initialModalIndex);
+  }, [initialModalIndex, items.length, setLightboxIndex]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -162,16 +173,16 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
                   } ${isActive ? 'is-active' : ''}`}
                   onClick={() => {
                     setActiveIndex(index);
-                    setModalIndex(index);
+                    setLightboxIndex(index);
                   }}
                   aria-label={`${t('public.gallery.openModal')}: ${item.title}`}
                   aria-current={isActive ? 'true' : undefined}
                 >
                   <div className={`relative overflow-hidden bg-theme-surface ${isHero ? 'aspect-[21/9]' : 'aspect-video'}`}>
-                    <img
-                      src={resolvePublicMediaUrl(item.mediaPath)}
-                      alt={item.title}
-                      className="gallery-slider__image h-full w-full object-cover object-top"
+                    <FeatureGalleryMediaThumb
+                      item={item}
+                      variant="slider"
+                      imageClassName="gallery-slider__image h-full w-full object-cover object-top"
                       loading={index === 0 ? 'eager' : 'lazy'}
                       draggable={false}
                     />
@@ -237,8 +248,8 @@ export const FeatureGallerySlider: React.FC<FeatureGallerySliderProps> = ({
       <FeatureGalleryModal
         items={items}
         activeIndex={modalIndex}
-        onClose={() => setModalIndex(null)}
-        onChangeIndex={setModalIndex}
+        onClose={() => setLightboxIndex(null)}
+        onChangeIndex={setLightboxIndex}
         showFeatureTags={showFeatureTags}
         captionStyle={modalCaptionStyle}
       />

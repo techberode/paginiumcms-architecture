@@ -210,6 +210,7 @@ Use **Layout template** `landing`, **Appearance** preset with strong primary col
 
 ## Related
 
+- [Public experience roadmap (agency / motion presets)](../architecture/PUBLIC_EXPERIENCE_ROADMAP.md)
 - [Appearance and color schemes](THEMES.md)
 - [Iteration 84 — presentation expansion](../en/ITERATION_84.md)
 - [Iteration 58 — layout & shortcodes](../en/ITERATION_58.md)

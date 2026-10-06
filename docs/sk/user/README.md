@@ -18,6 +18,7 @@ PaginiumCMS sa vyvíja smerom k **Hybrid Headless Content Engineu**, ale povinn�
 | 2 | [Prvé kroky](FIRST_STEPS.md) | nový administrátor alebo editor |
 | 3 | [Príručka administrátora](ADMIN_GUIDE.md) | každodenná správa CMS |
 | 4 | [Editor obsahu](CONTENT_EDITOR.md) | editor stránok a článkov |
+| 4c | [Shortcodes a widgety](SHORTCODES_A_WIDGETY.md) | príklady bundled shortcodov (beta.95) |
 | 5 | [Galéria funkcií](GALLERY.md) | spoločný katalóg fotiek na stránke |
 | 6 | [Oprávnenia a Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN a bezpečnostný správca |
 | 7 | [Firewall](FIREWALL.md) a [Logy](LOGGING.md) | prevádzka a incident response |

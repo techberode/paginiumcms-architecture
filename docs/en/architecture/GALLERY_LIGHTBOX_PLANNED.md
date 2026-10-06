@@ -1,7 +1,7 @@
 # Gallery & lightbox — planned iteration (It.58f-i continuation)
 
 > **Captured:** October 4, 2026 · **Revised:** React image + video gallery (SPA bundle)  
-> **Status:** 🟡 in progress — **58f-i-g/h** shipped in **`v2.1.0-beta.94`**; **58f-i-i…k** remain — extends [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md)  
+> **Status:** ✅ **58f-i-g…k** complete — feature gallery grid/slider + `?slide=` sync + video thumbs; extends [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md)  
 > **UX target:** Full-screen **React** lightbox with thumbnail strip, counter, prev/next, optional slideshow, **mixed image + video** slides (reference: commercial gallery demos — toolbar extras optional in v1).
 
 Paginium **58f-i-g:** `PaginiumMediaGallery` (YARL + Captions/Counter/Thumbnails/Zoom/Slideshow) in the public bundle; `ProseImageLightboxHost` and `FeatureGalleryModal` delegate to the facade. **Next:** grouping attrs (**h**), video slides (**j**), inline block (**i**).
@@ -51,9 +51,9 @@ PaginiumMediaGallery (facade)
 |-------|-----|-------------|
 | **React gallery foundation** | **58f-i-g** | ✅ YARL dep; `PaginiumMediaGallery` + slide model; prose + feature-gallery modal |
 | **Per-asset insert opts** | **58f-i-h** | ✅ Media picker: lightbox on/off, **gallery group** id, exclude from slideshow; `data-gallery` / `data-slideshow` → grouped slides |
-| **Inline media gallery** | **58f-i-i** | Shortcode/fence `[media-gallery]` — multi-select from Media, grid layouts (columns/rows/masonry CSS), opens same React gallery |
-| **Video gallery** | **58f-i-j** | Mixed slides: image + DAM video + allow-list embed; It.65 or dedicated block; caption under slide |
-| **Feature gallery parity** | **58f-i-k** (optional) | Grid entry + deep links use **58f-i-g** facade |
+| **Inline media gallery** | **58f-i-i** | ✅ Shortcode `[media-gallery]` — DAM `ids` (`\|` / `,` paths), columns, grid/masonry, `MediaGalleryIsland` + lightbox |
+| **Video gallery** | **58f-i-j** | ✅ Mixed slides: image + DAM video + allow-list embed (YouTube nocookie / Vimeo); prose + `[media-gallery]` + feature modal |
+| **Feature gallery parity** | **58f-i-k** | ✅ Grid/slider thumbs (incl. video), `PaginiumMediaGallery`, live `?slide=` ↔ item id |
 
 ---
 
@@ -76,7 +76,7 @@ Commit **58f-i-f** (stats count-up) before **58f-i-g** code.
 | `frontend/src/components/frontend/mediaGallery/PaginiumMediaGallery.tsx` | Facade + YARL config |
 | `frontend/src/components/frontend/mediaGallery/slides.ts` | Build slides from DOM, gallery items, attrs |
 | `frontend/src/theme/paginiumMediaGallery.css` | Token overrides for lightbox chrome |
-| Deprecate | `ProseImageLightboxModal.tsx`, merge `FeatureGalleryModal` |
+| Removed | `ProseImageLightboxModal.tsx` (use `PaginiumMediaGallery` / `FeatureGalleryModal`) |
 
 ---
 

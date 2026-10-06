@@ -9,6 +9,7 @@ use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Snippets\Services\SnippetRepository;
 use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
+use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Support\JsonHelper;
 
 /**
@@ -28,6 +29,7 @@ final class ShortcodeExpanderService
         private ?WidgetCatalog $widgets = null,
         private ?GalleryRepositoryInterface $gallery = null,
         private ?LatestPublishedArticlesProvider $latestArticles = null,
+        private ?MediaRepositoryInterface $media = null,
         private string $definitionsRelativeDir = 'data/shortcodes/definitions',
     ) {
     }
@@ -114,6 +116,12 @@ final class ShortcodeExpanderService
             $attrs = $this->parseAttributes($rawAttrs, ['attrs' => GalleryCarouselRenderer::attributeSchema()]);
 
             return $this->sanitizer->sanitizeHtml(GalleryCarouselRenderer::render($attrs));
+        }
+
+        if ($name === 'media-gallery') {
+            $mediaAttrs = $this->parseAttributes($rawAttrs, ['attrs' => MediaGalleryRenderer::attributeSchema()]);
+
+            return $this->sanitizer->sanitizeHtml(MediaGalleryRenderer::render($mediaAttrs, $this->media));
         }
 
         if ($name === 'pricing-table') {

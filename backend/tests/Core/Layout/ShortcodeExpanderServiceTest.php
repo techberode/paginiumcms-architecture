@@ -11,6 +11,7 @@ use PaginiumCMS\Core\CodePolicy\Services\ShortcodeDefinitionPolicy;
 use PaginiumCMS\Core\Editor\Services\ContentBodyRenderer;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
+use PaginiumCMS\Core\FlatFile\Models\MediaFile;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentParser;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
@@ -22,6 +23,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Core\Editor\Services\TiptapHtmlRenderer;
 use PaginiumCMS\Modules\Gallery\Contracts\GalleryRepositoryInterface;
 use PaginiumCMS\Modules\Gallery\Models\GalleryItem;
+use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Tests\Support\StorageTestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -307,6 +309,38 @@ JSON;
         $this->assertStringContainsString('pg-island--gallery-carousel', $result);
         $this->assertStringContainsString('data-tag="web"', $result);
         $this->assertStringNotContainsString('[gallery-carousel', $result);
+    }
+
+    public function testExpandsMediaGalleryFromDamPaths(): void
+    {
+        $file = new MediaFile();
+        $file->setPath('media/shot.jpg');
+        $file->setUrl('/storage/media/shot.jpg');
+        $file->setMimeType('image/jpeg');
+        $file->setAltText('Shot');
+
+        $media = $this->createMock(MediaRepositoryInterface::class);
+        $media->method('findByPath')->willReturnCallback(static function (string $path) use ($file): ?MediaFile {
+            return $path === 'media/shot.jpg' ? $file : null;
+        });
+
+        $expander = new ShortcodeExpanderService(
+            $this->registry,
+            $this->reader,
+            new ContentSecuritySanitizer($this->settings),
+            null,
+            null,
+            null,
+            null,
+            $media
+        );
+
+        $result = $expander->expand('[media-gallery title="Shots" ids="media/shot.jpg" columns="2" layout="grid"/]');
+
+        $this->assertStringContainsString('pg-island--media-gallery', $result);
+        $this->assertStringContainsString('/storage/media/shot.jpg', $result);
+        $this->assertStringContainsString('data-media-path="media/shot.jpg"', $result);
+        $this->assertStringNotContainsString('[media-gallery', $result);
     }
 
     public function testExpandsStatsRowWithCountUpAnimation(): void

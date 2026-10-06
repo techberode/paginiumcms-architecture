@@ -23,6 +23,23 @@ The caption text appears on the public page in the chosen position. In the **lig
 
 Without a caption, behaviour is unchanged: Markdown `![alt](url)` or inline `<img>` (with optional `data-lightbox="off"`).
 
+## Unified lightbox (prose and galleries)
+
+Since **beta.95** (`PaginiumMediaGallery`), these share one full-screen viewer (thumbnails, counter, prev/next, optional slideshow):
+
+| Source | How it opens |
+|--------|----------------|
+| Prose image from library | Click image (unless lightbox off in picker) |
+| Prose `:::video` / `<video src="/storage/…">` | Click the player |
+| Allow-listed YouTube/Vimeo iframe | Click embed (same album if `data-gallery` matches) |
+| `[feature-gallery]` / `[media-gallery]` | Click tile in grid or slider |
+
+**Album grouping (prose):** in the media picker, set **Gallery group** → adds `data-gallery="your-id"` so only siblings with the same id appear in one carousel.
+
+**Slideshow skip:** **Exclude from slideshow** → `data-slideshow="off"` on that asset.
+
+**Shortcode galleries:** see [GALLERY.md](GALLERY.md) and [SHORTCODE_COOKBOOK.md](SHORTCODE_COOKBOOK.md).
+
 ## Self-hosted video (recommended)
 
 For tutorials and demos, prefer **Media →** upload **MP4** or **WebM**, then **Insert video**.

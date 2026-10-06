@@ -39,6 +39,17 @@ export const PUBLIC_ISLAND_DEFINITIONS: PublicIslandDefinition[] = [
     ],
   },
   {
+    id: 'media-gallery',
+    legacyClasses: ['pg-media-gallery'],
+    attrs: [
+      { htmlAttr: 'data-title', propKey: 'title' },
+      { htmlAttr: 'data-columns', propKey: 'columns' },
+      { htmlAttr: 'data-layout', propKey: 'layout' },
+      { htmlAttr: 'data-modal-caption-style', propKey: 'modalCaptionStyle' },
+    ],
+    preservesInnerHtml: true,
+  },
+  {
     id: 'staff-cards',
     legacyClasses: ['pg-staff-cards'],
     attrs: [

@@ -40,9 +40,15 @@ final class HtmlDomSanitizer
             'referrerpolicy',
             'sandbox',
             'frameborder',
+            'class',
+            'data-lightbox',
+            'data-gallery',
+            'data-slideshow',
         ],
         'figure' => ['class'],
         'figcaption' => ['class'],
+        'article' => ['class', 'data-index', 'data-media-path', 'data-media-type', 'data-mime-type'],
+        'div' => ['class'],
         'video' => [
             'src',
             'poster',
@@ -54,6 +60,11 @@ final class HtmlDomSanitizer
             'controls',
             'width',
             'height',
+            'data-lightbox',
+            'data-gallery',
+            'data-slideshow',
+            'aria-label',
+            'class',
         ],
         'source' => ['src', 'type', 'media'],
         'section' => [
@@ -183,6 +194,10 @@ final class HtmlDomSanitizer
             $this->sanitizeProseImageDataAttributes($element);
         }
 
+        if ($tag === 'video' || $tag === 'iframe') {
+            $this->sanitizeProseMediaDataAttributes($element);
+        }
+
         if ($tag === 'a' && strtolower($element->getAttribute('target')) === '_blank') {
             $element->setAttribute('rel', 'noopener noreferrer');
         }
@@ -190,25 +205,30 @@ final class HtmlDomSanitizer
 
     private function sanitizeProseImageDataAttributes(DOMElement $img): void
     {
-        $lightbox = strtolower(trim($img->getAttribute('data-lightbox')));
+        $this->sanitizeProseMediaDataAttributes($img);
+    }
+
+    private function sanitizeProseMediaDataAttributes(DOMElement $element): void
+    {
+        $lightbox = strtolower(trim($element->getAttribute('data-lightbox')));
         if ($lightbox !== '' && $lightbox !== 'off') {
-            $img->removeAttribute('data-lightbox');
+            $element->removeAttribute('data-lightbox');
         }
 
-        $gallery = trim($img->getAttribute('data-gallery'));
+        $gallery = trim($element->getAttribute('data-gallery'));
         if ($gallery !== '') {
             $normalized = preg_replace('/[^a-zA-Z0-9_-]/', '', $gallery) ?? '';
             $normalized = substr($normalized, 0, 64);
             if ($normalized === '') {
-                $img->removeAttribute('data-gallery');
+                $element->removeAttribute('data-gallery');
             } else {
-                $img->setAttribute('data-gallery', $normalized);
+                $element->setAttribute('data-gallery', $normalized);
             }
         }
 
-        $slideshow = strtolower(trim($img->getAttribute('data-slideshow')));
+        $slideshow = strtolower(trim($element->getAttribute('data-slideshow')));
         if ($slideshow !== 'off') {
-            $img->removeAttribute('data-slideshow');
+            $element->removeAttribute('data-slideshow');
         }
     }
 

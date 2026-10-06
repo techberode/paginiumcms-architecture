@@ -33,7 +33,7 @@
 | **58f-i-g** | `PaginiumMediaGallery` (YARL) — prose + feature gallery lightbox | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 | **58f-i-h** | Prose insert: `data-gallery` groups + `data-slideshow="off"` | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
 
-**Release:** **`v2.1.0-beta.94`** (2026-10-05) — [RELEASE_2_1_0_BETA_94.md](../RELEASE_2_1_0_BETA_94.md).
+**Release:** **`v2.1.0-beta.95`** (2026-10-06) — gallery/lightbox wave — [RELEASE_2_1_0_BETA_95.md](../RELEASE_2_1_0_BETA_95.md) (prior **`beta.94`**: [RELEASE_2_1_0_BETA_94.md](../RELEASE_2_1_0_BETA_94.md)).
 
 **Admin:** after deploy, open editor or `GET /api/admin/shortcodes` once so `seedMissingBundled()` upgrades **feature-gallery v2**, **section-band v2**, **pricing-table/plan v2**, **stats-row v2**.
 
@@ -43,7 +43,7 @@
 
 | Priority | Item | Doc |
 |----------|------|-----|
-| 1 | **58f-i-i…k** — inline `[media-gallery]`, video slides, feature parity | [GALLERY_LIGHTBOX_PLANNED.md](GALLERY_LIGHTBOX_PLANNED.md) |
+| 1 | **PUBLIC_EXPERIENCE Phase B** — motion presets (**58f-i-g…k** lightbox ✅) | [PUBLIC_EXPERIENCE_ROADMAP.md](PUBLIC_EXPERIENCE_ROADMAP.md) |
 | 2 | **58f-i-d** (optional) — section background crossfade | [PAGE_FIELD_COMPOSER_PLANNED.md](PAGE_FIELD_COMPOSER_PLANNED.md) |
 | 3 | Callout colors → `--color-primary` (optional) | [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) |
 

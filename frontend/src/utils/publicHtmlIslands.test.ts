@@ -68,6 +68,20 @@ describe('splitPublicHtmlIslands', () => {
     ]);
   });
 
+  it('hydrates media-gallery with inner grid markup', () => {
+    const html =
+      '<section class="pg-media-gallery" data-island="media-gallery" data-columns="3"><div class="pg-media-gallery-grid"><article class="pg-media-gallery-item" data-media-path="media/a.jpg"><img class="pg-media-gallery-image" src="/storage/media/a.jpg" alt="A"/></article></div></section>';
+    expect(splitPublicHtmlIslands(html)).toEqual([
+      {
+        kind: 'island',
+        id: 'media-gallery',
+        attrs: { columns: '3', layout: '', modalCaptionStyle: '', title: '' },
+        innerHtml:
+          '<div class="pg-media-gallery-grid"><article class="pg-media-gallery-item" data-media-path="media/a.jpg"><img class="pg-media-gallery-image" src="/storage/media/a.jpg" alt="A"/></article></div>',
+      },
+    ]);
+  });
+
   it('hydrates gallery-carousel island markers', () => {
     const html =
       '<section class="pg-gallery-carousel" data-tag="web" data-title="Hi" data-layout="slider" data-effect="subtle" data-autoplay="true"></section>';

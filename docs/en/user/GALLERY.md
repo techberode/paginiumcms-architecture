@@ -52,6 +52,36 @@ In Shortcodes / Developer mode you can type that tag yourself. Articles have no 
 
 A new published photo appears on every unfiltered gallery block. You do not insert the block again.
 
+### Layout and lightbox options (shortcode attrs)
+
+```markdown
+[feature-gallery title="Work" tag="" layout="slider" columns="3" modal-caption-style="side"/]
+```
+
+| Attribute | Values | Effect |
+|-----------|--------|--------|
+| `layout` | `grid`, `slider`, `hero-strip` | Grid cards vs horizontal carousel |
+| `columns` | `2`, `3`, `4` | Grid only |
+| `modal-caption-style` | `below`, `overlay`, `side` | Caption placement in **PaginiumMediaGallery** lightbox |
+
+**Video items:** if a catalog entry points to a DAM `.mp4` / `.webm` path, the tile shows a video preview; the lightbox plays the file (same player as prose video).
+
+**Share a slide:** `/your-page?slide=gallery_item_id` opens the modal on that item (id from admin list). While browsing the lightbox, the URL updates to the current item id. Filter by tag: `?slide=web` (case-insensitive tag match).
+
+## 3b. `[media-gallery]` — pick files from Media Library (not the feature catalog)
+
+Use when you want a **fixed set** of paths on one page (brochure shots, mixed photo + clip), without adding rows in Feature gallery admin.
+
+```markdown
+[media-gallery title="Studio" ids="media/shot1.jpg|media/walkthrough.mp4|media/team.webp" columns="3" layout="grid" modal-caption-style="below"/]
+```
+
+- `ids` — registry paths only (`media/…`), separated by `|` or `,`.
+- Images and **uploaded video** are supported; unknown paths are skipped at expand time.
+- Public behaviour: React **MediaGalleryIsland** + the same unified lightbox as feature gallery and prose images.
+
+Examples: [SHORTCODE_COOKBOOK.md](SHORTCODE_COOKBOOK.md).
+
 ## 4. Tags vs “several galleries”
 
 There is **one** store (`data/gallery/`). A tag is a sticker on a photo. Two pages can look like two galleries because their blocks filter different stickers:

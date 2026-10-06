@@ -91,6 +91,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
                 'latest-articles',
                 'link-chip',
                 'link-row',
+                'media-gallery',
                 'pricing-feature',
                 'pricing-plan',
                 'pricing-table',
@@ -115,7 +116,7 @@ final class ShortcodeCatalogSeederTest extends TestCase
         $this->seeder->seedIfEmpty();
         $this->seeder->seedMissingBundled();
 
-        $this->assertCount(28, $this->manager->list());
+        $this->assertCount(29, $this->manager->list());
         $this->assertNotEmpty($this->manager->get('landing-hero'));
         $this->assertNotEmpty($this->manager->get('coming-soon'));
         $this->assertNotEmpty($this->manager->get('feature-gallery'));

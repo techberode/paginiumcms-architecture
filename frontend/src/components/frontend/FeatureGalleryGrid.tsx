@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { GalleryItem } from '../../api/gallery';
-import { MEDIA_THUMB_WIDTH, resolvePublicMediaThumbnailUrl } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
+import { FeatureGalleryMediaThumb } from './FeatureGalleryMediaThumb';
 import { FeatureGalleryModal } from './FeatureGalleryModal';
 import {
   galleryGridColumnClass,
@@ -15,6 +15,8 @@ export interface FeatureGalleryGridProps {
   columns?: GalleryGridColumns;
   /** It.65 Phase 3 — open modal at this index when items load (`?slide=`). */
   initialModalIndex?: number | null;
+  /** Sync `?slide=` when modal opens or slide changes (58f-i-k). */
+  onActiveItemChange?: (item: GalleryItem | null) => void;
   className?: string;
 }
 
@@ -24,11 +26,20 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
   modalCaptionStyle = 'below',
   columns = '3',
   initialModalIndex = null,
+  onActiveItemChange,
   className = '',
 }) => {
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const deepLinkApplied = useRef(false);
+
+  const setModalIndex = useCallback(
+    (index: number | null) => {
+      setActiveIndex(index);
+      onActiveItemChange?.(index !== null && items[index] !== undefined ? items[index] : null);
+    },
+    [items, onActiveItemChange]
+  );
 
   useEffect(() => {
     if (deepLinkApplied.current || initialModalIndex === null || initialModalIndex === undefined) {
@@ -38,8 +49,8 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
       return;
     }
     deepLinkApplied.current = true;
-    setActiveIndex(initialModalIndex);
-  }, [initialModalIndex, items.length]);
+    setModalIndex(initialModalIndex);
+  }, [initialModalIndex, items.length, setModalIndex]);
 
   if (items.length === 0) {
     return (
@@ -55,15 +66,14 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
             key={item.id}
             type="button"
             className="group text-left rounded-2xl border border-theme-border bg-theme-surface-elevated overflow-hidden shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent"
-            onClick={() => setActiveIndex(index)}
+            onClick={() => setModalIndex(index)}
             aria-label={`${t('public.gallery.openModal')}: ${item.title}`}
           >
             <div className="aspect-video overflow-hidden bg-theme-surface">
-              <img
-                src={resolvePublicMediaThumbnailUrl(item.mediaPath, MEDIA_THUMB_WIDTH.gallery)}
-                alt={item.title}
-                className="h-full w-full object-cover object-top transition group-hover:scale-[1.02]"
-                loading="lazy"
+              <FeatureGalleryMediaThumb
+                item={item}
+                variant="grid"
+                imageClassName="h-full w-full object-cover object-top transition group-hover:scale-[1.02]"
               />
             </div>
             <div className="p-4 space-y-2">
@@ -86,8 +96,8 @@ export const FeatureGalleryGrid: React.FC<FeatureGalleryGridProps> = ({
       <FeatureGalleryModal
         items={items}
         activeIndex={activeIndex}
-        onClose={() => setActiveIndex(null)}
-        onChangeIndex={setActiveIndex}
+        onClose={() => setModalIndex(null)}
+        onChangeIndex={(index) => setModalIndex(index)}
         showFeatureTags={showFeatureTags}
         captionStyle={modalCaptionStyle}
       />

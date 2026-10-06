@@ -5,6 +5,8 @@ import {
   collectProseLightboxSlides,
   getProseImageGalleryGroup,
   isProseLightboxClickTarget,
+  isProseLightboxEmbedClickTarget,
+  isProseLightboxVideoClickTarget,
   proseImageFullSizeSrc,
   type ProseLightboxSlide,
 } from '../../utils/proseImageLightbox';
@@ -14,6 +16,12 @@ interface ProseImageLightboxHostProps {
   children: React.ReactNode;
 }
 
+function findSlideIndex(collected: ProseLightboxSlide[], target: ProseLightboxSlide): number {
+  return collected.findIndex(
+    (slide) => slide.type === target.type && slide.src === target.src && slide.embedSrc === target.embedSrc
+  );
+}
+
 export const ProseImageLightboxHost: React.FC<ProseImageLightboxHostProps> = ({ className, children }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [slides, setSlides] = useState<ProseLightboxSlide[]>([]);
@@ -21,23 +29,58 @@ export const ProseImageLightboxHost: React.FC<ProseImageLightboxHostProps> = ({ 
 
   const mediaSlides = useMemo(() => proseLightboxSlidesToMedia(slides), [slides]);
 
-  const handleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    const target = event.target;
-    if (!(target instanceof HTMLImageElement) || !containerRef.current?.contains(target)) {
+  const openFromTarget = useCallback((targetSlide: ProseLightboxSlide, galleryGroup: string) => {
+    if (!containerRef.current) {
       return;
     }
-
-    if (!isProseLightboxClickTarget(target)) {
-      return;
-    }
-    const fullSrc = proseImageFullSizeSrc(target.currentSrc || target.src);
-    const galleryGroup = getProseImageGalleryGroup(target);
-
     const collected = collectProseLightboxSlides(containerRef.current, { galleryGroup });
-    const index = collected.findIndex((slide) => slide.src === fullSrc);
+    const index = findSlideIndex(collected, targetSlide);
     setSlides(collected);
     setActiveIndex(index >= 0 ? index : 0);
   }, []);
+
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const target = event.target;
+      if (!containerRef.current?.contains(target as Node)) {
+        return;
+      }
+
+      if (target instanceof HTMLImageElement && isProseLightboxClickTarget(target)) {
+        const fullSrc = proseImageFullSizeSrc(target.currentSrc || target.src);
+        openFromTarget(
+          { type: 'image', src: fullSrc, alt: '', caption: '', excludeFromSlideshow: false },
+          getProseImageGalleryGroup(target)
+        );
+        return;
+      }
+
+      if (target instanceof HTMLVideoElement && isProseLightboxVideoClickTarget(target)) {
+        const fullSrc = proseImageFullSizeSrc(target.currentSrc || target.getAttribute('src') || '');
+        openFromTarget(
+          { type: 'video', src: fullSrc, alt: '', caption: '', excludeFromSlideshow: false },
+          getProseImageGalleryGroup(target)
+        );
+        return;
+      }
+
+      if (target instanceof HTMLIFrameElement && isProseLightboxEmbedClickTarget(target)) {
+        const embedSrc = target.getAttribute('src')?.trim() ?? '';
+        openFromTarget(
+          {
+            type: 'embed',
+            src: embedSrc,
+            embedSrc,
+            alt: '',
+            caption: '',
+            excludeFromSlideshow: false,
+          },
+          getProseImageGalleryGroup(target)
+        );
+      }
+    },
+    [openFromTarget]
+  );
 
   const close = useCallback(() => {
     setActiveIndex(null);

@@ -482,6 +482,7 @@ export const editorEn: MessageTree = {
       'section-head': 'Section heading',
       'section-band': 'Section band',
       'feature-gallery': 'Gallery',
+      'media-gallery': 'Media gallery',
       'gallery-carousel': 'Gallery carousel',
       'feature-grid': 'Cards',
       'cta-banner': 'Call to action',

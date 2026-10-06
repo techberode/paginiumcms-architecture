@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { listPublicGalleryItems, type GalleryItem } from '../../api/gallery';
 import { useSettingsContext } from '../../context/SettingsContext';
@@ -6,7 +6,10 @@ import { useI18n } from '../../context/I18nContext';
 import { FeatureGalleryGrid } from './FeatureGalleryGrid';
 import { FeatureGallerySlider } from './FeatureGallerySlider';
 import { FeatureGalleryTagFilter } from './FeatureGalleryTagFilter';
-import { resolveGallerySlideDeepLink } from '../../utils/gallerySlideDeepLink';
+import {
+  applyGallerySlideToSearchParams,
+  resolveGallerySlideDeepLink,
+} from '../../utils/gallerySlideDeepLink';
 import { resolveFeatureGalleryBlockOptions } from '../../utils/featureGalleryBlockOptions';
 import { PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 
@@ -105,6 +108,16 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
     return items.filter((item) => item.featureTag === pin);
   }, [activeTag, items, pinnedTag]);
 
+  const syncSlideParam = useCallback(
+    (item: GalleryItem | null) => {
+      if (variant === 'preview' || pinnedTag) {
+        return;
+      }
+      setSearchParams(applyGallerySlideToSearchParams(searchParams, item), { replace: true });
+    },
+    [pinnedTag, searchParams, setSearchParams, variant]
+  );
+
   const handleTagChange = (tag: string | null) => {
     if (pinnedTag) {
       return;
@@ -152,6 +165,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
         autoplayIntervalMs={autoplayIntervalMs}
         modalCaptionStyle={modalCaptionStyle}
         initialModalIndex={deepLinkModalIndex}
+        onActiveItemChange={syncSlideParam}
       />
     ) : (
       <FeatureGalleryGrid
@@ -160,6 +174,7 @@ export const FeatureGallerySection: React.FC<FeatureGallerySectionProps> = ({
         modalCaptionStyle={modalCaptionStyle}
         columns={columns}
         initialModalIndex={deepLinkModalIndex}
+        onActiveItemChange={syncSlideParam}
       />
     );
 

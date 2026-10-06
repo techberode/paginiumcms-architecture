@@ -52,6 +52,22 @@ V režime Shortcodes / Developer môžeš tag napísať ručne. Článok outline
 
 Nová publikovaná fotka sa na neskontrolovaných blokoch objaví sama. Blok netreba vkladať znova.
 
+### Atribúty a lightbox (beta.95)
+
+```markdown
+[feature-gallery title="Práce" tag="" layout="slider" columns="3" modal-caption-style="side"/]
+```
+
+Video v katalógu: lightbox prehrá mp4/webm. Odkaz: `?slide=ID_POLOŽKY`.
+
+## 3b. `[media-gallery]` — súbory z Médií
+
+```markdown
+[media-gallery title="Ateliér" ids="media/foto.jpg|media/clip.mp4" columns="3" layout="grid"/]
+```
+
+Viac: [SHORTCODES_A_WIDGETY.md](SHORTCODES_A_WIDGETY.md).
+
 ## 4. Tagy nie sú samostatné galérie
 
 Úložisko je **jedno** (`data/gallery/`). Tag je nálepka. Dve stránky môžu vyzerať ako dve galérie, lebo ich bloky filtrujú iné nálepky:

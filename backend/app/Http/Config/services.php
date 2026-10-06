@@ -1795,7 +1795,8 @@ return [
             get(SnippetRepository::class),
             get(WidgetCatalog::class),
             get(GalleryRepositoryInterface::class),
-            get(LatestPublishedArticlesProvider::class)
+            get(LatestPublishedArticlesProvider::class),
+            get(MediaRepositoryInterface::class)
         ),
     SnippetRegistry::class => create(SnippetRegistry::class)
         ->constructor(

@@ -482,6 +482,7 @@ export const editorSk: MessageTree = {
       'section-head': 'Nadpis sekcie',
       'section-band': 'Pás sekcie',
       'feature-gallery': 'Galéria',
+      'media-gallery': 'Media galéria',
       'gallery-carousel': 'Galéria karusel',
       'feature-grid': 'Karty',
       'cta-banner': 'Výzva k akcii',

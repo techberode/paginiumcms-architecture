@@ -2,6 +2,7 @@ import React from 'react';
 import { FeatureGallerySection } from '../components/frontend/FeatureGallerySection';
 import { StaffCardsSection } from '../components/frontend/StaffDirectory';
 import { GalleryCarouselIsland } from './GalleryCarouselIsland';
+import { MediaGalleryIsland } from './MediaGalleryIsland';
 import { PricingTableIsland } from './PricingTableIsland';
 import { StatsRowIsland } from './StatsRowIsland';
 import type { IslandProps } from './publicIslandDefinitions';
@@ -30,6 +31,7 @@ const StaffCardsIsland: PublicIslandComponent = ({ attrs }) => (
 export const PUBLIC_ISLANDS: Record<string, PublicIslandComponent> = {
   'feature-gallery': FeatureGalleryIsland,
   'gallery-carousel': GalleryCarouselIsland,
+  'media-gallery': MediaGalleryIsland,
   'staff-cards': StaffCardsIsland,
   'pricing-table': PricingTableIsland,
   'stats-row': StatsRowIsland,

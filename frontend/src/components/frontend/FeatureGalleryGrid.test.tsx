@@ -39,4 +39,28 @@ describe('FeatureGalleryGrid', () => {
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveTextContent('Dashboard overview');
   });
+
+  it('renders video thumb for mp4 media paths', () => {
+    const { container } = renderWithProviders(
+      <FeatureGalleryGrid
+        items={[
+          {
+            id: 'gallery_v',
+            title: 'Reel',
+            description: '',
+            mediaPath: '/storage/media/reel.mp4',
+            featureTag: null,
+            linkUrl: null,
+            sortOrder: 0,
+            status: 'published',
+            publishedAt: '2026-07-29T00:00:00+00:00',
+            createdAt: '2026-07-29T00:00:00+00:00',
+            updatedAt: '2026-07-29T00:00:00+00:00',
+          },
+        ]}
+      />
+    );
+    expect(container.querySelector('video')).toBeTruthy();
+    expect(container.querySelector('img')).toBeNull();
+  });
 });

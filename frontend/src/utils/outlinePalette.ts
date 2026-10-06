@@ -12,6 +12,7 @@ export const OUTLINE_PALETTE_SHORTCODES = [
   'section-head',
   'section-band',
   'feature-gallery',
+  'media-gallery',
   'gallery-carousel',
   'feature-grid',
   'cta-banner',

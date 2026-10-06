@@ -2,6 +2,8 @@
 
 Goal: let operators **toggle** and **compose** landing blocks (badge, terminal, subtitle, CTAs, …) from the admin UI—similar to the visual insert modals—**without installing plugins** or pasting forbidden external JavaScript.
 
+**Product direction (October 2026):** avoid “recolored spreadsheet” public sites—see [PUBLIC_EXPERIENCE_ROADMAP.md](PUBLIC_EXPERIENCE_ROADMAP.md) (motion preset library on `[visual-frame]`, reference compositions, agency checklist).
+
 Constraints (non‑negotiable):
 
 - Public HTML is built on the **server** (`ShortcodeExpanderService`, optional dedicated renderers).

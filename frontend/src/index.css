@@ -683,6 +683,29 @@
 .tiptap [style*="text-align: center"] { text-align: center; }
 .tiptap [style*="text-align: right"] { text-align: right; }
 
+/* Feature gallery thumbs (58f-i-k — video parity) */
+.feature-gallery-thumb--video .feature-gallery-thumb__play {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: rgb(0 0 0 / 0.55);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.35);
+}
+.feature-gallery-thumb--video .feature-gallery-thumb__play::after {
+  content: '';
+  position: absolute;
+  left: 54%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 0.55rem 0 0.55rem 0.95rem;
+  border-color: transparent transparent transparent rgb(255 255 255 / 0.95);
+}
+
 /* Feature gallery slider (It.65 Phase 2) */
 .gallery-slider__track {
   scrollbar-width: none;
