@@ -1,6 +1,7 @@
 // frontend/src/components/backend/MediaPickerModal.tsx
 import React, { useEffect, useState } from 'react';
-import { FileText, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { MediaFileTypeIcon } from '../../utils/mediaFileTypeIcon';
 import {
   isDocumentMedia,
   isImageMedia,
@@ -11,6 +12,7 @@ import {
   resolvePublicMediaUrl,
 } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
 import type { MediaCaptionPosition } from '../../utils/mediaCaption';
 import type { ProseImageLightboxExtras } from '../../utils/proseImageAttrs';
 
@@ -65,6 +67,8 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
     showCaptionField && (mediaMode === 'image' || mediaMode === 'video');
   const showInsertOptions =
     showCaptionUi || (showImageLightboxOption && mediaMode === 'image');
+
+  useEscapeToClose(open, onClose);
 
   useEffect(() => {
     if (!open) return;
@@ -333,7 +337,7 @@ export const MediaPickerModal: React.FC<MediaPickerModalProps> = ({
                           preload="metadata"
                         />
                       ) : isDocumentMedia(file) || !isImageMedia(file) ? (
-                        <FileText className="w-10 h-10 text-slate-500" aria-hidden />
+                        <MediaFileTypeIcon file={file} size={40} />
                       ) : (
                         <img
                           src={resolveAdminMediaPreviewUrl(file.path)}

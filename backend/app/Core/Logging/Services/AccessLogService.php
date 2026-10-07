@@ -33,7 +33,12 @@ final class AccessLogService
     private const EXCLUDED_PATH_PREFIXES = [
         '/api/health',
         '/api/debug/client-event',
+    ];
+
+    /** High-churn GET-only log viewer routes (export/bulk failures should still appear). */
+    private const EXCLUDED_LOG_VIEWER_GET_PATHS = [
         '/api/admin/logs',
+        '/api/admin/logs/stats',
     ];
 
     /**
@@ -75,7 +80,7 @@ final class AccessLogService
             return;
         }
 
-        if ($this->isExcludedPath($path)) {
+        if ($this->isExcludedPath($path, $method)) {
             return;
         }
 
@@ -202,10 +207,20 @@ final class AccessLogService
         return false;
     }
 
-    private function isExcludedPath(string $path): bool
+    private function isExcludedPath(string $path, string $method): bool
     {
         foreach (self::EXCLUDED_PATH_PREFIXES as $prefix) {
             if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
+                return true;
+            }
+        }
+
+        if (strtoupper($method) !== 'GET') {
+            return false;
+        }
+
+        foreach (self::EXCLUDED_LOG_VIEWER_GET_PATHS as $exact) {
+            if ($path === $exact) {
                 return true;
             }
         }

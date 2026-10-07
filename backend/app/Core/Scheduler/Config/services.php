@@ -118,6 +118,7 @@ return [
             get(ScheduledJobRunner::class),
             get(JobWorker::class),
             get(CronExpressionEvaluator::class),
+            get(\PaginiumCMS\Core\Cache\AdminOverviewCacheService::class),
             get(\PaginiumCMS\Http\Support\JsonResponder::class)
         ),
 ];

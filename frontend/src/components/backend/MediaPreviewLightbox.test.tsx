@@ -9,6 +9,7 @@ vi.mock('../../api/media', () => ({
   resolveAdminMediaPreviewUrl: (path: string) => `/api/media/file/${path}`,
   resolvePublicMediaUrl: (url: string) => url,
   formatMediaSize: (bytes: number) => `${bytes} B`,
+  isVideoMedia: (file: MediaFile) => file.mimeType.startsWith('video/'),
 }));
 
 const sampleFile: MediaFile = {
@@ -74,6 +75,21 @@ describe('MediaPreviewLightbox', () => {
     fireEvent.load(img);
 
     expect(await screen.findByText(/1200×800px/)).toBeInTheDocument();
+  });
+
+  it('calls onClose on Escape', () => {
+    const onClose = vi.fn();
+    renderWithProviders(
+      <MediaPreviewLightbox
+        file={sampleFile}
+        mode="fit"
+        onClose={onClose}
+        onModeChange={vi.fn()}
+      />
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('calls onClose when backdrop is clicked', () => {

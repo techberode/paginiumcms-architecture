@@ -1,49 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ListChecks } from 'lucide-react';
 import { projectPlannerApi, type ProjectPlanOverview } from '../../api/projectPlanner';
+import { queryKeys } from '../../api/queryKeys';
 import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
+import { useDeferredAfterPaint } from '../../hooks/useDeferredAfterPaint';
+import { useAdminSecondaryQuery } from '../../hooks/useAdminSecondaryQuery';
 import { ProgressBar } from './ProgressBar';
 import { progressBarTone } from '../../utils/projectPlanProgress';
 
 export const ProjectPlannerSummaryWidget: React.FC = () => {
   const { t } = useI18n();
   const { settings } = useSettings();
-  const [overview, setOverview] = useState<ProjectPlanOverview | null>(null);
-  const [hidden, setHidden] = useState(false);
-
   const enabled = settings.projectPlanner?.enabled !== false;
+  const deferLoad = useDeferredAfterPaint(enabled);
 
-  useEffect(() => {
-    if (!enabled) {
-      setHidden(true);
-      return;
-    }
-    let cancelled = false;
-    void projectPlannerApi
-      .overview()
-      .then((response) => {
-        if (cancelled) {
-          return;
-        }
-        if (response.status === 403 || response.status === 404 || !response.success || !response.data) {
-          setHidden(true);
-          return;
-        }
-        setOverview(response.data);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setHidden(true);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [enabled]);
+  const { data: overview } = useAdminSecondaryQuery<ProjectPlanOverview | null>({
+    queryKey: queryKeys.projectPlanner.overview,
+    enabled: enabled && deferLoad,
+    queryFn: async () => {
+      const response = await projectPlannerApi.overview();
+      if (response.status === 403 || response.status === 404 || !response.success || !response.data) {
+        return null;
+      }
+      return response.data;
+    },
+  });
 
-  if (hidden || overview === null) {
+  if (!enabled || overview === null || overview === undefined) {
     return null;
   }
 

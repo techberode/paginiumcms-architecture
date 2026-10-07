@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
@@ -24,25 +25,31 @@ final class MetricsController
         private PerformanceBreachStore $breaches,
         private PerformanceSampleStore $samples,
         private QueryIndexAdvisor $queryIndexAdvisor,
+        private AdminOverviewCacheService $adminOverviewCache,
         private JsonResponder $json
     ) {
     }
 
     public function summary(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json->success($response, [
-            'config' => $this->settings->publicSummary(),
-            'summary' => $this->aggregator->summary(),
-            'recent_breaches' => $this->breaches->recent(),
-            'advisor_hints' => $this->queryIndexAdvisor->activeHints(),
-            'host_metrics_note' => 'Host CPU/RAM/disk metrics remain under It.46 — not conflated with PHP APM.',
-        ]);
+        $payload = $this->adminOverviewCache->rememberApmSummary(function (): array {
+            return [
+                'config' => $this->settings->publicSummary(),
+                'summary' => $this->aggregator->summary(),
+                'recent_breaches' => $this->breaches->recent(),
+                'advisor_hints' => $this->queryIndexAdvisor->activeHints(),
+                'host_metrics_note' => 'Host CPU/RAM/disk metrics remain under It.46 — not conflated with PHP APM.',
+            ];
+        });
+
+        return $this->json->success($response, $payload);
     }
 
     public function clearSamples(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $this->samples->clear();
         $this->breaches->clear();
+        $this->adminOverviewCache->invalidateApmSummary();
 
         return $this->json->success($response, ['cleared' => true], 200, 'APM samples cleared');
     }

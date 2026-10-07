@@ -3,6 +3,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Maximize2, Minimize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatMediaSize, MediaFile, resolveAdminMediaPreviewUrl, resolvePublicMediaUrl } from '../../api/media';
 import { useI18n } from '../../context/I18nContext';
+import { ADMIN_MODAL_OVERLAY } from '../../theme/adminUiClasses';
+import { isVideoMedia } from '../../api/media';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
+import { AdminModalPortal } from './AdminModalPortal';
 
 export type MediaPreviewMode = 'fit' | 'native';
 
@@ -40,6 +44,8 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
   const previewUrl = file ? resolveAdminMediaPreviewUrl(file.path) : '';
   const fallbackUrl = file ? resolvePublicMediaUrl(file.url) : '';
 
+  useEscapeToClose(Boolean(file), onClose);
+
   useEffect(() => {
     if (!file) {
       setPreviewSrc('');
@@ -59,9 +65,6 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
         return;
       }
 
-      if (event.key === 'Escape') {
-        onClose();
-      }
       if (event.key === 'ArrowLeft' && hasPrevious && onPrevious) {
         onPrevious();
       }
@@ -69,7 +72,7 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
         onNext();
       }
     },
-    [file, hasNext, hasPrevious, onClose, onNext, onPrevious]
+    [file, hasNext, hasPrevious, onNext, onPrevious]
   );
 
   useEffect(() => {
@@ -91,6 +94,8 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
     return null;
   }
 
+  const isVideo = isVideoMedia(file);
+
   const nativeStyle =
     mode === 'native' && dimensions
       ? {
@@ -101,9 +106,9 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
         }
       : undefined;
 
-  return (
+  const overlay = (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-sm"
+      className={`${ADMIN_MODAL_OVERLAY} flex flex-col bg-black/90 backdrop-blur-sm`}
       role="dialog"
       aria-modal="true"
       aria-label={`Preview ${file.fileName}`}
@@ -126,24 +131,28 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            className={`btn btn-secondary text-xs px-3 py-1.5 ${mode === 'fit' ? 'ring-2 ring-indigo-400' : ''}`}
-            onClick={() => onModeChange('fit')}
-            title={t('media.lightbox.fitTitle')}
-          >
-            <Minimize2 className="w-3 h-3 inline mr-1" />
-            {t('media.lightbox.fitLabel')}
-          </button>
-          <button
-            type="button"
-            className={`btn btn-secondary text-xs px-3 py-1.5 ${mode === 'native' ? 'ring-2 ring-indigo-400' : ''}`}
-            onClick={() => onModeChange('native')}
-            title={t('media.lightbox.nativeTitle')}
-          >
-            <Maximize2 className="w-3 h-3 inline mr-1" />
-            {t('media.lightbox.nativeLabel')}
-          </button>
+          {!isVideo ? (
+            <>
+              <button
+                type="button"
+                className={`btn btn-secondary text-xs px-3 py-1.5 ${mode === 'fit' ? 'ring-2 ring-indigo-400' : ''}`}
+                onClick={() => onModeChange('fit')}
+                title={t('media.lightbox.fitTitle')}
+              >
+                <Minimize2 className="w-3 h-3 inline mr-1" />
+                {t('media.lightbox.fitLabel')}
+              </button>
+              <button
+                type="button"
+                className={`btn btn-secondary text-xs px-3 py-1.5 ${mode === 'native' ? 'ring-2 ring-indigo-400' : ''}`}
+                onClick={() => onModeChange('native')}
+                title={t('media.lightbox.nativeTitle')}
+              >
+                <Maximize2 className="w-3 h-3 inline mr-1" />
+                {t('media.lightbox.nativeLabel')}
+              </button>
+            </>
+          ) : null}
           <button
             type="button"
             className="btn btn-secondary text-xs px-3 py-1.5"
@@ -178,30 +187,51 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
           </div>
         )}
 
-        <img
-          src={previewSrc || previewUrl}
-          alt={file.altText || file.fileName}
-          className={
-            mode === 'fit'
-              ? 'max-w-full max-h-[calc(100vh-8rem)] w-auto h-auto object-contain select-none'
-              : 'select-none shadow-2xl'
-          }
-          style={nativeStyle}
-          draggable={false}
-          onLoad={(event) => {
-            const img = event.currentTarget;
-            setDimensions({ width: img.naturalWidth, height: img.naturalHeight });
-            setLoading(false);
-          }}
-          onError={() => {
-            if (previewSrc !== fallbackUrl && fallbackUrl) {
-              setPreviewSrc(fallbackUrl);
-              setLoading(true);
-              return;
+        {isVideo ? (
+          <video
+            src={previewSrc || previewUrl}
+            controls
+            className="max-w-full max-h-[calc(100vh-8rem)] w-auto h-auto select-none"
+            onLoadedMetadata={(event) => {
+              const video = event.currentTarget;
+              setDimensions({ width: video.videoWidth, height: video.videoHeight });
+              setLoading(false);
+            }}
+            onError={() => {
+              if (previewSrc !== fallbackUrl && fallbackUrl) {
+                setPreviewSrc(fallbackUrl);
+                setLoading(true);
+                return;
+              }
+              setLoading(false);
+            }}
+          />
+        ) : (
+          <img
+            src={previewSrc || previewUrl}
+            alt={file.altText || file.fileName}
+            className={
+              mode === 'fit'
+                ? 'max-w-full max-h-[calc(100vh-8rem)] w-auto h-auto object-contain select-none'
+                : 'select-none shadow-2xl'
             }
-            setLoading(false);
-          }}
-        />
+            style={nativeStyle}
+            draggable={false}
+            onLoad={(event) => {
+              const img = event.currentTarget;
+              setDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+              setLoading(false);
+            }}
+            onError={() => {
+              if (previewSrc !== fallbackUrl && fallbackUrl) {
+                setPreviewSrc(fallbackUrl);
+                setLoading(true);
+                return;
+              }
+              setLoading(false);
+            }}
+          />
+        )}
 
         {hasNext && onNext && (
           <button
@@ -224,6 +254,8 @@ export const MediaPreviewLightbox: React.FC<MediaPreviewLightboxProps> = ({
       </div>
     </div>
   );
+
+  return <AdminModalPortal>{overlay}</AdminModalPortal>;
 };
 
 export default MediaPreviewLightbox;

@@ -145,6 +145,7 @@ export const publicEn: MessageTree = {
     cancel: 'Cancel',
     save: 'Save selection',
     policy: {
+      badge: 'Cookies & privacy',
       pageTitle: 'Cookie policy',
       intro: 'This page explains how this website uses cookies and similar browser storage, and how you can manage your preferences.',
       whatTitle: 'What are cookies?',

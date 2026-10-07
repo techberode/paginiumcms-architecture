@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2, Save, X } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
 import { useToast } from '../../hooks/useToast';
 import {
   fetchMediaTextContent,
@@ -21,6 +22,8 @@ export const MediaTextEditorModal: React.FC<Props> = ({ file, onClose, onSaved }
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState('');
   const [version, setVersion] = useState(1);
+
+  useEscapeToClose(Boolean(file), onClose);
 
   useEffect(() => {
     if (!file) {

@@ -2524,3 +2524,122 @@ a.pg-link-broken {
   color: rgb(252 165 165);
   text-decoration-color: rgb(252 165 165);
 }
+
+/* Legal / settings markdown (cookies page, privacy blocks) */
+.pg-cookie-policy-page {
+  text-align: left;
+}
+
+.pg-cookie-policy-intro {
+  padding: 0 0.125rem;
+}
+
+.pg-legal-prose.paginium-prose {
+  display: flow-root;
+  text-align: left;
+  width: 100%;
+  max-width: none;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.pg-legal-prose.paginium-prose > h1:first-child {
+  display: none;
+}
+
+.pg-legal-prose.paginium-prose h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 2rem 0 0.85rem;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.pg-legal-prose.paginium-prose h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 2.25rem 0 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  color: var(--color-text);
+}
+
+.pg-legal-prose.paginium-prose > h2:first-child,
+.pg-cookie-policy-intro .pg-legal-prose.paginium-prose > h2:first-child {
+  margin-top: 0;
+}
+
+.pg-legal-prose.paginium-prose h3,
+.pg-legal-prose.paginium-prose h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+  color: var(--color-text);
+}
+
+.pg-legal-prose.paginium-prose h4 {
+  font-size: 0.98rem;
+  margin-top: 1.15rem;
+  padding-left: 1rem;
+}
+
+.pg-legal-prose.paginium-prose > *:first-child {
+  margin-top: 0;
+}
+
+.pg-legal-prose.paginium-prose p {
+  display: block;
+  margin-block: 0 1.15rem;
+  line-height: 1.75;
+}
+
+.pg-legal-prose.paginium-prose p:last-child {
+  margin-block-end: 0;
+}
+
+.pg-legal-prose.paginium-prose h2 + p,
+.pg-legal-prose.paginium-prose h3 + p,
+.pg-legal-prose.paginium-prose h4 + p {
+  margin-top: 0.35rem;
+}
+
+.pg-legal-prose.paginium-prose ul,
+.pg-legal-prose.paginium-prose ol {
+  margin: 0.5rem 0 1.25rem;
+  padding-left: 1.75rem;
+}
+
+.pg-legal-prose.paginium-prose li {
+  margin-bottom: 0.55rem;
+  line-height: 1.7;
+}
+
+.pg-legal-prose.paginium-prose li > ul,
+.pg-legal-prose.paginium-prose li > ol {
+  margin-top: 0.45rem;
+  margin-bottom: 0.35rem;
+  padding-left: 1.35rem;
+}
+
+.pg-legal-prose.paginium-prose blockquote {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem 1rem 0.85rem 1.1rem;
+  border-left-width: 3px;
+  font-size: 0.9rem;
+}
+
+.pg-legal-prose.paginium-prose hr {
+  margin: 2rem 0;
+}
+
+.pg-legal-prose.paginium-prose img {
+  margin: 1.25rem 0;
+}
+
+.pg-cookie-policy-page article .pg-legal-prose.paginium-prose > h2:first-child {
+  margin-top: 0;
+  border-bottom: 0;
+  padding-bottom: 0;
+}

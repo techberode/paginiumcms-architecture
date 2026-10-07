@@ -57,6 +57,10 @@ export const mediaEn: MessageTree = {
   },
   pdfPreview: {
     title: 'PDF preview',
+    loading: 'Loading PDF…',
+    loadFailed: 'This browser cannot show the PDF inline. Open it in a new tab or download the file.',
+    openNewTab: 'Open in new tab',
+    embedUnsupported: 'Inline PDF is not supported here.',
   },
   stock: {
     topicLabel: 'Stock image topic',

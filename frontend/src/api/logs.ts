@@ -1,6 +1,5 @@
 // frontend/src/api/logs.ts
 import apiClient from './client';
-import { resolveApiBaseUrl } from '../utils/apiBaseUrl';
 import type { BulkBatchResult } from '../types/bulk';
 
 export type LogSeverity = 'debug' | 'info' | 'warning' | 'error' | 'critical';
@@ -98,39 +97,64 @@ export const logsApi = {
       archived?: LogArchivedFilter;
     };
   }): Promise<LogExportDownloadResult> => {
-    try {
-      const csrf = typeof localStorage !== 'undefined' ? localStorage.getItem('csrf_token') ?? '' : '';
-      const response = await fetch(`${resolveApiBaseUrl()}/api/admin/logs/export`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: '*/*',
-          'X-CSRF-TOKEN': csrf,
-        },
-        body: JSON.stringify(params),
-      });
-      if (!response.ok) {
-        const contentType = response.headers.get('content-type') ?? '';
-        if (contentType.includes('application/json')) {
-          const body = (await response.json()) as { error?: string; message?: string };
+    const postExport = async (csrfRetried: boolean): Promise<LogExportDownloadResult> => {
+      try {
+        let csrf = apiClient.getCsrfTokenForRequest();
+        if (!csrf) {
+          csrf = await apiClient.refreshCsrfToken();
+        }
+
+        const response = await apiClient.postRawBlob('/api/admin/logs/export', params, csrf ?? '');
+
+        if (response.status === 403 && !csrfRetried) {
+          const errBody = await parseJsonBlob(response.errorBlob);
+          if (errBody?.code === 'csrf_invalid') {
+            const fresh = await apiClient.refreshCsrfToken();
+            if (fresh) {
+              return postExport(true);
+            }
+          }
           return {
             ok: false,
-            message: body.error ?? body.message ?? `HTTP ${response.status}`,
+            message: errBody?.error ?? errBody?.message ?? 'Neplatný alebo chýbajúci CSRF token',
           };
         }
-        return { ok: false, message: `HTTP ${response.status}` };
+
+        if (!response.ok || !response.blob) {
+          const errBody = await parseJsonBlob(response.errorBlob);
+          return {
+            ok: false,
+            message: errBody?.error ?? errBody?.message ?? `HTTP ${response.status}`,
+          };
+        }
+
+        if (response.blob.size === 0) {
+          return { ok: false, message: 'Empty export response' };
+        }
+
+        return { ok: true, blob: response.blob };
+      } catch {
+        return { ok: false, message: 'Network error' };
       }
-      const blob = await response.blob();
-      if (blob.size === 0) {
-        return { ok: false, message: 'Empty export response' };
-      }
-      return { ok: true, blob };
-    } catch {
-      return { ok: false, message: 'Network error' };
-    }
+    };
+
+    return postExport(false);
   },
 };
+
+async function parseJsonBlob(
+  blob: Blob | null | undefined
+): Promise<{ error?: string; message?: string; code?: string } | null> {
+  if (!blob || blob.size === 0) {
+    return null;
+  }
+  try {
+    const text = await blob.text();
+    return JSON.parse(text) as { error?: string; message?: string; code?: string };
+  } catch {
+    return null;
+  }
+}
 
 export function saveLogsExportBlob(blob: Blob, filename: string): void {
   const url = window.URL.createObjectURL(blob);

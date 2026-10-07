@@ -40,6 +40,7 @@ use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Cache\CacheDriverFactory;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
@@ -1095,6 +1096,9 @@ return [
     ContentCacheService::class => create(ContentCacheService::class)
         ->constructor(get(CacheManager::class)),
 
+    AdminOverviewCacheService::class => create(AdminOverviewCacheService::class)
+        ->constructor(get(CacheManager::class)),
+
     CacheAdminService::class => create(CacheAdminService::class)
         ->constructor(
             get(CacheManager::class),
@@ -1238,6 +1242,7 @@ return [
             get(ProjectPlanApiPresenter::class),
             get(SettingsRepositoryInterface::class),
             get(AuditTrailService::class),
+            get(AdminOverviewCacheService::class),
             get(JsonResponder::class)
         ),
     ProjectPlanContentSyncService::class => create(ProjectPlanContentSyncService::class)
@@ -2328,7 +2333,8 @@ return [
             get(LoggerInterface::class),
             get(EnhancedVersionManager::class),
             get(UserRepository::class),
-            get(IncidentNotifier::class)
+            get(IncidentNotifier::class),
+            get(AdminOverviewCacheService::class)
         ),
     ContentVersioningService::class => create(ContentVersioningService::class)
         ->constructor(
@@ -2361,6 +2367,7 @@ return [
     AuditTrailController::class => create(AuditTrailController::class)
         ->constructor(
             get(AuditTrailService::class),
+            get(AdminOverviewCacheService::class),
             get(JsonResponder::class)
         ),
     DeveloperController::class => create(DeveloperController::class)

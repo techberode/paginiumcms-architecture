@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 6 October 2026 · register **ISS-001–ISS-195** · latest public release tag **`v2.1.0-beta.97`**
+> **Last updated:** 7 October 2026 · register **ISS-001–ISS-195** · latest public release tag **`v2.1.0-beta.97`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -5943,7 +5943,7 @@ Shortcodes, snippets, pages, and articles showed **ŽIVÝ NÁHĽAD / Renderujem 
 | Field | Value |
 |---|---|
 | **Severity** | **Medium (security)** — elevated concern if untrusted users can upload to media; lower immediate impact when only trusted editors upload and PHP execution is disabled under `/storage/` |
-| **Status** | 🟡 **It.99 shipped** — marker scan + SVG reject + secure filenames; optional GD re-encode; PDF deep scan still open |
+| **Status** | 🟡 **It.99 shipped** — marker scan + SVG reject + secure filenames + **PDF sample probe**; optional GD re-encode; full PDF parser still out of scope |
 | **Area** | Upload pipeline · `UploadPolicyEngine` · `MediaFormats` · public media serve |
 
 ### Symptom / risk
@@ -5964,17 +5964,17 @@ An attacker (or compromised editor account) may upload a file that **passes** ex
 |------------|-----|
 | JPEG/PNG/GIF/WebP | Header validated only — **no** full-file or re-encode strip of trailing/metadata payload |
 | SVG | Upload accepts valid SVG markup; reliance on **serve** hardening, not upload normalization |
-| PDF | `%PDF-` prefix only — no embedded JS/HTML probe |
-| Large polyglot tail | Marker scan today is **video-centric**; raster paths lack the same sample probe |
+| PDF | ~~`%PDF-` prefix only~~ — **sample probe** for `/JavaScript`, `/OpenAction`, HTML markers (Oct 2026); not a full PDF parser |
+| Large polyglot tail | Payload **after** scan window unless `reencodeRasterUploads` enabled |
 
 ### Remediation shipped (It.99)
 
 **[Iteration 99](en/ITERATION_99.md)** — `PolyglotUploadGuard`, settings under **Bezpečnosť uploadu**:
 
-1. **Tier 1 (default ON):** `polyglotMarkerScanEnabled` — HTML/script markers in sample (images + video); SVG `script` / `on*` / `javascript:` reject.
+1. **Tier 1 (default ON):** `polyglotMarkerScanEnabled` — HTML/script markers in sample (images + video + **PDF**); SVG `script` / `on*` / `javascript:` reject; PDF `/JavaScript`, `/OpenAction`, `/Launch`, …
 2. **Tier 2 (default OFF):** `reencodeRasterUploads` — GD force re-encode on media upload; avatars still normalized via `AvatarImageProcessor`.
 3. **Naming (default ON):** `secureMediaFileNaming` → `image_YYYYMMDD_{id}.ext` / `video_…` on disk; original label in Media Library UI.
-4. **Residual:** PDF embedded JS not scanned; polyglot tail **after** scan window unless re-encode enabled; `nosniff` at serve (already present).
+4. **Residual:** PDF obfuscated JS outside sample window; polyglot tail **after** scan window unless re-encode enabled; `nosniff` at serve (already present).
 
 ### Verification
 

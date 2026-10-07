@@ -20,6 +20,9 @@ export const settingsEn: MessageTree = {
   "helpTooltip": {
     "toggle": "Show detailed help"
   },
+  "markdownMinimal": {
+    "hint": "Markdown formatting is rendered on the public site (no widgets or shortcodes)."
+  },
   "twoFactor": {
     "title": "Two-factor authentication (2FA)",
     "description": "QR code and TOTP authenticator setup lives in the account security section.",
@@ -392,12 +395,12 @@ export const settingsEn: MessageTree = {
       "bannerTitle": "Cookie banner",
       "pageTitle": "Policy page header",
       "blocksTitle": "Custom GDPR blocks",
-      "blocksHint": "Add legal sections (controller, legal basis, retention, subprocessors, etc.). Plain text only.",
+      "blocksHint": "Add legal sections (controller, legal basis, retention, subprocessors, etc.). Minimal Markdown in the body field.",
       "blocksEmpty": "No custom blocks yet.",
       "addBlock": "Add block",
       "blockLabel": "Block {index}",
       "blockTitlePlaceholder": "Section title (e.g. Data controller)",
-      "blockBodyPlaceholder": "Section body — plain text, line breaks preserved.",
+      "blockBodyPlaceholder": "Section body — minimal Markdown (bold, italic, links).",
       "removeBlock": "Remove block",
       "moveUp": "Move up",
       "moveDown": "Move down",
@@ -1280,7 +1283,7 @@ export const settingsEn: MessageTree = {
       },
       "cookiePolicyIntro": {
         "label": "Cookie page intro",
-        "help": "Custom introduction shown under the page title. Empty = default i18n text."
+        "help": "Minimal Markdown under the page title. Empty = default i18n text. No shortcodes."
       },
       "cookiePolicySectionsJson": {
         "label": "GDPR content blocks (JSON)",

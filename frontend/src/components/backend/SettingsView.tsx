@@ -59,6 +59,7 @@ import { LayoutSettingsPanel } from '../admin/LayoutSettingsPanel';
 import { CmsInfoSettingsPanel } from './CmsInfoSettingsPanel';
 import { EngineSettingsPanel } from './EngineSettingsPanel';
 import { PrivacyCookieSettingsPanel } from './PrivacyCookieSettingsPanel';
+import { SettingsMinimalMarkdownField } from './SettingsMinimalMarkdownField';
 import { ContactRoutingPanel } from './ContactRoutingPanel';
 import { TranslationSettingsPanel } from './TranslationSettingsPanel';
 import { AgentSettingsPanel } from './AgentSettingsPanel';
@@ -811,6 +812,19 @@ const SettingFieldRow: React.FC<RowProps> = ({ groupKey, field, register, watch,
             docUrl={docUrl}
           />
           </div>
+
+          {field.type === 'markdown' && (
+            <>
+              <SettingsMinimalMarkdownField
+                id={inputId}
+                value={String(watch(field.key) ?? '')}
+                onChange={(next) =>
+                  setValue(field.key, next, { shouldDirty: true, shouldValidate: true })
+                }
+              />
+              <input type="hidden" {...register(field.key)} />
+            </>
+          )}
 
           {field.type === 'text' && (
             <textarea

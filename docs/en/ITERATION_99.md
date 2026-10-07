@@ -14,7 +14,7 @@ Today’s pipeline already rejects MIME/extension mismatch, magic-byte impostors
 |--------|---------|------|
 | JPEG/PNG/GIF/WebP | Header magic only | Trailing payload / metadata polyglot (GIFAR-style) if file is still served as `image/*` |
 | SVG | Structure sniff | Active markup; mitigated at **serve** time, not normalized at upload |
-| PDF | `%PDF-` prefix | Embedded JS/HTML not scanned |
+| PDF | `%PDF-` + **active-content sample probe** (Oct 2026) | Obfuscated JS **after** scan window still residual |
 | WebM | EBML + video marker scan | Same 64 KB window as MP4 |
 
 See [ISS-195](../ISSUES.md#iss-195) for severity and tracking.
@@ -76,6 +76,20 @@ See [ISS-195](../ISSUES.md#iss-195) for severity and tracking.
 - [x] PHPUnit: `PolyglotUploadGuardTest`, `MediaSecureUploadNamingTest`.
 - [x] Serve-time `nosniff` unchanged (already global — not part of upload code path).
 
+## Oct 2026 follow-up (same release train, UX + PDF probe)
+
+Shipped alongside residual **ISS-195** work without expanding upload Tier 3 scope.
+
+| Area | Change |
+|------|--------|
+| **PDF upload** | `PolyglotUploadGuard::assertPdfFreeOfActiveContentStatic()` — sample scan for PDF dictionary tokens (`/JavaScript`, `/OpenAction`, `/Launch`, …) and `/JS` objects; wired from `MediaFormats::validate` |
+| **Admin PDF preview** | List/grid open preview; modal loads PDF with credentialed `fetch` → blob URL + `<object>`; optional admin CSP variant on download route; portal overlay above top bar |
+| **File type UI** | `MediaFileTypeIcon` — colored document tile + extension label (PDF, XLS, DOC, …) in Media Library and picker |
+| **Modal UX** | `useEscapeToClose` (capture-phase **Escape**) on media lightbox, PDF preview, picker, metadata, text editor |
+| **Cookies settings** | Minimal Markdown fields for privacy policy sections; public page uses shared plain-Markdown → HTML path |
+
+Tests: `PolyglotUploadGuardTest` (PDF fixtures), `MediaPreviewLightbox.test.tsx` (Escape), `mediaFileTypeIcon.test.ts`, `contentEditor.test.ts` (legal markdown).
+
 ## Related
 
-[It.78](ITERATION_78.md) · [It.79](ITERATION_79.md) · [developer/SECURITY](developer/SECURITY.md) · [MEDIA_IN_CONTENT.md](user/MEDIA_IN_CONTENT.md)
+[It.78](ITERATION_78.md) · [It.79](ITERATION_79.md) · [It.96](ITERATION_96.md) · [It.100](ITERATION_100.md) (ongoing admin load) · [developer/SECURITY](developer/SECURITY.md) · [MEDIA_IN_CONTENT.md](user/MEDIA_IN_CONTENT.md)

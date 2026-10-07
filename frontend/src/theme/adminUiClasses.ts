@@ -41,3 +41,6 @@ export const ADMIN_SIDE_NAV_IDLE = 'admin-choice border-2';
 export const ADMIN_PILL_ACTIVE = 'admin-chip-on';
 
 export const ADMIN_PILL_IDLE = 'admin-chip hover:text-admin-text';
+
+/** Portaled to document.body — above admin chrome (z-50); below desk chat (z-300). */
+export const ADMIN_MODAL_OVERLAY = 'fixed inset-0 z-[250]';

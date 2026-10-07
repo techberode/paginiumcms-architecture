@@ -6,6 +6,8 @@ import {
   looksLikeHtml,
   looksLikeTiptapJson,
   markdownToHtml,
+  normalizeLegalMarkdown,
+  plainMarkdownToHtml,
   storagePayloadFromEditor,
   wrapSelection,
 } from './contentEditor';
@@ -29,6 +31,22 @@ describe('contentEditor', () => {
     const html = markdownToHtml(':::video\nsrc: /storage/app/content/media/x.mp4\n:::');
     expect(html).toContain('<video src="/storage/app/content/media/x.mp4"');
     expect(html).toContain('controls');
+  });
+
+  it('plainMarkdownToHtml skips shortcodes', () => {
+    const raw = ':::video\nsrc: /storage/app/content/media/x.mp4\n:::';
+    expect(plainMarkdownToHtml(raw)).not.toContain('<video');
+    expect(plainMarkdownToHtml('**bold**')).toContain('<strong>bold</strong>');
+  });
+
+  it('normalizeLegalMarkdown splits single-newline paragraphs for legal paste', () => {
+    expect(normalizeLegalMarkdown('Prvý odsek.\nDruhý odsek.')).toBe('Prvý odsek.\n\nDruhý odsek.');
+    expect(normalizeLegalMarkdown('## Nadpis\nText pod nadpisom.')).toBe('## Nadpis\n\nText pod nadpisom.');
+  });
+
+  it('plainMarkdownToHtml renders separate p tags for single-newline paragraphs', () => {
+    const html = plainMarkdownToHtml('Prvý odsek.\nDruhý odsek.');
+    expect(html.match(/<p>/g)?.length).toBe(2);
   });
 
   it('converts html to markdown', () => {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\AuditTrail\Services;
 
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
 use PaginiumCMS\Core\Logging\Models\LogEntry;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
@@ -32,14 +33,15 @@ class AuditTrailService
         LoggerInterface $logger,
         EnhancedVersionManager $versionManager,
         UserRepository $userRepository,
-        ?IncidentNotifier $incidentNotifier = null
+        ?IncidentNotifier $incidentNotifier = null,
+        private ?AdminOverviewCacheService $adminOverviewCache = null,
     ) {
         $this->logger = $logger;
         $this->versionManager = $versionManager;
         $this->userRepository = $userRepository;
         $this->incidentNotifier = $incidentNotifier;
         $this->messageFormatter = new AuditMessageFormatter();
-        
+
         $this->initializeSessionContext();
     }
 
@@ -261,6 +263,7 @@ class AuditTrailService
         }
 
         $this->logger->writeEntry($entry);
+        $this->adminOverviewCache?->invalidateAuditStats();
 
         // Ak je buffering zapnutý, uložíme do bufferu
         if ($this->isBuffering) {

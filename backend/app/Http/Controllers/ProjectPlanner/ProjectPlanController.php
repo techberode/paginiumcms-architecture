@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\ProjectPlanner;
 
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
 use PaginiumCMS\Core\FlatFile\Exception\InvalidPathException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -26,6 +27,7 @@ final class ProjectPlanController
         private ProjectPlanApiPresenter $presenter,
         private SettingsRepositoryInterface $settings,
         private AuditTrailService $auditTrail,
+        private AdminOverviewCacheService $adminOverviewCache,
         private JsonResponder $json,
     ) {
     }
@@ -53,7 +55,11 @@ final class ProjectPlanController
             return $disabled;
         }
 
-        return $this->json->success($response, $this->presenter->overview($this->repository->findAll()));
+        $payload = $this->adminOverviewCache->rememberProjectPlansOverview(
+            fn (): array => $this->presenter->overview($this->repository->findAll())
+        );
+
+        return $this->json->success($response, $payload);
     }
 
     /**
@@ -105,6 +111,7 @@ final class ProjectPlanController
         }
 
         $this->audit($request, 'project_plan.create', $plan->id, $plan->title);
+        $this->adminOverviewCache->invalidateProjectPlansOverview();
 
         return $this->json->success(
             $response,
@@ -139,6 +146,7 @@ final class ProjectPlanController
         }
 
         $this->audit($request, 'project_plan.update', $plan->id, $plan->title);
+        $this->adminOverviewCache->invalidateProjectPlansOverview();
 
         return $this->json->success(
             $response,
@@ -175,6 +183,7 @@ final class ProjectPlanController
         }
 
         $this->audit($request, 'project_plan.item.create', $plan->id, $plan->title);
+        $this->adminOverviewCache->invalidateProjectPlansOverview();
 
         return $this->json->success(
             $response,
@@ -213,6 +222,7 @@ final class ProjectPlanController
         }
 
         $this->audit($request, 'project_plan.item.update', $plan->id, $plan->title);
+        $this->adminOverviewCache->invalidateProjectPlansOverview();
 
         return $this->json->success(
             $response,
@@ -245,6 +255,7 @@ final class ProjectPlanController
         }
 
         $this->audit($request, 'project_plan.item.delete', $plan->id, $plan->title);
+        $this->adminOverviewCache->invalidateProjectPlansOverview();
 
         return $this->json->success(
             $response,

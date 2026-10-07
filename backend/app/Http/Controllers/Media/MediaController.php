@@ -92,8 +92,11 @@ class MediaController
             ->withHeader('Cache-Control', 'private, max-age=3600')
             ->withHeader('Content-Disposition', $disposition . '; filename="' . addslashes($media->getFileName()) . '"');
 
-        if ($isActiveMime || $pdfAdminPreview) {
+        if ($isActiveMime) {
             $response = $response->withHeader('Content-Security-Policy', 'sandbox; default-src \'none\'');
+        } elseif ($pdfAdminPreview) {
+            // Admin iframe PDF viewer — nosniff + auth gate; avoid default-src 'none' (breaks built-in PDF render).
+            $response = $response->withHeader('Content-Security-Policy', 'sandbox allow-same-origin');
         }
 
         return $response;

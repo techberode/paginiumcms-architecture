@@ -21,6 +21,7 @@ import { Loader2, X, Zap } from 'lucide-react';
 import { SeoHealthBadge } from './SeoHealthBadge';
 import { evaluateMediaSeo } from '../../utils/seoHealth';
 import { useI18n } from '../../context/I18nContext';
+import { useEscapeToClose } from '../../hooks/useEscapeToClose';
 import { useToast } from '../../hooks/useToast';
 
 interface MediaMetadataModalProps {
@@ -63,20 +64,7 @@ export const MediaMetadataModal: React.FC<MediaMetadataModalProps> = ({
   const [applyLoading, setApplyLoading] = useState(false);
   const [previewData, setPreviewData] = useState<OptimizePreviewPayload | null>(null);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, onClose]);
+  useEscapeToClose(open, onClose);
 
   useEffect(() => {
     if (file) {

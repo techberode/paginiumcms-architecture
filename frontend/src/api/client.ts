@@ -177,6 +177,40 @@ class ApiClient {
     return localStorage.getItem('csrf_token') || null;
   }
 
+  /** For raw fetch helpers (e.g. log export) that bypass axios interceptors. */
+  public getCsrfTokenForRequest(): string | null {
+    return this.getCsrfToken();
+  }
+
+  /**
+   * POST expecting a binary body (not JSON). CSRF must be supplied explicitly;
+   * use logs export helper for automatic refresh/retry.
+   */
+  public async postRawBlob(
+    url: string,
+    data: unknown,
+    csrfToken: string
+  ): Promise<{ ok: boolean; status: number; blob?: Blob; errorBlob?: Blob }> {
+    try {
+      const response = await this.client.post(url, data, {
+        responseType: 'blob',
+        headers: {
+          Accept: '*/*',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+      });
+      const blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
+      return { ok: response.status >= 200 && response.status < 300, status: response.status, blob };
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const payload = error.response.data;
+        const errorBlob = payload instanceof Blob ? payload : undefined;
+        return { ok: false, status: error.response.status, errorBlob };
+      }
+      throw error;
+    }
+  }
+
   public setAuthToken(_token: string): void {
     // Session auth cez HttpOnly cookie – Bearer token sa nepoužíva (Iterácia 5).
   }

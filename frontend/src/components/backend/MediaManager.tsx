@@ -7,7 +7,6 @@ import {
   Loader2,
   Trash2,
   Upload,
-  FileText,
   Pencil,
   Folder,
   ChevronRight,
@@ -18,6 +17,7 @@ import {
 import { useToast } from '../../hooks/useToast';
 import { useOpenLinksInNewTab } from '../../hooks/useOpenLinksInNewTab';
 import { openExternalUrl } from '../../utils/linkTarget';
+import { MediaFileTypeIcon } from '../../utils/mediaFileTypeIcon';
 import { getSettings } from '../../api/settings';
 import {
   bulkDeleteMedia,
@@ -487,12 +487,16 @@ export const MediaManager: React.FC = () => {
   };
 
   const openPreview = (file: MediaFile, mode: MediaPreviewMode = 'fit') => {
-    if (!isPreviewableMedia(file, previewableMimeTypes)) {
-      openExternalUrl(resolvePublicMediaUrl(file.url), openInNewTab);
+    if (isPdfMedia(file)) {
+      setPdfPreviewFile(file);
       return;
     }
-    setPreviewMode(mode);
-    setPreviewFile(file);
+    if (isVideoMedia(file) || isPreviewableMedia(file, previewableMimeTypes)) {
+      setPreviewMode(mode);
+      setPreviewFile(file);
+      return;
+    }
+    openExternalUrl(resolvePublicMediaUrl(file.url), openInNewTab);
   };
 
   const closePreview = () => setPreviewFile(null);
@@ -1078,8 +1082,18 @@ const MediaCard: React.FC<MediaCardProps> = ({
               <Expand className="w-8 h-8 text-white drop-shadow" />
             </span>
           </button>
+        ) : onPreviewPdf ? (
+          <button
+            type="button"
+            className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-500 hover:bg-gray-200/60 dark:hover:bg-gray-700/60 transition-colors"
+            onClick={onPreviewPdf}
+            aria-label={t('media.actions.previewPdf')}
+          >
+            <MediaFileTypeIcon file={file} size={48} />
+            <span className="text-xs font-semibold uppercase tracking-wide">{t('media.actions.previewPdf')}</span>
+          </button>
         ) : (
-          <FileText className="w-12 h-12 text-gray-400" />
+          <MediaFileTypeIcon file={file} size={48} />
         )}
       </div>
       <div className="card-body p-4 flex-1 flex flex-col gap-2">
@@ -1297,18 +1311,33 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                           }}
                         />
                       </button>
+                    ) : isPdfMedia(file) ? (
+                      <button
+                        type="button"
+                        onClick={() => onPreview(file)}
+                        className="flex items-center justify-center w-16 h-12 rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        title={t('media.actions.previewPdf')}
+                        aria-label={t('media.actions.previewPdf')}
+                      >
+                        <MediaFileTypeIcon file={file} size={32} />
+                      </button>
                     ) : (
-                      <FileText className="w-8 h-8 text-gray-400" />
+                      <MediaFileTypeIcon file={file} size={32} />
                     )}
                   </td>
                 )}
                 <td className="!whitespace-normal max-w-[240px] sm:max-w-xs">
+                  <div className="flex items-start gap-2 min-w-0">
+                    {!showThumbnail ? <MediaFileTypeIcon file={file} size={24} className="mt-0.5" /> : null}
+                    <div className="min-w-0 flex-1">
                   <p className="font-medium truncate" title={file.title || file.fileName}>
                     {file.title || file.fileName}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2" title={file.altText || undefined}>
                     {file.altText || '—'}
                   </p>
+                    </div>
+                  </div>
                 </td>
                 <td className="text-sm">{file.mimeType}</td>
                 <td className="text-sm">{formatMediaSize(file.sizeBytes)}</td>
@@ -1317,6 +1346,16 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                 </td>
                 <td>
                   <div className="flex flex-wrap gap-1">
+                    {isPdfMedia(file) ? (
+                      <button
+                        type="button"
+                        className="btn btn-secondary text-xs px-2 py-1"
+                        title={t('media.actions.previewPdf')}
+                        onClick={() => onPreview(file)}
+                      >
+                        PDF
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       className="btn btn-secondary text-xs px-2 py-1"

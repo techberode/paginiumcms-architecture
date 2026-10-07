@@ -8,6 +8,7 @@ import apiClient, { ApiResponse } from './client';
 export type SettingFieldType =
   | 'string'
   | 'text'
+  | 'markdown'
   | 'int'
   | 'float'
   | 'bool'

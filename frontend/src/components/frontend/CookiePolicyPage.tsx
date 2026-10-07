@@ -6,6 +6,7 @@ import { useCookieConsent } from '../../context/CookieConsentContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { BTN_PRIMARY } from '../../theme/publicUiClasses';
 import { parseCookiePolicySectionsJson } from '../../utils/cookiePolicySections';
+import { PlainMarkdownProse } from '../common/PlainMarkdownProse';
 
 function pickText(custom: string | undefined, fallback: string): string {
   const trimmed = custom?.trim() ?? '';
@@ -80,27 +81,33 @@ export const CookiePolicyPage: React.FC = () => {
         });
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
-      <div className="flex items-start gap-4 mb-8">
-        <div className="rounded-2xl bg-theme-primary/10 p-3 text-theme-primary shrink-0">
-          <Cookie className="h-7 w-7" aria-hidden="true" />
+    <div className="pg-cookie-policy-page max-w-3xl w-full mx-auto px-4 sm:px-6 py-10 lg:py-14 text-left">
+      <header className="mb-6 pb-6 border-b border-theme-border">
+        <div className="flex items-center gap-2 mb-4 text-theme-primary">
+          <Cookie className="h-6 w-6 shrink-0" aria-hidden="true" />
+          <span className="text-xs font-bold uppercase tracking-wide text-theme-text-muted">
+            {t('public.cookies.policy.badge')}
+          </span>
         </div>
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-theme-text tracking-tight">{pageTitle}</h1>
-          <p className="mt-3 text-theme-text-muted leading-relaxed whitespace-pre-line">{intro}</p>
-        </div>
-      </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-theme-text tracking-tight text-balance">{pageTitle}</h1>
+      </header>
 
-      <div className="space-y-10 text-theme-text">
+      {intro.trim() !== '' ? (
+        <section className="pg-cookie-policy-intro mb-12" aria-label={pageTitle}>
+          <PlainMarkdownProse markdown={intro} className="text-theme-text-muted" />
+        </section>
+      ) : null}
+
+      <div className="space-y-8 text-theme-text">
         {customSections.length > 0 ? (
           <section className="space-y-6">
             {customSections.map((section) => (
-              <article key={section.id} className="rounded-2xl border border-theme-border bg-theme-surface/40 p-5">
+              <article key={section.id} className="rounded-2xl border border-theme-border bg-theme-surface/40 p-5 sm:p-6">
                 {section.title !== '' ? (
-                  <h2 className="text-xl font-bold mb-3">{section.title}</h2>
+                  <h2 className="text-lg sm:text-xl font-bold mb-3 text-theme-text">{section.title}</h2>
                 ) : null}
                 {section.body !== '' ? (
-                  <p className="text-sm leading-relaxed text-theme-text-muted whitespace-pre-line">{section.body}</p>
+                  <PlainMarkdownProse markdown={section.body} className="text-theme-text-muted" />
                 ) : null}
               </article>
             ))}

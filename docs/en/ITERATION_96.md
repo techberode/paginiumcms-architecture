@@ -63,7 +63,7 @@ Settings (Engine or Media group): toggles per family, max MB, “allow public do
 | **96a** | `documents` upload profile + `MediaFormats` extension; repository stores MIME/folder/tags; list filters `type=document` |
 | **96b** | File manager UI: table/card columns (type icon), bulk download (zip on server or sequential client), folder UX parity with media |
 | **96c** | **Text editor** — open `.txt`/`.md` in admin (CodeMirror 6), save via `PATCH /api/media/{path}` with OCC/version bump; conflict handling |
-| **96d** | **PDF preview** in admin (sandbox iframe or pdf.js bundle self-hosted); public site = link with `Content-Disposition: attachment` |
+| **96d** | **PDF preview** in admin — credentialed blob + `<object>` modal (portal overlay, Escape to close); list/grid actions; public site = link with `Content-Disposition: attachment` |
 | **96e** | Content integration — picker “Insert document link”, shortcode/block `[document href=…]`, optional “published document” ACL |
 | **96f** | Policies UI in Settings — allow-list, quotas, virus-scan hook (optional ClamAV adapter stub), SK/EN help + ContextHelp (It.94) |
 

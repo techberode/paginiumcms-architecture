@@ -17,6 +17,9 @@ export const settingsSk: MessageTree = {
     "clearSecret": "Vymazať uložené tajomstvo",
     "groupCount": ":count skupín"
   },
+  "markdownMinimal": {
+    "hint": "Markdown sa na webe vykreslí ako formátovaný text (bez widgetov a shortcodov)."
+  },
   "helpTooltip": {
     "toggle": "Zobraziť podrobnú nápovedu"
   },
@@ -392,12 +395,12 @@ export const settingsSk: MessageTree = {
       "bannerTitle": "Cookie lišta",
       "pageTitle": "Hlavička stránky",
       "blocksTitle": "Vlastné GDPR bloky",
-      "blocksHint": "Pridajte právne sekcie (prevádzkovateľ, právny základ, retention…). Iba plain text.",
+      "blocksHint": "Pridajte právne sekcie (prevádzkovateľ, právny základ, retention…). V tele bloku minimálny Markdown.",
       "blocksEmpty": "Zatiaľ žiadne bloky.",
       "addBlock": "Pridať blok",
       "blockLabel": "Blok {index}",
       "blockTitlePlaceholder": "Nadpis sekcie (napr. Prevádzkovateľ)",
-      "blockBodyPlaceholder": "Text sekcie — plain text, zachované zalomenia riadkov.",
+      "blockBodyPlaceholder": "Text sekcie — minimálny Markdown (tučné, kurzíva, odkazy).",
       "removeBlock": "Odstrániť blok",
       "moveUp": "Posunúť hore",
       "moveDown": "Posunúť dole",
@@ -1857,7 +1860,7 @@ export const settingsSk: MessageTree = {
       },
       "cookiePolicyIntro": {
         "label": "Úvodný text stránky /cookies",
-        "help": "Vlastný úvod pod nadpisom. Prázdne = predvolený i18n text."
+        "help": "Minimálny Markdown pod nadpisom. Prázdne = predvolený i18n text. Bez shortcodov."
       },
       "cookiePolicySectionsJson": {
         "label": "GDPR bloky (JSON)",

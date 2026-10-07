@@ -106,6 +106,74 @@ export function markdownToHtml(markdown: string): string {
   return html;
 }
 
+const LEGAL_MARKDOWN_STRUCTURAL_LINE =
+  /^(#{1,6}\s|(\*|-|\+|\d+\.)\s|>{1,}\s|(-{3,}|\*{3,}|_{3,})\s*$)/;
+
+/**
+ * Legal/settings paste often uses single newlines between paragraphs (no blank line).
+ * Turn each non-structural line into its own Markdown paragraph block.
+ */
+export function normalizeLegalMarkdown(markdown: string): string {
+  const trimmed = markdown.replace(/\r\n/g, '\n').trim();
+  if (trimmed === '') {
+    return '';
+  }
+
+  const blocks = trimmed.split(/\n{2,}/);
+
+  return blocks
+    .map((block) => normalizeLegalMarkdownBlock(block))
+    .filter((block) => block !== '')
+    .join('\n\n');
+}
+
+function normalizeLegalMarkdownBlock(block: string): string {
+  const lines = block.split('\n');
+  const out: string[] = [];
+  let paragraphLines: string[] = [];
+
+  const flushParagraph = (): void => {
+    if (paragraphLines.length === 0) {
+      return;
+    }
+    for (const line of paragraphLines) {
+      const t = line.trim();
+      if (t !== '') {
+        out.push(t);
+      }
+    }
+    paragraphLines = [];
+  };
+
+  for (const line of lines) {
+    const t = line.trim();
+    if (t === '') {
+      flushParagraph();
+      continue;
+    }
+    if (LEGAL_MARKDOWN_STRUCTURAL_LINE.test(t)) {
+      flushParagraph();
+      out.push(t);
+      continue;
+    }
+    paragraphLines.push(line);
+  }
+
+  flushParagraph();
+
+  return out.join('\n\n');
+}
+
+/** Markdown → HTML for settings/legal surfaces — no shortcodes, widgets, or embeds. */
+export function plainMarkdownToHtml(markdown: string): string {
+  const normalized = normalizeLegalMarkdown(markdown);
+  if (normalized === '') {
+    return '';
+  }
+
+  return marked.parse(normalized, { async: false, breaks: false, gfm: true }) as string;
+}
+
 export function htmlToMarkdown(html: string): string {
   if (!html.trim()) {
     return '';

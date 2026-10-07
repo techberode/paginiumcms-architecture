@@ -25,6 +25,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 
 | Order | Item | Priority | Status | Reason |
 |-------|------|----------|--------|--------|
+| — | **It.100** Admin load & cache tiers (living) | 🟡 ops | 🔄 **ongoing** | Never closed by one deploy — [ITERATION_100.md](ITERATION_100.md) · probe [ADMIN_LOAD_SIMULATION.md](developer/ADMIN_LOAD_SIMULATION.md) |
 | 0 | **It.99** Upload polyglot hardening (lean) | 🟡 security | ⏳ planned | [ITERATION_99.md](ITERATION_99.md) · [ISS-195](../ISSUES.md#iss-195) |
 | 0 | **It.58f-i** Page field composer (sections + gallery per block) | 🟡 P1 | 🟡 a–f + islands; **g–k** ⏳ React image/video gallery | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) · [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 0b | **It.97** CSP `frame-src 'self'` + embed/map facades | 🔵 | ⏸️ | **Deferred** — keep current embed/map iframe + CSP exceptions; prefer **React islands** for rich UI — [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |

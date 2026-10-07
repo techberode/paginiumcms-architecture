@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
+import { useAdminSecondaryQuery } from '../../hooks/useAdminSecondaryQuery';
 import { useDeferredAfterPaint } from '../../hooks/useDeferredAfterPaint';
 import { useApi } from '../../hooks/useApi';
 import { queryKeys } from '../../api/queryKeys';
@@ -94,7 +95,7 @@ export const DashboardView: React.FC = () => {
     isLoading: secondaryLoading,
     isFetching: secondaryFetching,
     refetch: refetchSecondary,
-  } = useAdminListQuery<DashboardSecondaryData>({
+  } = useAdminSecondaryQuery<DashboardSecondaryData>({
     queryKey: queryKeys.dashboard.secondary,
     enabled: deferSecondary,
     queryFn: async () => {

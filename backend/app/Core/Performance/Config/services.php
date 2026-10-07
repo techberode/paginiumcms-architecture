@@ -102,6 +102,7 @@ return [
             get(PerformanceBreachStore::class),
             get(PerformanceSampleStore::class),
             get(QueryIndexAdvisor::class),
+            get(\PaginiumCMS\Core\Cache\AdminOverviewCacheService::class),
             get(JsonResponder::class)
         ),
 ];

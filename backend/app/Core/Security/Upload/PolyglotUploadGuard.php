@@ -27,6 +27,15 @@ final class PolyglotUploadGuard
         'javascript:',
     ];
 
+    /** @var list<string> PDF name tokens (lowercase match) indicating embedded actions / JS */
+    private const PDF_ACTIVE_MARKERS = [
+        '/javascript',
+        '/openaction',
+        '/launch',
+        '/richmedia',
+        '/embeddedfile',
+    ];
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
     ) {
@@ -49,6 +58,13 @@ final class PolyglotUploadGuard
             return;
         }
 
+        if ($mimeType === 'application/pdf') {
+            self::assertPdfFreeOfActiveContentStatic($bytes, $this->resolveScanMaxBytes());
+            $this->assertNoHtmlScriptMarkers($bytes, $this->resolveScanMaxBytes());
+
+            return;
+        }
+
         $this->assertNoHtmlScriptMarkers($bytes, $this->resolveScanMaxBytes());
     }
 
@@ -59,6 +75,20 @@ final class PolyglotUploadGuard
             if (str_contains($sample, $marker)) {
                 throw new FlatFileException('Súbor obsahuje podozrivé HTML/script značky');
             }
+        }
+    }
+
+    public static function assertPdfFreeOfActiveContentStatic(string $bytes, int $maxBytes = self::DEFAULT_SCAN_MAX_BYTES): void
+    {
+        $sample = strtolower(substr($bytes, 0, max(0, min($maxBytes, self::MAX_SCAN_CEILING))));
+        foreach (self::PDF_ACTIVE_MARKERS as $marker) {
+            if (str_contains($sample, $marker)) {
+                throw new FlatFileException('PDF súbor obsahuje zakázané aktívne prvky (JavaScript alebo spúšťacie akcie)');
+            }
+        }
+
+        if (preg_match('#/(?:js|javascript)\s*[\(<]#', $sample) === 1) {
+            throw new FlatFileException('PDF súbor obsahuje zakázaný JavaScript objekt');
         }
     }
 
@@ -86,7 +116,8 @@ final class PolyglotUploadGuard
     private function shouldScanMime(string $mimeType): bool
     {
         return str_starts_with($mimeType, 'image/')
-            || MediaFormats::isVideoMime($mimeType);
+            || MediaFormats::isVideoMime($mimeType)
+            || $mimeType === 'application/pdf';
     }
 
     private function isMarkerScanEnabled(): bool

@@ -57,6 +57,10 @@ export const mediaSk: MessageTree = {
   },
   pdfPreview: {
     title: 'Náhľad PDF',
+    loading: 'Načítavam PDF…',
+    loadFailed: 'Prehliadač nevie zobraziť PDF v okne. Otvorte ho v novej karte alebo stiahnite súbor.',
+    openNewTab: 'Otvoriť v novej karte',
+    embedUnsupported: 'Vložený náhľad PDF tu nie je podporovaný.',
   },
   stock: {
     topicLabel: 'Téma stock obrázka',

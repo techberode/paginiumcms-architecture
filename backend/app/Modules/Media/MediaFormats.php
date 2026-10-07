@@ -268,6 +268,11 @@ final class MediaFormats
             PolyglotUploadGuard::assertNoHtmlScriptMarkersStatic($bytes);
         }
 
+        if ($verifyContent && $declaredMime === 'application/pdf') {
+            PolyglotUploadGuard::assertPdfFreeOfActiveContentStatic($bytes);
+            PolyglotUploadGuard::assertNoHtmlScriptMarkersStatic($bytes);
+        }
+
         return $declaredMime;
     }
 

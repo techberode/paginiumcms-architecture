@@ -145,6 +145,7 @@ export const publicSk: MessageTree = {
     cancel: 'Zrušiť',
     save: 'Uložiť výber',
     policy: {
+      badge: 'Cookies a súkromie',
       pageTitle: 'Zásady cookies',
       intro: 'Táto stránka vysvetľuje, ako tento web používa cookies a podobné úložiská v prehliadači, a ako môžete spravovať svoj súhlas.',
       whatTitle: 'Čo sú cookies?',

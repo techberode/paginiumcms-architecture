@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Scheduler\Services\JobRegistryStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRunStore;
 use PaginiumCMS\Core\Scheduler\Services\JobWorker;
 use PaginiumCMS\Core\Scheduler\Services\PrivilegedJobPolicy;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\Scheduler\Services\ScheduledJobRunner;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -33,22 +34,27 @@ final class JobsController
         private ScheduledJobRunner $runner,
         private JobWorker $worker,
         private CronExpressionEvaluator $cron,
+        private AdminOverviewCacheService $adminOverviewCache,
         private JsonResponder $json
     ) {
     }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $scheduler = $this->settings->group('scheduler');
+        $payload = $this->adminOverviewCache->rememberJobsOverview(function (): array {
+            $scheduler = $this->settings->group('scheduler');
 
-        return $this->json->success($response, [
-            'enabled' => (bool) ($scheduler['enabled'] ?? true),
-            'handlers' => $this->handlers->catalog(),
-            'jobs' => array_map(fn (array $job): array => $this->enrichJob($job), $this->registry->all()),
-            'recent_runs' => $this->runs->recent(150),
-            'queue' => $this->queue->snapshot(),
-            'cron_hint' => $this->buildCronHint(),
-        ]);
+            return [
+                'enabled' => (bool) ($scheduler['enabled'] ?? true),
+                'handlers' => $this->handlers->catalog(),
+                'jobs' => array_map(fn (array $job): array => $this->enrichJob($job), $this->registry->all()),
+                'recent_runs' => $this->runs->recent(150),
+                'queue' => $this->queue->snapshot(),
+                'cron_hint' => $this->buildCronHint(),
+            ];
+        });
+
+        return $this->json->success($response, $payload);
     }
 
     private function buildCronHint(): string
@@ -95,6 +101,7 @@ final class JobsController
         }
 
         $job = $this->registry->save($payload);
+        $this->adminOverviewCache->invalidateJobsOverview();
 
         return $this->json->success($response, $this->enrichJob($job), 201);
     }
@@ -127,6 +134,7 @@ final class JobsController
         }
 
         $job = $this->registry->save($payload);
+        $this->adminOverviewCache->invalidateJobsOverview();
 
         return $this->json->success($response, $this->enrichJob($job));
     }
@@ -140,6 +148,8 @@ final class JobsController
         if (!$this->registry->delete($id)) {
             return $this->json->error($response, 'Job cannot be deleted (missing or system job)', 400);
         }
+
+        $this->adminOverviewCache->invalidateJobsOverview();
 
         return $this->json->success($response, ['deleted' => true]);
     }
@@ -168,6 +178,7 @@ final class JobsController
             if ($async) {
                 $queueId = $this->queue->enqueue($id, $forceReport ? ['force_report' => true] : []);
                 $processed = $this->worker->process(1);
+                $this->adminOverviewCache->invalidateJobsOverview();
 
                 return $this->json->success($response, [
                     'queued' => true,
@@ -178,6 +189,7 @@ final class JobsController
 
             $runPayload = $forceReport ? ['force_report' => true] : [];
             $result = $this->runner->runJobById($id, $runPayload);
+            $this->adminOverviewCache->invalidateJobsOverview();
 
             return $this->json->success($response, ['result' => $result]);
         } catch (\Throwable $e) {

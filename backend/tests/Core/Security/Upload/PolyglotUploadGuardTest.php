@@ -29,6 +29,23 @@ final class PolyglotUploadGuardTest extends TestCase
         $guard->assertClean($svg, 'image/svg+xml');
     }
 
+    public function testRejectsPdfWithJavaScriptObject(): void
+    {
+        $pdf = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /OpenAction 2 0 R >>\nendobj\n";
+        $guard = $this->guard();
+
+        $this->expectException(FlatFileException::class);
+        $guard->assertClean($pdf, 'application/pdf');
+    }
+
+    public function testAllowsMinimalPdfWithoutActiveContent(): void
+    {
+        $pdf = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+        $guard = $this->guard();
+        $guard->assertClean($pdf, 'application/pdf');
+        $this->addToAssertionCount(1);
+    }
+
     public function testAllowsCleanPng(): void
     {
         $bytes = base64_decode(

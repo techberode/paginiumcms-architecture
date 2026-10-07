@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,6 +15,7 @@ class AuditTrailController
 {
     public function __construct(
         private AuditTrailService $auditTrailService,
+        private AdminOverviewCacheService $adminOverviewCache,
         private JsonResponder $json
     ) {
     }
@@ -72,7 +74,12 @@ class AuditTrailController
         );
 
         try {
-            return $this->json->success($response, $this->auditTrailService->getAuditStats($filters));
+            $stats = $this->adminOverviewCache->rememberAuditStats(
+                $filters,
+                fn (): array => $this->auditTrailService->getAuditStats($filters)
+            );
+
+            return $this->json->success($response, $stats);
         } catch (\Exception $e) {
             return $this->json->error($response, $e->getMessage(), 500);
         }

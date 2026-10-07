@@ -70,6 +70,14 @@ final class AccessLogServiceTest extends TestCase
         $this->assertSame([], $this->readEntries());
     }
 
+    public function testLogsExportPostIsLogged(): void
+    {
+        $this->service->logRequest('127.0.0.1', 'POST', '/api/admin/logs/export', 403, 12.0);
+        $entries = $this->readEntries();
+        $this->assertCount(1, $entries);
+        $this->assertSame(LogSeverity::WARNING, $entries[0]['severity'] ?? null);
+    }
+
     public function testNotFoundIsInfoNotWarning(): void
     {
         $this->service->logRequest('127.0.0.1', 'GET', '/api/pages/missing', 404, 3.0);

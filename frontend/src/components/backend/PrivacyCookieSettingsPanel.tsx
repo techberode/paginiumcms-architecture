@@ -14,6 +14,7 @@ import {
   type CookiePolicySection,
 } from '../../utils/cookiePolicySections';
 import { BUILTIN_COOKIE_POLICY_PATH } from '../../utils/cookiePolicyUrl';
+import { SettingsMinimalMarkdownField } from './SettingsMinimalMarkdownField';
 
 interface Props {
   register: UseFormRegister<Record<string, unknown>>;
@@ -52,6 +53,7 @@ export const PrivacyCookieSettingsPanel: React.FC<Props> = ({ register, watch, s
   const rawJson = watch('cookiePolicySectionsJson');
   const sections = readSections(watch);
   const policyUrl = String(watch('cookiePolicyUrl') ?? '').trim();
+  const cookiePolicyIntro = String(watch('cookiePolicyIntro') ?? '');
   const previewPath = policyUrl === '' || policyUrl === BUILTIN_COOKIE_POLICY_PATH ? BUILTIN_COOKIE_POLICY_PATH : policyUrl;
 
   useEffect(() => {
@@ -157,7 +159,11 @@ export const PrivacyCookieSettingsPanel: React.FC<Props> = ({ register, watch, s
           <input type="text" {...register('cookiePolicyPageTitle')} className="form-input w-full" />
         </FieldBlock>
         <FieldBlock label={label('cookiePolicyIntro', 'Intro text')} help={help('cookiePolicyIntro')}>
-          <textarea rows={4} {...register('cookiePolicyIntro')} className="form-input w-full" />
+          <SettingsMinimalMarkdownField
+            value={cookiePolicyIntro}
+            onChange={(next) => setValue('cookiePolicyIntro', next, { shouldDirty: true, shouldValidate: true })}
+          />
+          <input type="hidden" {...register('cookiePolicyIntro')} />
         </FieldBlock>
       </section>
 
@@ -202,12 +208,10 @@ export const PrivacyCookieSettingsPanel: React.FC<Props> = ({ register, watch, s
                   placeholder={t('settings.privacy.panel.blockTitlePlaceholder')}
                   className="form-input w-full"
                 />
-                <textarea
-                  rows={4}
+                <SettingsMinimalMarkdownField
+                  rows={5}
                   value={section.body}
-                  onChange={(event) => updateSection(index, { body: event.target.value })}
-                  placeholder={t('settings.privacy.panel.blockBodyPlaceholder')}
-                  className="form-input w-full"
+                  onChange={(body) => updateSection(index, { body })}
                 />
               </div>
             ))}
