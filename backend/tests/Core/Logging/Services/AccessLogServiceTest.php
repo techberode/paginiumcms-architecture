@@ -95,6 +95,17 @@ final class AccessLogServiceTest extends TestCase
         $this->assertSame(LogSeverity::WARNING, $entries[0]['severity'] ?? null);
     }
 
+    public function testCsrfRejectionIsInfoNotWarning(): void
+    {
+        $this->service->logRequest('127.0.0.1', 'POST', '/api/admin/content/render-preview', 403, 1.0, 'u1', [
+            'api_code' => 'csrf_invalid',
+            'error' => 'Neplatný alebo chýbajúci CSRF token',
+        ]);
+        $entries = $this->readEntries();
+        $this->assertCount(1, $entries);
+        $this->assertSame(LogSeverity::INFO, $entries[0]['severity'] ?? null);
+    }
+
     public function testUnauthorizedIsInfoNotWarning(): void
     {
         $this->service->logRequest('127.0.0.1', 'GET', '/api/auth/me', 401, 1.0);

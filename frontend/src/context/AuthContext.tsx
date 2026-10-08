@@ -143,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const result: LoginResult = await authApi.login({ email, password });
     if (result.success && result.user) {
       if (!result.requiresTwoFactor) {
+        await authApi.getCsrfToken();
         const probe = await authApi.probeSessionWithRetry();
         const activeUser = probe.user ?? result.user;
         setUser(activeUser);
@@ -176,6 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const result = await authApi.twoFactor.verifyLogin(code);
     if (result.success && result.user) {
       setUser(result.user);
+      await authApi.getCsrfToken();
       const probe = await authApi.probeSessionWithRetry();
       if (probe.expired && !probe.user) {
         return false;

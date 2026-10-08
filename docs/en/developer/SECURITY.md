@@ -256,6 +256,16 @@ Session mutations use a synchronizer token:
 4. session invalidation invalidates the token,
 5. the client may perform at most a controlled refresh/retry.
 
+### 10.1 Admin SPA token lifecycle (post-login)
+
+Bootstrap on app load calls `GET /api/auth/csrf-token` and stores the token in `localStorage`. **`POST /api/auth/login` and successful 2FA verification rotate the session cookie**, so any token fetched on the login screen is stale until refreshed.
+
+**Contract (Unreleased):**
+
+- After a full session is established, `AuthProvider` **must** call `getCsrfToken()` before the user reaches mutating admin routes (e.g. `POST /api/admin/content/render-preview`).
+- On logout, the client **clears** the stored CSRF token; the next bootstrap fetches a new one.
+- Axios may still self-heal once on `403` + `csrf_invalid`; that first rejection is logged at **INFO** in `http_access`, not WARNING ([ISS-196](../ISSUES.md#iss-196)).
+
 Exempt routes must be an exact allow-list. A public form without session CSRF needs alternative controls: origin/content-type policy, rate limit, anti-automation, input validation, and abuse monitoring.
 
 `SameSite` is a supplement, not the sole CSRF defense.

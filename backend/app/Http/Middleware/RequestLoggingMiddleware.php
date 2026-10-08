@@ -124,12 +124,19 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
 
         $decoded = json_decode($raw, true);
         if (is_array($decoded)) {
-            $error = $decoded['error'] ?? $decoded['code'] ?? null;
+            $out = [];
+            $code = $decoded['code'] ?? null;
+            if (is_string($code) && trim($code) !== '') {
+                $out['api_code'] = LogSanitizer::value($code, 64);
+            }
+            $error = $decoded['error'] ?? null;
             if (is_string($error) && trim($error) !== '') {
-                return ['error' => LogSanitizer::value($error, 240)];
+                $out['error'] = LogSanitizer::value($error, 240);
+            } elseif (isset($out['api_code'])) {
+                $out['error'] = $out['api_code'];
             }
 
-            return [];
+            return $out;
         }
 
         if (str_starts_with($raw, '{') || str_starts_with($raw, '[')) {

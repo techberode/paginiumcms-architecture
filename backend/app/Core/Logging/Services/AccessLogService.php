@@ -88,7 +88,7 @@ final class AccessLogService
         $minSeverity = (string) ($logging['minSeverity'] ?? LogSeverity::DEBUG);
         $slowMs = max(0, (int) ($logging['slowRequestMs'] ?? 2000));
 
-        $severity = $this->severityForStatus($status, $durationMs, $slowMs, $path);
+        $severity = $this->severityForStatus($status, $durationMs, $slowMs, $path, $context);
         if (!$this->passesMinSeverity($severity, $minSeverity)) {
             return;
         }
@@ -157,13 +157,19 @@ final class AccessLogService
         return $this->writer->clearOld($days);
     }
 
-    private function severityForStatus(int $status, float $durationMs, int $slowMs, string $path = ''): string
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function severityForStatus(int $status, float $durationMs, int $slowMs, string $path = '', array $context = []): string
     {
         if ($status >= 500) {
             return LogSeverity::ERROR;
         }
         // Expected "not found" / anonymous auth probe — operational noise as WARNING.
         if ($status === 404 || $status === 401 || $status === 429) {
+            return LogSeverity::INFO;
+        }
+        if ($status === 403 && ($context['api_code'] ?? '') === 'csrf_invalid') {
             return LogSeverity::INFO;
         }
         if ($status >= 400) {

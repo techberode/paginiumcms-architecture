@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 7 October 2026 · register **ISS-001–ISS-195** · latest public release tag **`v2.1.0-beta.97`**
+> **Last updated:** 8 October 2026 · register **ISS-001–ISS-196** · latest public release tag **`v2.1.0-beta.97`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -218,6 +218,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-193](#iss-193) | YouTube/Vimeo player blank on public site (Chrome, Floorp) | Medium (public UX) | ✅ Fixed — preserve embed iframe in sanitizer |
 | [ISS-194](#iss-194) | Admin live preview stuck on “Rendering…” | High (editor UX) | ✅ Fixed — stable preview effect deps |
 | [ISS-195](#iss-195) | Upload polyglot gaps on raster images / SVG / PDF | **Medium (security)** | 🟡 **It.99** shipped — Tier 1 + naming; PDF + optional re-encode residual |
+| [ISS-196](#iss-196) | Post-login CSRF stale token → `render-preview` 403 + log WARNING noise | Low (ops / UX) | ✅ Fixed (Unreleased) — refresh token after login; `csrf_invalid` → INFO |
 
 ## CI failures (GitHub Actions)
 
@@ -5986,6 +5987,42 @@ An attacker (or compromised editor account) may upload a file that **passes** ex
 
 - Architecture test gate: [CORE_HARDENING.md](en/architecture/CORE_HARDENING.md) §17 (upload polyglot).
 - Shipped baseline: [ITERATION_78.md](en/ITERATION_78.md), [ITERATION_79.md](en/ITERATION_79.md) (video marker reject).
+
+---
+
+## ISS-196 – Post-login stale CSRF token (`render-preview` 403)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (ops / UX) — mutating retry usually succeeded; log alerts were noisy |
+| **Status** | ✅ Fixed (**Unreleased**) |
+| **Area** | Admin SPA auth bootstrap · CSRF · `POST /api/admin/content/render-preview` · `http_access` |
+
+### Symptom
+
+Immediately after login (without full page reload), Admin → Logs could show:
+
+`POST /api/admin/content/render-preview → 403` — *Neplatný alebo chýbajúci CSRF token* (~1 ms). Live body preview still worked after reload or after the client’s CSRF retry.
+
+### Root cause
+
+The login page bootstrapped a CSRF token into `localStorage`. **`POST /api/auth/login` rotates the session**, invalidating that token. The content editor fired `render-preview` with the stale header before `GET /api/auth/csrf-token` ran again.
+
+### Resolution
+
+- **FE:** `AuthProvider` calls `authApi.getCsrfToken()` after successful login and after 2FA verify; `logout` clears `localStorage` CSRF.
+- **BE:** `RequestLoggingMiddleware` adds `api_code` from JSON bodies; `AccessLogService` logs `403` + `csrf_invalid` at **INFO** (same class as 401 probes).
+
+### Verification
+
+- `backend/tests/Core/Logging/Services/AccessLogServiceTest.php` — `testCsrfRejectionIsInfoNotWarning`
+- Manual: login → open content with live preview → no WARNING on first `render-preview`
+
+### Cross-links
+
+- [SECURITY.md](en/developer/SECURITY.md) §10.1 · [ISS-012](#iss-012)
 
 ---
 

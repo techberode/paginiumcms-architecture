@@ -223,6 +223,10 @@ class ApiClient {
     localStorage.setItem('csrf_token', token);
   }
 
+  public clearCsrfToken(): void {
+    localStorage.removeItem('csrf_token');
+  }
+
   /**
    * Vyžiada nový CSRF token zo servera a uloží ho.
    * GET je bezpečná metóda → nespustí CSRF ochranu (žiadna slučka).
