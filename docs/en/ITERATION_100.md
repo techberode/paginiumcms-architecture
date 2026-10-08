@@ -39,7 +39,9 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 
 **Dynamic policy (goal):** when concurrent admin load rises (e.g. **>3 active sessions** or FPM saturation), automatically **extend P2 TTL**, **defer P2 FE fetch**, and **never throttle P0**.
 
-**Shipped foundation (Unreleased):** `AdminOverviewCacheService` (120 s, `rememberLocked`) + FE `useAdminSecondaryQuery` + dashboard defer — static P2, not yet load-aware.
+**Shipped foundation (Unreleased):** `AdminOverviewCacheService` (120 s fresh / 600 s stale **SWR**, no request-thread stampede lock) + FE `useAdminSecondaryQuery` + dashboard defer — static P2, not yet load-aware.
+
+**100c (partial — Unreleased):** CLI `php backend/bin/console cache:warm-admin` pre-generates audit/jobs/APM/planner P2 segments; pair with cron (see [ADMIN_LOAD_SIMULATION](developer/ADMIN_LOAD_SIMULATION.md)). Docker nginx template enables **gzip** for JSON. **100d** covers cron-only documents + optional Redis job-run projections (see §4).
 
 ---
 
@@ -49,11 +51,28 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 |-------|--------|-------------|
 | **100a** | Document tiers; cache P2 endpoints; FE secondary stale | Fewer repeated 5 s spikes on dashboard refresh |
 | **100b** | Load hint (`normal` / `busy`) from PG + worker pressure → FE coordinator | P2 deferred under busy; P0 latency stable in probe |
-| **100c** | P2 prewarm cron (low priority) + stricter coalescing | Miss storm reduced when N users open dashboard together |
-| **100d** | P3 async exports; admission control (503 + Retry-After) for optional GET | No multi-minute blocking requests |
-| **100e** | Optional dedicated “synth sessions” metric on instance (count active admin sessions) | Policy rules use real session count, not only heuristics |
+| **100c** | P2 prewarm cron + SWR (no request-thread `rememberLocked`) | Miss storm reduced; stale served while cron/shutdown refresh ( **partial — Unreleased** ) |
+| **100d** | Cron-owned P2 **documents** in Redis/file; optional Redis types for job runs + slimmer `/api/admin/jobs` | HTTP never cold-parses flat-file for P2; jobs GET no longer one ~148 KB monolith by default |
+| **100e** | P3 async exports; admission control (503 + Retry-After) for optional GET | No multi-minute blocking requests |
+| **100f** | Optional dedicated “synth sessions” metric on instance (count active admin sessions) | Policy rules use real session count, not only heuristics |
 
 Phases may ship in any order; **each deploy only advances metrics** — none closes It.100.
+
+### Phase 100d — P2 as pre-built documents (planned)
+
+**Not in 100c.** Today: SWR + `cache:warm-admin` still allow a **cold miss** on HTTP (sync flat-file read with short coalescing). **100d** moves to a No-SQL-style model: overview payloads are **always** read as ready-made JSON documents from derived cache; **only** cron/worker writes them.
+
+1. **Cron-only write path (recommended)**  
+   - HTTP: **always return** what is in Redis/file (TTL owned by cron, e.g. 24 h or refresh every minute — not “recompute on expiry” in the request).  
+   - No flat-file aggregation in the admin request path; invalidation triggers **background** rebuild, not blocking GET.  
+   - Exit: concurrency probe shows P2 GET stable even with empty warm-up window (e.g. post-restart) once cron has run at least once; document miss policy (serve last snapshot vs 503) is explicit.
+
+2. **Redis data shapes for jobs (optional, if SSOT allows)**  
+   - Flat-file remains SSOT for job **definitions**; derived **runs / queue snapshots** may be projected into Redis **Hashes**, **Streams**, or paginated document keys.  
+   - `GET /api/admin/jobs`: default response fetches **last N runs** (or paginated slices), not a single huge JSON blob (~148 KB).  
+   - Mutations still invalidate/rebuild the derived projection; security baseline unchanged (authz on API, no new web-reachable Redis).
+
+**Depends on:** Redis or shared file cache (It.69); **100c** cron habit on production. **Does not** replace flat-file SSOT — derived layer only.
 
 ---
 

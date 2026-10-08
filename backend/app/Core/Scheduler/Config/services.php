@@ -16,6 +16,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
+use PaginiumCMS\Core\Scheduler\Services\AdminJobsOverviewProvider;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
 use PaginiumCMS\Core\Scheduler\Services\JobQueueStore;
@@ -108,16 +109,24 @@ return [
         ->constructor(get(ScheduledJobRunner::class)),
     ProcessWorkerCommand::class => create(ProcessWorkerCommand::class)
         ->constructor(get(JobWorker::class)),
-    JobsController::class => create(JobsController::class)
+    AdminJobsOverviewProvider::class => create(AdminJobsOverviewProvider::class)
         ->constructor(
             get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             get(JobRegistryStore::class),
             get(JobRunStore::class),
             get(JobQueueStore::class),
             get(JobHandlerRegistry::class),
+            get(CronExpressionEvaluator::class)
+        ),
+    JobsController::class => create(JobsController::class)
+        ->constructor(
+            get(JobRegistryStore::class),
+            get(JobRunStore::class),
+            get(JobQueueStore::class),
+            get(JobHandlerRegistry::class),
             get(ScheduledJobRunner::class),
             get(JobWorker::class),
-            get(CronExpressionEvaluator::class),
+            get(AdminJobsOverviewProvider::class),
             get(\PaginiumCMS\Core\Cache\AdminOverviewCacheService::class),
             get(\PaginiumCMS\Http\Support\JsonResponder::class)
         ),

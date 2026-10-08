@@ -42,7 +42,9 @@ use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\Services\CacheCapabilityProbe;
 use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\Cache\ContentCacheService;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheWarmer;
 use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
+use PaginiumCMS\Core\Cache\Commands\WarmAdminOverviewCacheCommand;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentExportCommand;
@@ -1098,6 +1100,20 @@ return [
 
     AdminOverviewCacheService::class => create(AdminOverviewCacheService::class)
         ->constructor(get(CacheManager::class)),
+
+    AdminOverviewCacheWarmer::class => create(AdminOverviewCacheWarmer::class)
+        ->constructor(
+            get(AdminOverviewCacheService::class),
+            get(\PaginiumCMS\Core\AuditTrail\Services\AuditTrailService::class),
+            get(\PaginiumCMS\Core\Scheduler\Services\AdminJobsOverviewProvider::class),
+            get(\PaginiumCMS\Core\Performance\PerformanceGuardSettings::class),
+            get(\PaginiumCMS\Core\Performance\PerformanceAggregator::class),
+            get(\PaginiumCMS\Core\Performance\PerformanceBreachStore::class),
+            get(\PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor::class),
+            get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\ProjectPlanner\Contracts\ProjectPlanRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanApiPresenter::class)
+        ),
 
     CacheAdminService::class => create(CacheAdminService::class)
         ->constructor(
@@ -2491,6 +2507,8 @@ return [
             get(ContentIndexService::class),
             get(ContentRepositoryInterface::class)
         ),
+    WarmAdminOverviewCacheCommand::class => create(WarmAdminOverviewCacheCommand::class)
+        ->constructor(get(AdminOverviewCacheWarmer::class)),
     ContentDiagnoseCommand::class => create(ContentDiagnoseCommand::class)
         ->constructor(
             get(FileReaderInterface::class),

@@ -56,8 +56,23 @@ Each worker logs in → stores cookies in a temp dir → runs the route set in p
 ## Interpreting results
 
 - **First round** often slow (cold cache) — **second round** should drop if `AdminOverviewCacheService` / Redis is active.
+- With **cron warm-up**, cold misses should be rare even on round 1 (admin should not pay flat-file aggregation on first dashboard open).
 - Compare with **Admin → Performance Guard** and **`http_access`** WARNING rate during the same window.
 - If P0 routes (not in default probe) degrade while probe runs, increase P2 TTL or enable **100b** load defer when implemented.
+
+---
+
+## P2 cache warm-up (cron)
+
+Pre-compute derived admin overview caches so HTTP handlers serve Redis/file envelopes immediately (Iteration 100c):
+
+```bash
+* * * * * cd /path/to/paginiumcms && php backend/bin/console cache:warm-admin >/dev/null 2>&1
+```
+
+Run on the **same instance** that serves admin traffic (shared cache driver / Redis). Safe to run every minute; work is idempotent refresh, not content mutation.
+
+**Bare-metal tuning (optional):** ensure PHP-FPM has enough workers for concurrent admins (`pm.max_children` ~15–20 on a 32 GB host) and nginx **gzip** for `application/json` (large `/api/admin/jobs` payloads). Docker reference: `docker/nginx/default.conf`.
 
 ---
 

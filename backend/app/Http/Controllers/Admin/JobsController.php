@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
-use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
+use PaginiumCMS\Core\Scheduler\Services\AdminJobsOverviewProvider;
 use PaginiumCMS\Core\Scheduler\Services\JobHandlerRegistry;
 use PaginiumCMS\Core\Scheduler\Services\JobQueueStore;
 use PaginiumCMS\Core\Scheduler\Services\JobRegistryStore;
@@ -14,7 +14,6 @@ use PaginiumCMS\Core\Scheduler\Services\JobWorker;
 use PaginiumCMS\Core\Scheduler\Services\PrivilegedJobPolicy;
 use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\Scheduler\Services\ScheduledJobRunner;
-use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
@@ -26,14 +25,13 @@ use Psr\Http\Message\ServerRequestInterface;
 final class JobsController
 {
     public function __construct(
-        private SettingsRepositoryInterface $settings,
         private JobRegistryStore $registry,
         private JobRunStore $runs,
         private JobQueueStore $queue,
         private JobHandlerRegistry $handlers,
         private ScheduledJobRunner $runner,
         private JobWorker $worker,
-        private CronExpressionEvaluator $cron,
+        private AdminJobsOverviewProvider $jobsOverview,
         private AdminOverviewCacheService $adminOverviewCache,
         private JsonResponder $json
     ) {
@@ -41,34 +39,11 @@ final class JobsController
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $payload = $this->adminOverviewCache->rememberJobsOverview(function (): array {
-            $scheduler = $this->settings->group('scheduler');
-
-            return [
-                'enabled' => (bool) ($scheduler['enabled'] ?? true),
-                'handlers' => $this->handlers->catalog(),
-                'jobs' => array_map(fn (array $job): array => $this->enrichJob($job), $this->registry->all()),
-                'recent_runs' => $this->runs->recent(150),
-                'queue' => $this->queue->snapshot(),
-                'cron_hint' => $this->buildCronHint(),
-            ];
-        });
+        $payload = $this->adminOverviewCache->rememberJobsOverview(
+            fn (): array => $this->jobsOverview->build()
+        );
 
         return $this->json->success($response, $payload);
-    }
-
-    private function buildCronHint(): string
-    {
-        $root = realpath(dirname(__DIR__, 5));
-        if ($root === false) {
-            $envRoot = getenv('APP_ROOT') ?: ($_ENV['APP_ROOT'] ?? '');
-            $root = is_string($envRoot) && $envRoot !== '' ? $envRoot : '/var/www/paginiumcms.com';
-        }
-
-        return sprintf(
-            '* * * * * cd %s && php backend/bin/console scheduler:run && php backend/bin/console worker:process',
-            $root
-        );
     }
 
     /**
@@ -83,7 +58,7 @@ final class JobsController
         }
 
         return $this->json->success($response, [
-            'job' => $this->enrichJob($job),
+            'job' => $this->jobsOverview->enrichJob($job),
             'runs' => $this->runs->forJob($id, 30),
         ]);
     }
@@ -103,7 +78,7 @@ final class JobsController
         $job = $this->registry->save($payload);
         $this->adminOverviewCache->invalidateJobsOverview();
 
-        return $this->json->success($response, $this->enrichJob($job), 201);
+        return $this->json->success($response, $this->jobsOverview->enrichJob($job), 201);
     }
 
     /**
@@ -136,7 +111,7 @@ final class JobsController
         $job = $this->registry->save($payload);
         $this->adminOverviewCache->invalidateJobsOverview();
 
-        return $this->json->success($response, $this->enrichJob($job));
+        return $this->json->success($response, $this->jobsOverview->enrichJob($job));
     }
 
     /**
@@ -210,57 +185,6 @@ final class JobsController
         $limit = max(1, min(50, (int) ($payload['limit'] ?? 10)));
 
         return $this->json->success($response, $this->worker->process($limit));
-    }
-
-    /**
-     * @param array<string, mixed> $job
-     * @return array<string, mixed>
-     */
-    private function enrichJob(array $job): array
-    {
-        $cron = (string) ($job['cron'] ?? '* * * * *');
-        $jobId = (string) ($job['id'] ?? '');
-        $lastRun = isset($job['last_run_at']) ? (string) $job['last_run_at'] : null;
-        $lastEntry = $jobId !== '' ? ($this->runs->forJob($jobId, 1)[0] ?? null) : null;
-
-        if ($lastEntry !== null) {
-            $fromRun = (string) ($lastEntry['finished_at'] ?? '');
-            if ($fromRun !== '' && ($lastRun === null || $lastRun === '')) {
-                $lastRun = $fromRun;
-            }
-        }
-
-        $lastOutcome = is_array($lastEntry) ? $this->resolveRunOutcome($lastEntry) : null;
-
-        return array_merge($job, [
-            'last_run_at' => $lastRun !== '' ? $lastRun : null,
-            'last_outcome' => $lastOutcome,
-            'last_message' => is_array($lastEntry) ? ($lastEntry['message'] ?? null) : null,
-            'next_run' => $this->cron->describeNextRun($cron),
-            'due_now' => (bool) ($job['enabled'] ?? false) && $this->cron->isDueSinceLastRun($cron, $lastRun),
-        ]);
-    }
-
-    /**
-     * @param array<string, mixed> $entry
-     */
-    private function resolveRunOutcome(array $entry): string
-    {
-        $stored = (string) ($entry['outcome'] ?? '');
-        if (in_array($stored, ['completed', 'skipped', 'failed'], true)) {
-            return $stored;
-        }
-
-        if (($entry['success'] ?? false) === true) {
-            return 'completed';
-        }
-
-        $reason = (string) ($entry['reason'] ?? '');
-        if (in_array($reason, ['not_due', 'no_schedule', 'disabled', 'nothing_due', 'some_items_skipped'], true)) {
-            return 'skipped';
-        }
-
-        return 'failed';
     }
 
     /**
