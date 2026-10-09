@@ -138,6 +138,27 @@ final class DeskInboxServiceTest extends TestCase
         $this->assertTrue($nested['replies'][0]['staffReply'] ?? false);
     }
 
+    public function testOpenCommentsSkipsRootsWithStaffReplyWhenUnclaimed(): void
+    {
+        $handler = new User();
+        $handler->setName('Ada');
+        $handler->setEmail('ada@example.com');
+        $handler->setRoles(['EDITOR']);
+        $this->teams->create('Helpdesk', TeamRepository::TYPE_SUPPORT, [$handler->getId()]);
+
+        $root = new Comment('article-a', 'Reader', 'Question?');
+        $root->setStatus(Comment::STATUS_APPROVED);
+        $this->comments->save($root);
+
+        $staff = new Comment('article-a', 'Ada', 'Answer.');
+        $staff->setStatus(Comment::STATUS_APPROVED);
+        $staff->setParentId($root->getId());
+        $staff->setAuthorUserId($handler->getId());
+        $this->comments->save($staff);
+
+        $this->assertSame([], $this->desk->items($handler));
+    }
+
     public function testPlainUserWithoutTeamCannotReply(): void
     {
         $visitorStaff = new User();

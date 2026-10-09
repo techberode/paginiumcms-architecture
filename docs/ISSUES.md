@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 8 October 2026 · register **ISS-001–ISS-196** · latest public release tag **`v2.1.0-beta.97`**
+> **Last updated:** 9 October 2026 · register **ISS-001–ISS-198** · latest public release tag **`v2.1.0-beta.97`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -219,6 +219,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-194](#iss-194) | Admin live preview stuck on “Rendering…” | High (editor UX) | ✅ Fixed — stable preview effect deps |
 | [ISS-195](#iss-195) | Upload polyglot gaps on raster images / SVG / PDF | **Medium (security)** | 🟡 **It.99** shipped — Tier 1 + naming; PDF + optional re-encode residual |
 | [ISS-196](#iss-196) | Post-login CSRF stale token → `render-preview` 403 + log WARNING noise | Low (ops / UX) | ✅ Fixed (Unreleased) — refresh token after login; `csrf_invalid` → INFO |
+| [ISS-197](#iss-197) | Residual `npm audit` high (Tailwind 3 build chain) after safe fix | Low (supply-chain / dev) | ⏳ **Monitor** — accepted defer; Tailwind 4 or upstream |
+| [ISS-198](#iss-198) | `GET /api/auth/me/desk` multi-second (comment N+1 + double desk compose) | High (ops / FPM pool) | ✅ Fixed (Unreleased) — index + single compose |
 
 ## CI failures (GitHub Actions)
 
@@ -6023,6 +6025,82 @@ The login page bootstrapped a CSRF token into `localStorage`. **`POST /api/auth/
 ### Cross-links
 
 - [SECURITY.md](en/developer/SECURITY.md) §10.1 · [ISS-012](#iss-012)
+
+---
+
+## ISS-197 – Residual frontend `npm audit` (Tailwind 3 build chain)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | Low (supply-chain) — mostly **build/dev** DoS advisories, not production PHP/runtime |
+| **Status** | ⏳ **Monitor** (accepted defer, Oct 2026) |
+| **Area** | `frontend/` · `npm audit` · Tailwind CSS 3 · ESLint transitive |
+
+### Symptom
+
+After `npm audit fix` (without `--force`), **`npm audit` still reports ~5 high** findings. GitHub Dependabot may show a smaller set (e.g. 3 moderate + 1 low). `npm fund` output is unrelated (sponsorship only).
+
+### Assessment
+
+| Bucket | Packages | Runtime risk on PaginiumCMS |
+|--------|----------|-----------------------------|
+| Tailwind 3 chain | `braces`, `chokidar`, `micromatch`, `postcss-selector-parser` | **Low** — affects `vite build` / dev watcher, not visitors |
+| ESLint chain | `brace-expansion` | **Low** — CI/lint only |
+| **React Router** | `react-router-dom@7.18.2` | **Mitigated** — [ISS-089](#iss-089) RSC-only GHSA not reachable in Vite SPA; re-check on new advisories |
+
+`npm audit fix --force` would pull **Tailwind 4** (breaking) — out of scope for a silent hotfix.
+
+### Tracking
+
+- Backlog item **#34** in [ITERATION_BACKLOG.md](en/ITERATION_BACKLOG.md) §1b.
+- Before each **beta tag**: `cd frontend && npm audit`; read Dependabot; document any new **SPA-reachable** CVE in a new ISS entry.
+- Optional next slice: bump **DOMPurify** on maintenance PR; plan **Tailwind 4** as its own iteration.
+
+### Verification
+
+- No code change required while status is **Monitor**.
+- Exit criteria: `npm audit --audit-level=high` → 0 **or** documented accept list with expiry date.
+
+---
+
+## ISS-198 – Slow `GET /api/auth/me/desk` (comment registry N+1)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | High (ops) — ties up PHP-FPM workers; amplifies slow P2 dashboard GETs |
+| **Status** | ✅ Fixed (**Unreleased**) |
+| **Area** | `DeskInboxService` · `CommentsRepository` · `AccountController::desk` · `useDeskPolling` |
+
+### Symptom
+
+`http_access` WARNING for `GET /api/auth/me/desk` (~3–5 s, 200 OK). Often alongside slow `GET /api/admin/jobs`, `/api/admin/audit/stats`, etc. on the same second — desk work saturated the pool before P2 cache could help.
+
+### Root cause
+
+1. **`openComments()`** called **`repliesFor()`** per root comment; each call scanned all approved comments → **O(roots × N)** registry reads/decodes.
+2. **`composeDeskPayload()`** called **`deskInbox->status()`** then **`items()`** — desk queue built **twice** per poll (every ~30 s per tab).
+3. **`CommentsRepository::loadRegistry()`** had no request-scope memo — repeated full JSON reads within one request.
+4. FE **`useDeskPolling`** still hit the API on **hidden tabs** (background load).
+
+### Resolution
+
+- One-pass **parent → replies** index and **roots with staff reply** set in `DeskInboxService`.
+- **`statusFromItems()`** — single `items()` in `AccountController::composeDeskPayload`.
+- **Registry memo** in `CommentsRepository` (invalidated on write).
+- **Skip desk poll** when `document.visibilityState === 'hidden'`.
+
+### Verification
+
+- `DeskInboxServiceTest` (including staff-reply skip regression).
+- After deploy: desk GET should drop to tens of ms with large `data/comments.json`; confirm **`cache:warm-admin`** cron if P2 routes stay slow.
+
+### Cross-links
+
+- [ITERATION_100.md](en/ITERATION_100.md) · [ADMIN_LOAD_SIMULATION.md](en/developer/ADMIN_LOAD_SIMULATION.md)
 
 ---
 

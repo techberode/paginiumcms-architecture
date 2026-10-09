@@ -43,6 +43,10 @@ export function useDeskPolling(
       if (cancelled || pausedRef.current) {
         return;
       }
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        schedule(BASE_INTERVAL_MS);
+        return;
+      }
       const ok = await loadRef.current().catch(() => false);
       if (cancelled) {
         return;

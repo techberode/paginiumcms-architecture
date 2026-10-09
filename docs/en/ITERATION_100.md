@@ -43,6 +43,8 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 
 **100c (partial — Unreleased):** CLI `php backend/bin/console cache:warm-admin` pre-generates audit/jobs/APM/planner P2 segments; pair with cron (see [ADMIN_LOAD_SIMULATION](developer/ADMIN_LOAD_SIMULATION.md)). Docker nginx template enables **gzip** for JSON. **100d** covers cron-only documents + optional Redis job-run projections (see §4).
 
+**Desk (ISS-198):** slow `GET /api/auth/me/desk` was a separate FPM hog (comment N+1 + double compose); fixed in tree — deploy with P2 cache + cron warm-up for full effect.
+
 ---
 
 ## 4. Living roadmap (phases, repeatable)

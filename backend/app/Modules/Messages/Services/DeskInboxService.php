@@ -17,6 +17,15 @@ use PaginiumCMS\Support\LogSanitizer;
  */
 final class DeskInboxService
 {
+    /** @var list<Comment>|null */
+    private ?array $approvedCommentsMemo = null;
+
+    /** @var array<string, list<Comment>>|null */
+    private ?array $repliesByParentMemo = null;
+
+    /** @var array<string, true>|null root comment id => has staff reply */
+    private ?array $rootsWithStaffReplyMemo = null;
+
     public function __construct(
         private MessageDeskService $messages,
         private CommentsRepositoryInterface $comments,
@@ -35,8 +44,21 @@ final class DeskInboxService
      */
     public function status(User $actor): array
     {
+        return $this->statusFromItems($actor, $this->items($actor));
+    }
+
+    /**
+     * @param list<array<string, mixed>> $items
+     * @return array{
+     *   hasDesk: bool,
+     *   canReplyComments: bool,
+     *   deskCount: int
+     * }
+     */
+    public function statusFromItems(User $actor, array $items): array
+    {
         $canComments = $this->canReplyComments($actor);
-        $count = count($this->items($actor));
+        $count = count($items);
 
         return [
             'hasDesk' => $canComments || $count > 0 || $this->inSupportOrEditorial($actor),
@@ -55,6 +77,7 @@ final class DeskInboxService
      */
     public function items(User $actor): array
     {
+        $this->resetCommentIndexes();
         $items = [];
         try {
             foreach ($this->messages->visibleFor($actor) as $message) {
@@ -156,16 +179,7 @@ final class DeskInboxService
      */
     public function repliesFor(string $parentId): array
     {
-        $out = [];
-        foreach ($this->comments->findAll(['status' => Comment::STATUS_APPROVED]) as $comment) {
-            if ($comment->getParentId() === $parentId) {
-                $out[] = $comment;
-            }
-        }
-
-        usort($out, static fn (Comment $a, Comment $b): int => strcmp($a->getCreatedAt(), $b->getCreatedAt()));
-
-        return $out;
+        return $this->repliesByParent()[$parentId] ?? [];
     }
 
     /**
@@ -173,6 +187,7 @@ final class DeskInboxService
      */
     public function publicComment(Comment $comment): array
     {
+        $this->resetCommentIndexes();
         $replies = [];
         if ($comment->getParentId() === '') {
             foreach ($this->repliesFor($comment->getId()) as $reply) {
@@ -197,6 +212,13 @@ final class DeskInboxService
         ];
     }
 
+    private function resetCommentIndexes(): void
+    {
+        $this->approvedCommentsMemo = null;
+        $this->repliesByParentMemo = null;
+        $this->rootsWithStaffReplyMemo = null;
+    }
+
     private function inSupportOrEditorial(User $actor): bool
     {
         $id = $actor->getId();
@@ -210,28 +232,87 @@ final class DeskInboxService
      */
     private function openComments(): array
     {
+        $staffReplyRoots = $this->rootsWithStaffReply();
         $open = [];
-        foreach ($this->comments->findAll(['status' => Comment::STATUS_APPROVED]) as $comment) {
+        foreach ($this->approvedComments() as $comment) {
             if ($comment->getParentId() !== '' || $comment->isArchived()) {
                 continue;
             }
             if ($comment->getHandleStatus() === 'done') {
                 continue;
             }
-            $hasStaff = false;
-            foreach ($this->repliesFor($comment->getId()) as $reply) {
-                if ($reply->isStaffReply()) {
-                    $hasStaff = true;
-                    break;
-                }
-            }
-            if ($hasStaff && $comment->getClaimedBy() === '') {
+            if (isset($staffReplyRoots[$comment->getId()]) && $comment->getClaimedBy() === '') {
                 continue;
             }
             $open[] = $comment;
         }
 
         return $open;
+    }
+
+    /**
+     * @return list<Comment>
+     */
+    private function approvedComments(): array
+    {
+        if ($this->approvedCommentsMemo !== null) {
+            return $this->approvedCommentsMemo;
+        }
+
+        $found = $this->comments->findAll(['status' => Comment::STATUS_APPROVED]);
+        $this->approvedCommentsMemo = array_values($found);
+
+        return $this->approvedCommentsMemo;
+    }
+
+    /**
+     * @return array<string, list<Comment>>
+     */
+    private function repliesByParent(): array
+    {
+        if ($this->repliesByParentMemo !== null) {
+            return $this->repliesByParentMemo;
+        }
+
+        $map = [];
+        foreach ($this->approvedComments() as $comment) {
+            $parentId = $comment->getParentId();
+            if ($parentId === '') {
+                continue;
+            }
+            $map[$parentId][] = $comment;
+        }
+
+        foreach ($map as &$list) {
+            usort($list, static fn (Comment $a, Comment $b): int => strcmp($a->getCreatedAt(), $b->getCreatedAt()));
+        }
+        unset($list);
+
+        $this->repliesByParentMemo = $map;
+
+        return $this->repliesByParentMemo;
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function rootsWithStaffReply(): array
+    {
+        if ($this->rootsWithStaffReplyMemo !== null) {
+            return $this->rootsWithStaffReplyMemo;
+        }
+
+        $roots = [];
+        foreach ($this->approvedComments() as $comment) {
+            if ($comment->getParentId() === '' || !$comment->isStaffReply()) {
+                continue;
+            }
+            $roots[$comment->getParentId()] = true;
+        }
+
+        $this->rootsWithStaffReplyMemo = $roots;
+
+        return $this->rootsWithStaffReplyMemo;
     }
 
     /**

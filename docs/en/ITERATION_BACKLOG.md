@@ -63,6 +63,21 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 | 31 | **It.96** Document library & file manager (PDF, Office, text) | 🟡 P1 | ✅ | Upload policy `documents`, text edit, PDF preview, bulk ZIP, `[document-link]` — [ITERATION_96](ITERATION_96.md) · shipped `beta.86` |
 | 32 | **It.93l-3** Kanban WIP + stats; team-chat **topics** (forum threads) | 🟡 P1 | 🟡 partial | **WIP limits**, assignee/tag filters, cycle-time stats shipped in tree; **topics** (import from ticket, idle auto-close, leader archive, desktop notify) — ⏳ next slice |
 | 33 | **Site Design** paid extension (visual tuner, live preview, CSS presets) | 🟡 P1 commercial | ⏳ planned | Isolated add-on — not Core paywall; spec [ITERATION_SITE_DESIGN.md](ITERATION_SITE_DESIGN.md) · free hook slice **SD-0** only in OSS |
+| 34 | **Frontend `npm audit` residual (Tailwind 3 build chain)** | 🔵 supply-chain | ⏳ **monitor** | After safe `npm audit fix`, ~**5 high** remain (mostly **dev/build**: `braces`/`chokidar`/`micromatch` via Tailwind 3 — not admin runtime). Full clean likely needs **Tailwind 4** or upstream patches; **not blocking** ops — [ISS-197](../ISSUES.md#iss-197) |
+
+---
+
+## 1b. Dependency watch (review each beta / quarterly)
+
+| Signal | Command / source | Action |
+|--------|------------------|--------|
+| Local audit | `cd frontend && npm audit` | Safe fixes only (`npm audit fix`); **no** `--force` without Tailwind migration plan |
+| GitHub | Dependabot alerts on `main` | Triage; distinguish SPA-reachable vs build-only DoS |
+| React Router | `react-router-dom@7.18.2` + override | [ISS-089](../ISSUES.md#iss-089) — RSC GHSA not reachable; bump when new SPA-relevant CVE appears |
+| Runtime sanitizer | `dompurify` direct dep | Prefer patched minor on next FE maintenance PR |
+| Noise | `npm fund` | Sponsorship links only — **not** vulnerabilities |
+
+**Decision (Oct 2026):** accept residual highs temporarily; revisit with Tailwind 4 or dedicated deps slice.
 
 ---
 

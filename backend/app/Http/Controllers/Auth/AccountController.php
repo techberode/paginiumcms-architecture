@@ -263,22 +263,22 @@ final class AccountController
             error_log('desk_chat_status_failed ' . LogSanitizer::value($exception->getMessage(), 240));
         }
 
+        $items = [];
+        try {
+            $items = $this->deskInbox->items($user);
+        } catch (\Throwable $exception) {
+            error_log('desk_inbox_items_failed ' . LogSanitizer::value($exception->getMessage(), 240));
+        }
+
         $status = [
             'hasDesk' => false,
             'canReplyComments' => false,
             'deskCount' => 0,
         ];
         try {
-            $status = $this->deskInbox->status($user);
+            $status = $this->deskInbox->statusFromItems($user, $items);
         } catch (\Throwable $exception) {
             error_log('desk_inbox_status_failed ' . LogSanitizer::value($exception->getMessage(), 240));
-        }
-
-        $items = [];
-        try {
-            $items = $this->deskInbox->items($user);
-        } catch (\Throwable $exception) {
-            error_log('desk_inbox_items_failed ' . LogSanitizer::value($exception->getMessage(), 240));
         }
 
         return array_merge($chat, $status, ['items' => $items], $this->deskBubbleFields($user));

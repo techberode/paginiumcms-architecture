@@ -14,6 +14,9 @@ class CommentsRepository implements CommentsRepositoryInterface
 {
     private const REGISTRY = 'data/comments.json';
 
+    /** @var list<array<int|string, mixed>>|null */
+    private ?array $registryCache = null;
+
     public function __construct(
         private FileReaderInterface $reader,
         private FileWriterInterface $writer
@@ -102,39 +105,49 @@ class CommentsRepository implements CommentsRepositoryInterface
     }
 
     /**
-     * @return array<int, array<int|string, mixed>>
- */private function loadRegistry(): array
+     * @return list<array<int|string, mixed>>
+     */
+    private function loadRegistry(): array
     {
+        if ($this->registryCache !== null) {
+            return $this->registryCache;
+        }
+
         if (!$this->reader->exists(self::REGISTRY)) {
-            return [];
+            $this->registryCache = [];
+
+            return $this->registryCache;
         }
 
         try {
             $content = $this->reader->read(self::REGISTRY);
             $data = json_decode($content, true);
-
-            return is_array($data) ? $data : [];
+            $this->registryCache = is_array($data) ? array_values($data) : [];
         } catch (FlatFileException) {
-            return [];
+            $this->registryCache = [];
         }
+
+        return $this->registryCache;
     }
 
     /**
-     * @param array<int, array<int|string, mixed>> $registry
- * @param array<int|string, mixed> $registry
- */private function writeRegistry(array $registry): void
+     * @param list<array<int|string, mixed>> $registry
+     */
+    private function writeRegistry(array $registry): void
     {
-        $json = json_encode(array_values($registry), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $json = json_encode($registry, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         if ($json === false) {
             throw new FlatFileException('Failed to serialize comments registry');
         }
 
         $this->writer->write(self::REGISTRY, $json, true);
+        $this->registryCache = null;
     }
 
     /**
      * @param array<int|string, mixed> $filters
- */private function matchesFilters(Comment $comment, array $filters): bool
+     */
+    private function matchesFilters(Comment $comment, array $filters): bool
     {
         if (isset($filters['articleSlug']) && $comment->getArticleSlug() !== $filters['articleSlug']) {
             return false;
