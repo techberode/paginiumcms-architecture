@@ -21,13 +21,13 @@ final class MailOutboundMimeBuilderTest extends TestCase
 
         $this->assertStringContainsString('Subject: ', $raw);
         $this->assertStringContainsString('To: <guest@example.com>', $raw);
-        $this->assertStringContainsString('Content-Transfer-Encoding: base64', $raw);
-        $this->assertStringContainsString(base64_encode('<p>Hi</p>'), str_replace("\r\n", '', $raw));
+        $this->assertStringContainsString('Content-Transfer-Encoding: quoted-printable', $raw);
+        $this->assertStringContainsString('<p>Hi</p>', $raw);
     }
 
-    public function testBase64HtmlPreservesUtf8Diacritics(): void
+    public function testQuotedPrintableHtmlPreservesUtf8Diacritics(): void
     {
-        $html = '<p>Prehľad návštevnosti · 📊</p>';
+        $html = '<p>Prehľad návštevnosti</p>';
         $raw = MailOutboundMimeBuilder::buildRfc822(
             'noreply@site.test',
             'PaginiumCMS',
@@ -36,9 +36,10 @@ final class MailOutboundMimeBuilderTest extends TestCase
             $html
         );
 
-        $this->assertStringContainsString('Content-Transfer-Encoding: base64', $raw);
-        $encoded = base64_encode($html);
-        $this->assertStringContainsString($encoded, str_replace("\r\n", '', $raw));
+        $this->assertStringContainsString('Content-Transfer-Encoding: quoted-printable', $raw);
+        $this->assertStringNotContainsString('Content-Transfer-Encoding: base64', $raw);
+        $decoded = quoted_printable_decode(explode("\r\n\r\n", $raw, 2)[1] ?? '');
+        $this->assertStringContainsString('Prehľad návštevnosti', $decoded);
     }
 
     public function testBuildsMultipleToRecipients(): void

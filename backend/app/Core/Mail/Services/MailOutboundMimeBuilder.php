@@ -52,9 +52,9 @@ final class MailOutboundMimeBuilder
             return [
                 'headers' => [
                     'Content-Type: text/html; charset=UTF-8',
-                    'Content-Transfer-Encoding: base64',
+                    'Content-Transfer-Encoding: quoted-printable',
                 ],
-                'content' => self::encodeBase64Body($htmlBody),
+                'content' => self::encodeQuotedPrintableBody($htmlBody),
             ];
         }
 
@@ -65,9 +65,9 @@ final class MailOutboundMimeBuilder
         $parts = [];
         $parts[] = '--' . $related;
         $parts[] = 'Content-Type: text/html; charset=UTF-8';
-        $parts[] = 'Content-Transfer-Encoding: base64';
+        $parts[] = 'Content-Transfer-Encoding: quoted-printable';
         $parts[] = '';
-        $parts[] = self::encodeBase64Body($htmlBody);
+        $parts[] = self::encodeQuotedPrintableBody($htmlBody);
 
         foreach ($inlineImages as $image) {
             $contentId = trim($image['contentId']);
@@ -111,8 +111,8 @@ final class MailOutboundMimeBuilder
         return '=?UTF-8?B?' . base64_encode($value) . '?=';
     }
 
-    private static function encodeBase64Body(string $body): string
+    private static function encodeQuotedPrintableBody(string $body): string
     {
-        return rtrim(chunk_split(base64_encode($body), 76, "\r\n"));
+        return quoted_printable_encode($body);
     }
 }
