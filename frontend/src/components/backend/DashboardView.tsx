@@ -22,7 +22,6 @@ import { isAdminLoadBusy, useAdminLoadHint } from '../../hooks/useAdminLoadHint'
 import { useApi } from '../../hooks/useApi';
 import { queryKeys } from '../../api/queryKeys';
 import { getDashboardOverview, DashboardOverview } from '../../api/dashboard';
-import { getApmOverview, ApmOverview } from '../../api/metrics';
 import { AnalyticsChart } from '../dashboard/AnalyticsChart';
 import { LocksPanel } from '../dashboard/LocksPanel';
 import { ConflictsPanel } from '../dashboard/ConflictsPanel';
@@ -43,14 +42,9 @@ import { useSettings } from '../../hooks/useSettings';
 import { storageUsedPercent } from '../../utils/adminStorageMeter';
 import { ProgressBar } from './ProgressBar';
 import { GettingStartedChecklist } from '../dashboard/GettingStartedChecklist';
-import { getJobsOverviewForDashboard, type JobsOverview } from '../../api/jobs';
 import { JobRunsLineChart } from './JobRunsLineChart';
-
-interface DashboardSecondaryData {
-  recentActivity: Array<Record<string, unknown>>;
-  apm: ApmOverview | null;
-  jobs: JobsOverview | null;
-}
+import { adminP2DeferExtraMs } from '../../utils/adminP2Stagger';
+import { fetchDashboardSecondary, type DashboardSecondaryData } from '../../utils/fetchDashboardSecondary';
 
 function formatStorageQuotaLabel(bytes: number): string {
   if (bytes >= 1024 ** 3) {
@@ -91,7 +85,7 @@ export const DashboardView: React.FC = () => {
 
   const loadHint = useAdminLoadHint();
   const adminLoadBusy = isAdminLoadBusy(loadHint);
-  const deferSecondary = useDeferredAfterPaint(overview != null, adminLoadBusy ? 2000 : 0);
+  const deferSecondary = useDeferredAfterPaint(overview != null, adminP2DeferExtraMs(adminLoadBusy));
 
   const {
     data: secondary,
@@ -102,19 +96,7 @@ export const DashboardView: React.FC = () => {
     queryKey: queryKeys.dashboard.secondary,
     adminLoadBusy,
     enabled: deferSecondary,
-    queryFn: async () => {
-      const [auditRes, apm, jobs] = await Promise.all([
-        get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
-        getApmOverview(),
-        getJobsOverviewForDashboard(),
-      ]);
-
-      return {
-        recentActivity: auditRes.success ? auditRes.data?.recent_events ?? [] : [],
-        apm,
-        jobs,
-      };
-    },
+    queryFn: async () => fetchDashboardSecondary(get, adminLoadBusy),
   });
 
   const refetch = useCallback(() => {

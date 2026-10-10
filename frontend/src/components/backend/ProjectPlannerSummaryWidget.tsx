@@ -8,6 +8,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { useDeferredAfterPaint } from '../../hooks/useDeferredAfterPaint';
 import { useAdminSecondaryQuery } from '../../hooks/useAdminSecondaryQuery';
 import { isAdminLoadBusy, useAdminLoadHint } from '../../hooks/useAdminLoadHint';
+import { adminP2PlannerDeferExtraMs } from '../../utils/adminP2Stagger';
 import { ProgressBar } from './ProgressBar';
 import { progressBarTone } from '../../utils/projectPlanProgress';
 
@@ -16,7 +17,7 @@ export const ProjectPlannerSummaryWidget: React.FC = () => {
   const { settings } = useSettings();
   const enabled = settings.projectPlanner?.enabled !== false;
   const adminLoadBusy = isAdminLoadBusy(useAdminLoadHint(enabled));
-  const deferLoad = useDeferredAfterPaint(enabled, adminLoadBusy ? 2000 : 0);
+  const deferLoad = useDeferredAfterPaint(enabled, adminP2PlannerDeferExtraMs(adminLoadBusy));
 
   const { data: overview } = useAdminSecondaryQuery<ProjectPlanOverview | null>({
     queryKey: queryKeys.projectPlanner.overview,
