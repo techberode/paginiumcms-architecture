@@ -21,6 +21,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Admin perf:** `AuthMiddleware` releases the PHP session write lock on authenticated GET/HEAD/OPTIONS (after `SessionReleaseMiddleware`, which runs before the session opens) so parallel dashboard XHR on one `PHPSESSID` do not serialize
 - **Monitoring report:** HTML email uses quoted-printable UTF-8 MIME (readable HTML in webmail; avoids raw base64 body); ntfy uses `text/html` when an HTML body is provided
 - **It.100b (partial):** `AdminLoadHintResolver` + `GET /api/admin/metrics/load-hint` (`normal`/`busy` from APM p95, session-lock p95, open breaches); FE defers P2 dashboard/planner fetches and extends React Query stale time when busy
+- **Admin mail:** keep message list mounted while reading a message (no skeleton flash on back); cache opened bodies; skip full reload after label delete / manual refresh when possible
+- **It.100d (partial):** `GET /api/admin/jobs?recent_runs=N` (5–500, default 150); dashboard uses 30 runs; cron warm pre-builds full + dashboard segments
 - **CSRF (post-login):** Refresh synchronizer token after login/2FA; clear on logout; `403 csrf_invalid` logged at INFO in `http_access` — [ISS-196](docs/ISSUES.md#iss-196) · [SECURITY.md](docs/en/developer/SECURITY.md) §10.1
 - **Deps (monitor):** Residual frontend `npm audit` high (Tailwind 3 build chain) — accepted defer, review each beta — [ISS-197](docs/ISSUES.md#iss-197) · [ITERATION_BACKLOG.md](docs/en/ITERATION_BACKLOG.md) §1b
 - **Desk performance:** `DeskInboxService` comment index (no N+1), single desk compose per request, comments registry memo, desk poll paused on hidden tab — [ISS-198](docs/ISSUES.md#iss-198)

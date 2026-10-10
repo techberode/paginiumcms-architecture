@@ -39,8 +39,11 @@ final class JobsController
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $recentRunsLimit = $this->recentRunsLimitFromRequest($request);
+
         $payload = $this->adminOverviewCache->rememberJobsOverview(
-            fn (): array => $this->jobsOverview->build()
+            fn (): array => $this->jobsOverview->build($recentRunsLimit),
+            $recentRunsLimit
         );
 
         return $this->json->success($response, $payload);
@@ -254,5 +257,16 @@ final class JobsController
         $user = $request->getAttribute('user');
 
         return $user instanceof User && in_array('SUPER_ADMIN', $user->getRoles(), true);
+    }
+
+    private function recentRunsLimitFromRequest(ServerRequestInterface $request): int
+    {
+        $params = $request->getQueryParams();
+        $raw = $params['recent_runs'] ?? AdminJobsOverviewProvider::DEFAULT_RECENT_RUNS_LIMIT;
+        if (!is_scalar($raw)) {
+            return AdminJobsOverviewProvider::DEFAULT_RECENT_RUNS_LIMIT;
+        }
+
+        return max(5, min(500, (int) $raw));
     }
 }

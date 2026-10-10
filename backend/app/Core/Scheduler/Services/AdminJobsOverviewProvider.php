@@ -11,6 +11,10 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
  */
 final class AdminJobsOverviewProvider
 {
+    public const DEFAULT_RECENT_RUNS_LIMIT = 150;
+
+    public const DASHBOARD_RECENT_RUNS_LIMIT = 30;
+
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private JobRegistryStore $registry,
@@ -24,15 +28,17 @@ final class AdminJobsOverviewProvider
     /**
      * @return array<string, mixed>
      */
-    public function build(): array
+    public function build(int $recentRunsLimit = self::DEFAULT_RECENT_RUNS_LIMIT): array
     {
         $scheduler = $this->settings->group('scheduler');
+        $recentRunsLimit = max(5, min(500, $recentRunsLimit));
 
         return [
             'enabled' => (bool) ($scheduler['enabled'] ?? true),
             'handlers' => $this->handlers->catalog(),
             'jobs' => array_map(fn (array $job): array => $this->enrichJob($job), $this->registry->all()),
-            'recent_runs' => $this->runs->recent(150),
+            'recent_runs' => $this->runs->recent($recentRunsLimit),
+            'recent_runs_limit' => $recentRunsLimit,
             'queue' => $this->queue->snapshot(),
             'cron_hint' => $this->buildCronHint(),
         ];

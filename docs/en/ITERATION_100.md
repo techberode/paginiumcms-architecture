@@ -56,7 +56,7 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 | **100a** | Document tiers; cache P2 endpoints; FE secondary stale | Fewer repeated 5 s spikes on dashboard refresh |
 | **100b** | Load hint (`normal` / `busy`) from PG + worker pressure → FE coordinator | P2 deferred under busy; P0 latency stable in probe (**partial — Unreleased:** `GET /api/admin/metrics/load-hint`, dashboard/planner defer + longer P2 stale when `busy`) |
 | **100c** | P2 prewarm cron + SWR (no request-thread `rememberLocked`) | Miss storm reduced; stale served while cron/shutdown refresh ( **partial — Unreleased** ) |
-| **100d** | Cron-owned P2 **documents** in Redis/file; optional Redis types for job runs + slimmer `/api/admin/jobs` | HTTP never cold-parses flat-file for P2; jobs GET no longer one ~148 KB monolith by default |
+| **100d** | Cron-owned P2 **documents** in Redis/file; optional Redis types for job runs + slimmer `/api/admin/jobs` | HTTP never cold-parses flat-file for P2; jobs GET no longer one ~148 KB monolith by default (**partial — Unreleased:** `?recent_runs=` + dashboard `30`, dual cache warm) |
 | **100e** | P3 async exports; admission control (503 + Retry-After) for optional GET | No multi-minute blocking requests |
 | **100f** | Optional dedicated “synth sessions” metric on instance (count active admin sessions) | Policy rules use real session count, not only heuristics |
 

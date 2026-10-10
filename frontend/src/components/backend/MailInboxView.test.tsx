@@ -342,9 +342,11 @@ describe('MailInboxView', () => {
     renderMail();
     fireEvent.click(await screen.findByTestId('mail-row-1'));
     expect(await screen.findByTestId('mail-message-view')).toBeInTheDocument();
-    expect(screen.queryByTestId('mail-row-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mail-list-pane')).toHaveClass('hidden');
+    expect(screen.getByTestId('mail-row-1')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('mail-back-to-list'));
     expect(await screen.findByTestId('mail-row-1')).toBeInTheDocument();
+    expect(screen.getByTestId('mail-list-pane')).not.toHaveClass('hidden');
     expect(screen.queryByTestId('mail-message-view')).not.toBeInTheDocument();
   });
 

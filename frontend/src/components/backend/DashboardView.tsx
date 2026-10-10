@@ -43,7 +43,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { storageUsedPercent } from '../../utils/adminStorageMeter';
 import { ProgressBar } from './ProgressBar';
 import { GettingStartedChecklist } from '../dashboard/GettingStartedChecklist';
-import { getJobsOverview, type JobsOverview } from '../../api/jobs';
+import { getJobsOverviewForDashboard, type JobsOverview } from '../../api/jobs';
 import { JobRunsLineChart } from './JobRunsLineChart';
 
 interface DashboardSecondaryData {
@@ -106,7 +106,7 @@ export const DashboardView: React.FC = () => {
       const [auditRes, apm, jobs] = await Promise.all([
         get<{ recent_events?: Array<Record<string, unknown>> }>('/api/admin/audit/stats'),
         getApmOverview(),
-        getJobsOverview(),
+        getJobsOverviewForDashboard(),
       ]);
 
       return {

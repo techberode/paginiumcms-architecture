@@ -44,13 +44,25 @@ export interface JobsOverview {
   handlers: JobHandler[];
   jobs: ScheduledJob[];
   recent_runs: JobRunEntry[];
+  recent_runs_limit?: number;
   queue: Array<Record<string, unknown>>;
   cron_hint: string;
 }
 
-export async function getJobsOverview(): Promise<JobsOverview | null> {
-  const response = await apiClient.get<JobsOverview>('/api/admin/jobs');
+export async function getJobsOverview(options?: { recentRuns?: number }): Promise<JobsOverview | null> {
+  const config =
+    options?.recentRuns !== undefined
+      ? { params: { recent_runs: Math.max(5, Math.min(500, options.recentRuns)) } }
+      : undefined;
+  const response = await apiClient.get<JobsOverview>('/api/admin/jobs', config);
   return response.success && response.data ? response.data : null;
+}
+
+/** Lighter payload for dashboard P2 (Iteration 100d). */
+export const JOBS_DASHBOARD_RECENT_RUNS = 30;
+
+export async function getJobsOverviewForDashboard(): Promise<JobsOverview | null> {
+  return getJobsOverview({ recentRuns: JOBS_DASHBOARD_RECENT_RUNS });
 }
 
 export async function updateJob(id: string, payload: Partial<ScheduledJob>): Promise<ScheduledJob | null> {

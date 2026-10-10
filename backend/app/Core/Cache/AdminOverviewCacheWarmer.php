@@ -43,8 +43,17 @@ final class AdminOverviewCacheWarmer
         $this->cache->refreshAuditStats(fn (): array => $this->auditTrail->getAuditStats([]));
         $warmed[] = 'audit_stats';
 
-        $this->cache->refreshJobsOverview(fn (): array => $this->jobsOverview->build());
+        $this->cache->refreshJobsOverview(
+            fn (): array => $this->jobsOverview->build(AdminJobsOverviewProvider::DEFAULT_RECENT_RUNS_LIMIT),
+            AdminJobsOverviewProvider::DEFAULT_RECENT_RUNS_LIMIT
+        );
         $warmed[] = 'jobs_overview';
+
+        $this->cache->refreshJobsOverview(
+            fn (): array => $this->jobsOverview->build(AdminJobsOverviewProvider::DASHBOARD_RECENT_RUNS_LIMIT),
+            AdminJobsOverviewProvider::DASHBOARD_RECENT_RUNS_LIMIT
+        );
+        $warmed[] = 'jobs_overview_dashboard';
 
         $this->cache->refreshApmSummary(fn (): array => [
             'config' => $this->performanceSettings->publicSummary(),

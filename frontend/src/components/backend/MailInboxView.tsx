@@ -435,18 +435,24 @@ export const MailInboxView: React.FC = () => {
     await persistDraft(true);
   }, [persistDraft]);
 
-  const loadMailbox = useCallback(async (activeFolder: string) => {
-    const nextFolders = await mailApi.folders();
-    setFolders(nextFolders);
-    const [nextMessages] = await Promise.all([
-      mailApi.messages(activeFolder),
-      loadBlockedSenders(),
-      loadSignature(),
-    ]);
-    setMessages(nextMessages);
-    setDetails({});
-    setExpandedId(null);
-  }, [loadBlockedSenders, loadSignature]);
+  const loadMailbox = useCallback(
+    async (activeFolder: string, options?: { preserveMessageSession?: boolean }) => {
+      const preserveMessageSession = options?.preserveMessageSession === true;
+      const nextFolders = await mailApi.folders();
+      setFolders(nextFolders);
+      const [nextMessages] = await Promise.all([
+        mailApi.messages(activeFolder),
+        loadBlockedSenders(),
+        loadSignature(),
+      ]);
+      setMessages(nextMessages);
+      if (!preserveMessageSession) {
+        setDetails({});
+        setExpandedId(null);
+      }
+    },
+    [loadBlockedSenders, loadSignature]
+  );
 
   const saveSignature = async () => {
     if (signatureDraftFields === null || signatureDraftPrefs === null || signatureSaving) {
@@ -509,7 +515,7 @@ export const MailInboxView: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [folder, loadMailbox, loadStatus, t, toast]);
+  }, [folder, loadMailbox, loadStatus, t]);
 
   useEffect(() => {
     setPage(1);
@@ -618,7 +624,6 @@ export const MailInboxView: React.FC = () => {
       });
     }
     toast.success(t('platform.mail.toast.labelDeleted'));
-    await loadMailbox(folder);
   };
 
   const labelNavItems = useMemo(() => {
@@ -775,6 +780,24 @@ export const MailInboxView: React.FC = () => {
     const sourceFolder = imapFolderOf(row, folder);
     const id = rowId(row, folder);
     const allow = resolveAllowRemoteImages(row, allowRemoteImages);
+    const cached = details[id];
+    const needsRemoteImages = allowRemoteImages === true;
+    if (
+      cached &&
+      !needsRemoteImages &&
+      !cached.remoteImagesBlocked &&
+      (cached.body !== undefined || cached.html !== undefined)
+    ) {
+      if (!cached.seen) {
+        setMessages((current) =>
+          current.map((item) => (rowId(item, folder) === id ? { ...item, seen: true } : item))
+        );
+        setDetails((current) =>
+          current[id] ? { ...current, [id]: { ...current[id], seen: true } } : current
+        );
+      }
+      return;
+    }
     const message = await mailApi.message(sourceFolder, row.uid, allow);
     if (message === null) {
       toast.error(t('platform.mail.toast.loadFailed'));
@@ -1299,7 +1322,7 @@ export const MailInboxView: React.FC = () => {
     }
     setMailboxRefreshing(true);
     try {
-      await loadMailbox(folder);
+      await loadMailbox(folder, { preserveMessageSession: true });
       toast.success(t('platform.mail.toast.refreshed'));
     } catch {
       toast.error(t('platform.mail.toast.loadFailed'));
@@ -1885,7 +1908,7 @@ export const MailInboxView: React.FC = () => {
 
           <div className="mail-app-main">
             {messageViewOpen && openedListRow ? (
-              <>
+              <div className="mail-app-message-pane" data-testid="mail-message-pane">
                 <div className="mail-app-toolbar flex flex-col gap-2 border-b border-admin-border px-3 py-3 sm:px-4">
                   <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                     {mailNavToggleButton}
@@ -2135,9 +2158,13 @@ export const MailInboxView: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              </>
-            ) : (
-              <>
+              </div>
+            ) : null}
+            <div
+              className={messageViewOpen ? 'hidden' : undefined}
+              aria-hidden={messageViewOpen ? true : undefined}
+              data-testid="mail-list-pane"
+            >
                 <div className="mail-mobile-chrome flex items-center gap-2 border-b border-admin-border px-3 py-2 lg:hidden">
                   {mailNavToggleButton}
                   <div className="min-w-0 flex-1">
@@ -2264,7 +2291,7 @@ export const MailInboxView: React.FC = () => {
                   </div>
                 ) : null}
 
-                {loading ? (
+                {loading && messages.length === 0 ? (
                   <AdminListSkeleton rows={8} />
                 ) : listView.total === 0 ? (
                   <AdminEmptyState title={messages.length === 0 ? t('platform.mail.empty') : t('platform.mail.emptyFilter')} />
@@ -2343,8 +2370,7 @@ export const MailInboxView: React.FC = () => {
                     />
                   </>
                 )}
-              </>
-            )}
+            </div>
           </div>
         </div>
       ) : null}

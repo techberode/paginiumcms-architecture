@@ -49,17 +49,21 @@ final class AdminOverviewCacheService
     /**
      * @return array<int|string, mixed>
      */
-    public function rememberJobsOverview(callable $loader): array
+    public function rememberJobsOverview(callable $loader, int $recentRunsLimit = 150): array
     {
-        return $this->rememberArray('jobs_overview', 'all', $loader);
+        $limit = max(5, min(500, $recentRunsLimit));
+
+        return $this->rememberArray('jobs_overview', 'recent_' . $limit, $loader);
     }
 
     /**
      * @return array<int|string, mixed>
      */
-    public function refreshJobsOverview(callable $loader): array
+    public function refreshJobsOverview(callable $loader, int $recentRunsLimit = 150): array
     {
-        return $this->refreshArray('jobs_overview', 'all', $loader);
+        $limit = max(5, min(500, $recentRunsLimit));
+
+        return $this->refreshArray('jobs_overview', 'recent_' . $limit, $loader);
     }
 
     public function invalidateJobsOverview(): void
