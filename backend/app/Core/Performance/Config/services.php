@@ -10,6 +10,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
+use PaginiumCMS\Core\Performance\AdminLoadHintResolver;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceContext;
@@ -52,6 +53,12 @@ return [
         ),
     PerformanceAggregator::class => create(PerformanceAggregator::class)
         ->constructor(get(PerformanceSampleStore::class)),
+    AdminLoadHintResolver::class => create(AdminLoadHintResolver::class)
+        ->constructor(
+            get(PerformanceGuardSettings::class),
+            get(PerformanceAggregator::class),
+            get(PerformanceBreachStore::class)
+        ),
     QueryIndexAdvisor::class => create(QueryIndexAdvisor::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -103,6 +110,7 @@ return [
             get(PerformanceSampleStore::class),
             get(QueryIndexAdvisor::class),
             get(\PaginiumCMS\Core\Cache\AdminOverviewCacheService::class),
+            get(AdminLoadHintResolver::class),
             get(JsonResponder::class)
         ),
 ];

@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
+use PaginiumCMS\Core\Performance\AdminLoadHintResolver;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceGuardSettings;
@@ -26,8 +27,14 @@ final class MetricsController
         private PerformanceSampleStore $samples,
         private QueryIndexAdvisor $queryIndexAdvisor,
         private AdminOverviewCacheService $adminOverviewCache,
+        private AdminLoadHintResolver $loadHint,
         private JsonResponder $json
     ) {
+    }
+
+    public function loadHint(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->loadHint->resolve());
     }
 
     public function summary(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -38,6 +45,7 @@ final class MetricsController
                 'summary' => $this->aggregator->summary(),
                 'recent_breaches' => $this->breaches->recent(),
                 'advisor_hints' => $this->queryIndexAdvisor->activeHints(),
+                'load_hint' => $this->loadHint->resolve(),
                 'host_metrics_note' => 'Host CPU/RAM/disk metrics remain under It.46 — not conflated with PHP APM.',
             ];
         });

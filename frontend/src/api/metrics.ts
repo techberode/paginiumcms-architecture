@@ -48,12 +48,29 @@ export interface ApmBreach {
   recommendation_hints?: ApmAdvisorHint[];
 }
 
+export type AdminLoadLevel = 'normal' | 'busy';
+
+export interface AdminLoadHint {
+  level: AdminLoadLevel;
+  reasons: string[];
+}
+
 export interface ApmOverview {
   config: ApmConfig;
   summary: ApmSummary;
   recent_breaches: ApmBreach[];
   advisor_hints?: ApmAdvisorHint[];
+  load_hint?: AdminLoadHint;
   host_metrics_note: string;
+}
+
+export async function getAdminLoadHint(): Promise<AdminLoadHint> {
+  const res = await apiClient.get<AdminLoadHint>('/api/admin/metrics/load-hint');
+  if (res.success && res.data) {
+    return res.data;
+  }
+
+  return { level: 'normal', reasons: [] };
 }
 
 export async function getApmOverview(): Promise<ApmOverview | null> {

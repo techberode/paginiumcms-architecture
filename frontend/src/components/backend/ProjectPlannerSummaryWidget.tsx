@@ -7,6 +7,7 @@ import { useI18n } from '../../context/I18nContext';
 import { useSettings } from '../../hooks/useSettings';
 import { useDeferredAfterPaint } from '../../hooks/useDeferredAfterPaint';
 import { useAdminSecondaryQuery } from '../../hooks/useAdminSecondaryQuery';
+import { isAdminLoadBusy, useAdminLoadHint } from '../../hooks/useAdminLoadHint';
 import { ProgressBar } from './ProgressBar';
 import { progressBarTone } from '../../utils/projectPlanProgress';
 
@@ -14,10 +15,12 @@ export const ProjectPlannerSummaryWidget: React.FC = () => {
   const { t } = useI18n();
   const { settings } = useSettings();
   const enabled = settings.projectPlanner?.enabled !== false;
-  const deferLoad = useDeferredAfterPaint(enabled);
+  const adminLoadBusy = isAdminLoadBusy(useAdminLoadHint(enabled));
+  const deferLoad = useDeferredAfterPaint(enabled, adminLoadBusy ? 2000 : 0);
 
   const { data: overview } = useAdminSecondaryQuery<ProjectPlanOverview | null>({
     queryKey: queryKeys.projectPlanner.overview,
+    adminLoadBusy,
     enabled: enabled && deferLoad,
     queryFn: async () => {
       const response = await projectPlannerApi.overview();

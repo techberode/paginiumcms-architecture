@@ -49,18 +49,23 @@ class NtfyAdapter implements AdapterInterface
         $priority = $options['priority'] ?? 'default';
         $tags = $options['tags'] ?? 'paginiumcms';
 
+        $html = isset($options['html']) ? (string) $options['html'] : '';
+        $useHtml = $html !== '' && str_contains($html, '<');
+        $body = $useHtml ? $html : $message;
+        $contentType = $useHtml ? 'text/html; charset=utf-8' : 'text/plain; charset=utf-8';
+
         $headers = array_merge($this->buildAuthHeaders(), [
             'Title: ' . $subject,
             'Priority: ' . $priority,
             'Tags: ' . $tags,
-            'Content-Type: text/plain; charset=utf-8',
+            'Content-Type: ' . $contentType,
         ]);
 
         $context = stream_context_create([
             'http' => [
                 'method' => 'POST',
                 'header' => implode("\r\n", $headers),
-                'content' => $message,
+                'content' => $body,
                 'timeout' => 10,
                 'ignore_errors' => true,
             ],

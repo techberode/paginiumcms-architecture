@@ -52,9 +52,9 @@ final class MailOutboundMimeBuilder
             return [
                 'headers' => [
                     'Content-Type: text/html; charset=UTF-8',
-                    'Content-Transfer-Encoding: 8bit',
+                    'Content-Transfer-Encoding: base64',
                 ],
-                'content' => $htmlBody,
+                'content' => self::encodeBase64Body($htmlBody),
             ];
         }
 
@@ -65,9 +65,9 @@ final class MailOutboundMimeBuilder
         $parts = [];
         $parts[] = '--' . $related;
         $parts[] = 'Content-Type: text/html; charset=UTF-8';
-        $parts[] = 'Content-Transfer-Encoding: 8bit';
+        $parts[] = 'Content-Transfer-Encoding: base64';
         $parts[] = '';
-        $parts[] = $htmlBody;
+        $parts[] = self::encodeBase64Body($htmlBody);
 
         foreach ($inlineImages as $image) {
             $contentId = trim($image['contentId']);
@@ -102,8 +102,17 @@ final class MailOutboundMimeBuilder
         return self::encodeHeader($name) . ' <' . $email . '>';
     }
 
-    private static function encodeHeader(string $value): string
+    public static function encodeHeader(string $value): string
     {
+        if ($value === '' || preg_match('/^[\x20-\x7E]*$/', $value) === 1) {
+            return $value;
+        }
+
         return '=?UTF-8?B?' . base64_encode($value) . '?=';
+    }
+
+    private static function encodeBase64Body(string $body): string
+    {
+        return rtrim(chunk_split(base64_encode($body), 76, "\r\n"));
     }
 }

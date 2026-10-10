@@ -35,6 +35,7 @@ export const queryKeys = {
   },
   metrics: {
     apmOverview: ['admin', 'metrics', 'apm', 'overview'] as const,
+    loadHint: ['admin', 'metrics', 'load-hint'] as const,
   },
   audit: {
     stats: (filtersKey: string) => ['admin', 'audit', 'stats', filtersKey] as const,

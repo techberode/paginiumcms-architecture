@@ -9,6 +9,28 @@ use PaginiumCMS\Tests\Http\TestCase;
 
 final class MetricsControllerTest extends TestCase
 {
+    public function testLoadHintRequiresAuth(): void
+    {
+        $request = $this->createJsonRequest('GET', '/api/admin/metrics/load-hint');
+        $response = $this->handleRequest($request);
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testLoadHintReturnsLevel(): void
+    {
+        $this->loginAsAdminUser();
+
+        $request = $this->createJsonRequest('GET', '/api/admin/metrics/load-hint');
+        $response = $this->handleRequest($request);
+        $data = $this->getJsonResponse($response);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
+        $this->assertSame('normal', $data['data']['level']);
+        $this->assertIsArray($data['data']['reasons']);
+    }
+
     public function testApmSummaryRequiresAuth(): void
     {
         $request = $this->createJsonRequest('GET', '/api/admin/metrics/apm');
@@ -30,6 +52,8 @@ final class MetricsControllerTest extends TestCase
         $this->assertArrayHasKey('config', $data['data']);
         $this->assertArrayHasKey('summary', $data['data']);
         $this->assertArrayHasKey('recent_breaches', $data['data']);
+        $this->assertArrayHasKey('load_hint', $data['data']);
+        $this->assertSame('normal', $data['data']['load_hint']['level']);
         $this->assertFalse($data['data']['config']['enabled']);
         $this->assertSame('suggest', $data['data']['config']['remediation_mode']);
     }

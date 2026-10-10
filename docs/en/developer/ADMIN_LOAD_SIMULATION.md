@@ -85,7 +85,7 @@ Mutating methods keep the write lock through the request (POST save/upload uncha
 - **First round** often slow (cold cache) — **second round** should drop if `AdminOverviewCacheService` / Redis is active.
 - With **cron warm-up**, cold misses should be rare even on round 1 (admin should not pay flat-file aggregation on first dashboard open).
 - Compare with **Admin → Performance Guard** and **`http_access`** WARNING rate during the same window.
-- If P0 routes (not in default probe) degrade while probe runs, increase P2 TTL or enable **100b** load defer when implemented.
+- If P0 routes (not in default probe) degrade while probe runs, confirm **100b** load hint is `busy` (Performance Guard enabled) — dashboard should defer P2 GETs automatically.
 
 ---
 

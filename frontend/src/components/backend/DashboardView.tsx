@@ -18,6 +18,7 @@ import { useToast } from '../../hooks/useToast';
 import { useAdminListQuery } from '../../hooks/useAdminListQuery';
 import { useAdminSecondaryQuery } from '../../hooks/useAdminSecondaryQuery';
 import { useDeferredAfterPaint } from '../../hooks/useDeferredAfterPaint';
+import { isAdminLoadBusy, useAdminLoadHint } from '../../hooks/useAdminLoadHint';
 import { useApi } from '../../hooks/useApi';
 import { queryKeys } from '../../api/queryKeys';
 import { getDashboardOverview, DashboardOverview } from '../../api/dashboard';
@@ -88,7 +89,9 @@ export const DashboardView: React.FC = () => {
     },
   });
 
-  const deferSecondary = useDeferredAfterPaint(overview != null);
+  const loadHint = useAdminLoadHint();
+  const adminLoadBusy = isAdminLoadBusy(loadHint);
+  const deferSecondary = useDeferredAfterPaint(overview != null, adminLoadBusy ? 2000 : 0);
 
   const {
     data: secondary,
@@ -97,6 +100,7 @@ export const DashboardView: React.FC = () => {
     refetch: refetchSecondary,
   } = useAdminSecondaryQuery<DashboardSecondaryData>({
     queryKey: queryKeys.dashboard.secondary,
+    adminLoadBusy,
     enabled: deferSecondary,
     queryFn: async () => {
       const [auditRes, apm, jobs] = await Promise.all([

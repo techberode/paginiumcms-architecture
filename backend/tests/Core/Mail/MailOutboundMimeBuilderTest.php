@@ -21,7 +21,24 @@ final class MailOutboundMimeBuilderTest extends TestCase
 
         $this->assertStringContainsString('Subject: ', $raw);
         $this->assertStringContainsString('To: <guest@example.com>', $raw);
-        $this->assertStringContainsString('<p>Hi</p>', $raw);
+        $this->assertStringContainsString('Content-Transfer-Encoding: base64', $raw);
+        $this->assertStringContainsString(base64_encode('<p>Hi</p>'), str_replace("\r\n", '', $raw));
+    }
+
+    public function testBase64HtmlPreservesUtf8Diacritics(): void
+    {
+        $html = '<p>Prehľad návštevnosti · 📊</p>';
+        $raw = MailOutboundMimeBuilder::buildRfc822(
+            'noreply@site.test',
+            'PaginiumCMS',
+            ['admin@site.test'],
+            'Report',
+            $html
+        );
+
+        $this->assertStringContainsString('Content-Transfer-Encoding: base64', $raw);
+        $encoded = base64_encode($html);
+        $this->assertStringContainsString($encoded, str_replace("\r\n", '', $raw));
     }
 
     public function testBuildsMultipleToRecipients(): void

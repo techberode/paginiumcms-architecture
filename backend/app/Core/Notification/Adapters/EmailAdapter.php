@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Notification\Adapters;
 
+use PaginiumCMS\Core\Mail\Services\MailOutboundMimeBuilder;
 use PaginiumCMS\Core\Mail\Services\MailRecipientParser;
 use PaginiumCMS\Core\Notification\Services\SmtpTransport;
 
@@ -50,16 +51,25 @@ class EmailAdapter implements AdapterInterface
             }
         }
 
+        $mime = MailOutboundMimeBuilder::buildMimeBody((string) $html, []);
+        $fromHeader = $fromName !== ''
+            ? MailOutboundMimeBuilder::encodeHeader($fromName) . ' <' . $from . '>'
+            : '<' . $from . '>';
         $headers = [
             'MIME-Version: 1.0',
-            'Content-type: text/html; charset=utf-8',
-            'From: ' . $fromName . ' <' . $from . '>',
+            ...$mime['headers'],
+            'From: ' . $fromHeader,
         ];
 
         if (isset($options['reply_to'])) {
             $headers[] = 'Reply-To: ' . $options['reply_to'];
         }
 
-        return mail($to, $subject, (string) $html, implode("\r\n", $headers));
+        return mail(
+            $to,
+            MailOutboundMimeBuilder::encodeHeader($subject),
+            $mime['content'],
+            implode("\r\n", $headers)
+        );
     }
 }
