@@ -5,6 +5,7 @@ import { GalleryCarouselIsland } from './GalleryCarouselIsland';
 import { MediaGalleryIsland } from './MediaGalleryIsland';
 import { PricingTableIsland } from './PricingTableIsland';
 import { StatsRowIsland } from './StatsRowIsland';
+import { BeforeAfterIsland } from './BeforeAfterIsland';
 import type { IslandProps } from './publicIslandDefinitions';
 
 export type PublicIslandComponent = React.ComponentType<{ attrs: IslandProps; innerHtml?: string }>;
@@ -35,6 +36,7 @@ export const PUBLIC_ISLANDS: Record<string, PublicIslandComponent> = {
   'staff-cards': StaffCardsIsland,
   'pricing-table': PricingTableIsland,
   'stats-row': StatsRowIsland,
+  'before-after': BeforeAfterIsland,
 };
 
 export function PublicIslandHost({

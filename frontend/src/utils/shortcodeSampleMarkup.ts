@@ -30,6 +30,10 @@ export function buildShortcodeSampleMarkup(name: string): string {
     return `[${name} title="Selected photos" ids="media/example.jpg|media/example-2.jpg" columns="3" layout="grid"/]`;
   }
 
+  if (name === 'before-after') {
+    return `[${name} before="/storage/media/before.jpg" after="/storage/media/after.jpg" label-before="Before" label-after="After"/]`;
+  }
+
   if (name === 'section-band') {
     return `[${name} anchor="work" layout="contained" radius="rounded" reveal="scroll" hover-effect="lift"]\n## Section title\n\nBody copy and nested shortcodes go here.\n\n[/${name}]`;
   }

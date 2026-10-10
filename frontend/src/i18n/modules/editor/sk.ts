@@ -501,6 +501,7 @@ export const editorSk: MessageTree = {
       'section-band': 'Pás sekcie',
       'feature-gallery': 'Galéria',
       'media-gallery': 'Media galéria',
+      'before-after': 'Pred / po posuvník',
       'gallery-carousel': 'Galéria karusel',
       'feature-grid': 'Karty',
       'cta-banner': 'Výzva k akcii',

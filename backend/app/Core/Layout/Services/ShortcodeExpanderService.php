@@ -124,6 +124,12 @@ final class ShortcodeExpanderService
             return $this->sanitizer->sanitizeHtml(MediaGalleryRenderer::render($mediaAttrs, $this->media));
         }
 
+        if ($name === 'before-after') {
+            $attrs = $this->parseAttributes($rawAttrs, ['attrs' => BeforeAfterRenderer::attributeSchema()]);
+
+            return $this->sanitizer->sanitizeHtml(BeforeAfterRenderer::render($attrs));
+        }
+
         if ($name === 'pricing-table') {
             $definition = ['attrs' => PricingTableRenderer::attributeSchema()];
             $attrs = $this->parseAttributes($rawAttrs, $definition);

@@ -7,6 +7,11 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
 use PaginiumCMS\Core\Performance\AdminLoadHintResolver;
+use PaginiumCMS\Core\Performance\HostMetricsIngestException;
+use PaginiumCMS\Core\Performance\HostMetricsIngestGuard;
+use PaginiumCMS\Core\Performance\HostMetricsService;
+use PaginiumCMS\Core\Performance\HostMetricsSnapshotSanitizer;
+use PaginiumCMS\Core\Performance\HostMetricsStore;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceGuardSettings;
@@ -28,6 +33,9 @@ final class MetricsController
         private QueryIndexAdvisor $queryIndexAdvisor,
         private AdminOverviewCacheService $adminOverviewCache,
         private AdminLoadHintResolver $loadHint,
+        private HostMetricsService $hostMetrics,
+        private HostMetricsStore $hostMetricsStore,
+        private HostMetricsIngestGuard $hostMetricsIngest,
         private JsonResponder $json
     ) {
     }
@@ -35,6 +43,40 @@ final class MetricsController
     public function loadHint(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->json->success($response, $this->loadHint->resolve());
+    }
+
+    public function host(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->json->success($response, $this->hostMetrics->publicView());
+    }
+
+    public function ingestHost(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $token = trim($request->getHeaderLine('X-Host-Metrics-Token'));
+        if ($token === '') {
+            return $this->json->error($response, 'host_metrics_token_required', 401);
+        }
+
+        try {
+            $this->hostMetricsIngest->assertAllowed($request->getServerParams(), $token);
+        } catch (HostMetricsIngestException $exception) {
+            return $this->json->error($response, $exception->errorCode, $exception->statusCode);
+        }
+
+        $body = (string) $request->getBody();
+        $decoded = json_decode($body, true);
+        if (!is_array($decoded)) {
+            return $this->json->error($response, 'host_metrics_invalid_json', 422);
+        }
+
+        $snapshot = HostMetricsSnapshotSanitizer::sanitize($decoded);
+        if ($snapshot === null) {
+            return $this->json->error($response, 'host_metrics_invalid_payload', 422);
+        }
+
+        $this->hostMetricsStore->save($snapshot);
+
+        return $this->json->success($response, ['saved' => true, 'collected_at' => $snapshot['collected_at'] ?? null]);
     }
 
     public function summary(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -46,7 +88,7 @@ final class MetricsController
                 'recent_breaches' => $this->breaches->recent(),
                 'advisor_hints' => $this->queryIndexAdvisor->activeHints(),
                 'load_hint' => $this->loadHint->resolve(),
-                'host_metrics_note' => 'Host CPU/RAM/disk metrics remain under It.46 — not conflated with PHP APM.',
+                'host_metrics' => $this->hostMetrics->publicView(),
             ];
         });
 

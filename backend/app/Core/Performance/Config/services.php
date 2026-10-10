@@ -11,6 +11,12 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
 use PaginiumCMS\Core\Performance\AdminLoadHintResolver;
+use PaginiumCMS\Core\Performance\Commands\HostMetricsCollectCommand;
+use PaginiumCMS\Core\Performance\HostMetricsCollector;
+use PaginiumCMS\Core\Performance\HostMetricsIngestGuard;
+use PaginiumCMS\Core\Performance\HostMetricsService;
+use PaginiumCMS\Core\Performance\HostMetricsSettings;
+use PaginiumCMS\Core\Performance\HostMetricsStore;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceContext;
@@ -59,6 +65,17 @@ return [
             get(PerformanceAggregator::class),
             get(PerformanceBreachStore::class)
         ),
+    HostMetricsStore::class => create(HostMetricsStore::class)
+        ->constructor(get(FileReaderInterface::class), get(FileWriterInterface::class)),
+    HostMetricsSettings::class => create(HostMetricsSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    HostMetricsCollector::class => create(HostMetricsCollector::class),
+    HostMetricsIngestGuard::class => create(HostMetricsIngestGuard::class)
+        ->constructor(get(HostMetricsSettings::class)),
+    HostMetricsService::class => create(HostMetricsService::class)
+        ->constructor(get(HostMetricsSettings::class), get(HostMetricsStore::class)),
+    HostMetricsCollectCommand::class => create(HostMetricsCollectCommand::class)
+        ->constructor(get(HostMetricsCollector::class), get(HostMetricsStore::class)),
     QueryIndexAdvisor::class => create(QueryIndexAdvisor::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -111,6 +128,9 @@ return [
             get(QueryIndexAdvisor::class),
             get(\PaginiumCMS\Core\Cache\AdminOverviewCacheService::class),
             get(AdminLoadHintResolver::class),
+            get(HostMetricsService::class),
+            get(HostMetricsStore::class),
+            get(HostMetricsIngestGuard::class),
             get(JsonResponder::class)
         ),
 ];

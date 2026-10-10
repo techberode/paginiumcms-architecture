@@ -20,15 +20,23 @@ return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $authz = $container->get(AuthorizationInterface::class);
 
-    $app->get('/api/admin/metrics/load-hint', [$container->get(MetricsController::class), 'loadHint'])
+    $controller = $container->get(MetricsController::class);
+
+    $app->post('/api/admin/metrics/host/ingest', [$controller, 'ingestHost']);
+
+    $app->get('/api/admin/metrics/load-hint', [$controller, 'loadHint'])
         ->add(new PermissionMiddleware($authz, 'metrics:read'))
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
 
-    $app->group('/api/admin/metrics/apm', function (RouteCollectorProxy $group) use ($container) {
-        $controller = $container->get(MetricsController::class);
+    $app->get('/api/admin/metrics/host', [$controller, 'host'])
+        ->add(new PermissionMiddleware($authz, 'metrics:read'))
+        ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
+        ->add($container->get(TwoFactorMiddleware::class))
+        ->add($container->get(AuthMiddleware::class));
 
+    $app->group('/api/admin/metrics/apm', function (RouteCollectorProxy $group) use ($controller) {
         $group->get('', [$controller, 'summary']);
         $group->post('/clear', [$controller, 'clearSamples']);
     })

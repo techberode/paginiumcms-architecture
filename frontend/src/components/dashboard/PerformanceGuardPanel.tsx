@@ -70,10 +70,12 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
           <div className="flex justify-center py-6">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
           </div>
-        ) : !overview.config.enabled ? (
-          <p className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.panels.apm.disabled')}</p>
         ) : (
           <>
+            {!overview.config.enabled ? (
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{t('dashboard.panels.apm.disabled')}</p>
+            ) : (
+              <>
             {(overview.advisor_hints?.length ?? 0) > 0 ? (
               <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
                 <p className="font-medium">{t('dashboard.panels.apm.queryIndexHintTitle')}</p>
@@ -120,8 +122,28 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
                 )}
               </dl>
             )}
+              </>
+            )}
+            {overview.host_metrics?.enabled === true ? (
+              <div className="mb-4 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
+                <p className="font-medium text-gray-800 dark:text-gray-100">{t('dashboard.panels.apm.hostMetricsTitle')}</p>
+                <p className="mt-1">
+                  {t(`dashboard.panels.apm.hostMetricsStatus.${overview.host_metrics.status}`)}
+                  {overview.host_metrics.collected_at ? ` · ${overview.host_metrics.collected_at}` : ''}
+                </p>
+                {overview.host_metrics.status === 'ok' && overview.host_metrics.snapshot?.load ? (
+                  <p className="mt-1 font-mono text-[11px] opacity-90">
+                    {t('dashboard.panels.apm.hostMetricsLoad', {
+                      l1: String((overview.host_metrics.snapshot.load as { 1?: number })['1'] ?? '—'),
+                      l5: String((overview.host_metrics.snapshot.load as { 5?: number })['5'] ?? '—'),
+                      l15: String((overview.host_metrics.snapshot.load as { 15?: number })['15'] ?? '—'),
+                    })}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400">{overview.host_metrics_note}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard.panels.apm.hostMetricsHint')}</p>
               {canClear ? (
                 <button
                   type="button"

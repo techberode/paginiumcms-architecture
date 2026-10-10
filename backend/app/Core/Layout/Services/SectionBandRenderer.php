@@ -49,6 +49,7 @@ final class SectionBandRenderer
             'tone' => ['type' => 'enum', 'options' => ['', 'none', 'muted', 'accent']],
             'reveal' => ['type' => 'enum', 'options' => ['', 'scroll', 'scroll-stagger', 'slide-left', 'slide-right', 'scale-in', 'none']],
             'hover-effect' => ['type' => 'enum', 'options' => ['', 'none', 'lift', 'glow', 'tilt-3d', 'border-sweep']],
+            'bg-crossfade' => ['type' => 'enum', 'options' => ['', 'true', 'false', '1', '0']],
         ];
     }
 
@@ -66,6 +67,7 @@ final class SectionBandRenderer
         $tone = self::enum($attrs['tone'] ?? '', self::TONES, 'none');
         $reveal = self::enum($attrs['reveal'] ?? '', self::REVEALS, 'scroll');
         $hoverEffect = self::enum($attrs['hover-effect'] ?? '', self::HOVER_EFFECTS, 'none');
+        $bgCrossfade = self::truthy($attrs['bg-crossfade'] ?? '');
 
         $classes = ['pg-section-band'];
         foreach (self::revealClasses($reveal) as $revealClass) {
@@ -88,6 +90,9 @@ final class SectionBandRenderer
         }
         if ($bgImage !== '' && $overlay !== 'none') {
             $classes[] = 'pg-section-band--overlay-' . $overlay;
+        }
+        if ($bgImage !== '' && $bgCrossfade) {
+            $classes[] = 'pg-section-band--bg-crossfade';
         }
 
         $classAttr = self::text(implode(' ', $classes));
@@ -154,6 +159,13 @@ final class SectionBandRenderer
         }
 
         return in_array($value, $allowed, true) ? $value : $default;
+    }
+
+    private static function truthy(string $raw): bool
+    {
+        $value = strtolower(trim($raw));
+
+        return in_array($value, ['1', 'true', 'yes', 'on'], true);
     }
 
     private static function text(string $value): string

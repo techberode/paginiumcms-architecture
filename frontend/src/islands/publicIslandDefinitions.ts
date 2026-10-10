@@ -39,6 +39,16 @@ export const PUBLIC_ISLAND_DEFINITIONS: PublicIslandDefinition[] = [
     ],
   },
   {
+    id: 'before-after',
+    legacyClasses: ['pg-before-after'],
+    attrs: [
+      { htmlAttr: 'data-before', propKey: 'before' },
+      { htmlAttr: 'data-after', propKey: 'after' },
+      { htmlAttr: 'data-label-before', propKey: 'labelBefore' },
+      { htmlAttr: 'data-label-after', propKey: 'labelAfter' },
+    ],
+  },
+  {
     id: 'media-gallery',
     legacyClasses: ['pg-media-gallery'],
     attrs: [

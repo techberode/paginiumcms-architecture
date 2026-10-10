@@ -14,6 +14,7 @@ import { useI18n } from '../../context/I18nContext';
 import { formatDisplayDate, resolveContentDate } from '../../utils/contentDates';
 import { BTN_PRIMARY, PUBLIC_CARD } from '../../theme/publicUiClasses';
 import { useLandingReveal } from '../../hooks/useLandingReveal';
+import { useSectionBackgroundCrossfade } from '../../hooks/useSectionBackgroundCrossfade';
 import { ComingSoonCountdown } from './ComingSoonCountdown';
 import { PageHeroCover } from './PageHeroCover';
 import { PageHeroHeader } from './PageHeroHeader';
@@ -79,9 +80,11 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
   }, [page.html, resolvedHero.images]);
 
   const landingContentRef = useRef<HTMLDivElement>(null);
+  const pageMainRef = useRef<HTMLElement>(null);
   const useLandingShell = heroFlags.landingInlineShell;
   const landingRevealRevision = `${bodyForDisplay.length}:${htmlForDisplay?.length ?? 0}:${htmlForDisplay?.includes('pg-showcase-hero') ? 1 : 0}`;
   useLandingReveal(landingContentRef, useLandingShell && !embed, landingRevealRevision);
+  useSectionBackgroundCrossfade(pageMainRef, !embed, landingRevealRevision);
 
   const templateLabel = meta.template ? meta.template.toUpperCase() : t('public.page.meta.pageLabel');
   const dateLabel = formatDisplayDate(meta.date, locale);
@@ -307,7 +310,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
 
   return (
     <div className={rootClass} data-page-variant={variant} data-hero-placement={heroPlacement}>
-      <main className={mainClass}>
+      <main ref={pageMainRef} className={mainClass}>
         <ComingSoonCountdown kind="page" slug={page.slug} />
         {topHeader}
 

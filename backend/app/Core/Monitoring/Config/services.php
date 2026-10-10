@@ -33,7 +33,8 @@ return [
             get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             get(\PaginiumCMS\Core\Analytics\Contracts\ReporterInterface::class),
             get(\PaginiumCMS\Core\Health\Services\HealthCheckManager::class),
-            get(FlatFileStatsCollector::class)
+            get(FlatFileStatsCollector::class),
+            get(\PaginiumCMS\Core\Performance\HostMetricsService::class)
         ),
     MonitoringReportScheduler::class => create(MonitoringReportScheduler::class)
         ->constructor(

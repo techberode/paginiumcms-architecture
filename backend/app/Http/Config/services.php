@@ -1111,6 +1111,8 @@ return [
             get(\PaginiumCMS\Core\Performance\PerformanceAggregator::class),
             get(\PaginiumCMS\Core\Performance\PerformanceBreachStore::class),
             get(\PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor::class),
+            get(\PaginiumCMS\Core\Performance\AdminLoadHintResolver::class),
+            get(\PaginiumCMS\Core\Performance\HostMetricsService::class),
             get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             get(\PaginiumCMS\Modules\ProjectPlanner\Contracts\ProjectPlanRepositoryInterface::class),
             get(\PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanApiPresenter::class)

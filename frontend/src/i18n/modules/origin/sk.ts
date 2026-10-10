@@ -116,7 +116,7 @@ export const originSk = {
     it82_probes: 'Runtime feature probes',
     it82_metrics: 'Ops snapshot KPIs',
     it82_catalog: 'Project catalog + progress',
-    it82_host_metrics: 'Host metrics hook (odložené)',
+    it82_host_metrics: 'Host metrics snapshot (It.82d)',
     it84: 'It.84 Prezentácia a prístup',
     it84_categories: 'Taxonomia kategórií článkov',
     it84_sidebar: 'Blog sidebar widgety',

@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\Monitoring\Services;
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Health\Models\HealthStatus;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
+use PaginiumCMS\Core\Performance\HostMetricsService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
@@ -26,7 +27,8 @@ final class MonitoringReportBuilder
         private SettingsRepositoryInterface $settings,
         private ReporterInterface $reporter,
         private HealthCheckManager $health,
-        private FlatFileStatsCollector $flatFileStats
+        private FlatFileStatsCollector $flatFileStats,
+        private HostMetricsService $hostMetrics
     ) {
     }
 
@@ -119,6 +121,43 @@ final class MonitoringReportBuilder
             }
             $lines[] = '';
             $htmlSections .= $this->renderFlatFileSection($stats);
+        }
+
+        $hostSnapshot = $this->hostMetrics->snapshotForReport();
+        if ($hostSnapshot !== null) {
+            $sections[] = 'host_metrics';
+            $lines[] = '--- Host metrics ---';
+            $lines[] = 'Collected: ' . (string) ($hostSnapshot['collected_at'] ?? '');
+            if (isset($hostSnapshot['load']) && is_array($hostSnapshot['load'])) {
+                $load = $hostSnapshot['load'];
+                $lines[] = sprintf(
+                    'Load: %s / %s / %s',
+                    (string) ($load['1'] ?? '—'),
+                    (string) ($load['5'] ?? '—'),
+                    (string) ($load['15'] ?? '—')
+                );
+            }
+            if (isset($hostSnapshot['memory']) && is_array($hostSnapshot['memory'])) {
+                $memory = $hostSnapshot['memory'];
+                $lines[] = sprintf(
+                    'RAM: %s / %s MB used (total %s MB)',
+                    (string) ($memory['used_mb'] ?? '—'),
+                    (string) ($memory['available_mb'] ?? '—'),
+                    (string) ($memory['total_mb'] ?? '—')
+                );
+            }
+            if (isset($hostSnapshot['disk']) && is_array($hostSnapshot['disk'])) {
+                $disk = $hostSnapshot['disk'];
+                $lines[] = sprintf(
+                    'Disk (%s): %s%% used (%s / %s GB)',
+                    (string) ($disk['mount'] ?? '/'),
+                    (string) ($disk['used_percent'] ?? '—'),
+                    (string) ($disk['used_gb'] ?? '—'),
+                    (string) ($disk['total_gb'] ?? '—')
+                );
+            }
+            $lines[] = '';
+            $htmlSections .= $this->renderHostMetricsSection($hostSnapshot);
         }
 
         $subject = sprintf('[%s] Monitoring report (%s)', $siteName, $interval);
@@ -447,6 +486,53 @@ final class MonitoringReportBuilder
             'PaginiumCMS – flat-file úložisko',
             'database',
             '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">' . $rows . '</table>'
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $snapshot
+     */
+    private function renderHostMetricsSection(array $snapshot): string
+    {
+        $rows = [];
+        if (isset($snapshot['load']) && is_array($snapshot['load'])) {
+            $load = $snapshot['load'];
+            $rows[] = sprintf(
+                'Load (1/5/15): %s / %s / %s',
+                (string) ($load['1'] ?? '—'),
+                (string) ($load['5'] ?? '—'),
+                (string) ($load['15'] ?? '—')
+            );
+        }
+        if (isset($snapshot['memory']) && is_array($snapshot['memory'])) {
+            $memory = $snapshot['memory'];
+            $rows[] = sprintf(
+                'RAM: %s MB used · %s MB free · %s MB total',
+                (string) ($memory['used_mb'] ?? '—'),
+                (string) ($memory['available_mb'] ?? '—'),
+                (string) ($memory['total_mb'] ?? '—')
+            );
+        }
+        if (isset($snapshot['disk']) && is_array($snapshot['disk'])) {
+            $disk = $snapshot['disk'];
+            $rows[] = sprintf(
+                'Disk %s: %s%% used (%s / %s GB)',
+                (string) ($disk['mount'] ?? '/'),
+                (string) ($disk['used_percent'] ?? '—'),
+                (string) ($disk['used_gb'] ?? '—'),
+                (string) ($disk['total_gb'] ?? '—')
+            );
+        }
+
+        $list = '';
+        foreach ($rows as $row) {
+            $list .= '<p style="margin:0 0 8px;font-size:13px;color:' . self::TEXT . ';">' . $this->e($row) . '</p>';
+        }
+
+        return $this->renderSection(
+            'Host – CPU / RAM / disk',
+            'server',
+            $list
         );
     }
 

@@ -45,6 +45,7 @@ function isSelfClosingShortcode(name: string): boolean {
     'showcase-hero',
     'feature-gallery',
     'media-gallery',
+    'before-after',
     'gallery-carousel',
     'staff-card',
     'staff-team',

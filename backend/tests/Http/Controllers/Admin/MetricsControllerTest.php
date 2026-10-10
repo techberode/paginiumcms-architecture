@@ -53,6 +53,7 @@ final class MetricsControllerTest extends TestCase
         $this->assertArrayHasKey('summary', $data['data']);
         $this->assertArrayHasKey('recent_breaches', $data['data']);
         $this->assertArrayHasKey('load_hint', $data['data']);
+        $this->assertArrayHasKey('host_metrics', $data['data']);
         $this->assertSame('normal', $data['data']['load_hint']['level']);
         $this->assertFalse($data['data']['config']['enabled']);
         $this->assertSame('suggest', $data['data']['config']['remediation_mode']);
@@ -61,6 +62,22 @@ final class MetricsControllerTest extends TestCase
     public function testApmClearRequiresAuth(): void
     {
         $request = $this->createJsonRequest('POST', '/api/admin/metrics/apm/clear', []);
+        $response = $this->handleRequest($request);
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testHostMetricsRequiresAuth(): void
+    {
+        $request = $this->createJsonRequest('GET', '/api/admin/metrics/host');
+        $response = $this->handleRequest($request);
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testHostIngestRejectsMissingToken(): void
+    {
+        $request = $this->createJsonRequest('POST', '/api/admin/metrics/host/ingest', ['collected_at' => gmdate('c')]);
         $response = $this->handleRequest($request);
 
         $this->assertSame(401, $response->getStatusCode());

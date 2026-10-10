@@ -125,6 +125,15 @@ export const dashboardEn: MessageTree = {
       sessionLockP95: 'Session lock p95',
       queryIndexHintTitle: 'Catalog latency — consider the derived SQLite index',
       queryIndexHintLink: 'Hybrid Engine → query index',
+      hostMetricsTitle: 'Host snapshot (It.82d)',
+      hostMetricsHint: 'Enable under Settings → Engine; collect via metrics:host-collect or host ingest cron.',
+      hostMetricsLoad: 'Load 1/5/15: {l1} / {l5} / {l15}',
+      hostMetricsStatus: {
+        disabled: 'Host metrics disabled.',
+        missing: 'No snapshot yet — run the collector.',
+        stale: 'Snapshot is stale — check cron or max age.',
+        ok: 'Snapshot fresh.',
+      },
     },
     logs: {
       title: 'Logs (:hours h)',

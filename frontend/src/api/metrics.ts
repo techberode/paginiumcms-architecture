@@ -55,13 +55,24 @@ export interface AdminLoadHint {
   reasons: string[];
 }
 
+export type HostMetricsStatus = 'disabled' | 'missing' | 'stale' | 'ok';
+
+export interface HostMetricsView {
+  enabled: boolean;
+  status: HostMetricsStatus;
+  max_age_seconds: number;
+  collected_at: string | null;
+  age_seconds: number | null;
+  snapshot: Record<string, unknown> | null;
+}
+
 export interface ApmOverview {
   config: ApmConfig;
   summary: ApmSummary;
   recent_breaches: ApmBreach[];
   advisor_hints?: ApmAdvisorHint[];
   load_hint?: AdminLoadHint;
-  host_metrics_note: string;
+  host_metrics?: HostMetricsView;
 }
 
 export async function getAdminLoadHint(): Promise<AdminLoadHint> {

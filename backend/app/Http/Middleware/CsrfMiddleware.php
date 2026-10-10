@@ -63,6 +63,7 @@ final class CsrfMiddleware implements MiddlewareInterface
         '/api/setup/',
         '/api/webhooks/',
         '/api/headless',
+        '/api/admin/metrics/host/ingest',
     ];
 
     /**

@@ -51,7 +51,14 @@ const enabledOverview: ApmOverview = {
     by_route: [],
   },
   recent_breaches: [],
-  host_metrics_note: 'Host metrics note',
+  host_metrics: {
+    enabled: false,
+    status: 'disabled',
+    max_age_seconds: 600,
+    collected_at: null,
+    age_seconds: null,
+    snapshot: null,
+  },
 };
 
 const renderPanel = (ui: React.ReactElement) =>

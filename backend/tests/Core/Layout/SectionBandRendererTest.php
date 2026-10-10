@@ -59,6 +59,19 @@ final class SectionBandRendererTest extends TestCase
         $this->assertStringContainsString('pg-section-band--hover-tilt-3d', $tilt);
     }
 
+    public function testBackgroundCrossfadeClassWhenEnabled(): void
+    {
+        $html = SectionBandRenderer::render(
+            [
+                'bg-image' => '/storage/media/hero.jpg',
+                'bg-crossfade' => 'true',
+            ],
+            '<p>Inner</p>'
+        );
+
+        $this->assertStringContainsString('pg-section-band--bg-crossfade', $html);
+    }
+
     public function testRejectsInvalidAnchorAndExternalImage(): void
     {
         $html = SectionBandRenderer::render(

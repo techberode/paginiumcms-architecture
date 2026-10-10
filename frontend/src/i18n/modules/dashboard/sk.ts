@@ -125,6 +125,15 @@ export const dashboardSk: MessageTree = {
       sessionLockP95: 'Session lock p95',
       queryIndexHintTitle: 'Latencia katalógu — zvážte odvodený SQLite index',
       queryIndexHintLink: 'Hybridný engine → dopytový index',
+      hostMetricsTitle: 'Host snapshot (It.82d)',
+      hostMetricsHint: 'Zapnite v Nastavenia → Engine; zber cez metrics:host-collect alebo cron ingest.',
+      hostMetricsLoad: 'Load 1/5/15: {l1} / {l5} / {l15}',
+      hostMetricsStatus: {
+        disabled: 'Host metriky sú vypnuté.',
+        missing: 'Zatiaľ žiadny snapshot — spustite collector.',
+        stale: 'Snapshot je starý — skontrolujte cron alebo max age.',
+        ok: 'Snapshot je čerstvý.',
+      },
     },
     logs: {
       title: 'Logy (:hours h)',

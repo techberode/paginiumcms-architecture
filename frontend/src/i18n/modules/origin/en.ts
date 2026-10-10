@@ -116,7 +116,7 @@ export const originEn = {
     it82_probes: 'Runtime feature probes',
     it82_metrics: 'Ops snapshot KPIs',
     it82_catalog: 'Project catalog + progress',
-    it82_host_metrics: 'Host metrics hook (deferred)',
+    it82_host_metrics: 'Host metrics snapshot (It.82d)',
     it84: 'It.84 Presentation & access',
     it84_categories: 'Article categories taxonomy',
     it84_sidebar: 'Blog sidebar widgets',

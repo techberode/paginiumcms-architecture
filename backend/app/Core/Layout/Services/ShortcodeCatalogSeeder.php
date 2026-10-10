@@ -300,6 +300,12 @@ final class ShortcodeCatalogSeeder
                 'attrs' => MediaGalleryRenderer::attributeSchema(),
                 'expand' => '<section class="pg-island pg-island--media-gallery pg-media-gallery" data-island="media-gallery"></section>',
             ],
+            'before-after' => [
+                'name' => 'before-after',
+                'version' => 1,
+                'attrs' => BeforeAfterRenderer::attributeSchema(),
+                'expand' => '<section class="pg-island pg-island--before-after pg-before-after" data-island="before-after"></section>',
+            ],
             'latest-articles' => [
                 'name' => 'latest-articles',
                 'version' => 1,

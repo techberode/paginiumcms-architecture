@@ -528,7 +528,7 @@
         { "id": "82b", "titleKey": "origin.catalog.it82_probes", "phase": "shipped", "weight": 1 },
         { "id": "82c", "titleKey": "origin.catalog.it82_metrics", "phase": "shipped", "weight": 1 },
         { "id": "82e", "titleKey": "origin.catalog.it82_catalog", "phase": "shipped", "weight": 1 },
-        { "id": "82d", "titleKey": "origin.catalog.it82_host_metrics", "phase": "deferred", "weight": 0 }
+        { "id": "82d", "titleKey": "origin.catalog.it82_host_metrics", "phase": "partial", "weight": 0.5 }
       ],
       "history": [
         { "version": "2.1.0-beta.56", "date": "2026-08-17", "summaryKey": "origin.timeline.it82" }

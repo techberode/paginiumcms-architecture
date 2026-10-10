@@ -501,6 +501,7 @@ export const editorEn: MessageTree = {
       'section-band': 'Section band',
       'feature-gallery': 'Gallery',
       'media-gallery': 'Media gallery',
+      'before-after': 'Before / after slider',
       'gallery-carousel': 'Gallery carousel',
       'feature-grid': 'Cards',
       'cta-banner': 'Call to action',

@@ -8,11 +8,14 @@ use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
+use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Monitoring\Services\FlatFileStatsCollector;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportBuilder;
+use PaginiumCMS\Tests\Support\HostMetricsTestFactory;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
 use PHPUnit\Framework\TestCase;
@@ -64,7 +67,17 @@ final class MonitoringReportBuilderTest extends TestCase
             $this->createMock(ConflictLoggerInterface::class)
         );
 
-        $builder = new MonitoringReportBuilder($settings, $reporter, $health, $flatFile);
+        $reader = $this->createMock(FileReaderInterface::class);
+        $reader->method('exists')->willReturn(false);
+        $writer = $this->createMock(FileWriterInterface::class);
+
+        $builder = new MonitoringReportBuilder(
+            $settings,
+            $reporter,
+            $health,
+            $flatFile,
+            HostMetricsTestFactory::service($settings, $reader, $writer)
+        );
         $payload = $builder->build('day');
 
         $this->assertStringContainsString('[Test Site] Monitoring report (day)', $payload['subject']);

@@ -6,6 +6,8 @@ namespace PaginiumCMS\Core\Cache;
 
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
 use PaginiumCMS\Core\HybridEngine\QueryIndex\QueryIndexAdvisor;
+use PaginiumCMS\Core\Performance\AdminLoadHintResolver;
+use PaginiumCMS\Core\Performance\HostMetricsService;
 use PaginiumCMS\Core\Performance\PerformanceAggregator;
 use PaginiumCMS\Core\Performance\PerformanceBreachStore;
 use PaginiumCMS\Core\Performance\PerformanceGuardSettings;
@@ -27,6 +29,8 @@ final class AdminOverviewCacheWarmer
         private PerformanceAggregator $aggregator,
         private PerformanceBreachStore $breaches,
         private QueryIndexAdvisor $queryIndexAdvisor,
+        private AdminLoadHintResolver $loadHint,
+        private HostMetricsService $hostMetrics,
         private SettingsRepositoryInterface $settings,
         private ProjectPlanRepositoryInterface $projectPlans,
         private ProjectPlanApiPresenter $projectPlanPresenter,
@@ -60,7 +64,8 @@ final class AdminOverviewCacheWarmer
             'summary' => $this->aggregator->summary(),
             'recent_breaches' => $this->breaches->recent(),
             'advisor_hints' => $this->queryIndexAdvisor->activeHints(),
-            'host_metrics_note' => 'Host CPU/RAM/disk metrics remain under It.46 — not conflated with PHP APM.',
+            'load_hint' => $this->loadHint->resolve(),
+            'host_metrics' => $this->hostMetrics->publicView(),
         ]);
         $warmed[] = 'metrics_apm';
 

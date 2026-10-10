@@ -82,6 +82,23 @@ describe('splitPublicHtmlIslands', () => {
     ]);
   });
 
+  it('hydrates before-after island attrs', () => {
+    const html =
+      '<section class="pg-before-after" data-island="before-after" data-before="/storage/media/a.jpg" data-after="/storage/media/b.jpg" data-label-before="Pred" data-label-after="Po"></section>';
+    expect(splitPublicHtmlIslands(html)).toEqual([
+      {
+        kind: 'island',
+        id: 'before-after',
+        attrs: {
+          before: '/storage/media/a.jpg',
+          after: '/storage/media/b.jpg',
+          labelBefore: 'Pred',
+          labelAfter: 'Po',
+        },
+      },
+    ]);
+  });
+
   it('hydrates gallery-carousel island markers', () => {
     const html =
       '<section class="pg-gallery-carousel" data-tag="web" data-title="Hi" data-layout="slider" data-effect="subtle" data-autoplay="true"></section>';

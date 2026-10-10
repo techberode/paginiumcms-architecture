@@ -774,15 +774,21 @@
 }
 
 .paginium-callout--note {
-  @apply border-sky-200 bg-sky-50 text-sky-950 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100;
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  color: var(--color-text);
 }
 
 .paginium-callout--tip {
-  @apply border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100;
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+  color: var(--color-text);
 }
 
 .paginium-callout--warning {
-  @apply border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100;
+  border-color: color-mix(in srgb, var(--color-primary) 55%, #f59e0b);
+  background: color-mix(in srgb, var(--color-primary) 8%, color-mix(in srgb, #f59e0b 12%, var(--color-surface)));
+  color: var(--color-text);
 }
 
 .paginium-mermaid {

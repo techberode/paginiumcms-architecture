@@ -15,6 +15,7 @@ use PaginiumCMS\Core\Health\Services\HealthCheckManager;
 use PaginiumCMS\Core\Locking\Contracts\LockManagerInterface;
 use PaginiumCMS\Core\Monitoring\Services\FlatFileStatsCollector;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportBuilder;
+use PaginiumCMS\Tests\Support\HostMetricsTestFactory;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
 use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
 use PaginiumCMS\Core\Notification\NotificationService;
@@ -68,7 +69,17 @@ final class MonitoringReportSchedulerTest extends TestCase
             $this->createMock(LockManagerInterface::class),
             $this->createMock(ConflictLoggerInterface::class)
         );
-        $builder = new MonitoringReportBuilder($settings, $reporter, $health, $flatFile);
+        $hostReader = $this->createMock(FileReaderInterface::class);
+        $hostReader->method('exists')->willReturn(false);
+        $hostWriter = $this->createMock(FileWriterInterface::class);
+
+        $builder = new MonitoringReportBuilder(
+            $settings,
+            $reporter,
+            $health,
+            $flatFile,
+            HostMetricsTestFactory::service($settings, $hostReader, $hostWriter)
+        );
 
         $notifications = $this->createMock(NotificationService::class);
         $notifications->method('getAdapters')->willReturn(['email']);
@@ -112,9 +123,19 @@ final class MonitoringReportSchedulerTest extends TestCase
             $this->createMock(ConflictLoggerInterface::class)
         );
 
+        $hostReader = $this->createMock(FileReaderInterface::class);
+        $hostReader->method('exists')->willReturn(false);
+        $hostWriter = $this->createMock(FileWriterInterface::class);
+
         return new MonitoringReportScheduler(
             $settings,
-            new MonitoringReportBuilder($settings, $reporter, $health, $flatFile),
+            new MonitoringReportBuilder(
+                $settings,
+                $reporter,
+                $health,
+                $flatFile,
+                HostMetricsTestFactory::service($settings, $hostReader, $hostWriter)
+            ),
             IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
             $this->makeStateStore()
         );

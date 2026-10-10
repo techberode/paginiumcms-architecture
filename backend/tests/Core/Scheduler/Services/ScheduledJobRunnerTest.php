@@ -19,6 +19,7 @@ use PaginiumCMS\Core\Logging\Services\LogRetentionService;
 use PaginiumCMS\Core\Monitoring\Services\FlatFileStatsCollector;
 use PaginiumCMS\Core\Monitoring\Services\LogIncidentScanner;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportBuilder;
+use PaginiumCMS\Tests\Support\HostMetricsTestFactory;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringReportScheduler;
 use PaginiumCMS\Core\Monitoring\Services\MonitoringScheduler;
 use PaginiumCMS\Core\Monitoring\Services\SchedulerStateStore;
@@ -237,7 +238,17 @@ final class ScheduledJobRunnerTest extends TestCase
             $this->createMock(LockManagerInterface::class),
             $this->createMock(ConflictLoggerInterface::class)
         );
-        $builder = new MonitoringReportBuilder($settings, $reporter, $health, $flatFile);
+        $hostReader = $this->createMock(FileReaderInterface::class);
+        $hostReader->method('exists')->willReturn(false);
+        $hostWriter = $this->createMock(FileWriterInterface::class);
+
+        $builder = new MonitoringReportBuilder(
+            $settings,
+            $reporter,
+            $health,
+            $flatFile,
+            HostMetricsTestFactory::service($settings, $hostReader, $hostWriter)
+        );
         $reportScheduler = new MonitoringReportScheduler(
             $settings,
             $builder,

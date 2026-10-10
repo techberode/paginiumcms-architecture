@@ -398,6 +398,9 @@ final class SettingsSchema
                     ['key' => 'performanceGuardWindowMinutes', 'type' => 'int', 'label' => 'Breach window (minutes)', 'default' => 10, 'rules' => ['required', 'int', 'min:1', 'max:1440']],
                     ['key' => 'performanceGuardRemediationMode', 'type' => 'enum', 'label' => 'Remediation mode', 'default' => 'suggest', 'options' => ['off', 'suggest', 'automatic'], 'rules' => ['required', 'in:off,suggest,automatic'], 'help' => 'suggest = incidents only; automatic = allow-listed cache purge after capability probe (never enables Redis).'],
                     ['key' => 'performanceGuardServerTiming', 'type' => 'bool', 'label' => 'Server-Timing header', 'default' => false, 'rules' => ['bool'], 'help' => 'expose sess-lock/storage/app phases in Server-Timing (also on when APP_DEBUG). Off by default in production.'],
+                    ['key' => 'hostMetricsEnabled', 'type' => 'bool', 'label' => 'Enable host metrics snapshot', 'default' => false, 'rules' => ['bool'], 'help' => 'It.82d — cron/CLI writes CPU/RAM/disk snapshot to data/metrics/host-latest.json. Off by default.'],
+                    ['key' => 'hostMetricsMaxAgeSeconds', 'type' => 'int', 'label' => 'Host metrics max age (seconds)', 'default' => 600, 'rules' => ['required', 'int', 'min:60', 'max:86400'], 'help' => 'Dashboard/monitoring treat older snapshots as stale.'],
+                    ['key' => 'hostMetricsIngestToken', 'type' => 'password', 'label' => 'Host metrics ingest token', 'default' => '', 'rules' => ['string', 'max:256'], 'help' => 'Required for POST /api/admin/metrics/host/ingest (localhost/private IP + X-Host-Metrics-Token). Encrypted at rest. Also usable by metrics:host-collect via direct file write without HTTP.'],
                 ],
             ],
             'comments' => [
