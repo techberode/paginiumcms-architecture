@@ -1085,6 +1085,7 @@ return [
         ->constructor(
             get(FileReaderInterface::class),
             get(FileWriterInterface::class),
+            get(ContentRepositoryInterface::class),
             'data/drafts'
         ),
     DraftController::class => create(DraftController::class)

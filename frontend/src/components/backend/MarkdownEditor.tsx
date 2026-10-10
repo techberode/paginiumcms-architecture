@@ -110,6 +110,11 @@ import {
   contentEditorUsesOutline,
   resolveLayoutBuilderMode,
 } from '../../utils/contentEditorBuilder';
+import {
+  createProvisionalDraftSlug,
+  isProvisionalDraftSlug,
+  resolveAutoDraftTitle,
+} from '../../utils/contentUnsavedDraft';
 
 interface MarkdownEditorProps {
   type?: ContentType;
@@ -187,7 +192,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   const { t, locale: adminUiLocale } = useI18n();
   const { settings } = useSettingsContext();
   const { user } = useAuth();
-  const isNew = slug === 'new' || !slug;
+  const routeSlug = slug ?? '';
+  const isBlankRoute = routeSlug === 'new' || routeSlug === '';
+  const isUnsavedNew = isProvisionalDraftSlug(routeSlug);
+  const isNew = isBlankRoute || isUnsavedNew;
   const endpoint = type === 'article' ? '/api/articles' : '/api/pages';
   const resourceId = useMemo(() => `${type}:${slug ?? ''}`, [type, slug]);
   const storageFormat = settings.content?.storageFormat === 'json' ? 'json' : 'md';
@@ -215,10 +223,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const draftPayload = useMemo(() => {
     const base = {
-      title,
+      title: resolveAutoDraftTitle(title, content),
       content,
       status,
       baseRevision,
+      ...(isUnsavedNew ? { unsavedNew: true as const } : {}),
       ...(type === 'page' ? { pageHeroJson: JSON.stringify(pageHero) } : {}),
     };
     if (!draftFullEditorState) {
@@ -271,7 +280,23 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     template,
     title,
     type,
+    isUnsavedNew,
   ]);
+
+  useEffect(() => {
+    if (!isBlankRoute) {
+      return;
+    }
+    const provisional = createProvisionalDraftSlug();
+    navigate(`/${type === 'article' ? 'articles' : 'pages'}/${provisional}`, { replace: true });
+  }, [isBlankRoute, navigate, type]);
+
+  useEffect(() => {
+    if (!isUnsavedNew || editSlug.trim() !== '') {
+      return;
+    }
+    setEditSlug(routeSlug);
+  }, [editSlug, isUnsavedNew, routeSlug]);
 
   const handleLeaveSaved = useCallback(() => {
     toast.info(t('editor.markdown.autoSave.leaveSaved'));
@@ -279,19 +304,19 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
 
   const autoSave = useAutoSave({
     type,
-    slug: slug ?? '',
+    slug: routeSlug,
     data: draftPayload,
-    enabled: !isNew && canEdit,
+    enabled: canEdit && !isBlankRoute && Boolean(routeSlug) && (!isNew || isUnsavedNew),
     onLeaveSaved: handleLeaveSaved,
   });
 
   const prevEditorLoadingRef = useRef(true);
   useEffect(() => {
-    if (prevEditorLoadingRef.current && !loading && !isNew && canEdit) {
+    if (prevEditorLoadingRef.current && !loading && canEdit && !isBlankRoute && (!isNew || isUnsavedNew)) {
       autoSave.syncBaseline();
     }
     prevEditorLoadingRef.current = loading;
-  }, [autoSave.syncBaseline, canEdit, isNew, loading]);
+  }, [autoSave.syncBaseline, canEdit, isBlankRoute, isNew, isUnsavedNew, loading]);
 
   const editorSettings = settings.editor as Record<string, unknown> | undefined;
   const markdownEditorProfile = useMemo(
@@ -390,11 +415,79 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
   );
 
   useEffect(() => {
+    if (isBlankRoute) {
+      return;
+    }
+    if (isUnsavedNew) {
+      void loadUnsavedNewDraft();
+      return;
+    }
     if (!isNew && slug) {
       void loadContent();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [slug, isBlankRoute, isUnsavedNew]);
+
+  const applyDraftToEditor = useCallback(
+    (draft: Awaited<ReturnType<typeof loadDraft>>) => {
+      if (!draft) {
+        return;
+      }
+      if (draftFullEditorState && draft.editorSnapshot) {
+        const restored = applyDraftEditorSnapshot(draft.editorSnapshot, editorMode);
+        if (restored) {
+          setLocaleStates(restored.localeStates);
+          setLocaleStatusMap(restored.localeStatusMap);
+          setActiveLocale(restored.activeLocale);
+          setEditorMode(restored.editorMode);
+          setEditorProfile(restored.editorProfile);
+          setTemplate(restored.template);
+          setLayoutTemplate(restored.layoutTemplate);
+          setEditSlug(restored.editSlug || routeSlug);
+          setScheduledAt(restored.scheduledAt);
+          if (type === 'page' && restored.pageHero) {
+            setPageHero(restored.pageHero);
+          }
+          setContentFormat(restored.applied.contentFormat);
+          setTitle(restored.applied.title);
+          setContent(restored.applied.content);
+          setStatus(restored.applied.status);
+          setSeo(restored.applied.seo);
+          toast.info(t('editor.markdown.toast.draftRestoredFull'));
+          return;
+        }
+      }
+      const format = inferContentFormat(draft.content);
+      setTitle(draft.title);
+      setContentFormat(format);
+      setContent(valueForEditorMode(draft.content, format, editorMode));
+      setStatus((draft.status as typeof status) || 'draft');
+      toast.info(t('editor.markdown.toast.draftRestored'));
+    },
+    [draftFullEditorState, editorMode, routeSlug, t, toast, type]
+  );
+
+  const loadUnsavedNewDraft = async () => {
+    if (!slug || !isUnsavedNew) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const draft = await loadDraft(type, slug);
+      if (draft) {
+        applyDraftToEditor(draft);
+      } else {
+        setEditSlug(routeSlug);
+      }
+      setPendingDraftAt(null);
+      autoSave.syncBaseline();
+    } catch (error) {
+      toast.error(t('editor.markdown.toast.loadFailed'));
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const applyLocaleFieldsToEditor = useCallback(
     (state: LocaleEditorState, mode: EditorMode) => {
@@ -798,7 +891,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               )
             );
           }
-          if (!isNew && slug) {
+          if (slug && (isUnsavedNew || !isNew)) {
             await discardDraft(type, slug);
           }
           autoSave.syncBaseline();

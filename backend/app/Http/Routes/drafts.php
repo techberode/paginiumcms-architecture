@@ -29,6 +29,7 @@ return function (App $app): void {
     // Koncepty sú súčasť editácie obsahu → vyžadujú content:edit,
     // nie iba prihlásenie (inak by draft mohol písať aj bežný USER).
     $app->group('/api/drafts', function (RouteCollectorProxy $group) use ($controller) {
+        $group->get('/pending', [$controller, 'listPending']);
         $group->get('/{type}/{slug}', [$controller, 'load']);
         $group->put('/{type}/{slug}', [$controller, 'save']);
         $group->delete('/{type}/{slug}', [$controller, 'discard']);

@@ -49,6 +49,18 @@ export interface DraftPayload {
   /** Serialized page hero for auto-save dirty detection (pages only). */
   pageHeroJson?: string;
   editorSnapshot?: DraftEditorSnapshot;
+  /** New page/article not yet POSTed to content API. */
+  unsavedNew?: boolean;
+}
+
+export interface PendingContentDraft {
+  type: ContentType;
+  slug: string;
+  title: string;
+  content: string;
+  status: string;
+  savedAt: number;
+  unsavedNew?: boolean;
 }
 
 /**
@@ -73,4 +85,13 @@ export async function loadDraft(type: ContentType, slug: string): Promise<Draft 
 export async function discardDraft(type: ContentType, slug: string): Promise<boolean> {
   const res = await apiClient.delete(`/api/drafts/${type}/${encodeURIComponent(slug)}`);
   return res.success;
+}
+
+export async function listPendingContentDrafts(type?: ContentType): Promise<PendingContentDraft[]> {
+  const query = type ? `?type=${encodeURIComponent(type)}` : '';
+  const res = await apiClient.get<{ items: PendingContentDraft[] }>(`/api/drafts/pending${query}`);
+  if (!res.success || !res.data?.items) {
+    return [];
+  }
+  return res.data.items;
 }

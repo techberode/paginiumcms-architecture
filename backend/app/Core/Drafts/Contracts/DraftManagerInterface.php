@@ -33,4 +33,11 @@ interface DraftManagerInterface
      * Zmaže koncept (napr. po úspešnom publikovaní obsahu).
      */
     public function discard(string $type, string $slug): void;
+
+    /**
+     * Drafts for new content not yet saved as a page/article (unsavedNew, no published file).
+     *
+     * @return list<Draft>
+     */
+    public function listOrphansForUser(string $userId, ?string $type = null): array;
 }

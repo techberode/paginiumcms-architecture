@@ -80,6 +80,23 @@ final class DraftController
         return $this->json->success($response, $draft->jsonSerialize());
     }
 
+    public function listPending(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->resolveUser($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $typeParam = $request->getQueryParams()['type'] ?? null;
+        $typeFilter = is_string($typeParam) && $typeParam !== '' ? $typeParam : null;
+
+        $items = $this->drafts->listOrphansForUser($user->getId(), $typeFilter);
+
+        return $this->json->success($response, [
+            'items' => array_map(static fn ($draft) => $draft->jsonSerialize(), $items),
+        ]);
+    }
+
     /**
      * @param array<string, string> $args
      */

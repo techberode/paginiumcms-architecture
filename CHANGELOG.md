@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Editor:** Autosave for new unsaved pages/articles (provisional `koncept-DDMMYYYY-*` slug, `GET /api/drafts/pending`, Pages/Articles banner, desk `content_draft` queue item)
 - **Security (It.99):** Upload polyglot hardening — `PolyglotUploadGuard`, secure media filenames, optional `reencodeRasterUploads`, PDF active-content sample probe (`/JavaScript`, `/OpenAction`, …) in upload scan window — [ISS-195](docs/ISSUES.md#iss-195) · [ITERATION_99.md](docs/en/ITERATION_99.md)
 - **Admin media (It.96 follow-up):** PDF preview in list/grid; admin PDF modal via `fetch` → blob + `<object>` (avoids `X-Frame-Options: DENY` on API); `AdminModalPortal` + overlay z-index above admin chrome; OS-style document badges (`MediaFileTypeIcon`); **Escape** closes media modals (`useEscapeToClose`) — lightbox, PDF, picker, metadata, text editor
 - **Admin P2 cache:** `AdminOverviewCacheService` (120s fresh / 600s stale **SWR**, background revalidate) for audit stats, jobs overview, APM summary, project-planner overview; CLI `cache:warm-admin` for cron prewarm; `AdminJobsOverviewProvider` shared with HTTP; FE `useAdminSecondaryQuery` + deferred dashboard/planner widgets; Docker nginx gzip for JSON

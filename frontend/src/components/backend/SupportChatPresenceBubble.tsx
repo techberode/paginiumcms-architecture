@@ -248,6 +248,10 @@ export const SupportChatPresenceBubble: React.FC<{ variant?: 'admin' | 'public' 
   };
 
   const takeItem = async (item: DeskItem) => {
+    if (item.kind === 'content_draft') {
+      openOnPage(item);
+      return;
+    }
     setBusy(true);
     if (item.kind === 'comment') {
       await claimComment(item.id);
@@ -330,24 +334,30 @@ export const SupportChatPresenceBubble: React.FC<{ variant?: 'admin' | 'public' 
           <DeskQueueItemMeta item={selected} />
           <div className="flex flex-wrap gap-2">
             <button type="button" className="text-xs underline" onClick={() => openOnPage(selected)}>
-              {t('platform.account.desk.open')}
+              {selected.kind === 'content_draft'
+                ? t('editor.unsavedNewBanner.continue')
+                : t('platform.account.desk.open')}
             </button>
-            {!selected.claimedBy ? (
+            {selected.kind !== 'content_draft' && !selected.claimedBy ? (
               <button type="button" className="text-xs underline" disabled={busy} onClick={() => void takeItem(selected)}>
                 {t('messages.desk.claim')}
               </button>
             ) : null}
           </div>
-          <textarea
-            className="w-full rounded-lg px-2 py-1.5 text-sm"
-            rows={2}
-            placeholder={t('platform.account.desk.replyPlaceholder')}
-            value={reply}
-            onChange={(event) => setReply(event.target.value)}
-          />
-          <button type="button" className="btn btn-primary text-xs" disabled={busy} onClick={() => void sendReply()}>
-            {t('platform.account.desk.send')}
-          </button>
+          {selected.kind !== 'content_draft' ? (
+            <>
+              <textarea
+                className="w-full rounded-lg px-2 py-1.5 text-sm"
+                rows={2}
+                placeholder={t('platform.account.desk.replyPlaceholder')}
+                value={reply}
+                onChange={(event) => setReply(event.target.value)}
+              />
+              <button type="button" className="btn btn-primary text-xs" disabled={busy} onClick={() => void sendReply()}>
+                {t('platform.account.desk.send')}
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

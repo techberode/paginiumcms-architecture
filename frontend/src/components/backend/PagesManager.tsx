@@ -41,6 +41,7 @@ import { ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
 import { formatDisplayDate } from '../../utils/contentDates';
 import { LocaleStatusBadges } from './LocaleStatusBadges';
 import type { ContentEditorStatus } from '../../utils/contentScheduling';
+import { UnsavedContentDraftBanner } from './UnsavedContentDraftBanner';
 
 interface ContentItem {
   id: string;
@@ -521,6 +522,7 @@ export const PagesManager: React.FC<PagesManagerProps> = ({ type = 'pages' }) =>
 
   return (
     <div className="space-y-6">
+      <UnsavedContentDraftBanner type={type === 'articles' ? 'article' : 'page'} />
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className={ADMIN_PAGE_TITLE}>{label}</h1>
         <Link to={`/${routeBase}/new`} className="btn btn-primary w-full sm:w-auto justify-center">

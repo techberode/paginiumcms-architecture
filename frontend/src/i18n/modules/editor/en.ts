@@ -168,6 +168,17 @@ export const editorEn: MessageTree = {
     emptyBody: 'Enter at least a title or body content.',
     error: 'Failed to generate meta suggestions.',
   },
+  unsavedNewBanner: {
+    page: 'You have an unsaved page. Continue editing or delete it?',
+    article: 'You have an unsaved article. Continue editing or delete it?',
+    continue: 'Continue',
+    delete: 'Delete',
+    deleted: 'Draft removed.',
+    deleteFailed: 'Could not delete the draft.',
+    createNew: 'Create new',
+    deskPage: 'Unsaved page',
+    deskArticle: 'Unsaved article',
+  },
   markdown: {
     toast: {
       loadFailed: 'Failed to load content',

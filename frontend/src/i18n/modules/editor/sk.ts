@@ -168,6 +168,17 @@ export const editorSk: MessageTree = {
     emptyBody: 'Zadaj aspoň titulok alebo obsah.',
     error: 'Generovanie meta údajov zlyhalo.',
   },
+  unsavedNewBanner: {
+    page: 'Máte neuloženú stránku. Chcete pokračovať v práci, alebo ju odstrániť?',
+    article: 'Máte neuložený článok. Chcete pokračovať v práci, alebo ho odstrániť?',
+    continue: 'Pokračovať',
+    delete: 'Odstrániť',
+    deleted: 'Koncept bol odstránený.',
+    deleteFailed: 'Koncept sa nepodarilo odstrániť.',
+    createNew: 'Vytvoriť nový záznam',
+    deskPage: 'Neuložená stránka',
+    deskArticle: 'Neuložený článok',
+  },
   markdown: {
     toast: {
       loadFailed: 'Nepodarilo sa načítať obsah',

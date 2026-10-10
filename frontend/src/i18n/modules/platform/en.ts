@@ -779,6 +779,7 @@ export const platformEn: MessageTree = {
         message: 'Message',
         articleReply: 'Reply under article',
         contentReview: 'Editorial review',
+        contentDraft: 'Unsaved content',
       },
       beacon: 'Desk',
       beaconHint: 'Waiting items on your desk. Open the queue or jump to the comment or chat.',

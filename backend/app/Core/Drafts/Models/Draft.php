@@ -36,7 +36,8 @@ final class Draft implements JsonSerializable
         private string $baseRevision,
         private string $savedBy,
         private int $savedAt,
-        private ?array $editorSnapshot = null
+        private ?array $editorSnapshot = null,
+        private bool $unsavedNew = false
     ) {
     }
 
@@ -56,8 +57,19 @@ final class Draft implements JsonSerializable
             (string) ($data['baseRevision'] ?? ''),
             (string) ($data['savedBy'] ?? ''),
             (int) ($data['savedAt'] ?? 0),
-            is_array($snapshot) ? $snapshot : null
+            is_array($snapshot) ? $snapshot : null,
+            (bool) ($data['unsavedNew'] ?? false)
         );
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function isUnsavedNew(): bool
+    {
+        return $this->unsavedNew;
     }
 
     public function getType(): string
@@ -78,6 +90,11 @@ final class Draft implements JsonSerializable
     public function getSavedAt(): int
     {
         return $this->savedAt;
+    }
+
+    public function getSavedBy(): string
+    {
+        return $this->savedBy;
     }
 
     /**
@@ -106,6 +123,10 @@ final class Draft implements JsonSerializable
 
         if ($this->editorSnapshot !== null && $this->editorSnapshot !== []) {
             $payload['editorSnapshot'] = $this->editorSnapshot;
+        }
+
+        if ($this->unsavedNew) {
+            $payload['unsavedNew'] = true;
         }
 
         return $payload;

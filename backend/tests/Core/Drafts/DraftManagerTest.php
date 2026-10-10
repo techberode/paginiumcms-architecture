@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Core\Drafts;
 
 use PaginiumCMS\Core\Drafts\Services\DraftManager;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
@@ -29,7 +30,10 @@ class DraftManagerTest extends TestCase
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
 
-        $this->manager = new DraftManager($reader, $writer, 'data/drafts');
+        $content = $this->createMock(ContentRepositoryInterface::class);
+        $content->method('findBySlug')->willReturn(null);
+
+        $this->manager = new DraftManager($reader, $writer, $content, 'data/drafts');
     }
 
     public function testSaveAndGetDraft(): void
@@ -118,5 +122,29 @@ class DraftManagerTest extends TestCase
 
         $this->assertNotNull($draft);
         $this->assertSame($snapshot, $draft->getEditorSnapshot());
+    }
+
+    public function testListOrphansForUserReturnsUnsavedNewWithoutPublishedContent(): void
+    {
+        $this->manager->save('page', 'koncept-09032026-abcd', [
+            'title' => 'koncept_09032026',
+            'content' => 'Prvý riadok',
+            'status' => 'draft',
+            'baseRevision' => '',
+            'unsavedNew' => true,
+        ], 'user_1');
+
+        $this->manager->save('page', 'o-nas', [
+            'title' => 'O nás',
+            'content' => 'Existujúca stránka',
+            'status' => 'draft',
+            'baseRevision' => 'rev',
+            'unsavedNew' => false,
+        ], 'user_1');
+
+        $orphans = $this->manager->listOrphansForUser('user_1', 'page');
+
+        $this->assertCount(1, $orphans);
+        $this->assertSame('koncept-09032026-abcd', $orphans[0]->getSlug());
     }
 }

@@ -1,7 +1,10 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { authApi, type DeskItem } from '../api/auth';
+import { listPendingContentDrafts } from '../api/drafts';
+import { useI18n } from './I18nContext';
 import { useAuth } from '../hooks/useAuth';
 import { useDeskPolling } from '../hooks/useDeskPolling';
+import { pendingDraftsToDeskItems } from '../utils/pendingContentDeskItems';
 
 export interface DeskInboxPayload {
   chatEnabled: boolean;
@@ -50,6 +53,7 @@ const EMPTY: DeskInboxState = {
 const DeskInboxContext = createContext<DeskInboxState | null>(null);
 
 export const DeskInboxProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useI18n();
   const { user } = useAuth();
   const [items, setItems] = useState<DeskItem[]>([]);
   const [hasAccess, setHasAccess] = useState(false);
@@ -68,22 +72,45 @@ export const DeskInboxProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return false;
     }
     const res = await authApi.desk().catch(() => null);
-    if (!res?.success || !res.data) {
+    const payload = res?.success && res.data ? (res.data as DeskInboxPayload) : null;
+    const pending = await listPendingContentDrafts().catch(() => []);
+    const draftItems = pendingDraftsToDeskItems(pending, {
+      page: t('editor.unsavedNewBanner.deskPage'),
+      article: t('editor.unsavedNewBanner.deskArticle'),
+    });
+    const queueItems = [...draftItems, ...(payload?.items ?? [])];
+
+    if (!payload && draftItems.length === 0) {
       return false;
     }
-    const payload = res.data as DeskInboxPayload;
-    setData(payload);
-    setItems(payload.items ?? []);
-    setCanReplyComments(Boolean(payload.canReplyComments));
-    setHasAccess(Boolean(payload.hasDesk || payload.inSupportTeam || payload.canReplyComments));
+
+    setData(
+      payload
+        ? {
+            ...payload,
+            items: queueItems,
+            deskCount: queueItems.length,
+          }
+        : null
+    );
+    setItems(queueItems);
+    setCanReplyComments(Boolean(payload?.canReplyComments));
+    setHasAccess(
+      Boolean(
+        payload?.hasDesk ||
+          payload?.inSupportTeam ||
+          payload?.canReplyComments ||
+          draftItems.length > 0
+      )
+    );
     setBubbleEnabled(
-      typeof payload.deskBubbleEnabled === 'boolean'
+      typeof payload?.deskBubbleEnabled === 'boolean'
         ? payload.deskBubbleEnabled
         : user.deskBubbleEnabled !== false
     );
     setReady(true);
     return true;
-  }, [user]);
+  }, [t, user]);
 
   useDeskPolling(Boolean(user), loadDesk);
 

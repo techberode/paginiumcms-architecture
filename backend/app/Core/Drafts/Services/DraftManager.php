@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Drafts\Services;
 
 use PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface;
 use PaginiumCMS\Core\Drafts\Models\Draft;
+use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
@@ -25,6 +26,7 @@ final class DraftManager implements DraftManagerInterface
     public function __construct(
         private FileReaderInterface $reader,
         private FileWriterInterface $writer,
+        private ContentRepositoryInterface $content,
         private string $basePath = 'data/drafts'
     ) {
         $this->basePath = trim($basePath, '/');
@@ -47,7 +49,8 @@ final class DraftManager implements DraftManagerInterface
             (string) ($payload['baseRevision'] ?? ''),
             $userId,
             time(),
-            $editorSnapshot
+            $editorSnapshot,
+            (bool) ($payload['unsavedNew'] ?? false)
         );
 
         // createBackup=false: koncepty sa prepisujú často (každých 60 s), zálohy netreba.
@@ -90,6 +93,76 @@ final class DraftManager implements DraftManagerInterface
             // moveToTrash=false: koncept je dočasný, netreba ho archivovať do koša.
             $this->writer->delete($path, false);
         }
+    }
+
+    public function listOrphansForUser(string $userId, ?string $type = null): array
+    {
+        $userId = trim($userId);
+        if ($userId === '') {
+            return [];
+        }
+
+        $types = self::ALLOWED_TYPES;
+        if ($type !== null && in_array($type, self::ALLOWED_TYPES, true)) {
+            $types = [$type];
+        }
+
+        $items = [];
+        foreach ($types as $contentType) {
+            $directory = $this->basePath . '/' . $contentType;
+
+            try {
+                $files = $this->reader->listFiles($directory, '*.json');
+            } catch (FlatFileException) {
+                continue;
+            }
+
+            foreach ($files as $relativeFile) {
+                $draft = $this->decodeDraftFile($contentType, (string) $relativeFile);
+                if ($draft === null) {
+                    continue;
+                }
+
+                if ($draft->getSavedBy() !== $userId || !$draft->isUnsavedNew()) {
+                    continue;
+                }
+
+                if ($this->content->findBySlug($draft->getSlug(), $contentType) !== null) {
+                    continue;
+                }
+
+                $items[] = $draft;
+            }
+        }
+
+        usort($items, static fn (Draft $a, Draft $b): int => $b->getSavedAt() <=> $a->getSavedAt());
+
+        return $items;
+    }
+
+    private function decodeDraftFile(string $type, string $relativePath): ?Draft
+    {
+        $basename = basename($relativePath, '.json');
+        if ($basename === '') {
+            return null;
+        }
+
+        try {
+            $decoded = json_decode($this->reader->read($relativePath), true);
+        } catch (FlatFileException) {
+            return null;
+        }
+
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        $decoded['type'] = $type;
+        if (!isset($decoded['slug']) || (string) $decoded['slug'] === '') {
+            $decoded['slug'] = $basename;
+        }
+
+        return Draft::fromArray($decoded);
     }
 
     /**

@@ -43,6 +43,15 @@ export PAGINIUM_PROBE_USER="loadprobe@example.sk"
 export PAGINIUM_PROBE_PASS="…"
 ```
 
+**On the app server (Docker nginx on loopback):** prefer hitting the container port and set `Host` to the site name (same pattern as manual `curl` diagnostics):
+
+```bash
+export PAGINIUM_PROBE_BASE_URL="http://127.0.0.1:8089"
+export PAGINIUM_PROBE_HOST="paginiumcms.com"
+```
+
+The probe sends a dedicated `User-Agent` (not `curl/…`) so WAF **block scraper tools** does not reject logins. If CSRF still fails, check firewall jail for your IP and that `https://…` is reachable from where you run the script (hairpin TLS/DNS).
+
 3. Run probe (5 virtual users, 2 rounds):
 
 ```bash
@@ -50,6 +59,12 @@ export PAGINIUM_PROBE_PASS="…"
 ```
 
 Each worker logs in → stores cookies in a temp dir → runs the route set in parallel with others.
+
+**Production login cap:** `LoginRateLimitMiddleware` allows **5** `POST /api/auth/login` per **5 minutes** per email + IP. For **8+ parallel readers** without extra accounts, use **shared session** (one login, many GET workers — models one editor opening many dashboard tabs):
+
+```bash
+./scripts/admin-concurrency-probe.sh -n 8 -r 2 -s
+```
 
 ---
 

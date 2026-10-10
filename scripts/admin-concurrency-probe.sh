@@ -3,27 +3,39 @@
 set -euo pipefail
 
 BASE_URL="${PAGINIUM_PROBE_BASE_URL:-http://127.0.0.1:8080}"
+# When BASE_URL is loopback but vhost needs a name (prod Docker nginx on 8089).
+HOST_HEADER="${PAGINIUM_PROBE_HOST:-}"
+USER_AGENT="${PAGINIUM_PROBE_USER_AGENT:-PaginiumCMS-AdminLoadProbe/1.0 (authorized read-only GET)}"
 USER="${PAGINIUM_PROBE_USER:-}"
 PASS="${PAGINIUM_PROBE_PASS:-}"
 WORKERS=5
 ROUNDS=1
 CONFIRM=0
+# One login, N parallel GET workers (avoids prod login rate limit 5/5min per email+IP).
+SHARED_SESSION=0
 
 usage() {
-  echo "Usage: $0 [-n workers] [-r rounds] [-y confirm-prod] [-h]"
-  echo "Env: PAGINIUM_PROBE_BASE_URL, PAGINIUM_PROBE_USER, PAGINIUM_PROBE_PASS"
+  echo "Usage: $0 [-n workers] [-r rounds] [-s shared-session] [-y confirm-prod] [-h]"
+  echo "Env: PAGINIUM_PROBE_BASE_URL, PAGINIUM_PROBE_USER, PAGINIUM_PROBE_PASS,"
+  echo "     PAGINIUM_PROBE_HOST (optional Host header), PAGINIUM_PROBE_USER_AGENT,"
+  echo "     PAGINIUM_PROBE_SHARED_SESSION=1 (same as -s)"
   exit "${1:-0}"
 }
 
-while getopts "n:r:yh" opt; do
+while getopts "n:r:syh" opt; do
   case "$opt" in
     n) WORKERS="$OPTARG" ;;
     r) ROUNDS="$OPTARG" ;;
+    s) SHARED_SESSION=1 ;;
     y) CONFIRM=1 ;;
     h) usage 0 ;;
     *) usage 1 ;;
   esac
 done
+
+if [[ "${PAGINIUM_PROBE_SHARED_SESSION:-0}" == "1" ]]; then
+  SHARED_SESSION=1
+fi
 
 if [[ "$WORKERS" -gt 12 ]]; then
   echo "Max 12 workers (-n) for safety." >&2
@@ -53,19 +65,47 @@ ROUTES=(
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
 
+curl_probe() {
+  # shellcheck disable=SC2068
+  local extra=()
+  if [[ -n "$HOST_HEADER" ]]; then
+    extra+=(-H "Host: ${HOST_HEADER}")
+  fi
+  curl -sS -A "$USER_AGENT" "${extra[@]}" "$@"
+}
+
+extract_csrf_token() {
+  local body="$1"
+  if command -v jq >/dev/null 2>&1; then
+    jq -r '.token // empty' <<<"$body" 2>/dev/null || true
+    return
+  fi
+  sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' <<<"$body" | head -1
+}
+
 login_worker() {
   local id="$1"
   local jar="$WORKDIR/cookies-${id}.txt"
-  local csrf
-  csrf="$(curl -sS -c "$jar" -b "$jar" "${BASE_URL}/api/auth/csrf-token" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+  local body code csrf
+  body="$(curl_probe -c "$jar" -b "$jar" -w $'\n%{http_code}' "${BASE_URL}/api/auth/csrf-token")" || {
+    echo "Worker $id: CSRF fetch failed (curl error)" >&2
+    return 1
+  }
+  code="${body##*$'\n'}"
+  body="${body%$'\n'*}"
+  csrf="$(extract_csrf_token "$body")"
   if [[ -z "$csrf" ]]; then
-    echo "Worker $id: CSRF fetch failed" >&2
+    echo "Worker $id: CSRF fetch failed (http=${code}, no token). Body: ${body:0:120}" >&2
     return 1
   fi
-  curl -sS -c "$jar" -b "$jar" -X POST "${BASE_URL}/api/auth/login" \
+  code="$(curl_probe -c "$jar" -b "$jar" -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/auth/login" \
     -H "Content-Type: application/json" \
     -H "X-CSRF-TOKEN: $csrf" \
-    -d "$(printf '{"email":"%s","password":"%s"}' "$USER" "$PASS")" >/dev/null
+    -d "$(printf '{"email":"%s","password":"%s"}' "$USER" "$PASS")")"
+  if [[ "$code" != "200" ]]; then
+    echo "Worker $id: login failed (http=${code})" >&2
+    return 1
+  fi
   echo "$jar"
 }
 
@@ -74,7 +114,7 @@ probe_route() {
   local route="$2"
   local start end ms code
   start="$(date +%s%3N)"
-  code="$(curl -sS -o /dev/null -w '%{http_code}' -b "$jar" "${BASE_URL}${route}")"
+  code="$(curl_probe -o /dev/null -w '%{http_code}' -b "$jar" "${BASE_URL}${route}")"
   end="$(date +%s%3N)"
   ms=$((end - start))
   echo "${ms} ${code} ${route}"
@@ -82,8 +122,7 @@ probe_route() {
 
 run_worker() {
   local id="$1"
-  local jar
-  jar="$(login_worker "$id")" || return 1
+  local jar="$2"
   local round r
   for ((round = 1; round <= ROUNDS; round++)); do
     for r in "${ROUTES[@]}"; do
@@ -92,14 +131,33 @@ run_worker() {
   done
 }
 
-echo "Probe: base=$BASE_URL workers=$WORKERS rounds=$ROUNDS routes=${#ROUTES[@]}" >&2
+echo "Probe: base=$BASE_URL workers=$WORKERS rounds=$ROUNDS routes=${#ROUTES[@]} shared_session=$SHARED_SESSION" >&2
 
 RESULTS="$WORKDIR/results.txt"
 : >"$RESULTS"
 
-for ((w = 1; w <= WORKERS; w++)); do
-  run_worker "$w" >>"$RESULTS" &
-done
+if [[ "$SHARED_SESSION" -eq 1 ]]; then
+  master_jar="$(login_worker master)" || exit 1
+  for ((w = 1; w <= WORKERS; w++)); do
+    cp "$master_jar" "$WORKDIR/cookies-${w}.txt"
+  done
+  for ((w = 1; w <= WORKERS; w++)); do
+    run_worker "$w" "$WORKDIR/cookies-${w}.txt" >>"$RESULTS" &
+  done
+else
+  if [[ "$WORKERS" -gt 5 ]]; then
+    echo "Note: prod login rate limit is 5 POST /login per 5 min per email+IP; use -s or -n 5." >&2
+  fi
+  run_worker_with_login() {
+    local id="$1"
+    local jar
+    jar="$(login_worker "$id")" || return 1
+    run_worker "$id" "$jar"
+  }
+  for ((w = 1; w <= WORKERS; w++)); do
+    run_worker_with_login "$w" >>"$RESULTS" &
+  done
+fi
 wait
 
 if [[ ! -s "$RESULTS" ]]; then
