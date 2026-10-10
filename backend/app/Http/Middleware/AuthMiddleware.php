@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
+use PaginiumCMS\Modules\Security\Services\SessionManager;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -17,8 +18,12 @@ use PaginiumCMS\Support\JsonHelper;
  */
 class AuthMiddleware implements MiddlewareInterface
 {
+    /** @var list<string> */
+    private const READ_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+
     public function __construct(
-        private AuthenticationInterface $auth
+        private AuthenticationInterface $auth,
+        private SessionManager $session,
     ) {
     }
 
@@ -37,6 +42,15 @@ class AuthMiddleware implements MiddlewareInterface
 
         $this->auth->touchSession();
 
+        if ($this->isReadMethod($request->getMethod())) {
+            $this->session->releaseWriteLock();
+        }
+
         return $handler->handle($request->withAttribute('user', $this->auth->getCurrentUser()));
+    }
+
+    private function isReadMethod(string $method): bool
+    {
+        return in_array(strtoupper($method), self::READ_METHODS, true);
     }
 }

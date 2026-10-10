@@ -13,8 +13,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Releases the PHP session write lock early on read-only HTTP methods.
  *
- * Without this, parallel SPA XHR (dashboard Promise.all) serialize on the
- * same session file and wall-clock latency grows linearly with request count.
+ * Runs before the stack opens the session (auth), so this is often a no-op.
+ * {@see AuthMiddleware} releases the lock after session validation on GET/HEAD/OPTIONS.
  */
 final class SessionReleaseMiddleware implements MiddlewareInterface
 {

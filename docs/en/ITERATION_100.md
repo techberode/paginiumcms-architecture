@@ -45,6 +45,8 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 
 **Desk (ISS-198):** slow `GET /api/auth/me/desk` was a separate FPM hog (comment N+1 + double compose); fixed in tree — deploy with P2 cache + cron warm-up for full effect.
 
+**Session lock (Unreleased):** global `SessionReleaseMiddleware` runs before auth opens the session; **`AuthMiddleware`** now calls `SessionManager::releaseWriteLock()` on authenticated GET/HEAD/OPTIONS so one tab’s `Promise.all` does not queue on a single `PHPSESSID` (see `admin-concurrency-probe.sh -s`).
+
 ---
 
 ## 4. Living roadmap (phases, repeatable)

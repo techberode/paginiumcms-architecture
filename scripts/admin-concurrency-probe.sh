@@ -137,6 +137,7 @@ RESULTS="$WORKDIR/results.txt"
 : >"$RESULTS"
 
 if [[ "$SHARED_SESSION" -eq 1 ]]; then
+  echo "Shared session: models one PHPSESSID + parallel GETs (session lock). See ADMIN_LOAD_SIMULATION.md § shared session." >&2
   master_jar="$(login_worker master)" || exit 1
   for ((w = 1; w <= WORKERS; w++)); do
     cp "$master_jar" "$WORKDIR/cookies-${w}.txt"

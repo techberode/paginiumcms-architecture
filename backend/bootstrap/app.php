@@ -604,7 +604,8 @@ $containerBuilder->addDefinitions([
 
     AuthMiddleware::class => function ($container) {
         return new AuthMiddleware(
-            $container->get(AuthenticationInterface::class)
+            $container->get(AuthenticationInterface::class),
+            $container->get(SessionManager::class),
         );
     },
 

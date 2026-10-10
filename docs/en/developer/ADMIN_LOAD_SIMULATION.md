@@ -66,6 +66,18 @@ Each worker logs in → stores cookies in a temp dir → runs the route set in p
 ./scripts/admin-concurrency-probe.sh -n 8 -r 2 -s
 ```
 
+### Shared session (`-s`) and PHP session lock
+
+With **one** `PHPSESSID`, parallel GETs used to **queue on the session file** (wall-clock ≈ sum of handler times). Global `SessionReleaseMiddleware` runs before auth opens the session; **`AuthMiddleware`** now calls `SessionManager::releaseWriteLock()` on authenticated **GET/HEAD/OPTIONS** after validation so dashboard `Promise.all` can run concurrently.
+
+| Signal | Likely cause |
+|--------|----------------|
+| `-s` max latency **≈ N × single-route** (e.g. 10–14 s) | Session lock or FPM saturation — redeploy session release fix; check `pm.max_children` |
+| `-s` max **≈ slowest single route** (hundreds of ms–few s) | Lock released; remaining time is cache miss / flat-file / jobs payload |
+| Without `-s`, high max on round 1 only | Cold P2 — cron `cache:warm-admin` + second round |
+
+Mutating methods keep the write lock through the request (POST save/upload unchanged).
+
 ---
 
 ## Interpreting results
@@ -99,6 +111,6 @@ Edit `ROUTES` in the script. Classify each path in [ITERATION_100](../ITERATION_
 
 ## Limitations
 
-- Simulates **N independent sessions**, not one user with 20 tabs (browser cache/React Query dedupes tabs; probe does not).
+- Default mode simulates **N independent sessions**. Use **`-s`** to model one admin with many parallel dashboard GETs (same lock behaviour as one tab’s burst XHR).
 - Does not model **large uploads** or **editor save** contention — add a separate **P0 stress** profile later with explicit `-profile write` and staging-only guard.
 - TLS / WAF may rate-limit the probe host; tune `-n` and delay between rounds.
