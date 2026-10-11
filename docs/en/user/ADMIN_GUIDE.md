@@ -33,6 +33,10 @@ The dashboard is an orientation view, not a monitoring system with guaranteed co
 
 When a panel fails, inspect its individual API endpoint and logs. Analytics availability must not block authoritative content editing.
 
+**Performance Guard** (when enabled in Settings → Engine) shows APM latency, recent breaches, and optional **host snapshot** (load/RAM/disk) if your operator enabled host metrics collection. Secondary dashboard data (audit stats, jobs, planner) loads after the overview KPIs — a short delay is normal.
+
+Maintainers tuning multi-admin instances: [ADMIN_OPERATIONS.md](../developer/ADMIN_OPERATIONS.md) (English).
+
 ### Quick search (command palette)
 
 It.43 admin search lets staff jump to pages, articles, media, admin modules, **settings fields**, and **help text** from the admin UI catalogs.
@@ -136,6 +140,8 @@ An administrator checks:
 - proxy/storage configuration when a file returns 404.
 
 **Page hero assets:** For page/blog intro heroes, prefer **21:9** masters at **≥1920 px** wide (ideal **2560×1097**). Details: [PAGE_HERO_IMAGES.md](PAGE_HERO_IMAGES.md).
+
+**Upload compression:** With **Settings → Media → Auto-compress images on upload** (default on), many photos are stored smaller immediately after upload (GD). Details: [MEDIA_UPLOAD.md](../developer/MEDIA_UPLOAD.md).
 
 **Image optimization (`v2.1.0-beta.67`):** For JPEG, PNG, and WebP rasters, open the metadata modal to inspect file size and dimensions. Use **Preview optimize** to compare original vs re-encoded output and estimated savings before saving. Presets (1920 / 1280 / 1080 / 960 px width) scale height proportionally. A quick **⚡ optimize** on the media card applies immediate re-encode when GD is available. If the API returns “already optimally compressed”, the file will not shrink further — try resize instead. Requires PHP **GD** with JPEG/PNG/WebP support in the backend container.
 

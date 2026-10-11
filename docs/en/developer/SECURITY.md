@@ -359,6 +359,8 @@ For ZIP/import:
 
 Antivirus is supplemental. A negative ClamAV result does not make SVG or PHP code safe for inline execution.
 
+**Polyglot (It.99):** unified upload calls `PolyglotUploadGuard` after MIME/magic validation — marker scan, SVG/PDF active-content probes, optional GD re-encode (`reencodeRasterUploads`). Operator guide: [UPLOAD_POLYGLOT.md](UPLOAD_POLYGLOT.md) · tracking [ISS-195](../ISSUES.md#iss-195).
+
 ## 16. Plugins, themes, and Code Editor
 
 `CodePolicyEngine::validateUntrusted` is a write/import gate for untrusted extension/theme/layout trees. It rejects or restricts high-risk constructs according to [EXTENSION_CODE_POLICY.md](EXTENSION_CODE_POLICY.md).

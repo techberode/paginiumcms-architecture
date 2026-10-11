@@ -46,6 +46,15 @@ final class PolyglotUploadGuardTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testAllowsScriptMarkerAfterDefaultScanWindow(): void
+    {
+        $bytes = "\xFF\xD8\xFF" . str_repeat('A', 70_000) . '<script>';
+        $guard = $this->guard(['polyglotMarkerScanMaxBytes' => 65536]);
+
+        $guard->assertClean($bytes, 'image/jpeg');
+        $this->addToAssertionCount(1);
+    }
+
     public function testAllowsCleanPng(): void
     {
         $bytes = base64_decode(

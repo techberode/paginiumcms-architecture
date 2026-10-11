@@ -78,6 +78,7 @@ export const logsSk: MessageTree = {
     bulkDeleteSuccess: 'Vymazaných :count logov.',
     bulkArchiveSuccess: 'Archivovaných :count logov.',
     exportSuccess: 'Export logov stiahnutý.',
+    exportSuccessQueued: 'Export logov pripravený (inštancia bola zaťažená — spracované na pozadí).',
     exportFailed: 'Export logov zlyhal.',
     exportEmpty: 'Nič na export — upravte filter alebo výber.',
   },

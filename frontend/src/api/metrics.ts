@@ -53,6 +53,7 @@ export type AdminLoadLevel = 'normal' | 'busy';
 export interface AdminLoadHint {
   level: AdminLoadLevel;
   reasons: string[];
+  active_admin_sessions?: number;
 }
 
 export type HostMetricsStatus = 'disabled' | 'missing' | 'stale' | 'ok';

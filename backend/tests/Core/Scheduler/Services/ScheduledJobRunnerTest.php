@@ -34,7 +34,11 @@ use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Content\Services\ContentNewsArchiveService;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentNewsAutoArchiveHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
+use PaginiumCMS\Core\Scheduler\Contracts\JobHandlerInterface;
+use PaginiumCMS\Core\Scheduler\Models\JobRunResult;
+use PaginiumCMS\Core\Scheduler\Handlers\AdminOverviewCacheWarmHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
+use PaginiumCMS\Core\Cache\Contracts\AdminOverviewCacheWarmRunner;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Performance\HostMetricsCollector;
@@ -134,7 +138,9 @@ final class ScheduledJobRunnerTest extends TestCase
             $this->webhookDeliveryHandler(),
             new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class)),
             $this->staticRebuildHandler(),
-            $this->makeHostMetricsCollectHandler($settings, $reader, $writer)
+            $this->makeHostMetricsCollectHandler($settings, $reader, $writer),
+            new AdminOverviewCacheWarmHandler($this->createMock(AdminOverviewCacheWarmRunner::class)),
+            new StubAdminLogsExportHandler()
         );
 
         $runner = new ScheduledJobRunner(
@@ -184,7 +190,9 @@ final class ScheduledJobRunnerTest extends TestCase
             $this->webhookDeliveryHandler(),
             new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class)),
             $this->staticRebuildHandler(),
-            $this->makeHostMetricsCollectHandler($settings, $reader, $writer)
+            $this->makeHostMetricsCollectHandler($settings, $reader, $writer),
+            new AdminOverviewCacheWarmHandler($this->createMock(AdminOverviewCacheWarmRunner::class)),
+            new StubAdminLogsExportHandler()
         );
 
         return new ScheduledJobRunner(
@@ -376,5 +384,27 @@ final class ScheduledJobRunnerTest extends TestCase
             IncidentNotifierTestFactory::create($settings, $this->createMock(NotificationService::class)),
             $this->createMock(ContentRepositoryInterface::class)
         );
+    }
+
+}
+
+final class StubAdminLogsExportHandler implements JobHandlerInterface
+{
+    public function key(): string
+    {
+        return 'admin_logs.export';
+    }
+
+    public function label(): string
+    {
+        return 'Stub admin log export';
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function handle(array $payload = []): JobRunResult
+    {
+        return new JobRunResult(true, 'stub');
     }
 }

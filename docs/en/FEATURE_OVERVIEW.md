@@ -82,8 +82,10 @@
 | Flysystem/S3/CDN drivers | 🟡 partial | It.72 MVP local; S3 deferred |
 | Video in Media Library | ✅ | It.79 — MP4/WebM, `:::video` shortcode (`beta.71`) |
 | Unified upload security | ✅ | It.78 — UploadPolicyEngine (`beta.70`) |
+| Upload polyglot hardening | ✅ | It.99 — marker scan, SVG/PDF probes, secure filenames — [UPLOAD_POLYGLOT.md](developer/UPLOAD_POLYGLOT.md) |
+| Auto-compress on upload | ✅ | GD re-encode when smaller — [MEDIA_UPLOAD.md](developer/MEDIA_UPLOAD.md) |
+| Document library (PDF/Office/text) | ✅ | It.96 — `beta.86` |
 | Trusted HTML / YouTube embed | ✅ | It.91 + sanitizer preserve ([ISS-193](ISSUES.md#iss-193)); prefer DAM `:::video` when you own the file |
-| Unified upload security | ⏳ | It.78 — all upload surfaces |
 | Scoped Section FileManager | ⏳ candidate | remaining backlog without a reused iteration number |
 
 ---
@@ -124,7 +126,9 @@
 | System update | ✅ | version check, tag deployment, optional webhook |
 | Demo sandbox | ✅ | isolated demo mode and reset |
 | Setup wizard | ✅ M1+ | It.25 `beta.62`–`beta.65` — `/setup` with server preflight, infra defaults; `first-run.sh` CLI fallback |
-| Performance Guard | ⏳ | It.71 |
+| Performance Guard | ✅ | It.71 — APM samples, breaches, dashboard panel |
+| Admin load / P2 cache (It.100) | 🟡 living | SWR cache, load hint, sequential dashboard P2 — [ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) |
+| Host metrics snapshot (It.82d) | 🟡 optional | Load/RAM/disk in APM panel — [HOST_METRICS.md](developer/HOST_METRICS.md) |
 
 ---
 

@@ -203,7 +203,7 @@ export const LogsManager: React.FC = () => {
     const blob = result.blob;
     const ext = format === 'pdf' ? 'pdf' : format === 'zip' ? 'zip' : 'txt';
     saveLogsExportBlob(blob, `paginium-logs-${Date.now()}.${ext}`);
-    toast.success(t('logs.toast.exportSuccess'));
+    toast.success(result.queued ? t('logs.toast.exportSuccessQueued') : t('logs.toast.exportSuccess'));
   };
 
   const handleBulk = async (action: 'delete' | 'archive') => {

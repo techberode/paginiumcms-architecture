@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Tests\Modules\Media\Services;
 
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard;
 use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PHPUnit\Framework\TestCase;
 
@@ -117,6 +118,27 @@ final class MediaImageOptimizerTest extends TestCase
 
         $this->expectException(FlatFileException::class);
         $optimizer->optimize($png, 'image/png');
+    }
+
+    public function testForceSecurityReencodeStripsTrailingPayload(): void
+    {
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('GD extension not available.');
+        }
+
+        $png = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            true
+        );
+        $this->assertIsString($png);
+        $polyglot = $png . '<script>alert(1)</script>';
+
+        $optimizer = new MediaImageOptimizer();
+        $result = $optimizer->forceSecurityReencode($polyglot, 'image/png');
+
+        $this->assertTrue($result['applied']);
+        $this->assertLessThan(strlen($polyglot), strlen($result['binary']));
+        PolyglotUploadGuard::assertNoHtmlScriptMarkersStatic($result['binary'], 262144);
     }
 
     public function testCompressForUploadKeepsOriginalWhenAlreadySmall(): void

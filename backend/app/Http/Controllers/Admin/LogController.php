@@ -4,23 +4,34 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
-use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Logging\Models\LogSeverity;
+use PaginiumCMS\Core\Logging\Services\AdminExportArtifactStore;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogExportService;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogMessageFormatter;
 use PaginiumCMS\Core\Logging\Services\ApplicationLogReader;
 use PaginiumCMS\Core\Logging\Services\LogRetentionService;
+use PaginiumCMS\Core\Performance\AdminP3AdmissionGuard;
+use PaginiumCMS\Core\Scheduler\Services\JobQueueStore;
+use PaginiumCMS\Core\Scheduler\Services\JobWorker;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\RequestJsonBody;
+use PaginiumCMS\Modules\Security\Models\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class LogController
 {
+    private const ASYNC_EXPORT_JOB_ID = 'admin-logs-export';
+
     public function __construct(
         private ApplicationLogReader $logReader,
         private ApplicationLogMessageFormatter $logFormatter,
         private ApplicationLogExportService $logExport,
         private LogRetentionService $logRetention,
+        private AdminP3AdmissionGuard $admission,
+        private AdminExportArtifactStore $exportArtifacts,
+        private JobQueueStore $jobQueue,
+        private JobWorker $jobWorker,
         private JsonResponder $json
     ) {
     }
@@ -121,6 +132,10 @@ final class LogController
 
     public function export(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if ($this->admission->shouldDeferHeavyWork()) {
+            return $this->busyExportResponse($response);
+        }
+
         $params = $request->getQueryParams();
         $format = strtolower((string) ($params['format'] ?? 'txt'));
         if (!in_array($format, ['txt', 'pdf', 'zip'], true)) {
@@ -154,8 +169,69 @@ final class LogController
 
         $ids = $this->normalizeIds($data['ids'] ?? null);
         $filters = is_array($data['filters'] ?? null) ? $data['filters'] : null;
+        $async = (bool) ($data['async'] ?? false);
+
+        if ($async || $this->admission->shouldDeferHeavyWork()) {
+            return $this->queueExport($request, $response, $format, $ids !== [] ? $ids : null, $filters);
+        }
 
         return $this->exportDownload($response, $format, $ids !== [] ? $ids : null, $filters);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function exportArtifactStatus(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $artifactId = (string) ($args['id'] ?? '');
+        $entry = $this->exportArtifacts->findForUser($artifactId, $user->getId());
+        if ($entry === null) {
+            return $this->json->error($response, 'Export not found', 404);
+        }
+
+        return $this->json->success($response, [
+            'id' => $artifactId,
+            'status' => (string) ($entry['status'] ?? 'pending'),
+            'format' => (string) ($entry['format'] ?? 'txt'),
+            'error' => $entry['error'] ?? null,
+            'filename' => $entry['filename'] ?? null,
+        ]);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function exportArtifactDownload(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $artifactId = (string) ($args['id'] ?? '');
+        $entry = $this->exportArtifacts->findForUser($artifactId, $user->getId());
+        if ($entry === null) {
+            return $this->json->error($response, 'Export not found', 404);
+        }
+
+        if (($entry['status'] ?? '') !== 'ready') {
+            return $this->json->error($response, 'Export is not ready yet', 409);
+        }
+
+        $binary = $this->exportArtifacts->readBinary($artifactId);
+        if ($binary === null) {
+            return $this->json->error($response, 'Export file missing', 404);
+        }
+
+        $filename = (string) ($entry['filename'] ?? 'paginium-logs-export.dat');
+        $contentType = (string) ($entry['content_type'] ?? 'application/octet-stream');
+
+        return $this->binaryResponse($response, $binary, $contentType, $filename);
     }
 
     /**
@@ -248,6 +324,65 @@ final class LogController
             200,
             'Všetky logy boli vymazané'
         );
+    }
+
+    /**
+     * @param list<string>|null $ids
+     * @param array<string, mixed>|null $filters
+     */
+    private function queueExport(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $format,
+        ?array $ids,
+        ?array $filters
+    ): ResponseInterface {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        $pending = $this->exportArtifacts->createPending($user->getId(), $format);
+        $payload = [
+            'artifact_id' => $pending['id'],
+            'format' => $format,
+            'ids' => $ids,
+            'filters' => $filters,
+        ];
+
+        $queueId = $this->jobQueue->enqueue(self::ASYNC_EXPORT_JOB_ID, $payload);
+        $this->jobWorker->process(1);
+
+        return $this->json->success(
+            $response,
+            [
+                'async' => true,
+                'artifact_id' => $pending['id'],
+                'queue_id' => $queueId,
+                'status' => 'pending',
+                'poll_url' => '/api/admin/logs/export/artifacts/' . $pending['id'],
+            ],
+            202,
+            'Export queued'
+        );
+    }
+
+    private function busyExportResponse(ResponseInterface $response): ResponseInterface
+    {
+        return $this->json
+            ->error(
+                $response,
+                'Instance busy — use POST /api/admin/logs/export with async or retry later.',
+                503
+            )
+            ->withHeader('Retry-After', (string) $this->admission->retryAfterSeconds());
+    }
+
+    private function actor(ServerRequestInterface $request): ?User
+    {
+        $user = $request->getAttribute('user');
+
+        return $user instanceof User ? $user : null;
     }
 
     private function resolveArchivedFilter(string $value): string

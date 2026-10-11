@@ -34,4 +34,12 @@ final class HostMetricsSettings
 
         return trim((string) ($engine['hostMetricsIngestToken'] ?? ''));
     }
+
+    public function loadHintBusyThreshold(): float
+    {
+        $engine = $this->settings->group('engine');
+        $value = (float) ($engine['adminLoadHintHostLoad1Min'] ?? 0);
+
+        return max(0.0, min(999.0, $value));
+    }
 }

@@ -2,7 +2,7 @@
 
 > **Final consolidation:** the complete index is in [NAVIGATION.md](NAVIGATION.md). Status claims distinguish implemented, transitional, and planned capabilities.
 
-> **Version:** **`v2.1.0-beta.96`** · **Last updated:** October 2026  
+> **Version:** **`v2.1.0-beta.98`** tag · **Last updated:** October 2026  
 > **Hybrid Headless Content Engine** — No-SQL file source of truth, API-first administration, and a public React site.
 
 ---
@@ -59,8 +59,8 @@ Bilingual documentation rules:
 | **It.58 composer / islands** | ✅ | section-band, galleries, unified lightbox, motion B1–B2 — [IT_58_COMPOSER_HANDOFF.md](architecture/IT_58_COMPOSER_HANDOFF.md) |
 | **Public and admin frontend** | ✅ | React, TypeScript, Vite 8, SK/EN i18n |
 | **Automated tests** | ✅ | `./scripts/iteration-gate.sh` — PHPUnit, PHPStan, tsc, ESLint, Vitest |
-| **Latest documented release** | ✅ **`v2.1.0-beta.96`** | [RELEASE_2_1_0_BETA_96.md](RELEASE_2_1_0_BETA_96.md) · [CHANGELOG.md](../../CHANGELOG.md) |
-| **Next implementation** | ⏳ | Experience Phase C · It.98 workspace · B3 polish — [CONTINUATION.md](CONTINUATION.md) |
+| **Latest documented release** | ✅ **`v2.1.0-beta.98`** | [RELEASE_2_1_0_BETA_98.md](RELEASE_2_1_0_BETA_98.md) · [CHANGELOG.md](../../CHANGELOG.md) |
+| **Next implementation** | ⏳ | It.100 tuning (living) · It.98 workspace — [CONTINUATION.md](CONTINUATION.md) |
 
 ### Hybrid Engine wave (shipped foundation)
 

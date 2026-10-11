@@ -8,6 +8,7 @@ Optional **OS-level** load, RAM, and disk snapshot for admin dashboard and monit
    - `Enable host metrics snapshot` → on
    - Set **max age** (default 600 s) — older snapshots show as *stale*
    - Set **ingest token** (password field, encrypted at rest) if you use HTTP ingest
+   - Optional **Admin busy: 1-min load average ≥** — ties host load into dashboard P2 defer ([ADMIN_OPERATIONS.md](ADMIN_OPERATIONS.md) § checklist)
 2. **Jobs → Scheduled jobs**
    - Enable system job **Host metrics snapshot (It.82d)** (`host-metrics-collect`, default cron `*/5 * * * *`), **or** run collection from host cron (below).
 
@@ -47,5 +48,6 @@ After deploy: enable engine flag + enable `host-metrics-collect` job (or add `me
 
 ## Related
 
+- [ADMIN_OPERATIONS.md](ADMIN_OPERATIONS.md) — production checklist (host job + P2 warm)
 - [ADMIN_LOAD_SIMULATION.md](ADMIN_LOAD_SIMULATION.md) — admin concurrency vs host load
 - [ITERATION_82.md](../ITERATION_82.md) — Origin catalog slice **82d**

@@ -211,6 +211,24 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'admin-cache-warm',
+                    'name' => 'Warm admin P2 overview cache (It.100c)',
+                    'handler' => 'admin_cache.warm',
+                    'cron' => '* * * * *',
+                    'enabled' => false,
+                    'system' => true,
+                    'payload' => [],
+                ],
+                [
+                    'id' => 'admin-logs-export',
+                    'name' => 'Async application log export (It.100e)',
+                    'handler' => 'admin_logs.export',
+                    'cron' => '0 0 1 1 *',
+                    'enabled' => false,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
     }

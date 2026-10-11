@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\AuditTrail\Services\AuditTrailService;
 use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
+use PaginiumCMS\Core\Performance\AdminP3AdmissionGuard;
 use PaginiumCMS\Http\Support\JsonResponder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,6 +17,7 @@ class AuditTrailController
     public function __construct(
         private AuditTrailService $auditTrailService,
         private AdminOverviewCacheService $adminOverviewCache,
+        private AdminP3AdmissionGuard $admission,
         private JsonResponder $json
     ) {
     }
@@ -87,6 +89,12 @@ class AuditTrailController
 
     public function exportAudit(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if ($this->admission->shouldDeferHeavyWork()) {
+            return $this->json
+                ->error($response, 'Instance busy — retry audit export later.', 503)
+                ->withHeader('Retry-After', (string) $this->admission->retryAfterSeconds());
+        }
+
         $params = $request->getQueryParams();
         $filters = array_filter(
             $params,

@@ -6,8 +6,11 @@ namespace PaginiumCMS\Tests\Core\Cache;
 
 use org\bovigo\vfs\vfsStream;
 use PaginiumCMS\Core\Cache\AdminOverviewCacheService;
+use PaginiumCMS\Core\Cache\AdminOverviewCacheSettings;
 use PaginiumCMS\Core\Cache\CacheManager;
 use PaginiumCMS\Core\Cache\Drivers\FileDriver;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class AdminOverviewCacheServiceTest extends TestCase
@@ -22,7 +25,36 @@ final class AdminOverviewCacheServiceTest extends TestCase
         vfsStream::setup('storage', null, ['cache' => []]);
         $driver = new FileDriver(vfsStream::url('storage/cache'));
         $this->cache = new CacheManager($driver, 'test_');
-        $this->service = new AdminOverviewCacheService($this->cache);
+        $this->service = new AdminOverviewCacheService($this->cache, $this->cacheSettings(false));
+    }
+
+    public function testCronOnlyMissDoesNotInvokeLoader(): void
+    {
+        $service = new AdminOverviewCacheService($this->cache, $this->cacheSettings(true));
+
+        $calls = 0;
+        $result = $service->rememberAuditStats([], static function () use (&$calls): array {
+            ++$calls;
+
+            return ['total_events' => 99];
+        });
+
+        $this->assertSame(0, $calls);
+        $this->assertSame(0, $result['total_events']);
+        $this->assertSame('miss', $result['_cache']['status'] ?? null);
+    }
+
+    private function cacheSettings(bool $cronOnly): AdminOverviewCacheSettings
+    {
+        /** @var SettingsRepositoryInterface&MockObject $repo */
+        $repo = $this->createMock(SettingsRepositoryInterface::class);
+        $repo->method('group')->willReturnCallback(
+            static fn (string $group): array => $group === 'engine'
+                ? ['adminP2CacheCronOnly' => $cronOnly]
+                : []
+        );
+
+        return new AdminOverviewCacheSettings($repo);
     }
 
     public function testRememberAuditStatsCachesUntilInvalidated(): void
@@ -64,6 +96,24 @@ final class AdminOverviewCacheServiceTest extends TestCase
         });
 
         $this->assertSame(['total_events' => 42], $result);
+        $this->assertSame(0, $calls);
+    }
+
+    public function testServesExpiredSnapshotWithoutSyncLoader(): void
+    {
+        $this->cache->set('admin.audit_stats.0.default', [
+            'data' => ['total_events' => 7],
+            'stored_at' => time() - (AdminOverviewCacheService::STALE_MAX_AGE_SECONDS + 120),
+        ], AdminOverviewCacheService::STALE_MAX_AGE_SECONDS);
+
+        $calls = 0;
+        $result = $this->service->rememberAuditStats([], static function () use (&$calls): array {
+            ++$calls;
+
+            return ['total_events' => 99];
+        });
+
+        $this->assertSame(['total_events' => 7], $result);
         $this->assertSame(0, $calls);
     }
 }

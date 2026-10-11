@@ -12,6 +12,8 @@ namespace PaginiumCMS\Core\Cache;
  */
 final class AdminOverviewCacheService
 {
+    /** @var array<string, mixed> */
+    private const CACHE_META_MISS = ['_cache' => ['status' => 'miss', 'warming' => true]];
     /** Fresh TTL written to cache driver. */
     public const FRESH_TTL_SECONDS = 120;
 
@@ -20,8 +22,10 @@ final class AdminOverviewCacheService
 
     private const REFRESH_LOCK_SUFFIX = '.refresh_lock';
 
-    public function __construct(private CacheManager $cache)
-    {
+    public function __construct(
+        private CacheManager $cache,
+        private AdminOverviewCacheSettings $settings,
+    ) {
     }
 
     /**
@@ -126,14 +130,60 @@ final class AdminOverviewCacheService
             if ($age <= self::FRESH_TTL_SECONDS) {
                 return $envelope['data'];
             }
-            if ($age <= self::STALE_MAX_AGE_SECONDS) {
-                $this->scheduleBackgroundRefresh($key, $loader);
 
-                return $envelope['data'];
-            }
+            // Stale or expired snapshot: never block the HTTP thread on a full P2 rebuild (It.100d).
+            $this->scheduleBackgroundRefresh($key, $loader);
+
+            return $envelope['data'];
+        }
+
+        if ($this->settings->cronOnlyHttp()) {
+            $this->scheduleBackgroundRefresh($key, $loader);
+
+            return $this->missPlaceholder($entity);
         }
 
         return $this->computeWithCoalescing($key, $loader);
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function missPlaceholder(string $entity): array
+    {
+        return match ($entity) {
+            'audit_stats' => array_merge([
+                'total_events' => 0,
+                'by_category' => [],
+                'by_action' => [],
+                'by_user' => [],
+                'by_severity' => [],
+                'recent_events' => [],
+                'timeline' => [],
+            ], self::CACHE_META_MISS),
+            'jobs_overview' => array_merge([
+                'enabled' => true,
+                'handlers' => [],
+                'jobs' => [],
+                'recent_runs' => [],
+                'recent_runs_limit' => 30,
+                'queue' => [],
+                'cron_hint' => '',
+            ], self::CACHE_META_MISS),
+            'metrics_apm' => array_merge([
+                'config' => ['enabled' => false],
+                'summary' => ['sample_count' => 0, 'p95_ms' => null],
+                'recent_breaches' => [],
+                'advisor_hints' => [],
+                'load_hint' => ['level' => 'normal', 'reasons' => []],
+                'host_metrics' => ['enabled' => false, 'status' => 'disabled'],
+            ], self::CACHE_META_MISS),
+            'project_plans_overview' => array_merge([
+                'plans' => [],
+                'stats' => ['total' => 0, 'active' => 0],
+            ], self::CACHE_META_MISS),
+            default => self::CACHE_META_MISS,
+        };
     }
 
     /**

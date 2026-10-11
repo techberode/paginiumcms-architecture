@@ -14,6 +14,8 @@ use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\AdminApplicationLogExportHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\AdminOverviewCacheWarmHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
@@ -78,6 +80,13 @@ return [
             get(\PaginiumCMS\Core\Performance\HostMetricsCollector::class),
             get(\PaginiumCMS\Core\Performance\HostMetricsStore::class)
         ),
+    AdminOverviewCacheWarmHandler::class => create(AdminOverviewCacheWarmHandler::class)
+        ->constructor(get(\PaginiumCMS\Core\Cache\Contracts\AdminOverviewCacheWarmRunner::class)),
+    AdminApplicationLogExportHandler::class => create(AdminApplicationLogExportHandler::class)
+        ->constructor(
+            get(\PaginiumCMS\Core\Logging\Services\ApplicationLogExportService::class),
+            get(\PaginiumCMS\Core\Logging\Services\AdminExportArtifactStore::class)
+        ),
     WebhookDeliveryHandler::class => create(WebhookDeliveryHandler::class)
         ->constructor(
             get(\PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService::class),
@@ -96,7 +105,9 @@ return [
             get(WebhookDeliveryHandler::class),
             get(AgentRunHandler::class),
             get(StaticRebuildHandler::class),
-            get(HostMetricsCollectHandler::class)
+            get(HostMetricsCollectHandler::class),
+            get(AdminOverviewCacheWarmHandler::class),
+            get(AdminApplicationLogExportHandler::class)
         ),
     ScheduledJobRunner::class => create(ScheduledJobRunner::class)
         ->constructor(

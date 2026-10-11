@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Http\Middleware;
 
+use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Core\Cache\Drivers\MemoryDriver;
+use PaginiumCMS\Core\Performance\AdminActiveSessionStore;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Models\User;
@@ -38,7 +41,7 @@ final class AuthMiddlewareTest extends TestCase
         $session = new SessionManager();
         $auth = $this->authenticatedAuthMock();
 
-        $middleware = new AuthMiddleware($auth, $session);
+        $middleware = new AuthMiddleware($auth, $session, $this->activeSessions());
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/pages');
         $response = $middleware->process($request, $this->handler());
 
@@ -58,7 +61,7 @@ final class AuthMiddlewareTest extends TestCase
         $session = new SessionManager();
         $auth = $this->authenticatedAuthMock();
 
-        $middleware = new AuthMiddleware($auth, $session);
+        $middleware = new AuthMiddleware($auth, $session, $this->activeSessions());
         $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/pages');
         $response = $middleware->process($request, $this->handler());
 
@@ -79,7 +82,7 @@ final class AuthMiddlewareTest extends TestCase
         $auth = $this->createMock(AuthenticationInterface::class);
         $auth->method('isAuthenticated')->willReturn(false);
 
-        $middleware = new AuthMiddleware($auth, $session);
+        $middleware = new AuthMiddleware($auth, $session, $this->activeSessions());
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/pages');
         $response = $middleware->process($request, $this->handler());
 
@@ -113,5 +116,10 @@ final class AuthMiddlewareTest extends TestCase
                 return (new ResponseFactory())->createResponse(200);
             }
         };
+    }
+
+    private function activeSessions(): AdminActiveSessionStore
+    {
+        return new AdminActiveSessionStore(new CacheManager(new MemoryDriver(), 'auth_mw_'));
     }
 }

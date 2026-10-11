@@ -1,6 +1,6 @@
 # PaginiumCMS — consolidated backlog
 
-> **Snapshot:** `v2.1.0-beta.89` · September 20, 2026  
+> **Snapshot:** `v2.1.0-beta.98` · October 11, 2026  
 > **Phase:** planned-iteration development — [CONTINUATION.md](CONTINUATION.md) (stabilization freeze **closed**)  
 > **Rule:** the active backlog contains only unshipped or precisely bounded remaining scope  
 > **No-SQL:** [architecture/NOSQL_MANDATE.md](architecture/NOSQL_MANDATE.md)  
@@ -25,8 +25,8 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 
 | Order | Item | Priority | Status | Reason |
 |-------|------|----------|--------|--------|
-| — | **It.100** Admin load & cache tiers (living) | 🟡 ops | 🔄 **ongoing** | Never closed by one deploy — [ITERATION_100.md](ITERATION_100.md) · probe [ADMIN_LOAD_SIMULATION.md](developer/ADMIN_LOAD_SIMULATION.md) |
-| 0 | **It.99** Upload polyglot hardening (lean) | 🟡 security | ⏳ planned | [ITERATION_99.md](ITERATION_99.md) · [ISS-195](../ISSUES.md#iss-195) |
+| — | **It.100** Admin load & cache tiers (living) | 🟡 ops | 🔄 **ongoing** | [ITERATION_100.md](ITERATION_100.md) · ops [ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) · probe [ADMIN_LOAD_SIMULATION.md](developer/ADMIN_LOAD_SIMULATION.md) |
+| 0 | **It.99** Upload polyglot hardening (lean) | 🟡 security | ✅ shipped | [ITERATION_99.md](ITERATION_99.md) · [UPLOAD_POLYGLOT.md](developer/UPLOAD_POLYGLOT.md) · [ISS-195](../ISSUES.md#iss-195) |
 | 0 | **It.58f-i** Page field composer (sections + gallery per block) | 🟡 P1 | 🟡 a–f + islands; **g–k** ⏳ React image/video gallery | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) · [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 0b | **It.97** CSP `frame-src 'self'` + embed/map facades | 🔵 | ⏸️ | **Deferred** — keep current embed/map iframe + CSP exceptions; prefer **React islands** for rich UI — [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |
 | 0c | **It.58f-i + islands Phase A–E** Dynamic public React blocks (registry, section-band, carousel) | 🟡 P1 | ✅ A–E shipped | [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) · Phase **F** optional |
@@ -214,7 +214,7 @@ Shipped: `beta.47` (81a–81d) → `beta.48+` (81e) → **`beta.55` (81f + admin
 
 ### It.82 — Origin Panel (maintainer cockpit) 🔵 ✅
 
-Shipped **`beta.56`** — env gate, 11 runtime probes, `project-catalog.json` progress + timeline, ops KPI row. Packaging: [ORIGIN_PANEL_PACKAGING.md](ORIGIN_PANEL_PACKAGING.md). `82d` host metrics deferred.
+Shipped **`beta.56`** — env gate, runtime probes, `project-catalog.json` progress + timeline, ops KPI row. Packaging: [ORIGIN_PANEL_PACKAGING.md](ORIGIN_PANEL_PACKAGING.md). **`82d` partial on `main`:** [HOST_METRICS.md](developer/HOST_METRICS.md).
 
 See [ITERATION_82](ITERATION_82.md).
 

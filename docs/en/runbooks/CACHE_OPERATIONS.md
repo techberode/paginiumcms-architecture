@@ -140,11 +140,25 @@ Safe on Classic: deleting `data/cache/*.cache` does **not** lose content. Redis 
 
 ---
 
+## Admin P2 overview cache (It.100)
+
+Separate from public content cache — **derived JSON envelopes** for heavy admin GETs (audit stats, jobs, APM, planner).
+
+| Mechanism | Command / job |
+|-----------|----------------|
+| CLI warm | `php backend/bin/console cache:warm-admin` |
+| Scheduler | System job **Warm admin P2 overview cache** — `admin-cache-warm` → handler `admin_cache.warm` (default **disabled**; enable when `scheduler:run` is on cron) |
+| HTTP read | `AdminOverviewCacheService` — fresh 120 s, stale window 600 s; **existing snapshot always served on HTTP** (background refresh), cold miss may sync-build once |
+
+**Invalidate** on relevant mutations (e.g. audit → `invalidateAuditStats()`). Safe to purge derived admin keys via cache admin scope — SSOT remains flat files.
+
+Operator checklist: [ADMIN_OPERATIONS.md](../developer/ADMIN_OPERATIONS.md) · simulation: [ADMIN_LOAD_SIMULATION.md](../developer/ADMIN_LOAD_SIMULATION.md).
+
+---
+
 ## Media upload compression (disk, not HTTP cache)
 
-Raster uploads (JPEG/PNG/WebP) can be **re-encoded on upload** via PHP GD when **Settings → Media / DAM → Auto-compress images on upload** is enabled (default on). The server keeps the original file only when GD cannot produce a smaller binary. Manual **Optimize** in Media Library uses the same engine.
-
-Optional **max edge (px)** downscales oversized photos before storage. Tune **JPEG/WebP quality** (60–95) for space vs. visual fidelity.
+See **[MEDIA_UPLOAD.md](../developer/MEDIA_UPLOAD.md)** — auto-compress on upload (GD), quality/max edge, and distinction from It.99 `reencodeRasterUploads`.
 
 For **HTTP transfer** compression (JSON/API, static assets), enable **gzip/brotli on the reverse proxy** (nginx/Caddy) — PHP flat-file responses do not replace proxy-level compression.
 
@@ -153,5 +167,6 @@ For **HTTP transfer** compression (JSON/API, static assets), enable **gzip/brotl
 ## Related
 
 - [ITERATION_69.md](../ITERATION_69.md) — Definition of Done
+- [ITERATION_100.md](../ITERATION_100.md) — admin load tiers
 - [HYBRID_ENGINE.md](../architecture/HYBRID_ENGINE.md) — HE-2 wave
-- [DEPLOY.md](../../deploy/DEPLOY.md) — stack rebuild with Redis
+- [DEPLOY.md](../deploy/DEPLOY.md) — stack rebuild with Redis

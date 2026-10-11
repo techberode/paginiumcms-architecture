@@ -7,6 +7,7 @@ namespace PaginiumCMS\Modules\Origin\Services;
 use PaginiumCMS\Modules\Origin\Contracts\FeatureProbeInterface;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Modules\Origin\Probes\AdminCommandPaletteFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\AdminP2CacheFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\AtRestEncryptionFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ApiKeysFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ArticlePrintFeatureProbe;
@@ -26,6 +27,7 @@ use PaginiumCMS\Modules\Origin\Probes\StaticSiteFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ThemePackagesFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ThemeRuntimeFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\UntrustedSurfacesFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\UploadPolyglotFeatureProbe;
 
 final class FeatureProbeRegistry
 {
@@ -40,6 +42,7 @@ final class FeatureProbeRegistry
             new ShortcodesFeatureProbe($support),
             new ScheduledPublishFeatureProbe($support),
             new UntrustedSurfacesFeatureProbe($support),
+            new UploadPolyglotFeatureProbe($support),
             new PerformanceGuardFeatureProbe($support),
             new HostMetricsFeatureProbe($support),
             new MultiLocaleFeatureProbe($support),
@@ -51,6 +54,7 @@ final class FeatureProbeRegistry
             new ThemeRuntimeFeatureProbe($support),
             new ThemePackagesFeatureProbe($support),
             new AdminCommandPaletteFeatureProbe($support),
+            new AdminP2CacheFeatureProbe($support),
             new ArticlePrintFeatureProbe($support),
             new BulkSelectionUxFeatureProbe($support),
             new StaticSiteFeatureProbe($support),

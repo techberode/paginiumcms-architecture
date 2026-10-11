@@ -39,9 +39,21 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 
 **Dynamic policy (goal):** when concurrent admin load rises (e.g. **>3 active sessions** or FPM saturation), automatically **extend P2 TTL**, **defer P2 FE fetch**, and **never throttle P0**.
 
-**Shipped foundation (Unreleased):** `AdminOverviewCacheService` (120 s fresh / 600 s stale **SWR**, no request-thread stampede lock) + FE `useAdminSecondaryQuery` + dashboard defer — static P2, not yet load-aware.
+**Shipped foundation (Unreleased on `main`):**
 
-**100c (partial — Unreleased):** CLI `php backend/bin/console cache:warm-admin` pre-generates audit/jobs/APM/planner P2 segments; pair with cron (see [ADMIN_LOAD_SIMULATION](developer/ADMIN_LOAD_SIMULATION.md)). Docker nginx template enables **gzip** for JSON. **100d** covers cron-only documents + optional Redis job-run projections (see §4).
+| Piece | Status |
+|-------|--------|
+| `AdminOverviewCacheService` | 120 s fresh / 600 s stale **SWR** + coalescing lock on **cold miss only** |
+| FE `useAdminSecondaryQuery` + `useAdminLoadHint` | P2 stale 120 s (300 s when `busy`) |
+| Dashboard P2 | Sequential fetch + stagger (`fetchDashboardSecondary`, `adminP2Stagger`) |
+| Session lock | `AuthMiddleware` release on GET/HEAD/OPTIONS |
+| Ops hub | [ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) |
+
+**100c (partial — Unreleased):** CLI `cache:warm-admin` + scheduler job `admin-cache-warm` (`admin_cache.warm`); pair with cron (see [ADMIN_LOAD_SIMULATION](developer/ADMIN_LOAD_SIMULATION.md)). Docker nginx **gzip** for JSON.
+
+**100d (Unreleased):** stale/expired P2 snapshots served without sync rebuild; optional **`adminP2CacheCronOnly`** (HTTP miss → warming placeholder, no flat-file parse); slim **`GET /api/admin/jobs?recent_runs=`** (dashboard **30**).
+**100e (Unreleased):** P3 admission (503 + Retry-After); async log export (`admin_logs.export`, artifact poll/download); FE polls when POST returns **202**.
+**100f (Unreleased):** `active_admin_sessions` in load-hint + **`adminLoadHintActiveSessionsMin`**.
 
 **Desk (ISS-198):** slow `GET /api/auth/me/desk` was a separate FPM hog (comment N+1 + double compose); fixed in tree — deploy with P2 cache + cron warm-up for full effect.
 
@@ -55,10 +67,10 @@ Single-user tuning hides **multi-user interference** on one `data/` tree and sha
 |-------|--------|-------------|
 | **100a** | Document tiers; cache P2 endpoints; FE secondary stale | Fewer repeated 5 s spikes on dashboard refresh |
 | **100b** | Load hint (`normal` / `busy`) from PG + worker pressure → FE coordinator | P2 deferred under busy; P0 latency stable in probe (**partial — Unreleased:** `GET /api/admin/metrics/load-hint`, dashboard/planner defer + longer P2 stale when `busy`) |
-| **100c** | P2 prewarm cron + SWR (no request-thread `rememberLocked`) | Miss storm reduced; stale served while cron/shutdown refresh ( **partial — Unreleased** ) |
-| **100d** | Cron-owned P2 **documents** in Redis/file; optional Redis types for job runs + slimmer `/api/admin/jobs` | HTTP never cold-parses flat-file for P2; jobs GET no longer one ~148 KB monolith by default (**partial — Unreleased:** `?recent_runs=` + dashboard `30`, dual cache warm) |
-| **100e** | P3 async exports; admission control (503 + Retry-After) for optional GET | No multi-minute blocking requests |
-| **100f** | Optional dedicated “synth sessions” metric on instance (count active admin sessions) | Policy rules use real session count, not only heuristics |
+| **100c** | P2 prewarm cron + SWR (no request-thread `rememberLocked`) | Miss storm reduced; stale served while cron/shutdown refresh (**partial — Unreleased:** CLI + job `admin-cache-warm`) |
+| **100d** | Cron-owned P2 **documents** in Redis/file; optional Redis types for job runs + slimmer `/api/admin/jobs` | HTTP never cold-parses flat-file for P2 when **cron-only** enabled (**Unreleased:** `adminP2CacheCronOnly` + miss placeholders + warm job; slim jobs + stale snapshot path shipped) |
+| **100e** | P3 async exports; admission control (503 + Retry-After) for optional GET | **Unreleased:** busy → 503 + Retry-After on sync log/audit export; POST log export queues `admin_logs.export` + artifact poll/download |
+| **100f** | Optional dedicated “synth sessions” metric on instance (count active admin sessions) | **Unreleased:** `AdminActiveSessionStore` + `adminLoadHintActiveSessionsMin` → `admin_active_sessions` reason + `active_admin_sessions` in load-hint JSON |
 
 Phases may ship in any order; **each deploy only advances metrics** — none closes It.100.
 
@@ -123,4 +135,4 @@ See runbook for cookie bootstrap, safety caps, and interpreting results next to 
 
 ## Related
 
-[ITERATION_69.md](ITERATION_69.md) · [ITERATION_71.md](ITERATION_71.md) · [ITERATION_85.md](ITERATION_85.md) (`size_bytes` + slow request triage) · [CACHE_OPERATIONS.md](runbooks/CACHE_OPERATIONS.md)
+[ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) · [ADMIN_LOAD_SIMULATION.md](developer/ADMIN_LOAD_SIMULATION.md) · [ITERATION_69.md](ITERATION_69.md) · [ITERATION_71.md](ITERATION_71.md) · [ITERATION_85.md](ITERATION_85.md) · [CACHE_OPERATIONS.md](runbooks/CACHE_OPERATIONS.md)

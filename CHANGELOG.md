@@ -13,29 +13,17 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
-- **Editor:** Autosave for new unsaved pages/articles (provisional `koncept-DDMMYYYY-*` slug, `GET /api/drafts/pending`, Pages/Articles banner, desk `content_draft` queue item)
-- **Security (It.99):** Upload polyglot hardening — `PolyglotUploadGuard`, secure media filenames, optional `reencodeRasterUploads`, PDF active-content sample probe (`/JavaScript`, `/OpenAction`, …) in upload scan window — [ISS-195](docs/ISSUES.md#iss-195) · [ITERATION_99.md](docs/en/ITERATION_99.md)
-- **Admin media (It.96 follow-up):** PDF preview in list/grid; admin PDF modal via `fetch` → blob + `<object>` (avoids `X-Frame-Options: DENY` on API); `AdminModalPortal` + overlay z-index above admin chrome; OS-style document badges (`MediaFileTypeIcon`); **Escape** closes media modals (`useEscapeToClose`) — lightbox, PDF, picker, metadata, text editor
-- **Admin P2 cache:** `AdminOverviewCacheService` (120s fresh / 600s stale **SWR**, background revalidate) for audit stats, jobs overview, APM summary, project-planner overview; CLI `cache:warm-admin` for cron prewarm; `AdminJobsOverviewProvider` shared with HTTP; FE `useAdminSecondaryQuery` + deferred dashboard/planner widgets; Docker nginx gzip for JSON
-- **It.100 (living):** [ITERATION_100.md](docs/en/ITERATION_100.md) — admin load tiers, ongoing tuning for ≥3 users/instance; read-only probe [`scripts/admin-concurrency-probe.sh`](scripts/admin-concurrency-probe.sh) · [ADMIN_LOAD_SIMULATION.md](docs/en/developer/ADMIN_LOAD_SIMULATION.md)
-- **Admin perf:** `AuthMiddleware` releases the PHP session write lock on authenticated GET/HEAD/OPTIONS (after `SessionReleaseMiddleware`, which runs before the session opens) so parallel dashboard XHR on one `PHPSESSID` do not serialize
-- **Monitoring report:** HTML email uses quoted-printable UTF-8 MIME (readable HTML in webmail; avoids raw base64 body); ntfy uses `text/html` when an HTML body is provided
-- **It.100b (partial):** `AdminLoadHintResolver` + `GET /api/admin/metrics/load-hint` (`normal`/`busy` from APM p95, session-lock p95, open breaches); FE defers P2 dashboard/planner fetches and extends React Query stale time when busy
-- **Admin mail:** keep message list mounted while reading a message (no skeleton flash on back); cache opened bodies; skip full reload after label delete / manual refresh when possible
-- **It.100d (partial):** `GET /api/admin/jobs?recent_runs=N` (5–500, default 150); dashboard uses 30 runs; cron warm pre-builds full + dashboard segments
-- **It.100 (partial):** dashboard P2 loads **sequentially** with staggered delays (audit → APM → jobs) and slightly deferred planner fetch — fewer parallel xhr / session lock spikes on open
-- **CSRF (post-login):** Refresh synchronizer token after login/2FA; clear on logout; `403 csrf_invalid` logged at INFO in `http_access` — [ISS-196](docs/ISSUES.md#iss-196) · [SECURITY.md](docs/en/developer/SECURITY.md) §10.1
-- **Deps (monitor):** Residual frontend `npm audit` high (Tailwind 3 build chain) — accepted defer, review each beta — [ISS-197](docs/ISSUES.md#iss-197) · [ITERATION_BACKLOG.md](docs/en/ITERATION_BACKLOG.md) §1b
-- **Desk performance:** `DeskInboxService` comment index (no N+1), single desk compose per request, comments registry memo, desk poll paused on hidden tab — [ISS-198](docs/ISSUES.md#iss-198)
-- **Privacy / cookies:** Settings → minimal Markdown for custom cookie-policy sections (`SettingsMinimalMarkdownField`, `plainMarkdownToHtml`); public `/cookies` renders via `PlainMarkdownProse` + `.pg-legal-prose` spacing (typography polish still optional)
-- **It.58f-i (remainder):** `section-band` `bg-crossfade="true"` + `useSectionBackgroundCrossfade`; `[before-after]` DAM island + slider; callout blocks use theme `--color-primary`
-- **It.82d (partial):** host snapshot store (`data/metrics/host-latest.json`), `metrics:host-collect`, scheduler job `host_metrics.collect`, `POST /api/admin/metrics/host/ingest` (loopback + token), `GET /api/admin/metrics/host`, dashboard RAM/disk + monitoring report; Origin probe; [HOST_METRICS.md](docs/en/developer/HOST_METRICS.md); engine settings `hostMetrics*`
+- **Editor:** Autosave for new unsaved pages/articles (provisional `koncept-DDMMYYYY-*` slug, `GET /api/drafts/pending`, Pages/Articles banner, desk `content_draft` queue item) — if not already on `main` from a prior slice, still pending separate ship
+- **It.100 (living):** further tuning (P3 async beyond logs, Redis job projections, prod metrics) — [ITERATION_100.md](docs/en/ITERATION_100.md)
+- **It.98:** workspace + CLI — [ITERATION_98.md](docs/en/ITERATION_98.md)
 - **Deferred:** It.97 CSP/embed facades · in-CMS docs portal — [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md)
+- **Deps (monitor):** Residual frontend `npm audit` high (Tailwind 3 build chain) — [ISS-197](docs/ISSUES.md#iss-197)
 
 ## Release index
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.98`](#release-2-1-0-beta-98) | 2026-10-11 | It.100 admin load · It.82d host metrics · It.99 polyglot · ops docs hub |
 | [`2.1.0-beta.97`](#release-2-1-0-beta-97) | 2026-10-06 | Experience Phase C reference seeds · B3 reading progress + View Transitions + pg-glass |
 | [`2.1.0-beta.96`](#release-2-1-0-beta-96) | 2026-10-06 | Experience B1 visual-frame motion · B2 section-band reveal/hover v3 · It.98/growth/docs portal plan · SK marketing drafts |
 | [`2.1.0-beta.95`](#release-2-1-0-beta-95) | 2026-10-06 | It.58f-i-i/j/k media gallery + unified lightbox · feature gallery deep links · shortcode cookbook docs |
@@ -201,6 +189,21 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ---
 
+
+<a id="release-2-1-0-beta-98"></a>
+
+## [2.1.0-beta.98] – 2026-10-11
+
+Admin load (**It.100**), host metrics (**It.82d**), upload polyglot (**It.99**), and production ops documentation.
+
+Release notes: [RELEASE_2_1_0_BETA_98.md](docs/en/RELEASE_2_1_0_BETA_98.md)
+
+### Shipped (summary)
+
+- **It.100:** P2 `AdminOverviewCacheService` SWR; `cache:warm-admin` + job `admin_cache.warm`; load-hint API + FE defer; dashboard P2 stagger; session write-lock release on GET; optional cron-only HTTP (`adminP2CacheCronOnly`); slim jobs overview; host load + **active admin sessions** in load-hint; P3 export admission + async log export (`admin_logs.export`) with FE poll on **202**; probe `it.100.admin_p2_cache` · [ADMIN_OPERATIONS.md](docs/en/developer/ADMIN_OPERATIONS.md) · [ITERATION_100.md](docs/en/ITERATION_100.md)
+- **It.82d:** Host metrics snapshot, collect job/CLI, ingest API, dashboard RAM/disk — [HOST_METRICS.md](docs/en/developer/HOST_METRICS.md)
+- **It.99:** Polyglot upload guard, re-encode settings, Origin probe — [UPLOAD_POLYGLOT.md](docs/en/developer/UPLOAD_POLYGLOT.md) · [ISS-195](docs/ISSUES.md#iss-195)
+- **Ops / UX:** Monitoring report UTF-8 HTML MIME; admin mail list stability; desk N+1 fix [ISS-198](docs/ISSUES.md#iss-198); CSRF refresh after login [ISS-196](docs/ISSUES.md#iss-196); 58f-i crossfade/before-after; [MEDIA_UPLOAD.md](docs/en/developer/MEDIA_UPLOAD.md)
 
 <a id="release-2-1-0-beta-97"></a>
 

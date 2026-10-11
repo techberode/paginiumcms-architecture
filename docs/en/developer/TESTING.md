@@ -121,6 +121,21 @@ When a script has no `--help`, its content and the CI workflow in that tag are t
 
 The pyramid does not mean that a larger number of tests automatically provides higher quality. Correctly selected contracts and independent environments matter more.
 
+### 3.1 Targeted regression files (ops / security slices)
+
+| Area | PHPUnit / Vitest (representative) |
+|------|-----------------------------------|
+| It.99 upload polyglot | `backend/tests/Core/Security/Upload/PolyglotUploadGuardTest.php` |
+| Media re-encode | `backend/tests/Modules/Media/Services/MediaImageOptimizerTest.php` |
+| It.100 admin P2 cache | `backend/tests/Core/Cache/AdminOverviewCacheServiceTest.php` |
+| It.100 load hint | `backend/tests/Core/Performance/AdminLoadHintResolverTest.php` |
+| It.100 warm job | `backend/tests/Core/Scheduler/Handlers/AdminOverviewCacheWarmHandlerTest.php` |
+| It.100e async log export | `backend/tests/Core/Scheduler/Handlers/AdminApplicationLogExportHandlerTest.php` |
+| It.82d host collect | `backend/tests/Core/Scheduler/Handlers/HostMetricsCollectHandlerTest.php` |
+| FE P2 stagger | `frontend/src/utils/adminP2Stagger.test.ts` |
+
+Runbooks: [ADMIN_OPERATIONS.md](ADMIN_OPERATIONS.md) · [UPLOAD_POLYGLOT.md](UPLOAD_POLYGLOT.md).
+
 ## 4. Required gate levels
 
 ### 4.1 Fast local gate

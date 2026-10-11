@@ -186,6 +186,24 @@ class ApiClient {
    * POST expecting a binary body (not JSON). CSRF must be supplied explicitly;
    * use logs export helper for automatic refresh/retry.
    */
+  public async getRawBlob(url: string): Promise<{ ok: boolean; status: number; blob?: Blob; errorBlob?: Blob }> {
+    try {
+      const response = await this.client.get(url, {
+        responseType: 'blob',
+        headers: { Accept: '*/*' },
+      });
+      const blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
+      return { ok: response.status >= 200 && response.status < 300, status: response.status, blob };
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const payload = error.response.data;
+        const errorBlob = payload instanceof Blob ? payload : undefined;
+        return { ok: false, status: error.response.status, errorBlob };
+      }
+      throw error;
+    }
+  }
+
   public async postRawBlob(
     url: string,
     data: unknown,

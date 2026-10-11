@@ -1,7 +1,7 @@
 # PaginiumCMS — kontext pre pokračovanie vývoja
 
 > **Účel:** stručný handoff pre ďalšiu reláciu  
-> **Checkpoint:** 20. september 2026 · **`v2.1.0-beta.89`**
+> **Checkpoint:** október 2026 · tag **`v2.1.0-beta.98`** — anglický master [en/CONTINUATION.md](../en/CONTINUATION.md) · [RELEASE_2_1_0_BETA_98.md](../en/RELEASE_2_1_0_BETA_98.md)
 > **Aktívna fáza:** **plný vývoj naplánovaných iterácií** — stabilizačný freeze zrušený
 
 Anglický master: [en/CONTINUATION.md](../en/CONTINUATION.md)
@@ -25,7 +25,8 @@ Stabilizačná fáza je **ukončená**. Pokračujeme v existujúcich špeckách;
 ## Fronta
 
 1. **It.69 Redis driver** — voliteľná cache, nikdy SSOT
-2. **It.82d** Origin host metrics (voliteľné)
+2. **It.82d** host snapshot — [en/developer/HOST_METRICS.md](../en/developer/HOST_METRICS.md)  
+3. **It.100** admin load — [en/developer/ADMIN_OPERATIONS.md](../en/developer/ADMIN_OPERATIONS.md)
 
 Hotové pred touto frontou: **It.58f** vizuálne bloky (**58f-a–h**), **It.95** playground, **93l-2** interné poznámky / SLA. **It.93** ✅ `beta.77`–`79` + **93o-2–8** v `beta.86`.
 

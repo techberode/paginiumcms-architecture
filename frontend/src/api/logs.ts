@@ -38,8 +38,22 @@ export interface LogListResponse {
 }
 
 export type LogExportDownloadResult =
-  | { ok: true; blob: Blob }
+  | { ok: true; blob: Blob; queued?: boolean }
   | { ok: false; message: string };
+
+interface LogExportArtifactStatus {
+  id: string;
+  status: 'pending' | 'ready' | 'failed';
+  format?: string;
+  error?: string | null;
+  filename?: string | null;
+}
+
+interface LogExportQueuedResponse {
+  async?: boolean;
+  artifact_id?: string;
+  status?: string;
+}
 
 export const logsApi = {
   stats: async (hours = 24): Promise<LogStats | null> => {
@@ -106,6 +120,15 @@ export const logsApi = {
 
         const response = await apiClient.postRawBlob('/api/admin/logs/export', params, csrf ?? '');
 
+        if (response.status === 202 && response.blob) {
+          const queued = await parseJsonBlob(response.blob);
+          const artifactId = queued?.data?.artifact_id ?? queued?.artifact_id;
+          if (typeof artifactId === 'string' && artifactId !== '') {
+            return pollAndDownloadExport(artifactId);
+          }
+          return { ok: false, message: 'Export queued but artifact id missing' };
+        }
+
         if (response.status === 403 && !csrfRetried) {
           const errBody = await parseJsonBlob(response.errorBlob);
           if (errBody?.code === 'csrf_invalid') {
@@ -142,15 +165,71 @@ export const logsApi = {
   },
 };
 
+async function pollAndDownloadExport(artifactId: string): Promise<LogExportDownloadResult> {
+  const statusUrl = `/api/admin/logs/export/artifacts/${artifactId}`;
+  const downloadUrl = `${statusUrl}/download`;
+
+  for (let attempt = 0; attempt < 45; attempt++) {
+    if (attempt > 0) {
+      await sleep(1000);
+    }
+
+    const statusRes = await apiClient.get<LogExportArtifactStatus>(statusUrl);
+    if (!statusRes.success || !statusRes.data) {
+      continue;
+    }
+
+    const status = statusRes.data.status;
+    if (status === 'failed') {
+      return {
+        ok: false,
+        message: statusRes.data.error ?? 'Async export failed',
+      };
+    }
+
+    if (status === 'ready') {
+      const fileRes = await apiClient.getRawBlob(downloadUrl);
+      if (!fileRes.ok || !fileRes.blob || fileRes.blob.size === 0) {
+        return { ok: false, message: `Download failed (HTTP ${fileRes.status})` };
+      }
+
+      return { ok: true, blob: fileRes.blob, queued: true };
+    }
+  }
+
+  return { ok: false, message: 'Export timed out — try again in a minute' };
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 async function parseJsonBlob(
   blob: Blob | null | undefined
-): Promise<{ error?: string; message?: string; code?: string } | null> {
+): Promise<
+  | {
+      error?: string;
+      message?: string;
+      code?: string;
+      data?: LogExportQueuedResponse;
+      artifact_id?: string;
+    }
+  | null
+> {
   if (!blob || blob.size === 0) {
     return null;
   }
   try {
     const text = await blob.text();
-    return JSON.parse(text) as { error?: string; message?: string; code?: string };
+    return JSON.parse(text) as {
+      error?: string;
+      message?: string;
+      code?: string;
+      data?: LogExportQueuedResponse;
+      artifact_id?: string;
+    };
   } catch {
     return null;
   }

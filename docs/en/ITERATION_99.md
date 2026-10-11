@@ -4,6 +4,7 @@
 > **Priority:** 🟡 security · **does not block** It.98 workspace  
 > **Wave:** Post-It.78/79 upload follow-up  
 > **Depends on:** [It.78](ITERATION_78.md) unified upload · [It.79](ITERATION_79.md) video markers · [ISS-195](../ISSUES.md#iss-195)  
+> **Operator guides:** [UPLOAD_POLYGLOT.md](developer/UPLOAD_POLYGLOT.md) · [MEDIA_UPLOAD.md](developer/MEDIA_UPLOAD.md) (auto-compress vs security re-encode)  
 > **Design goal:** close known polyglot gaps with **minimal impact** on CMS **speed**, **stability**, and **simplicity** (flat-file, no new daemons, no mandatory ImageMagick).
 
 ## Problem

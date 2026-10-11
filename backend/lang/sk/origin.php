@@ -219,6 +219,8 @@ return [
     'it58_shortcodes' => 'Layout shortcodes',
     'it59_scheduled' => 'Plánované publikovanie',
     'it67_untrusted' => 'Hardening nedôveryhodných plôch',
+    'it99_polyglot' => 'Upload polyglot (It.99)',
+    'it100_admin_p2_cache' => 'Admin P2 cache (It.100)',
     'it71_performance' => 'Performance Guard',
     'it82_host_metrics' => 'Host snapshot (It.82d)',
     'it73_locale' => 'Multi-locale obsah',

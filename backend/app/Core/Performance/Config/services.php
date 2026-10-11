@@ -10,7 +10,10 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\Notification\Services\IncidentNotifier;
+use PaginiumCMS\Core\Performance\AdminActiveSessionStore;
 use PaginiumCMS\Core\Performance\AdminLoadHintResolver;
+use PaginiumCMS\Core\Performance\AdminLoadHintSettings;
+use PaginiumCMS\Core\Performance\AdminP3AdmissionGuard;
 use PaginiumCMS\Core\Performance\Commands\HostMetricsCollectCommand;
 use PaginiumCMS\Core\Performance\HostMetricsCollector;
 use PaginiumCMS\Core\Performance\HostMetricsIngestGuard;
@@ -59,12 +62,22 @@ return [
         ),
     PerformanceAggregator::class => create(PerformanceAggregator::class)
         ->constructor(get(PerformanceSampleStore::class)),
+    AdminLoadHintSettings::class => create(AdminLoadHintSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+    AdminActiveSessionStore::class => create(AdminActiveSessionStore::class)
+        ->constructor(get(CacheManager::class)),
     AdminLoadHintResolver::class => create(AdminLoadHintResolver::class)
         ->constructor(
             get(PerformanceGuardSettings::class),
             get(PerformanceAggregator::class),
-            get(PerformanceBreachStore::class)
+            get(PerformanceBreachStore::class),
+            get(HostMetricsService::class),
+            get(HostMetricsSettings::class),
+            get(AdminActiveSessionStore::class),
+            get(AdminLoadHintSettings::class)
         ),
+    AdminP3AdmissionGuard::class => create(AdminP3AdmissionGuard::class)
+        ->constructor(get(AdminLoadHintResolver::class), get(AdminLoadHintSettings::class)),
     HostMetricsStore::class => create(HostMetricsStore::class)
         ->constructor(get(FileReaderInterface::class), get(FileWriterInterface::class)),
     HostMetricsSettings::class => create(HostMetricsSettings::class)

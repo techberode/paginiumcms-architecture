@@ -59,8 +59,14 @@ Complete index of the final bilingual PaginiumCMS documentation. Paths are relat
 - [Local Development Environment](developer/LOCAL_SETUP.md) — `docs/developer/LOCAL_SETUP.md`
 - [Release lifecycle and production gate](developer/RELEASE.md) — `docs/developer/RELEASE.md`
 - [Development Security Architecture](developer/SECURITY.md) — `docs/developer/SECURITY.md`
+- [Admin operations — load, cache, host context](developer/ADMIN_OPERATIONS.md) — It.100 ops hub
+- [Admin load simulation runbook](developer/ADMIN_LOAD_SIMULATION.md) — concurrency probe
+- [Host metrics snapshot (It.82d)](developer/HOST_METRICS.md) — cron/ingest/dashboard
+- [Upload polyglot hardening (It.99)](developer/UPLOAD_POLYGLOT.md) — marker scan / re-encode settings
+- [Media upload — compression and limits](developer/MEDIA_UPLOAD.md) — GD auto-compress on upload
 - [Cookies & GDPR](COOKIES&GDPR.md) — `docs/en/COOKIES&GDPR.md` (consent banner, `/cookies`, admin export/anonymize)
 - [Testing and Quality Gates](developer/TESTING.md) — `docs/developer/TESTING.md`
+- [Release `v2.1.0-beta.98`](RELEASE_2_1_0_BETA_98.md) — It.100 admin load · host metrics · polyglot uploads
 
 ## Deployment
 

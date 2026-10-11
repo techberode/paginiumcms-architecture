@@ -1,7 +1,7 @@
 # PaginiumCMS — development continuation context
 
 > **Purpose:** concise, current handoff for the next development session  
-> **Checkpoint:** October 6, 2026 · `main` @ **`v2.1.0-beta.97`** (Experience Phase C + B3)  
+> **Checkpoint:** October 11, 2026 · latest tag **`v2.1.0-beta.98`** — It.100/82d/99 + ops docs — [RELEASE_2_1_0_BETA_98.md](RELEASE_2_1_0_BETA_98.md)  
 > **Active phase:** **Full planned-iteration development** — stabilization freeze lifted  
 > **Next planned slice:** **It.98** workspace+CLI — [ITERATION_98.md](ITERATION_98.md) · optional **B3** / 58f-i-d — [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) · **It.97** **deferred**
 
@@ -29,8 +29,8 @@ Historical freeze record: [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) (supe
 
 | Area | Status |
 |------|--------|
-| Latest tag | ✅ **`v2.1.0-beta.97`** — reference landing seeds + reading progress + view transitions — [RELEASE_2_1_0_BETA_97.md](RELEASE_2_1_0_BETA_97.md) (prior: [beta.96](RELEASE_2_1_0_BETA_96.md)) |
-| Unreleased | **It.82d** host metrics · optional 58f-i-d crossfade · in-CMS docs portal proposal · Experience **B3** |
+| Latest tag | ✅ **`v2.1.0-beta.98`** — admin load It.100 · host metrics · polyglot uploads · ops hub — [RELEASE_2_1_0_BETA_98.md](RELEASE_2_1_0_BETA_98.md) (prior: [beta.97](RELEASE_2_1_0_BETA_97.md)) |
+| Unreleased | **It.100** ongoing tuning (living) · **It.98** workspace · docs portal proposal · editor autosave (if not yet tagged separately) |
 | Origin Panel | Refresh “today” snapshot after deploy; canonical version = **`AppVersion::current()`** / latest git tag |
 | Previous tag | `v2.1.0-beta.95` — `[media-gallery]` · unified lightbox · feature gallery `?slide=` · shortcode cookbook |
 | It.48 | ✅ compile + public HTML serve in `beta.89` |
@@ -58,9 +58,10 @@ Do **not** invent new iteration numbers. Finish specs that already exist.
 | 2 | ✅ **Experience B1** — `[visual-frame]` motion presets | [PUBLIC_EXPERIENCE_ROADMAP.md](architecture/PUBLIC_EXPERIENCE_ROADMAP.md) |
 | 3 | ✅ **Experience B2** — section-band reveal/hover v3 (`beta.96`) | same |
 | 4 | ✅ **Experience C** — reference landing seeds + outline starters | [LANDING_PAGE.md](user/LANDING_PAGE.md) |
-| 5 | **It.58f-i** remainder (58f-i-d crossfade, before-after, callout theme) | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
-| 5b | ✅ **It.99** Upload polyglot hardening (marker scan, secure filenames, opt-in re-encode) | [ISS-195](../ISSUES.md#iss-195) · [ITERATION_99.md](ITERATION_99.md) |
-| 6 | **It.82d** Origin host metrics | Optional maintainer hook |
+| 5 | 🟡 **It.58f-i** remainder | Shipped on `main`: crossfade, before-after, callout — [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) |
+| 5b | ✅ **It.99** Upload polyglot hardening | [UPLOAD_POLYGLOT.md](developer/UPLOAD_POLYGLOT.md) · [ISS-195](../ISSUES.md#iss-195) |
+| 5c | 🔄 **It.100** Admin load & P2 cache (living) | [ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) · [ITERATION_100.md](ITERATION_100.md) |
+| 6 | 🟡 **It.82d** Host metrics snapshot | [HOST_METRICS.md](developer/HOST_METRICS.md) |
 | 7 | **It.98** Multi-site workspace + CLI content ops (WP-style, phased) | [ITERATION_98.md](ITERATION_98.md) |
 | 8 | **Growth proposals** (A/B, related posts, TOC, cross-post, visual B3) | [PRODUCT_GROWTH_PROPOSALS.md](architecture/PRODUCT_GROWTH_PROPOSALS.md) |
 
@@ -90,6 +91,9 @@ Admin deep-links: `/settings?group=engine` (legacy `/settings/engine` redirects)
 ./scripts/iteration-gate.sh
 ./scripts/smoke-it25.sh
 curl -s http://127.0.0.1:8080/api/setup/preflight | jq .
+php backend/bin/console cache:warm-admin          # It.100 P2 prewarm
+php backend/bin/console metrics:host-collect      # It.82d (Linux host)
+./scripts/admin-concurrency-probe.sh -h           # It.100 read-only load probe
 ```
 
 Frontend Vite: **`:3025`** (not 3026). White screen on the wrong port is not a CMS bug.
@@ -113,7 +117,10 @@ Frontend Vite: **`:3025`** (not 3026). White screen on the wrong port is not a C
 | [ITERATION_93.md](ITERATION_93.md) | Admin chrome + desk; **93l-2** shipped |
 | [ITERATION_95.md](ITERATION_95.md) | Sandpack playground **95a/c/b/d** shipped |
 | [ITERATION_BACKLOG.md](ITERATION_BACKLOG.md) | Full remaining scope |
-| [ISSUES.md](ISSUES.md#iss-173) | ISS-173 gitleaks · ISS-174 desk role |
+| [ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) | It.100 ops checklist |
+| [HOST_METRICS.md](developer/HOST_METRICS.md) · [UPLOAD_POLYGLOT.md](developer/UPLOAD_POLYGLOT.md) | It.82d · It.99 |
+| [MEDIA_UPLOAD.md](developer/MEDIA_UPLOAD.md) | Auto-compress + upload settings |
+| [ISSUES.md](ISSUES.md#iss-173) | ISS-173 · ISS-174 · ISS-195 · ISS-198 |
 
 ---
 

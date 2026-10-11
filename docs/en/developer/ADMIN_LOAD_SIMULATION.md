@@ -1,6 +1,7 @@
 # Admin load simulation (single instance, multi-user)
 
 > **Iteration:** [ITERATION_100](../ITERATION_100.md)  
+> **Ops checklist (cron, warm cache, host metrics):** [ADMIN_OPERATIONS.md](ADMIN_OPERATIONS.md)  
 > **Use case:** You cannot easily put ten colleagues on one CMS — this probe approximates **N concurrent admin readers** on **one production or staging instance** without mutating content.
 
 ---
@@ -96,6 +97,8 @@ Pre-compute derived admin overview caches so HTTP handlers serve Redis/file enve
 ```bash
 * * * * * cd /path/to/paginiumcms && php backend/bin/console cache:warm-admin >/dev/null 2>&1
 ```
+
+Or enable scheduled job **Warm admin P2 overview cache (It.100c)** (`admin-cache-warm`) in **Jobs** — same work as the CLI command, runs when `scheduler:run` is on cron.
 
 Optional host load/RAM/disk for dashboard context (It.82d): enable engine host metrics + scheduled job `host-metrics-collect` — see [HOST_METRICS.md](HOST_METRICS.md).
 

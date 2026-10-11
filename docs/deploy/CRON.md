@@ -17,6 +17,17 @@ The retained current profile includes, for example:
 | `content-scheduled-publish` | `content.scheduled_publish` | every minute | publish due content |
 | `monitoring-pipeline` | `monitoring.pipeline` | every minute | monitoring and log scanning |
 | `backup-scheduled` | `backup.scheduled` | daily at 02:00 | scheduled CMS backup |
+| `admin-cache-warm` | `admin_cache.warm` | every minute | **disabled by default** — pre-warm admin P2 cache (It.100c); same as `cache:warm-admin` |
+| `host-metrics-collect` | `host_metrics.collect` | every 5 min | **disabled by default** — host load/RAM/disk snapshot (It.82d); requires Engine host metrics ON |
+
+Optional CLI equivalents (host cron instead of scheduler jobs):
+
+```bash
+php backend/bin/console cache:warm-admin
+php backend/bin/console metrics:host-collect
+```
+
+See [ADMIN_OPERATIONS.md](../developer/ADMIN_OPERATIONS.md) · [HOST_METRICS.md](../developer/HOST_METRICS.md).
 
 **Queue handlers (not necessarily on a cron schedule):** when an admin enqueues work, `worker:process` must run so jobs complete. Examples:
 

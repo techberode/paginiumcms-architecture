@@ -606,6 +606,7 @@ $containerBuilder->addDefinitions([
         return new AuthMiddleware(
             $container->get(AuthenticationInterface::class),
             $container->get(SessionManager::class),
+            $container->get(\PaginiumCMS\Core\Performance\AdminActiveSessionStore::class),
         );
     },
 

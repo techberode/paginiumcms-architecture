@@ -1099,14 +1099,22 @@ return [
     ContentCacheService::class => create(ContentCacheService::class)
         ->constructor(get(CacheManager::class)),
 
+    \PaginiumCMS\Core\Cache\AdminOverviewCacheSettings::class => create(\PaginiumCMS\Core\Cache\AdminOverviewCacheSettings::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
     AdminOverviewCacheService::class => create(AdminOverviewCacheService::class)
-        ->constructor(get(CacheManager::class)),
+        ->constructor(get(CacheManager::class), get(\PaginiumCMS\Core\Cache\AdminOverviewCacheSettings::class)),
+    \PaginiumCMS\Core\Logging\Services\AdminExportArtifactStore::class => create(\PaginiumCMS\Core\Logging\Services\AdminExportArtifactStore::class)
+        ->constructor(
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class),
+            get(\PaginiumCMS\Core\FlatFile\Services\FileValidator::class)
+        ),
 
     AdminOverviewCacheWarmer::class => create(AdminOverviewCacheWarmer::class)
         ->constructor(
             get(AdminOverviewCacheService::class),
             get(\PaginiumCMS\Core\AuditTrail\Services\AuditTrailService::class),
-            get(\PaginiumCMS\Core\Scheduler\Services\AdminJobsOverviewProvider::class),
+            get(\Psr\Container\ContainerInterface::class),
             get(\PaginiumCMS\Core\Performance\PerformanceGuardSettings::class),
             get(\PaginiumCMS\Core\Performance\PerformanceAggregator::class),
             get(\PaginiumCMS\Core\Performance\PerformanceBreachStore::class),
@@ -1117,6 +1125,7 @@ return [
             get(\PaginiumCMS\Modules\ProjectPlanner\Contracts\ProjectPlanRepositoryInterface::class),
             get(\PaginiumCMS\Modules\ProjectPlanner\Services\ProjectPlanApiPresenter::class)
         ),
+    \PaginiumCMS\Core\Cache\Contracts\AdminOverviewCacheWarmRunner::class => get(AdminOverviewCacheWarmer::class),
 
     CacheAdminService::class => create(CacheAdminService::class)
         ->constructor(
@@ -2387,6 +2396,7 @@ return [
         ->constructor(
             get(AuditTrailService::class),
             get(AdminOverviewCacheService::class),
+            get(\PaginiumCMS\Core\Performance\AdminP3AdmissionGuard::class),
             get(JsonResponder::class)
         ),
     DeveloperController::class => create(DeveloperController::class)
@@ -2458,6 +2468,10 @@ return [
             get(ApplicationLogMessageFormatter::class),
             get(ApplicationLogExportService::class),
             get(LogRetentionService::class),
+            get(\PaginiumCMS\Core\Performance\AdminP3AdmissionGuard::class),
+            get(\PaginiumCMS\Core\Logging\Services\AdminExportArtifactStore::class),
+            get(\PaginiumCMS\Core\Scheduler\Services\JobQueueStore::class),
+            get(\PaginiumCMS\Core\Scheduler\Services\JobWorker::class),
             get(JsonResponder::class)
         ),
     FeedGenerator::class => create(FeedGenerator::class)

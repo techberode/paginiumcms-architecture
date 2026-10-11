@@ -219,6 +219,8 @@ return [
     'it58_shortcodes' => 'Layout shortcodes',
     'it59_scheduled' => 'Scheduled publishing',
     'it67_untrusted' => 'Untrusted surfaces hardening',
+    'it99_polyglot' => 'Upload polyglot hardening (It.99)',
+    'it100_admin_p2_cache' => 'Admin P2 overview cache (It.100)',
     'it71_performance' => 'Performance Guard',
     'it82_host_metrics' => 'Host metrics snapshot (It.82d)',
     'it73_locale' => 'Multi-locale content',

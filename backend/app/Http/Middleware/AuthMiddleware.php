@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Middleware;
 
+use PaginiumCMS\Core\Performance\AdminActiveSessionStore;
 use PaginiumCMS\Modules\Security\Contracts\AuthenticationInterface;
 use PaginiumCMS\Modules\Security\Services\SessionManager;
 use Psr\Http\Message\ResponseInterface;
@@ -24,6 +25,7 @@ class AuthMiddleware implements MiddlewareInterface
     public function __construct(
         private AuthenticationInterface $auth,
         private SessionManager $session,
+        private AdminActiveSessionStore $activeSessions,
     ) {
     }
 
@@ -41,6 +43,10 @@ class AuthMiddleware implements MiddlewareInterface
         }
 
         $this->auth->touchSession();
+        $sessionId = session_id();
+        if ($sessionId !== false && $sessionId !== '') {
+            $this->activeSessions->touch($sessionId);
+        }
 
         if ($this->isReadMethod($request->getMethod())) {
             $this->session->releaseWriteLock();

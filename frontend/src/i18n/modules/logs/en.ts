@@ -78,6 +78,7 @@ export const logsEn: MessageTree = {
     bulkDeleteSuccess: 'Deleted :count log(s).',
     bulkArchiveSuccess: 'Archived :count log(s).',
     exportSuccess: 'Log export downloaded.',
+    exportSuccessQueued: 'Log export ready (instance was busy — prepared in background).',
     exportFailed: 'Log export failed.',
     exportEmpty: 'Nothing to export — adjust filter or selection.',
   },

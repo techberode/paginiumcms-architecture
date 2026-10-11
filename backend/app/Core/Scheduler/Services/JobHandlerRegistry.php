@@ -14,6 +14,8 @@ use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\AdminApplicationLogExportHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\AdminOverviewCacheWarmHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
@@ -36,6 +38,8 @@ final class JobHandlerRegistry
         private AgentRunHandler $agentRun,
         private StaticRebuildHandler $staticRebuild,
         private HostMetricsCollectHandler $hostMetricsCollect,
+        private AdminOverviewCacheWarmHandler $adminCacheWarm,
+        private JobHandlerInterface $adminLogsExport,
     ) {
     }
 
@@ -54,6 +58,8 @@ final class JobHandlerRegistry
             'agent.run' => $this->agentRun,
             'static.rebuild' => $this->staticRebuild,
             'host_metrics.collect' => $this->hostMetricsCollect,
+            'admin_cache.warm' => $this->adminCacheWarm,
+            'admin_logs.export' => $this->adminLogsExport,
             default => null,
         };
     }
@@ -76,6 +82,8 @@ final class JobHandlerRegistry
             ['key' => $this->agentRun->key(), 'label' => $this->agentRun->label()],
             ['key' => $this->staticRebuild->key(), 'label' => $this->staticRebuild->label()],
             ['key' => $this->hostMetricsCollect->key(), 'label' => $this->hostMetricsCollect->label()],
+            ['key' => $this->adminCacheWarm->key(), 'label' => $this->adminCacheWarm->label()],
+            ['key' => $this->adminLogsExport->key(), 'label' => $this->adminLogsExport->label()],
         ];
     }
 }
