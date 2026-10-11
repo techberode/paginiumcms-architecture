@@ -105,14 +105,14 @@
     {
       "id": "ops.2026-09-20",
       "titleKey": "origin.catalog.ops_today",
-      "phase": "shipped",
+      "phase": "partial",
       "doc": "CHANGELOG.md",
       "priority": "high",
       "items": [
         { "id": "ops-it48", "titleKey": "origin.catalog.it48", "phase": "shipped", "weight": 1 },
         { "id": "ops-gitleaks", "titleKey": "origin.catalog.ops_gitleaks", "phase": "shipped", "weight": 1 },
         { "id": "ops-desk-gate", "titleKey": "origin.catalog.ops_desk_gate", "phase": "shipped", "weight": 1 },
-        { "id": "ops-tag", "titleKey": "origin.catalog.ops_tag_deploy", "phase": "shipped", "weight": 1 }
+        { "id": "ops-tag", "titleKey": "origin.catalog.ops_tag_deploy", "phase": "planned", "weight": 1 }
       ],
       "history": []
     },
