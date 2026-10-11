@@ -252,7 +252,7 @@ Strojovo čitateľný SSOT: [`docs/manifest/project-catalog.json`](../manifest/p
 
 ## 19. Plánovaná iterácia 87 (post-stable)
 
-Špecifikácia: [`docs/en/ITERATION_87.md`](../en/ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](../sk/ITERATION_87.md)
+Špecifikácia: [`docs/en/ITERATION_87.md`](../en/ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](ITERATION_87.md)
 
 - [x] Špecifikácia It.87 (Plánovač projektu + UX audit)
 - [ ] MVP plánovača (`87e`–`87h`) v plnej verzii CMS

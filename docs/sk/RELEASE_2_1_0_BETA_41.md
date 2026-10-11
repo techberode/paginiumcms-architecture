@@ -3,7 +3,7 @@
 > **Dátum:** 2026-08-13  
 > **Tag:** `v2.1.0-beta.41`  
 > **Iterácia:** It.58d–58e (layout builder — shortcode vetva)  
-> **Súhrn série:** [CLANEK_BETA_35_45_SUHRN.md](CLANEK_BETA_35_45_SUHRN.md)
+> **Súhrn série:** CHANGELOG entries for beta.35–beta.45
 
 ---
 
@@ -132,5 +132,5 @@ Plánované redakčné vylepšenia: **It.81** (duplikácia, bulk tagy, snippet k
 
 - [CHANGELOG — beta.41](../../CHANGELOG.md#release-2-1-0-beta-41)
 - [ITERATION_58.md](../en/ITERATION_58.md)
-- [Súhrn beta 35–45](CLANEK_BETA_35_45_SUHRN.md)
+- CHANGELOG entries for beta.35–beta.45
 - [It.81 backlog](../en/ITERATION_81.md)

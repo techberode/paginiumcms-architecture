@@ -20,7 +20,7 @@ PaginiumCMS is a **Hybrid Headless Content Engine**: files remain the mandatory 
 | 4 | [Content editor](CONTENT_EDITOR.md) | page and article editors |
 | 4b | [Media in content](MEDIA_IN_CONTENT.md) | images, captions, video, embed policy |
 | 4c | [Shortcode cookbook](SHORTCODE_COOKBOOK.md) | every bundled shortcode/widget with examples |
-| 4d | [SK marketing drafts](../../sk/marketing/README.md) | publication drafts linking to GitHub docs |
+| 4d | SK marketing drafts (SK marketing drafts — optional local `docs/sk/marketing/`, gitignored) | publication drafts linking to GitHub docs |
 | 5 | [Feature gallery](GALLERY.md) | shared photo catalog on pages |
 | 6 | [Permissions and Path ACL](ACCESS_CONTROL.md) | SUPER_ADMIN and security operator |
 | 7 | [Firewall](FIREWALL.md) and [Logging](LOGGING.md) | operations and incident response |

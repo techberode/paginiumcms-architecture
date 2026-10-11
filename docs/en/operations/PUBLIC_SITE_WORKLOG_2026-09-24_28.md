@@ -123,6 +123,6 @@ Public **widgets** now also support `[widget type="map-embed" …]` in page/arti
 
 ## Related
 
-- [CHANGELOG.md](../../CHANGELOG.md) — Unreleased entries
+- [CHANGELOG.md](../../../CHANGELOG.md) — Unreleased entries
 - [ISSUES.md](../../ISSUES.md) — ISS-178–ISS-186
-- [DEPLOY.md](../../deploy/DEPLOY.md) — post-deploy verification
+- [DEPLOY.md](../deploy/DEPLOY.md) — post-deploy verification

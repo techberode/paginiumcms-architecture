@@ -136,4 +136,4 @@ Development / `APP_ENV=local`: the guard allows HTTP and private IPs for local t
 - [SECURITY.md](../developer/SECURITY.md) §14, §22.2  
 - [ITERATION_76.md](../ITERATION_76.md) — self-hosted translation (parallel URL policy)
 
-**MkDocs:** future admin guide with screenshots is planned in [MKDOCS_ADMIN_GUIDE_PLAN.md](../meta/MKDOCS_ADMIN_GUIDE_PLAN.md).
+**MkDocs:** future admin guide with screenshots is planned in [MKDOCS_ADMIN_GUIDE_PLAN.md](../../meta/MKDOCS_ADMIN_GUIDE_PLAN.md).

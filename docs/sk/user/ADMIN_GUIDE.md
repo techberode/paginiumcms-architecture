@@ -253,7 +253,7 @@ Správa prekladov admin UI nie je to isté ako viacjazyčný content dokument. C
 - [Firewall](FIREWALL.md) blokuje definované probe scenáre a spravuje jaily.
 - [Logy](LOGGING.md) pomáhajú diagnostikovať requesty a runtime udalosti.
 - Audit eviduje významné používateľské a systémové zmeny.
-- [Code policy](../architecture/CODE_POLICY.md) riadi pluginy, témy a nedôveryhodné PHP/JSON plochy (fail-closed pri importe a ukladaní).
+- [Code policy](../../en/architecture/CODE_POLICY.md) riadi pluginy, témy a nedôveryhodné PHP/JSON plochy (fail-closed pri importe a ukladaní).
 
 Tieto vrstvy sa dopĺňajú, ale nie sú navzájom zameniteľné. Audit nemá byť zaplavovaný každým read requestom a request log nemá nahradiť doménový audit.
 

@@ -4,7 +4,7 @@
 
 ## Authoritative sources (in order)
 
-1. **Origin Panel** — `/platform/origin` (SUPER_ADMIN, `ORIGIN_PANEL` env). Feature probes report `implemented` / `partial` / `missing` from real classes and routes.
+1. **Origin Panel** — `/origin` (SUPER_ADMIN, `ORIGIN_PANEL` env). Feature probes report `implemented` / `partial` / `missing` from real classes and routes.
 2. **[CHANGELOG.md](../../../CHANGELOG.md)** — shipped facts and release tags.
 3. **[ISSUES.md](../../ISSUES.md)** — incidents and follow-ups.
 

@@ -8,6 +8,7 @@ Post-migration audit after **Iteration 18** (`docs/en/`, `docs/sk/`, shared `doc
 |--------|---------|
 | [`scripts/audit-doc-links.py`](../../scripts/audit-doc-links.py) | Scan markdown links; fail if target file missing |
 | [`scripts/fix-doc-links.py`](../../scripts/fix-doc-links.py) | Re-apply bulk path corrections after locale tree move |
+| [`scripts/fix-doc-links-deep.py`](../../scripts/fix-doc-links-deep.py) | Targeted fixes (CHANGELOG depth, admin URLs, removed `.cursorrules`) |
 
 Run from repo root:
 

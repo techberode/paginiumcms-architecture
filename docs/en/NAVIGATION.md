@@ -87,9 +87,9 @@ Complete index of the final bilingual PaginiumCMS documentation. Paths are relat
 
 ## Runbooks
 
-- [Cache operations (It.69 Redis/file)](en/runbooks/CACHE_OPERATIONS.md) — `docs/en/runbooks/CACHE_OPERATIONS.md`
-- [CMS AI assistant — Ollama + nginx (It.75)](en/runbooks/AGENT_OPERATIONS.md) — `docs/en/runbooks/AGENT_OPERATIONS.md`
-- [MkDocs admin guide plan (screenshots)](meta/MKDOCS_ADMIN_GUIDE_PLAN.md) — `docs/meta/MKDOCS_ADMIN_GUIDE_PLAN.md`
+- [Cache operations (It.69 Redis/file)](runbooks/CACHE_OPERATIONS.md) — `docs/en/runbooks/CACHE_OPERATIONS.md`
+- [CMS AI assistant — Ollama + nginx (It.75)](runbooks/AGENT_OPERATIONS.md) — `docs/en/runbooks/AGENT_OPERATIONS.md`
+- [MkDocs admin guide plan (screenshots)](../meta/MKDOCS_ADMIN_GUIDE_PLAN.md) — `docs/meta/MKDOCS_ADMIN_GUIDE_PLAN.md`
 - [Copy to /var/lib/docker/compose/paginiumcms-demo/.env.](deploy/stack.env.demo.example) — `docs/deploy/stack.env.demo.example`
 - [PaginiumCMS — Docker stack wrapper for production/demo.](deploy/stack.sh) — `docs/deploy/stack.sh`
 

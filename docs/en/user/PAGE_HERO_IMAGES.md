@@ -70,7 +70,7 @@ The hero often reuses the page **SEO / OG image** (`ogImage` / `seoImage`, **Aut
 1. Export **21:9**, **≥ 1920 px** wide (2560 px preferred).  
 2. Upload to **Media →** assign as **SEO image** and/or **Header hero** (single/carousel).  
 3. Open the page (slug **`blog`** for the list intro) → **Header hero image** → drag until the preview matches what you want on `/blog`.  
-4. Remove duplicate `![…](…)` images from the page body (each locale tab).  
+4. Remove duplicate `duplicate hero image markdown` images from the page body (each locale tab).  
 5. Optional: **Media → Preview optimize** or resize preset **1920** if the file is huge; heroes are served with responsive `?w=` (preset **960** for hero thumbs, full width in `srcset` up to **960** + card widths—upload quality still matters for sharpness on large screens).
 
 ## Example AI prompt (English)

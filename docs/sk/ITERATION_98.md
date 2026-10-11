@@ -22,4 +22,4 @@ description: Plán viacerých workspace v jednej inštancii a bezpečné CLI ako
 | 98c | CLI zápis (chránený) |
 | 98d | Audit + dokumentácia |
 
-Ostatné návrhy (A/B testy, súvisiace články, TOC, cross-post, vizuálne B2–B3): [PRODUCT_GROWTH_PROPOSALS.md](../en/architecture/PRODUCT_GROWTH_PROPOSALS.md).
+Ostatné návrhy (A/B testy, súvisiace články, TOC, cross-post, vizuálne B2–B3): [PRODUCT_GROWTH_PROPOSALS.md../../en/architecture/PRODUCT_GROWTH_PROPOSALS.md).

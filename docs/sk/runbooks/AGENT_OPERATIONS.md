@@ -126,8 +126,8 @@ V `local`/`development` guard dočasne povolí HTTP a privátne IP — len na v�
 ## 8. Súvisiace dokumenty
 
 - [NGINX_API.md](../deploy/NGINX_API.md)  
-- [RELEASE_2_1_0_BETA_88.md](../RELEASE_2_1_0_BETA_88.md)  
+- [RELEASE_2_1_0_BETA_88.md](../../en/RELEASE_2_1_0_BETA_88.md)  
 - [SECURITY.md](../developer/SECURITY.md)  
 - [ITERATION_76.md](../ITERATION_76.md)
 
-**MkDocs:** plán admin príručky so screenshotmi: [MKDOCS_ADMIN_GUIDE_PLAN.md](../meta/MKDOCS_ADMIN_GUIDE_PLAN.md).
+**MkDocs:** plán admin príručky so screenshotmi: [MKDOCS_ADMIN_GUIDE_PLAN.md](../../meta/MKDOCS_ADMIN_GUIDE_PLAN.md).

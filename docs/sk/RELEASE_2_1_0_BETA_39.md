@@ -2,7 +2,7 @@
 
 > **Dátum:** 2026-08-13  
 > **Tag:** `v2.1.0-beta.39`  
-> **Predchádzajúci míľnik:** [`beta.38`](../../CHANGELOG.md#release-2-1-0-beta-38) · **Súhrn série:** [CLANEK_BETA_35_45_SUHRN.md](CLANEK_BETA_35_45_SUHRN.md)  
+> **Predchádzajúci míľnik:** [`beta.38`](../../CHANGELOG.md#release-2-1-0-beta-38) · **Súhrn série:** CHANGELOG entries for beta.35–beta.45  
 > **Typ vydania:** prelomové — uzatvára Iteráciu 80 (80a–80g)
 
 ---
@@ -130,4 +130,4 @@ docker compose exec php php bin/console content:export --type=page | head
 
 - [CHANGELOG — beta.39](../../CHANGELOG.md#release-2-1-0-beta-39)
 - [TESTING.md §13.4](../en/developer/TESTING.md) — CLI príklady
-- [Súhrn beta 35–45](CLANEK_BETA_35_45_SUHRN.md)
+- CHANGELOG entries for beta.35–beta.45

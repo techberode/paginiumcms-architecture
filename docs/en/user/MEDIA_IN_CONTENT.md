@@ -21,7 +21,7 @@ When a caption is enabled, storage uses `<figure class="paginium-figure">` with 
 
 The caption text appears on the public page in the chosen position. In the **lightbox modal**, the same text is shown **under** the enlarged image (independent of above/below in the article).
 
-Without a caption, behaviour is unchanged: Markdown `![alt](url)` or inline `<img>` (with optional `data-lightbox="off"`).
+Without a caption, behaviour is unchanged: Markdown `![alt](media-url)` or inline `<img>` (with optional `data-lightbox="off"`).
 
 ## Unified lightbox (prose and galleries)
 

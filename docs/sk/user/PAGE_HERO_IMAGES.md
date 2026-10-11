@@ -1,6 +1,6 @@
 # Hero stránky a úvod blogu — veľkosť a orez obrázka
 
-Hero na stránkach (vrátane **sivého boxu** na `/blog` pre slug **`blog`**) je v rámci s pevným pomerom strán. V **Header hero image** zvolíš **Celý obrázok** (`heroFit: contain`, predvolene) alebo **Vyplniť rám** (cover). **Ťahaj a pusť** mení **`heroFocusX/Y`**, nie tvar rámu. Detail: anglická [PAGE_HERO_IMAGES.md](../en/user/PAGE_HERO_IMAGES.md). Pri generovaní (AI) dodrž pomer a bezpečnú zónu.
+Hero na stránkach (vrátane **sivého boxu** na `/blog` pre slug **`blog`**) je v rámci s pevným pomerom strán. V **Header hero image** zvolíš **Celý obrázok** (`heroFit: contain`, predvolene) alebo **Vyplniť rám** (cover). **Ťahaj a pusť** mení **`heroFocusX/Y`**, nie tvar rámu. Detail: anglická [PAGE_HERO_IMAGES.md](PAGE_HERO_IMAGES.md). Pri generovaní (AI) dodrž pomer a bezpečnú zónu.
 
 ## Pomer strán rámca (verejný web)
 
@@ -61,7 +61,7 @@ V režime **Auto** hero často = **SEO / OG obrázok**. Klasický náhľad pre s
 1. Export **21:9**, šírka **≥ 1920 px** (ideálne **2560 px**).  
 2. **Médiá** → priraďte SEO a/alebo hero (single/karusel).  
 3. Stránka (**`blog`** pre zoznam článkov) → **Hero obrázok v hlavičke** → ťahaj, kým náhľad sedí s `/blog`.  
-4. Z tela stránky vymažte duplicitné `![…](…)` (každý jazyk).  
+4. Z tela stránky vymažte duplicitné `duplicate hero image markdown` (každý jazyk).  
 5. Voliteľne **Médiá → optimalizácia** alebo preset **1920** pri veľkých súboroch.
 
 ## Príklad promptu pre AI (SK)

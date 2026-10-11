@@ -1,69 +1,118 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-22",
+  "updatedAt": "2026-10-11",
   "checklistDoc": "docs/manifest/implementation-checklist.json",
   "snapshot": {
-    "asOf": "2026-09-22",
-    "latestTag": "2.1.0-beta.89",
+    "asOf": "2026-10-11",
+    "latestTag": "2.1.0-beta.98",
     "headlineKey": "origin.snapshot.headline",
     "groups": [
       {
         "id": "live",
         "titleKey": "origin.snapshot.live",
         "items": [
-          { "titleKey": "origin.catalog.it48", "noteKey": "origin.snapshot.note_beta89" },
-          { "titleKey": "origin.catalog.ops_gitleaks", "noteKey": "origin.snapshot.note_beta89" },
-          { "titleKey": "origin.catalog.ops_desk_gate", "noteKey": "origin.snapshot.note_beta89" },
+          { "titleKey": "origin.catalog.it100", "noteKey": "origin.snapshot.note_beta98" },
+          { "titleKey": "origin.catalog.it82_host_metrics", "noteKey": "origin.snapshot.note_beta98" },
+          { "titleKey": "origin.catalog.it99", "noteKey": "origin.snapshot.note_beta98" },
+          { "titleKey": "origin.catalog.it58f_gallery", "noteKey": "origin.snapshot.note_beta95" },
+          { "titleKey": "origin.catalog.it69_redis", "noteKey": "origin.snapshot.note_beta91" },
           { "titleKey": "origin.catalog.it75", "noteKey": "origin.snapshot.note_beta88" },
-          { "titleKey": "origin.catalog.ops_phone", "noteKey": "origin.snapshot.note_beta88" },
-          { "titleKey": "origin.catalog.ops_smtp_reply", "noteKey": "origin.snapshot.note_beta88" },
-          { "titleKey": "origin.catalog.ops_discussion", "noteKey": "origin.snapshot.note_beta88" },
-          { "titleKey": "origin.catalog.ops_desk_harden", "noteKey": "origin.snapshot.note_beta88" },
-          { "titleKey": "origin.catalog.ops_deploy_key", "noteKey": "origin.snapshot.note_beta88" },
-          { "titleKey": "origin.catalog.it70", "noteKey": "origin.snapshot.note_beta87" },
-          { "titleKey": "origin.catalog.it76", "noteKey": "origin.snapshot.note_beta87" },
-          { "titleKey": "origin.catalog.it77", "noteKey": "origin.snapshot.note_beta87" },
-          { "titleKey": "origin.catalog.it96", "noteKey": "origin.snapshot.note_beta86" },
-          { "titleKey": "origin.catalog.it94", "noteKey": "origin.snapshot.note_beta86" },
-          { "titleKey": "origin.catalog.it93", "noteKey": "origin.snapshot.note_93o" },
-          { "titleKey": "origin.catalog.it72", "noteKey": "origin.snapshot.note_s3" },
-          { "titleKey": "origin.catalog.it78", "noteKey": "origin.snapshot.note_beta70" },
-          { "titleKey": "origin.catalog.it79", "noteKey": "origin.snapshot.note_beta71" }
+          { "titleKey": "origin.catalog.it48", "noteKey": "origin.snapshot.note_beta89" }
         ]
       },
       {
         "id": "unreleased",
         "titleKey": "origin.snapshot.unreleased",
         "items": [
-          { "titleKey": "origin.catalog.it58f_canvas", "noteKey": "origin.snapshot.note_tag" },
-          { "titleKey": "origin.catalog.it95_sandpack", "noteKey": "origin.snapshot.note_tag" },
-          { "titleKey": "origin.catalog.it95_git", "noteKey": "origin.snapshot.note_tag" },
-          { "titleKey": "origin.catalog.it93_canned", "noteKey": "origin.snapshot.note_tag" },
-          { "titleKey": "origin.catalog.ops_tag_deploy", "noteKey": "origin.snapshot.note_deploy" },
-          { "titleKey": "origin.catalog.it69_redis", "noteKey": "origin.snapshot.note_tag" }
+          { "titleKey": "origin.catalog.it100_tuning", "noteKey": "origin.snapshot.note_living" },
+          { "titleKey": "origin.catalog.ops_prod_cron", "noteKey": "origin.snapshot.note_deploy" }
         ]
       },
       {
         "id": "next",
         "titleKey": "origin.snapshot.next",
         "items": [
-          { "titleKey": "origin.catalog.it82_host_metrics", "noteKey": "origin.snapshot.note_next" }
+          { "titleKey": "origin.catalog.it98", "noteKey": "origin.snapshot.note_next" }
         ]
       }
     ]
   },
   "iterations": [
     {
+      "id": "ops.2026-10-11",
+      "titleKey": "origin.catalog.ops_beta98",
+      "phase": "shipped",
+      "since": "2.1.0-beta.98",
+      "doc": "docs/en/RELEASE_2_1_0_BETA_98.md",
+      "priority": "high",
+      "items": [
+        { "id": "ops-100", "titleKey": "origin.catalog.it100", "probeId": "it.100.admin_p2_cache", "phase": "partial", "weight": 1 },
+        { "id": "ops-82d", "titleKey": "origin.catalog.it82_host_metrics", "probeId": "it.82.host_metrics", "phase": "shipped", "weight": 1 },
+        { "id": "ops-99", "titleKey": "origin.catalog.it99", "probeId": "it.99.upload_polyglot", "phase": "shipped", "weight": 1 },
+        { "id": "ops-98-tag", "titleKey": "origin.catalog.ops_tag_beta98", "phase": "shipped", "weight": 0.5 },
+        { "id": "ops-98-deploy", "titleKey": "origin.catalog.ops_prod_cron", "phase": "planned", "weight": 0.5 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.98", "date": "2026-10-11", "summaryKey": "origin.timeline.beta98" }
+      ]
+    },
+    {
+      "id": "it.100",
+      "titleKey": "origin.catalog.it100",
+      "phase": "partial",
+      "since": "2.1.0-beta.98",
+      "doc": "docs/en/ITERATION_100.md",
+      "priority": "medium",
+      "items": [
+        { "id": "100a", "titleKey": "origin.catalog.it100_p2_swr", "probeId": "it.100.admin_p2_cache", "phase": "shipped", "weight": 1 },
+        { "id": "100b", "titleKey": "origin.catalog.it100_load_hint", "phase": "shipped", "weight": 1 },
+        { "id": "100c", "titleKey": "origin.catalog.it100_warm", "phase": "shipped", "weight": 1 },
+        { "id": "100d", "titleKey": "origin.catalog.it100_cron_only", "phase": "shipped", "weight": 1 },
+        { "id": "100e", "titleKey": "origin.catalog.it100_p3_logs", "phase": "partial", "weight": 0.5 },
+        { "id": "100f", "titleKey": "origin.catalog.it100_sessions", "phase": "shipped", "weight": 1 },
+        { "id": "100-next", "titleKey": "origin.catalog.it100_tuning", "phase": "planned", "weight": 0.5 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.98", "date": "2026-10-11", "summaryKey": "origin.timeline.it100" }
+      ]
+    },
+    {
+      "id": "it.99",
+      "titleKey": "origin.catalog.it99",
+      "phase": "shipped",
+      "since": "2.1.0-beta.98",
+      "doc": "docs/en/ITERATION_99.md",
+      "priority": "medium",
+      "items": [
+        { "id": "99a", "titleKey": "origin.catalog.it99_polyglot", "probeId": "it.99.upload_polyglot", "phase": "shipped", "weight": 1 }
+      ],
+      "history": [
+        { "version": "2.1.0-beta.98", "date": "2026-10-11", "summaryKey": "origin.timeline.it99" }
+      ]
+    },
+    {
+      "id": "it.98",
+      "titleKey": "origin.catalog.it98",
+      "phase": "planned",
+      "doc": "docs/en/ITERATION_98.md",
+      "priority": "high",
+      "items": [
+        { "id": "98a", "titleKey": "origin.catalog.it98_workspace", "phase": "planned", "weight": 1 },
+        { "id": "98b", "titleKey": "origin.catalog.it98_cli", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
+    {
       "id": "ops.2026-09-20",
       "titleKey": "origin.catalog.ops_today",
-      "phase": "partial",
+      "phase": "shipped",
       "doc": "CHANGELOG.md",
       "priority": "high",
       "items": [
         { "id": "ops-it48", "titleKey": "origin.catalog.it48", "phase": "shipped", "weight": 1 },
         { "id": "ops-gitleaks", "titleKey": "origin.catalog.ops_gitleaks", "phase": "shipped", "weight": 1 },
         { "id": "ops-desk-gate", "titleKey": "origin.catalog.ops_desk_gate", "phase": "shipped", "weight": 1 },
-        { "id": "ops-tag", "titleKey": "origin.catalog.ops_tag_deploy", "phase": "planned", "weight": 1 }
+        { "id": "ops-tag", "titleKey": "origin.catalog.ops_tag_deploy", "phase": "shipped", "weight": 1 }
       ],
       "history": []
     },
@@ -528,10 +577,11 @@
         { "id": "82b", "titleKey": "origin.catalog.it82_probes", "phase": "shipped", "weight": 1 },
         { "id": "82c", "titleKey": "origin.catalog.it82_metrics", "phase": "shipped", "weight": 1 },
         { "id": "82e", "titleKey": "origin.catalog.it82_catalog", "phase": "shipped", "weight": 1 },
-        { "id": "82d", "titleKey": "origin.catalog.it82_host_metrics", "phase": "partial", "weight": 0.5 }
+        { "id": "82d", "titleKey": "origin.catalog.it82_host_metrics", "probeId": "it.82.host_metrics", "phase": "shipped", "weight": 1 }
       ],
       "history": [
-        { "version": "2.1.0-beta.56", "date": "2026-08-17", "summaryKey": "origin.timeline.it82" }
+        { "version": "2.1.0-beta.56", "date": "2026-08-17", "summaryKey": "origin.timeline.it82" },
+        { "version": "2.1.0-beta.98", "date": "2026-10-11", "summaryKey": "origin.timeline.beta98" }
       ]
     },
     {
@@ -584,6 +634,10 @@
     }
   ],
   "timeline": [
+    { "version": "2.1.0-beta.98", "date": "2026-10-11", "summaryKey": "origin.timeline.beta98" },
+    { "version": "2.1.0-beta.97", "date": "2026-10-06", "summaryKey": "origin.timeline.beta97" },
+    { "version": "2.1.0-beta.96", "date": "2026-10-06", "summaryKey": "origin.timeline.beta96" },
+    { "version": "2.1.0-beta.95", "date": "2026-10-06", "summaryKey": "origin.timeline.beta95" },
     { "version": "2.1.0-beta.88", "date": "2026-09-19", "summaryKey": "origin.timeline.beta88" },
     { "version": "2.1.0-beta.87", "date": "2026-09-19", "summaryKey": "origin.timeline.beta87" },
     { "version": "2.1.0-beta.86", "date": "2026-09-19", "summaryKey": "origin.timeline.beta86" },

@@ -30,7 +30,7 @@ Gallery/lightbox completion remains in **beta.95** — [RELEASE_2_1_0_BETA_95.md
 - [PRODUCT_GROWTH_PROPOSALS.md](architecture/PRODUCT_GROWTH_PROPOSALS.md) — unshipped A/B, TOC, multi-site  
 - [ITERATION_98.md](ITERATION_98.md) — workspace + safe CLI (planned)  
 - [DOCS_PORTAL_PLANNED.md](developer/DOCS_PORTAL_PLANNED.md) — future in-CMS Markdown docs module  
-- SK drafts (tracked): [docs/sk/marketing/](../sk/marketing/README.md)
+- SK drafts (tracked): docs/sk/marketing/ (SK marketing drafts — optional local `docs/sk/marketing/`, gitignored)
 
 ---
 

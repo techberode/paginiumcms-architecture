@@ -1,10 +1,10 @@
 # PaginiumCMS — project roadmap
 
 > **Documentation checkpoint:** October 6, 2026  
-> **Latest release:** see [`CHANGELOG.md`](CHANGELOG.md) (tagged **`v2.1.0-beta.98`**) · handoff: [CONTINUATION.md](CONTINUATION.md)  
+> **Latest release:** see [`CHANGELOG.md`](../../CHANGELOG.md) (tagged **`v2.1.0-beta.98`**) · handoff: [CONTINUATION.md](CONTINUATION.md)  
 > **Direction:** Hybrid Headless Content Engine · No-SQL file source of truth · API-first  
-> **Code status:** Hybrid Engine layers **It.68–77 largely shipped** — verify live wiring in **Origin Panel** (`/platform/origin`) before trusting table rows below.  
-> **Source of truth for “does it run?”:** Origin feature probes + [CHANGELOG.md](CHANGELOG.md), not stale ⏳ symbols alone — see [en/operations/ROADMAP_SYNC.md](en/operations/ROADMAP_SYNC.md).
+> **Code status:** Hybrid Engine layers **It.68–77 largely shipped** — verify live wiring in **Origin Panel** (`/origin`) before trusting table rows below.  
+> **Source of truth for “does it run?”:** Origin feature probes + [CHANGELOG.md](../../CHANGELOG.md), not stale ⏳ symbols alone — see [en/operations/ROADMAP_SYNC.md](operations/ROADMAP_SYNC.md).
 
 This roadmap is the canonical map of the **future direction**. Release history belongs in [`CHANGELOG.md`](../../CHANGELOG.md), detailed implementation specifications in `ITERATION_*.md`, and incidents in [`ISSUES.md`](ISSUES.md).
 
@@ -132,7 +132,7 @@ The order is **It.73 → It.76/77 → It.75**. The AI agent may only propose cha
 
 | Track | Status | Timing |
 |-------|--------|--------|
-| **It.58** — layout switch (58b–58g, 58f canvas) | ✅ | shortcodes, `pg-*`, outline, compile with It.48 — [ITERATION_58.md](en/ITERATION_58.md) |
+| **It.58** — layout switch (58b–58g, 58f canvas) | ✅ | shortcodes, `pg-*`, outline, compile with It.48 — [ITERATION_58.md](ITERATION_58.md) |
 | **It.67** — untrusted surfaces defense-in-depth | 🔴 | before expanding imports, themes, and generated code |
 | **It.25** — setup wizard and simplified update UX | ✅ M1+ shipped | `beta.62`–`beta.65`; not a stable-tag blocker |
 | **It.48** — static/dynamic rendering | 🟡 | align with It.70 to avoid two publishing pipelines |

@@ -33,7 +33,7 @@ If Redis stayed in `created` state after beta.91:
 1. Ensure **`docs/deploy/docker-compose.prod.yml`** on the host includes `profiles: !reset []`, `ports: !reset []`, and bind mount `${STACK_DIR}/redis-data:/data`.
 2. Run `./stack.sh config` then `./stack.sh up -d`; PHP must use hostname **`redis`**, not `127.0.0.1:6379`.
 
-See [DEPLOY.md](../../deploy/DEPLOY.md) and beta.91 release notes.
+See [DEPLOY.md](../deploy/DEPLOY.md) and beta.91 release notes.
 
 ---
 

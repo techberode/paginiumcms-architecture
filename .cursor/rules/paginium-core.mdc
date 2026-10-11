@@ -1,0 +1,12 @@
+---
+description: PaginiumCMS maintainer defaults (public; local .cursorrules may extend)
+alwaysApply: true
+---
+
+# PaginiumCMS — agent defaults
+
+- **No-SQL SSOT:** flat files under `data/`; SQLite/Redis are derived layers only.
+- **Before commit/push:** `./scripts/iteration-gate.sh` green (PHPUnit, PHPStan L8, FE tsc/lint/tests).
+- **Security baseline:** new endpoints need AuthZ, CSRF on mutating routes, secrets at-rest, SSRF guard on outbound URLs — see `docs/en/developer/SECURITY.md`.
+- **Docs:** English in `docs/en/`; link paths relative to the current file; run `python3 scripts/audit-doc-links.py` after large doc edits.
+- **Admin SPA deep links:** first-segment paths (`/mail`, `/origin`, `/settings?group=engine`); legacy `/platform/*` redirects — `docs/en/architecture/ADMIN_DEEP_LINKS.md`.

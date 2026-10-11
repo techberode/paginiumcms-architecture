@@ -144,7 +144,7 @@ Content always lives in flat files; deleting cache or losing Redis does not dest
   - `GET /api/articles`, `GET /api/articles/{slug}` (anonymous reads only)
 - [x] Invalidation is deterministic for write/publish/delete (`CacheTagRegistry` + generation bump).
 - [x] Classic runs with file/memory only (no Redis required).
-- [x] Redis outage, stale cache, and rebuild: [en/runbooks/CACHE_OPERATIONS.md](en/runbooks/CACHE_OPERATIONS.md).
+- [x] Redis outage, stale cache, and rebuild: [en/runbooks/CACHE_OPERATIONS.md](runbooks/CACHE_OPERATIONS.md).
 - [x] Hit/miss counters exposed via `CacheAdminService::stats()` metrics (It.71 foundation).
 - [x] EN documentation and iteration gate green; SK detail catch-up deferred.
 

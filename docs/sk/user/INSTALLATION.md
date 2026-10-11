@@ -113,7 +113,7 @@ Pozri [deployment dokumentáciu](../deploy/NGINX_API.md) a [Storage kontrakt](..
 
 ## 7. First-run a bootstrap účet
 
-Od **`v2.1.0-beta.62`** môžeš čistú inštanciu dokončiť v prehliadači na **`/setup`** (It.25 setup wizard). **`v2.1.0-beta.65`** pridáva krok **Server** (preflight) a **Infra** (port, storage driver) — pozri [ITERATION_25.md](../sk/ITERATION_25.md).
+Od **`v2.1.0-beta.62`** môžeš čistú inštanciu dokončiť v prehliadači na **`/setup`** (It.25 setup wizard). **`v2.1.0-beta.65`** pridáva krok **Server** (preflight) a **Infra** (port, storage driver) — pozri [ITERATION_25.md](../ITERATION_25.md).
 
 ### Wizard v prehliadači (odporúčané)
 

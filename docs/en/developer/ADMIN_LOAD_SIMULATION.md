@@ -8,7 +8,7 @@
 
 ## What it does
 
-Script: [`scripts/admin-concurrency-probe.sh`](../../scripts/admin-concurrency-probe.sh)
+Script: [`scripts/admin-concurrency-probe.sh`](../../../scripts/admin-concurrency-probe.sh)
 
 - Spawns **N workers** (default 5), each with its **own session** (separate login).
 - Runs a **read-only** route mix (dashboard overview + P2 endpoints).

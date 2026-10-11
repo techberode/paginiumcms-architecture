@@ -265,7 +265,7 @@ Machine-readable SSOT: slice `slice-2026-09-20-remaining` in [`implementation-ch
 
 ## 20. Planned iteration 87 (post-stable)
 
-Spec: [`docs/en/ITERATION_87.md`](../en/ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](../sk/ITERATION_87.md)
+Spec: [`docs/en/ITERATION_87.md`](ITERATION_87.md) · SK: [`docs/sk/ITERATION_87.md`](../sk/ITERATION_87.md)
 
 - [x] It.87 specification (Project Site Planner + UX audit)
 - [ ] Planner MVP (`87e`–`87h`) in Full CMS

@@ -1,7 +1,7 @@
 # In-CMS documentation portal (planned)
 
 > **Status:** ⏳ proposal — not scheduled in `beta.96`  
-> **Interim:** operator and developer docs live in the GitHub repo under `docs/en/` and `docs/sk/`; SK blog drafts in [docs/sk/marketing/](../../sk/marketing/README.md) link to those paths until this module ships.
+> **Interim:** operator and developer docs live in the GitHub repo under `docs/en/` and `docs/sk/`; SK blog drafts in docs/sk/marketing/ (SK marketing drafts — optional local `docs/sk/marketing/`, gitignored) link to those paths until this module ships.
 
 ---
 

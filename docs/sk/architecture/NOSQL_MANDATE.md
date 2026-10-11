@@ -66,7 +66,7 @@ Ich obsah musí byť možné zahodiť a obnoviť bez straty primárnych CMS dát
 - **Redis cache**, rate limiting, front úloh alebo dočasnú koordináciu.
 - **Voliteľné integračné moduly**, ktoré exportujú alebo synchronizujú dáta do databázy tretej strany, ak jadro zostáva plne funkčné bez nich.
 - **Voliteľný SQLite query index (It.92)** ako obnoviteľná projekcia katalógu (listingy, filtre, FTS). Nesmie byť jedinou kópiou dokumentu, používateľa, nastavenia ani tajomstva. Classic režim musí bežať s `queryIndexDriver=json` bez `.sqlite`. Zapnutie je akcia operátora po probe — nikdy skrytá závislosť jadra a nikdy automatická remediácia Performance Guard.
-- **Zrušený nápad izolovaného origínu** ([ISOLATED_ORIGIN.md](../en/architecture/ISOLATED_ORIGIN.md)): aplikácia operátora môže mať SQLite alebo súbory **vo svojej** appke. To nie je CMS SSOT. **Nie je vo fronte.**
+- **Zrušený nápad izolovaného origínu** ([ISOLATED_ORIGIN.md../../en/architecture/ISOLATED_ORIGIN.md)): aplikácia operátora môže mať SQLite alebo súbory **vo svojej** appke. To nie je CMS SSOT. **Nie je vo fronte.**
 
 ---
 

@@ -1,11 +1,62 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-20",
+  "updatedAt": "2026-10-11",
   "description": "Operator checklist mirrored for Origin Panel automation. Progress percent and deploy badges are computed from project-catalog.json + runtime probes.",
   "catalogPath": "docs/manifest/project-catalog.json",
   "releaseReadinessDoc": "docs/en/CHECKLIST.md",
   "issuesRegister": "docs/ISSUES.md",
   "slices": [
+    {
+      "id": "slice-2026-10-11-beta98",
+      "catalogIterationIds": ["ops.2026-10-11", "it.100", "it.99", "it.82"],
+      "targetVersion": "2.1.0-beta.98",
+      "since": "2.1.0-beta.98",
+      "status": "partial_live",
+      "items": [
+        {
+          "id": "98-gate",
+          "labelKey": "origin.checklist.gate_green",
+          "phase": "shipped",
+          "verify": "./scripts/iteration-gate.sh"
+        },
+        {
+          "id": "98-tag",
+          "labelKey": "origin.catalog.ops_tag_beta98",
+          "phase": "shipped",
+          "dependsOnVersion": "2.1.0-beta.98"
+        },
+        {
+          "id": "100-p2",
+          "labelKey": "origin.catalog.it100",
+          "phase": "shipped",
+          "probeId": "it.100.admin_p2_cache"
+        },
+        {
+          "id": "82d-host",
+          "labelKey": "origin.catalog.it82_host_metrics",
+          "phase": "shipped",
+          "probeId": "it.82.host_metrics"
+        },
+        {
+          "id": "99-polyglot",
+          "labelKey": "origin.catalog.it99",
+          "phase": "shipped",
+          "probeId": "it.99.upload_polyglot"
+        },
+        {
+          "id": "98-prod-cron",
+          "labelKey": "origin.catalog.ops_prod_cron",
+          "phase": "pending",
+          "artifact": "docs/en/developer/ADMIN_OPERATIONS.md"
+        },
+        {
+          "id": "98-deploy-prod",
+          "labelKey": "origin.checklist.deploy_production",
+          "phase": "pending",
+          "dependsOnVersion": "2.1.0-beta.98"
+        }
+      ]
+    },
     {
       "id": "slice-2026-09-20-it48-security",
       "catalogIterationIds": ["it.48"],
@@ -88,12 +139,13 @@
         {
           "id": "69-redis",
           "labelKey": "origin.catalog.it69_redis",
-          "phase": "pending"
+          "phase": "shipped"
         },
         {
           "id": "82d-host-metrics",
           "labelKey": "origin.catalog.it82_host_metrics",
-          "phase": "pending"
+          "phase": "shipped",
+          "probeId": "it.82.host_metrics"
         }
       ]
     },

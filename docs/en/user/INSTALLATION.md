@@ -113,7 +113,7 @@ See [deployment documentation](../deploy/NGINX_API.md) and the [Storage contract
 
 ## 7. First-run and bootstrap account
 
-From **`v2.1.0-beta.62`** onward, a fresh instance can be finished in the browser at **`/setup`** (It.25 setup wizard). **`v2.1.0-beta.65`** adds a **server preflight** step and **infra defaults** (see [ITERATION_25.md](../en/ITERATION_25.md)).
+From **`v2.1.0-beta.62`** onward, a fresh instance can be finished in the browser at **`/setup`** (It.25 setup wizard). **`v2.1.0-beta.65`** adds a **server preflight** step and **infra defaults** (see [ITERATION_25.md](../ITERATION_25.md)).
 
 ### Browser wizard (recommended)
 

@@ -94,5 +94,5 @@ SPA navigation wrapper in React Router — `document.startViewTransition` when s
 | Audience | Doc |
 |----------|-----|
 | Operators | [SHORTCODE_COOKBOOK.md](../user/SHORTCODE_COOKBOOK.md) (update when B2 ships) |
-| Maintainers | [CONTINUATION.md](../CONTINUATION.md), [CHANGELOG.md](../../CHANGELOG.md) |
+| Maintainers | [CONTINUATION.md](../CONTINUATION.md), [CHANGELOG.md](../../../CHANGELOG.md) |
 | CLI (98+) | `docs/en/developer/CLI_CONTENT.md` (to create with 98b) |

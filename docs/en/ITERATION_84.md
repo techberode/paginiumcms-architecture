@@ -234,4 +234,4 @@ All mutating routes: existing Auth + CSRF + permission gates.
 | [ITERATION_81.md](ITERATION_81.md) | Tags, snippets |
 | [CONTENT_COMMENTS_NAV.md](CONTENT_COMMENTS_NAV.md) | Nav contract |
 | [STABILIZATION_PHASE.md](STABILIZATION_PHASE.md) | Gate + parallel polish |
-| [developer/ACCESS_CONTROL.md](developer/ACCESS_CONTROL.md) | RBAC baseline |
+| [developer/ACCESS_CONTROL.md](user/ACCESS_CONTROL.md) | RBAC baseline |

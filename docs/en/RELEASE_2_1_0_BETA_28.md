@@ -57,10 +57,10 @@ cd frontend && npm ci && npm run build:prod
 ### Post-deploy checklist
 
 1. **Version** — public footer and health/version endpoints report `2.1.0-beta.28`.
-2. **Performance Guard (optional)** — Settings → Engine → enable **Performance Guard** → Save ([ISS-128](ISS-128) regression).
-3. **ACL** — if ADMIN uses saved `permissionsAdmin`, ensure `metrics:read` is present for APM API ([ISS-127](ISS-127)).
+2. **Performance Guard (optional)** — Settings → Engine → enable **Performance Guard** → Save ([ISS-128](../ISSUES.md#iss-128) regression).
+3. **ACL** — if ADMIN uses saved `permissionsAdmin`, ensure `metrics:read` is present for APM API ([ISS-127](../ISSUES.md#iss-127)).
 4. **Smoke** — Analytics charts load; Newsletter bulk actions; back-to-top on long admin pages and public site.
-5. **Dev/CI only** — `composer audit` clean after PHPCS bump ([ISS-131](ISS-131)).
+5. **Dev/CI only** — `composer audit` clean after PHPCS bump ([ISS-131](../ISSUES.md#iss-131)).
 
 ---
 

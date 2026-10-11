@@ -55,7 +55,7 @@ Pravidlá dvojjazyčnej dokumentácie:
 | **Backend API** | ✅ | Slim 4, PHP-DI, auto-discovery, PHPStan L8 |
 | **No-SQL SSOT** | ✅ | súbory, index, OCC, verzovanie |
 | **Hybrid Engine It.68–77** | ✅ jadro | cache/Redis, Git publish, APM, S3, locale, API kľúče, AI, preklady — [ROADMAP.md](ROADMAP.md) |
-| **It.58 composer / islands** | ✅ | section-band, galérie, lightbox, motion B1–B2 — [IT_58_COMPOSER_HANDOFF.md](../en/architecture/IT_58_COMPOSER_HANDOFF.md) |
+| **It.58 composer / islands** | ✅ | section-band, galérie, lightbox, motion B1–B2 — [IT_58_COMPOSER_HANDOFF.md../../en/architecture/IT_58_COMPOSER_HANDOFF.md) |
 | **Verejný a admin frontend** | ✅ | React, Vite 8, SK/EN i18n |
 | **Automatické testy** | ✅ | `./scripts/iteration-gate.sh` |
 | **Najnovšie vydanie** | ✅ **`v2.1.0-beta.96`** | [RELEASE_2_1_0_BETA_96.md](../en/RELEASE_2_1_0_BETA_96.md) · [CHANGELOG.md](../../CHANGELOG.md) |

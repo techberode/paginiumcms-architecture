@@ -49,7 +49,7 @@ Each tool maps to a **capability id**, toolbar button, optional **insert wizard*
 |---------|-------------|-------------|---------------|
 | `heading` | pick level H1–H6 | `# …` / Tiptap heading | CommonMark / Tiptap HTML |
 | `bold`, `italic`, `link`, … | toggle / dialog | MD or Tiptap marks | existing |
-| `image` | Media Library picker | `![alt](url)` / image node | existing |
+| `image` | Media Library picker | `![alt](media-url)` / image node | existing |
 | `video` | Media Library (video mode) | `:::video` / video node | It.79 |
 | `table` | rows/columns wizard | GFM table | CommonMark GFM |
 | `callout` | type picker (Note, Tip, Warning) | `:::note` … | shortcode renderer |

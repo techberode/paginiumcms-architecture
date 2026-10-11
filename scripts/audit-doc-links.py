@@ -21,6 +21,8 @@ for base in [ROOT / "docs/en", ROOT / "docs/sk", ROOT / "docs"]:
             continue
         if "meta/it18" in path.as_posix():
             continue
+        if "docs/marketing" in path.as_posix():
+            continue
         SCAN_FILES.append(path)
 for name in ("README.md", "CHANGELOG.md", "SECURITY.md", "LOCAL_TEST_LOGS.md.example"):
     p = ROOT / name
@@ -56,7 +58,9 @@ for source in SCAN_FILES:
     except OSError as exc:
         broken.append((str(source.relative_to(ROOT)), "?", "read_error", str(exc)))
         continue
-    for raw in LINK_RE.findall(text):
+    # Strip fenced/inline code so examples like `![alt](url)` are not treated as links.
+    scan_text = re.sub(r"`[^`]*`", "", text)
+    for raw in LINK_RE.findall(scan_text):
         checked += 1
         candidate = resolve_link(source, raw)
         if candidate is None:

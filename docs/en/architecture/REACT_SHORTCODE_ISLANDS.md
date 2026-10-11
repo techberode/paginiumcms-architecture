@@ -7,7 +7,7 @@
 
 ## Strategic direction (October 2026)
 
-**Decision:** Move **interactive** public blocks and effects to **first-party React islands** in the Vite bundle. Do **not** unblock author/theme `.js`, Sandpack exports into page bodies, or third-party scripts for landing effects (Theme Studio JS tab, W3Layouts-style `custom.js`, and [Site Design](ITERATION_SITE_DESIGN.md) v1 public runtime stay **CSS/tokens only** for global tuning).
+**Decision:** Move **interactive** public blocks and effects to **first-party React islands** in the Vite bundle. Do **not** unblock author/theme `.js`, Sandpack exports into page bodies, or third-party scripts for landing effects (Theme Studio JS tab, W3Layouts-style `custom.js`, and [Site Design](../ITERATION_SITE_DESIGN.md) v1 public runtime stay **CSS/tokens only** for global tuning).
 
 | Keep as-is (no rewrite required) | Evolve via islands + attrs |
 |----------------------------------|----------------------------|

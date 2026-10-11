@@ -214,7 +214,7 @@ frontend/src/i18n/modules/projectPlanner/{en,sk}.ts
 
 ## Track A — UX audit (`87a`–`87d`)
 
-Deferred from [CHANGELOG Unreleased](CHANGELOG.md) / It.86 item `86d`:
+Deferred from [CHANGELOG Unreleased](../../CHANGELOG.md) / It.86 item `86d`:
 
 | ID | Item | Primary files | DoD hint |
 |----|------|---------------|----------|

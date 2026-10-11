@@ -32,7 +32,7 @@ This is **not** a goal to clone Webflow timelines or Elementor unlimited CSS. It
 | **Accessibility** | `prefers-reduced-motion` disables or simplifies animation; no seizure-inducing defaults. |
 | **Admin ≠ arbitrary React** | Insert modals expose schema fields; authors never paste JSX. |
 
-Violating any row → do not ship; fix before commit ([`.cursorrules`](../../../.cursorrules) security baseline).
+Violating any row → do not ship; fix before commit ([Security baseline](../developer/SECURITY.md)).
 
 ---
 
@@ -144,7 +144,7 @@ From [SHORTCODE_COMPOSER.md](SHORTCODE_COMPOSER.md) Phase 2–4: internal **part
 - New preset → regresný test (PHP expand and/or Vitest motion registry).
 - Sanitizer allow-list updated for any new `data-*` / classes.
 - SK/EN for new editor strings.
-- [CHANGELOG.md](../../CHANGELOG.md) + this doc updated on ship.
+- [CHANGELOG.md](../../../CHANGELOG.md) + this doc updated on ship.
 - Manual smoke: one page with motion preset + `prefers-reduced-motion` in browser devtools.
 
 ---
@@ -212,4 +212,4 @@ External proposal (October 2026): rich React components fed by **semantic shortc
 - **“Redis required for components”** — false; Redis is optional cache for derived reads.
 - **“React replaces PHP render”** — islands **augment** server HTML; they do not make the backend a dumb file server for arbitrary client apps.
 
-When implementing any row marked ⏳, add: bundled shortcode schema, PHP renderer marker, `PUBLIC_ISLANDS` entry, sanitizer attrs, insert modal fields, SK/EN, Vitest/PHPUnit, [CHANGELOG.md](../../CHANGELOG.md) entry.
+When implementing any row marked ⏳, add: bundled shortcode schema, PHP renderer marker, `PUBLIC_ISLANDS` entry, sanitizer attrs, insert modal fields, SK/EN, Vitest/PHPUnit, [CHANGELOG.md](../../../CHANGELOG.md) entry.

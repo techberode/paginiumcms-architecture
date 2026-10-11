@@ -5474,7 +5474,7 @@ Multiple React trees each ran **`useDeskPolling`** (desk beacon in header/sideba
 
 ### Related docs
 
-- [DEPLOY.md §12.6](../deploy/DEPLOY.md#126-common-production-symptoms-ops)
+- [DEPLOY.md §12.6](deploy/DEPLOY.md#126-common-production-symptoms-ops)
 
 ---
 
@@ -5539,7 +5539,7 @@ Always run the full **`scripts/deploy-instance-update.sh`** path (includes front
 
 ### Related docs
 
-- [DEPLOY.md §12.5 verify](../deploy/DEPLOY.md#verify-after-admin-deploy) step 5
+- [DEPLOY.md §12.5 verify](deploy/DEPLOY.md#verify-after-admin-deploy) step 5
 
 ---
 
