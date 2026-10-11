@@ -44,6 +44,17 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
     overview?.config.enabled === true &&
     (overview.summary.sample_count > 0 || overview.recent_breaches.length > 0);
 
+  const hostSnapshot =
+    overview?.host_metrics?.status === 'ok' && overview.host_metrics.snapshot
+      ? overview.host_metrics.snapshot
+      : null;
+  const hostMemory = hostSnapshot?.memory as
+    | { used_mb?: number; available_mb?: number; total_mb?: number }
+    | undefined;
+  const hostDisk = hostSnapshot?.disk as
+    | { mount?: string; used_percent?: number; used_gb?: number; total_gb?: number }
+    | undefined;
+
   return (
     <div className="card">
       <div className="card-body">
@@ -131,12 +142,31 @@ export const PerformanceGuardPanel: React.FC<Props> = ({ overview, loading, onRe
                   {t(`dashboard.panels.apm.hostMetricsStatus.${overview.host_metrics.status}`)}
                   {overview.host_metrics.collected_at ? ` · ${overview.host_metrics.collected_at}` : ''}
                 </p>
-                {overview.host_metrics.status === 'ok' && overview.host_metrics.snapshot?.load ? (
+                {hostSnapshot?.load ? (
                   <p className="mt-1 font-mono text-[11px] opacity-90">
                     {t('dashboard.panels.apm.hostMetricsLoad', {
-                      l1: String((overview.host_metrics.snapshot.load as { 1?: number })['1'] ?? '—'),
-                      l5: String((overview.host_metrics.snapshot.load as { 5?: number })['5'] ?? '—'),
-                      l15: String((overview.host_metrics.snapshot.load as { 15?: number })['15'] ?? '—'),
+                      l1: String((hostSnapshot.load as { 1?: number })['1'] ?? '—'),
+                      l5: String((hostSnapshot.load as { 5?: number })['5'] ?? '—'),
+                      l15: String((hostSnapshot.load as { 15?: number })['15'] ?? '—'),
+                    })}
+                  </p>
+                ) : null}
+                {hostMemory?.total_mb != null ? (
+                  <p className="mt-1 font-mono text-[11px] opacity-90">
+                    {t('dashboard.panels.apm.hostMetricsMemory', {
+                      used: String(hostMemory.used_mb ?? '—'),
+                      available: String(hostMemory.available_mb ?? '—'),
+                      total: String(hostMemory.total_mb ?? '—'),
+                    })}
+                  </p>
+                ) : null}
+                {hostDisk?.total_gb != null ? (
+                  <p className="mt-1 font-mono text-[11px] opacity-90">
+                    {t('dashboard.panels.apm.hostMetricsDisk', {
+                      mount: String(hostDisk.mount ?? '/'),
+                      percent: String(hostDisk.used_percent ?? '—'),
+                      used: String(hostDisk.used_gb ?? '—'),
+                      total: String(hostDisk.total_gb ?? '—'),
                     })}
                   </p>
                 ) : null}

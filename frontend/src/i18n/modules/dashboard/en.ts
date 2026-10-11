@@ -126,8 +126,10 @@ export const dashboardEn: MessageTree = {
       queryIndexHintTitle: 'Catalog latency — consider the derived SQLite index',
       queryIndexHintLink: 'Hybrid Engine → query index',
       hostMetricsTitle: 'Host snapshot (It.82d)',
-      hostMetricsHint: 'Enable under Settings → Engine; collect via metrics:host-collect or host ingest cron.',
+      hostMetricsHint: 'Settings → Engine + enable Jobs → Host metrics snapshot, or metrics:host-collect on the host.',
       hostMetricsLoad: 'Load 1/5/15: {l1} / {l5} / {l15}',
+      hostMetricsMemory: 'RAM: {used} MB used · {available} MB free · {total} MB total',
+      hostMetricsDisk: 'Disk ({mount}): {percent}% used · {used} / {total} GB',
       hostMetricsStatus: {
         disabled: 'Host metrics disabled.',
         missing: 'No snapshot yet — run the collector.',

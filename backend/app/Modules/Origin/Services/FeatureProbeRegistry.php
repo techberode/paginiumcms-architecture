@@ -12,6 +12,7 @@ use PaginiumCMS\Modules\Origin\Probes\ApiKeysFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ArticlePrintFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\BulkSelectionUxFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\DuplicateContentFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\HostMetricsFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\LockingFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\MultiLocaleFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\PerformanceGuardFeatureProbe;
@@ -40,6 +41,7 @@ final class FeatureProbeRegistry
             new ScheduledPublishFeatureProbe($support),
             new UntrustedSurfacesFeatureProbe($support),
             new PerformanceGuardFeatureProbe($support),
+            new HostMetricsFeatureProbe($support),
             new MultiLocaleFeatureProbe($support),
             new ApiKeysFeatureProbe($support),
             new RedirectsFeatureProbe($support),

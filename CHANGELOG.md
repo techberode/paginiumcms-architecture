@@ -29,7 +29,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Desk performance:** `DeskInboxService` comment index (no N+1), single desk compose per request, comments registry memo, desk poll paused on hidden tab — [ISS-198](docs/ISSUES.md#iss-198)
 - **Privacy / cookies:** Settings → minimal Markdown for custom cookie-policy sections (`SettingsMinimalMarkdownField`, `plainMarkdownToHtml`); public `/cookies` renders via `PlainMarkdownProse` + `.pg-legal-prose` spacing (typography polish still optional)
 - **It.58f-i (remainder):** `section-band` `bg-crossfade="true"` + `useSectionBackgroundCrossfade`; `[before-after]` DAM island + slider; callout blocks use theme `--color-primary`
-- **It.82d (partial):** host snapshot store (`data/metrics/host-latest.json`), `metrics:host-collect`, `POST /api/admin/metrics/host/ingest` (loopback + token), `GET /api/admin/metrics/host`, dashboard + monitoring report section; engine settings `hostMetrics*`
+- **It.82d (partial):** host snapshot store (`data/metrics/host-latest.json`), `metrics:host-collect`, scheduler job `host_metrics.collect`, `POST /api/admin/metrics/host/ingest` (loopback + token), `GET /api/admin/metrics/host`, dashboard RAM/disk + monitoring report; Origin probe; [HOST_METRICS.md](docs/en/developer/HOST_METRICS.md); engine settings `hostMetrics*`
 - **Deferred:** It.97 CSP/embed facades · in-CMS docs portal — [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md)
 
 ## Release index

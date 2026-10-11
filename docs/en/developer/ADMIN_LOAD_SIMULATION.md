@@ -97,6 +97,8 @@ Pre-compute derived admin overview caches so HTTP handlers serve Redis/file enve
 * * * * * cd /path/to/paginiumcms && php backend/bin/console cache:warm-admin >/dev/null 2>&1
 ```
 
+Optional host load/RAM/disk for dashboard context (It.82d): enable engine host metrics + scheduled job `host-metrics-collect` — see [HOST_METRICS.md](HOST_METRICS.md).
+
 Run on the **same instance** that serves admin traffic (shared cache driver / Redis). Safe to run every minute; work is idempotent refresh, not content mutation.
 
 **Bare-metal tuning (optional):** ensure PHP-FPM has enough workers for concurrent admins (`pm.max_children` ~15–20 on a 32 GB host) and nginx **gzip** for `application/json` (large `/api/admin/jobs` payloads). Docker reference: `docker/nginx/default.conf`.

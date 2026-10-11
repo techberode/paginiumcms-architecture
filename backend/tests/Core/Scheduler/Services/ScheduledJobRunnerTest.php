@@ -34,8 +34,12 @@ use PaginiumCMS\Core\Scheduler\Handlers\BackupScheduledHandler;
 use PaginiumCMS\Core\Content\Services\ContentNewsArchiveService;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentNewsAutoArchiveHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
+use PaginiumCMS\Core\Performance\HostMetricsCollector;
+use PaginiumCMS\Core\Performance\HostMetricsSettings;
+use PaginiumCMS\Core\Performance\HostMetricsStore;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
@@ -129,7 +133,8 @@ final class ScheduledJobRunnerTest extends TestCase
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
             $this->webhookDeliveryHandler(),
             new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class)),
-            $this->staticRebuildHandler()
+            $this->staticRebuildHandler(),
+            $this->makeHostMetricsCollectHandler($settings, $reader, $writer)
         );
 
         $runner = new ScheduledJobRunner(
@@ -178,7 +183,8 @@ final class ScheduledJobRunnerTest extends TestCase
             GitPublishTestHelper::disabledHandler($reader, $writer, $settings),
             $this->webhookDeliveryHandler(),
             new AgentRunHandler($this->createMock(AgentRunExecutorInterface::class)),
-            $this->staticRebuildHandler()
+            $this->staticRebuildHandler(),
+            $this->makeHostMetricsCollectHandler($settings, $reader, $writer)
         );
 
         return new ScheduledJobRunner(
@@ -331,6 +337,18 @@ final class ScheduledJobRunnerTest extends TestCase
         );
 
         return new \PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler($generator);
+    }
+
+    private function makeHostMetricsCollectHandler(
+        SettingsRepositoryInterface $settings,
+        FileReaderInterface $reader,
+        FileWriterInterface $writer
+    ): HostMetricsCollectHandler {
+        return new HostMetricsCollectHandler(
+            new HostMetricsSettings($settings),
+            new HostMetricsCollector(),
+            new HostMetricsStore($reader, $writer)
+        );
     }
 
     private function makeMaintenanceCleanupHandler(

@@ -1,6 +1,6 @@
 # Iteration 82 — Origin Panel (maintainer product cockpit)
 
-> **Status:** ✅ complete (`82a`–`82c`, `82e` shipped in `beta.56`; `82d` deferred)  
+> **Status:** ✅ complete (`82a`–`82c`, `82e` shipped in `beta.56`; `82d` 🟡 partial on `main` — [HOST_METRICS.md](developer/HOST_METRICS.md))  
 > **Priority:** 🔵 (maintainer tooling; no customer-facing impact)  
 > **Wave:** Product operations (post-It.71 Performance Guard, post-It.81 editorial ops)  
 > **Depends on:** existing dashboard APIs, health/capability probe patterns, Demo module packaging model  
@@ -26,7 +26,7 @@ Ship an **Origin Panel** — an admin-only cockpit for the **project-owned** Pag
 | **82b** | Feature probe registry + checklist UI | 🔵 P2 | ✅ done | 11 probes, `/api/admin/origin/overview`, `OriginPanelView` |
 | **82c** | Dashboard metrics lite | 🔵 P3 | ✅ done | Admin counts KPI row in overview (sparklines / APM embed deferred) |
 | **82e** | Project catalog + progress % | 🔵 P2 | ✅ done | `project-catalog.json`, merge service, iteration bars + timeline |
-| **82d** | Host metrics ingest hook | 🔵 P4 | ⏸️ deferred | Absorbs remainder of [It.46](ITERATION_46.md) only if needed |
+| **82d** | Host metrics snapshot | 🔵 P4 | 🟡 partial | CLI + scheduler job + loopback ingest; optional ops — [HOST_METRICS.md](developer/HOST_METRICS.md) |
 
 ---
 

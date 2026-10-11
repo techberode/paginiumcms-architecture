@@ -126,8 +126,10 @@ export const dashboardSk: MessageTree = {
       queryIndexHintTitle: 'Latencia katalógu — zvážte odvodený SQLite index',
       queryIndexHintLink: 'Hybridný engine → dopytový index',
       hostMetricsTitle: 'Host snapshot (It.82d)',
-      hostMetricsHint: 'Zapnite v Nastavenia → Engine; zber cez metrics:host-collect alebo cron ingest.',
+      hostMetricsHint: 'Nastavenia → Engine + zapnite job Host metrics snapshot, alebo metrics:host-collect na hoste.',
       hostMetricsLoad: 'Load 1/5/15: {l1} / {l5} / {l15}',
+      hostMetricsMemory: 'RAM: {used} MB obsadené · {available} MB voľné · {total} MB spolu',
+      hostMetricsDisk: 'Disk ({mount}): {percent}% obsadené · {used} / {total} GB',
       hostMetricsStatus: {
         disabled: 'Host metriky sú vypnuté.',
         missing: 'Zatiaľ žiadny snapshot — spustite collector.',

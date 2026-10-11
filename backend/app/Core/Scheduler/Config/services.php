@@ -15,6 +15,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
 use PaginiumCMS\Core\Scheduler\Services\AdminJobsOverviewProvider;
 use PaginiumCMS\Core\Scheduler\Services\CronExpressionEvaluator;
@@ -71,6 +72,12 @@ return [
         ->constructor(get(\PaginiumCMS\Core\Git\Services\GitPublishService::class)),
     StaticRebuildHandler::class => create(StaticRebuildHandler::class)
         ->constructor(get(\PaginiumCMS\Core\StaticSite\StaticSiteGenerator::class)),
+    HostMetricsCollectHandler::class => create(HostMetricsCollectHandler::class)
+        ->constructor(
+            get(\PaginiumCMS\Core\Performance\HostMetricsSettings::class),
+            get(\PaginiumCMS\Core\Performance\HostMetricsCollector::class),
+            get(\PaginiumCMS\Core\Performance\HostMetricsStore::class)
+        ),
     WebhookDeliveryHandler::class => create(WebhookDeliveryHandler::class)
         ->constructor(
             get(\PaginiumCMS\Core\Webhooks\Services\WebhookDeliveryService::class),
@@ -88,7 +95,8 @@ return [
             get(GitPublishHandler::class),
             get(WebhookDeliveryHandler::class),
             get(AgentRunHandler::class),
-            get(StaticRebuildHandler::class)
+            get(StaticRebuildHandler::class),
+            get(HostMetricsCollectHandler::class)
         ),
     ScheduledJobRunner::class => create(ScheduledJobRunner::class)
         ->constructor(

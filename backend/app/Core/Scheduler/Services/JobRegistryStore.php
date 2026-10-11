@@ -202,6 +202,15 @@ final class JobRegistryStore
                     'system' => true,
                     'payload' => [],
                 ],
+                [
+                    'id' => 'host-metrics-collect',
+                    'name' => 'Host metrics snapshot (It.82d)',
+                    'handler' => 'host_metrics.collect',
+                    'cron' => '*/5 * * * *',
+                    'enabled' => false,
+                    'system' => true,
+                    'payload' => [],
+                ],
             ],
         ];
     }

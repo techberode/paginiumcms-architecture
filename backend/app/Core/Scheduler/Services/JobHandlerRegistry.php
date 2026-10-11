@@ -15,6 +15,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\AgentRunHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
 use PaginiumCMS\Modules\Newsletter\Handlers\NewsletterWeeklyDigestHandler;
 
 /**
@@ -34,6 +35,7 @@ final class JobHandlerRegistry
         private WebhookDeliveryHandler $webhookDeliver,
         private AgentRunHandler $agentRun,
         private StaticRebuildHandler $staticRebuild,
+        private HostMetricsCollectHandler $hostMetricsCollect,
     ) {
     }
 
@@ -51,6 +53,7 @@ final class JobHandlerRegistry
             'webhook.deliver' => $this->webhookDeliver,
             'agent.run' => $this->agentRun,
             'static.rebuild' => $this->staticRebuild,
+            'host_metrics.collect' => $this->hostMetricsCollect,
             default => null,
         };
     }
@@ -72,6 +75,7 @@ final class JobHandlerRegistry
             ['key' => $this->webhookDeliver->key(), 'label' => $this->webhookDeliver->label()],
             ['key' => $this->agentRun->key(), 'label' => $this->agentRun->label()],
             ['key' => $this->staticRebuild->key(), 'label' => $this->staticRebuild->label()],
+            ['key' => $this->hostMetricsCollect->key(), 'label' => $this->hostMetricsCollect->label()],
         ];
     }
 }
