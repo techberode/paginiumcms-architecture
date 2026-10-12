@@ -340,13 +340,24 @@ export const authApi = {
       verified: boolean;
       setupPending: boolean;
     }> => {
-      const res = await apiClient.get<{ enabled: boolean; verified: boolean; setup_pending?: boolean }>(
-        '/api/auth/2fa/status'
-      );
-      if (!res.success || res.status === 401) {
+      const res = await apiClient.get<{
+        success?: boolean;
+        enabled?: boolean;
+        verified?: boolean;
+        setup_pending?: boolean;
+      }>('/api/auth/2fa/status');
+      const payload = (res.data ?? res) as {
+        enabled?: boolean;
+        verified?: boolean;
+        setup_pending?: boolean;
+      };
+      const hasFields =
+        typeof payload.enabled === 'boolean' ||
+        typeof payload.verified === 'boolean' ||
+        typeof payload.setup_pending === 'boolean';
+      if (res.success === false && !hasFields) {
         return { ok: false, enabled: false, verified: false, setupPending: false };
       }
-      const payload = res.data ?? res;
       return {
         ok: true,
         enabled: Boolean(payload.enabled),

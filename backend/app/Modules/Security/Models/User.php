@@ -563,6 +563,7 @@ class User implements JsonSerializable
             'registrationOptionId' => $this->registrationOptionId,
             'active' => $this->active,
             'twoFactorEnabled' => $this->twoFactorEnabled,
+            'twoFactorVerifiedAt' => $this->twoFactorVerifiedAt,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
         ];

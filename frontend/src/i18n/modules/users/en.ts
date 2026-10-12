@@ -83,6 +83,7 @@ export const usersEn: MessageTree = {
     twoFactor: '2FA',
     actions: 'Actions',
     edit: 'Edit',
+    editSelfAccount: 'Account',
     delete: 'Delete',
     active: 'Active',
     inactive: 'Inactive',
@@ -96,6 +97,7 @@ export const usersEn: MessageTree = {
     delete: 'Delete selected',
   },
   toast: {
+    selfAccountRedirect: 'Edit your own account under Account (profile, public profile, security, preferences).',
     formInvalid: 'Please check the form',
     updated: 'User updated',
     created: 'User created',

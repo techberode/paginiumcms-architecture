@@ -82,6 +82,7 @@ export const usersSk: MessageTree = {
     twoFactor: '2FA',
     actions: 'Akcie',
     edit: 'Upraviť',
+    editSelfAccount: 'Účet',
     delete: 'Zmazať',
     active: 'Aktívny',
     inactive: 'Neaktívny',
@@ -95,6 +96,7 @@ export const usersSk: MessageTree = {
     delete: 'Zmazať vybraných',
   },
   toast: {
+    selfAccountRedirect: 'Vlastný účet upravujte v sekcii Účet (profil, verejný profil, bezpečnosť, preferencie).',
     formInvalid: 'Skontrolujte formulár',
     updated: 'Používateľ aktualizovaný',
     created: 'Používateľ vytvorený',

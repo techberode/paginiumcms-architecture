@@ -180,10 +180,15 @@ class TwoFactorController
             return $this->json->error($response, 'Používateľ nebol nájdený', 404);
         }
 
+        $accountVerified = $freshUser->getTwoFactorVerifiedAt() !== null;
+
         return $this->json->respond($response, [
+            'success' => true,
             'enabled' => $freshUser->isTwoFactorEnabled(),
-            'verified' => $this->twoFactor->isTotpVerified(),
-            'setup_pending' => $freshUser->isTwoFactorEnabled() && $freshUser->getTwoFactorVerifiedAt() === null,
+            // Account settings UI: persisted setup, not the per-session TOTP gate flag.
+            'verified' => $accountVerified,
+            'setup_pending' => $freshUser->isTwoFactorEnabled() && !$accountVerified,
+            'session_verified' => $this->twoFactor->isTotpVerified(),
         ]);
     }
 

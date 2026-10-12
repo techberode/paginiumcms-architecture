@@ -1,6 +1,7 @@
 // frontend/src/components/backend/UsersManager.tsx
 // === Správa používateľov (Iterácia 5, UI refresh 2.0.18) ===
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Pencil,
@@ -80,6 +81,7 @@ const emptyForm = (): FormState => ({
 });
 
 export const UsersManager: React.FC = () => {
+  const navigate = useNavigate();
   const { t, locale } = useI18n();
   const confirmDestructive = useAdminConfirm();
   const passwordPolicy = usePasswordPolicy();
@@ -228,6 +230,12 @@ export const UsersManager: React.FC = () => {
   };
 
   const handleEdit = async (user: User) => {
+    if (user.id === currentUser?.id) {
+      navigate('/account');
+      success(t('users.toast.selfAccountRedirect'));
+      return;
+    }
+
     setTab('form');
     setEditingId(user.id);
     setEditingAvatarUrl(user.avatarUrl ?? null);
@@ -744,7 +752,7 @@ export const UsersManager: React.FC = () => {
                     onClick={() => void handleEdit(u)}
                     className="text-indigo-600 font-semibold hover:underline"
                   >
-                    {t('users.table.edit')}
+                    {currentUser?.id === u.id ? t('users.table.editSelfAccount') : t('users.table.edit')}
                   </button>
                   {currentUser?.id !== u.id && (
                     <button

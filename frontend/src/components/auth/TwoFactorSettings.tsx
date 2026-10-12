@@ -39,16 +39,24 @@ export const TwoFactorSettings: React.FC = () => {
     setLoading(true);
     try {
       const status = await authApi.twoFactor.getStatus();
-      setEnabled(status.enabled);
-      setVerified(status.verified);
+      const accountActive =
+        status.ok && status.enabled && status.verified
+          ? true
+          : Boolean(user?.twoFactorEnabled && user?.twoFactorVerifiedAt);
+      const enabledState = status.ok ? status.enabled : Boolean(user?.twoFactorEnabled);
+      const verifiedState = status.ok ? status.verified : accountActive;
+      const setupPending = status.ok ? status.setupPending : enabledState && !verifiedState;
 
-      if (status.enabled && !status.verified) {
+      setEnabled(enabledState);
+      setVerified(verifiedState);
+
+      if (setupPending) {
         await loadQrCode();
       }
     } finally {
       setLoading(false);
     }
-  }, [loadQrCode]);
+  }, [loadQrCode, user?.twoFactorEnabled, user?.twoFactorVerifiedAt]);
 
   useEffect(() => {
     void loadStatus();

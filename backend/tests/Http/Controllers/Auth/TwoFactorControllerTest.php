@@ -42,6 +42,7 @@ class TwoFactorControllerTest extends TestCase
         $data = $this->getJsonResponse($response);
 
         $this->assertEquals(200, $response->getStatusCode());
+        $this->assertTrue($data['success']);
         $this->assertFalse($data['enabled']);
         $this->assertFalse($data['verified']);
         $this->assertFalse($data['setup_pending']);
@@ -230,6 +231,14 @@ class TwoFactorControllerTest extends TestCase
         $loginResult = $this->loginTestUser($userData['email'], $userData['password']);
         $this->assertEquals(200, $loginResult['response']->getStatusCode());
         $this->assertTrue($loginResult['data']['requires_two_factor']);
+
+        $statusBeforeTotp = $this->getJsonResponse(
+            $this->handleRequest($this->createJsonRequest('GET', '/api/auth/2fa/status'))
+        );
+        $this->assertTrue($statusBeforeTotp['success']);
+        $this->assertTrue($statusBeforeTotp['enabled']);
+        $this->assertTrue($statusBeforeTotp['verified'], 'Account 2FA should show as verified once setup is complete');
+        $this->assertFalse($statusBeforeTotp['session_verified']);
 
         // Overenie TOTP kódu pri prihlásení
         $code = $totpGenerator->getCurrentCode($secret);
