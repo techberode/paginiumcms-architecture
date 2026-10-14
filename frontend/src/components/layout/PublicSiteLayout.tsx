@@ -33,6 +33,7 @@ import { ThemeShellBoundary } from './ThemeShellBoundary';
 import { ThemeScriptLoader } from '../frontend/ThemeScriptLoader';
 import { PublicHeaderStack } from './PublicHeaderStack';
 import { PublicBreadcrumbs } from '../frontend/PublicBreadcrumbs';
+import { resolvePublicBreadcrumbsPlacement } from '../../utils/publicBreadcrumbsPlacement';
 import { isAdminAppRoute } from '../../utils/appRoutes';
 import { resolveSiteHomePage } from '../../utils/siteHomePage';
 import { PublicNotFoundContent } from '../frontend/PublicNotFoundContent';
@@ -256,11 +257,14 @@ export const PublicSiteLayout: React.FC = () => {
     return getPageBySlug(slug.replace(/^\/+/, ''));
   }, [getPageBySlug, settings.layout?.serverErrorPageSlug]);
 
+  const breadcrumbsAbove =
+    resolvePublicBreadcrumbsPlacement(settings.layout) === 'above_content';
+
   const mainColumn = (
     <div className={`flex-1 flex min-h-0 min-w-0 ${sideOnRight ? 'flex-row-reverse' : ''}`}>
       {sideColumn}
       <div className="flex-1 min-w-0 pg-public-content-well flex flex-col min-h-0">
-        <PublicBreadcrumbs />
+        {breadcrumbsAbove ? <PublicBreadcrumbs /> : null}
         <div className="flex-1 flex flex-col min-h-0">
           <PublicRouteErrorBoundary errorPage={serverErrorPage}>
             <Outlet />

@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Validation\VisitorPhoneGuard;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Messages\Models\ContactMessage;
 use PaginiumCMS\Modules\Messages\Services\MessageDeskService;
+use PaginiumCMS\Support\LogSanitizer;
 use PaginiumCMS\Support\Lang;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -43,8 +44,11 @@ class ContactController
             );
         }
 
+        $reportedUrl = trim((string) ($data['reportedUrl'] ?? ''));
+        $isBrokenContentReport = $reportedUrl !== '';
+
         try {
-            $validated = $this->validator->validate($data, [
+            $rules = [
                 'name' => ['required', 'string', 'min:2', 'max:120'],
                 'email' => ['required', 'email', 'max:255'],
                 'phonePrefix' => ['string', 'max:8'],
@@ -52,7 +56,15 @@ class ContactController
                 'phone' => ['string', 'max:20'],
                 'subject' => ['string', 'max:200'],
                 'message' => ['required', 'string', 'min:10', 'max:5000'],
-            ]);
+                'reportedUrl' => ['string', 'max:500'],
+                'referer' => ['string', 'max:500'],
+            ];
+            if ($isBrokenContentReport) {
+                $rules['reportedUrl'] = ['required', 'string', 'min:1', 'max:500'];
+                $rules['message'] = ['string', 'max:5000'];
+            }
+
+            $validated = $this->validator->validate($data, $rules);
         } catch (ValidationException $e) {
             return $this->json->validation(
                 $response,
@@ -63,25 +75,51 @@ class ContactController
 
         try {
             $email = $this->visitorEmail->normalize((string) $validated['email'], 'contact');
-            $phone = $this->normalizePhone($data, $validated);
+            $phone = $isBrokenContentReport ? '' : $this->normalizePhone($data, $validated);
         } catch (ValidationException $e) {
             return $this->json->validation($response, Lang::get('validation_failed', [], 'contact'), $e->getErrors());
         }
 
-        $message = new ContactMessage(
-            (string) $validated['name'],
-            $email,
-            (string) $validated['message']
-        );
-        $message->setPhone($phone);
+        $userMessage = trim((string) ($validated['message'] ?? ''));
+        if ($isBrokenContentReport) {
+            $safeUrl = $this->normalizeReportedUrl($reportedUrl);
+            if ($safeUrl === null) {
+                return $this->json->validation(
+                    $response,
+                    Lang::get('validation_failed', [], 'contact'),
+                    ['reportedUrl' => [Lang::get('broken_url_invalid', [], 'contact')]]
+                );
+            }
 
-        $registrationRequest = filter_var($data['registrationRequest'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $subject = trim((string) ($validated['subject'] ?? ''));
-        if ($registrationRequest) {
-            $message->setRegistrationRequest(true);
-            $message->setSubject($subject !== '' ? $subject : ContactMessage::SUBJECT_REGISTRATION);
-        } elseif ($subject !== '') {
-            $message->setSubject($subject);
+            $referer = LogSanitizer::value(trim((string) ($validated['referer'] ?? '')));
+            $body = "Hlásená URL: {$safeUrl}\n";
+            if ($referer !== '') {
+                $body .= "Referer: {$referer}\n";
+            }
+            $body .= "---\n";
+            $body .= $userMessage !== '' ? $userMessage : Lang::get('broken_report_default_note', [], 'contact');
+
+            $message = new ContactMessage((string) $validated['name'], $email, $body);
+            $message->setPhone($phone);
+            $message->setSubject(ContactMessage::SUBJECT_BROKEN_CONTENT);
+            $message->setPriority(ContactMessage::PRIORITY_HIGH);
+            $message->setChannel('broken_content');
+        } else {
+            $message = new ContactMessage(
+                (string) $validated['name'],
+                $email,
+                $userMessage
+            );
+            $message->setPhone($phone);
+
+            $registrationRequest = filter_var($data['registrationRequest'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $subject = trim((string) ($validated['subject'] ?? ''));
+            if ($registrationRequest) {
+                $message->setRegistrationRequest(true);
+                $message->setSubject($subject !== '' ? $subject : ContactMessage::SUBJECT_REGISTRATION);
+            } elseif ($subject !== '') {
+                $message->setSubject($subject);
+            }
         }
 
         $serverParams = $request->getServerParams();
@@ -95,6 +133,21 @@ class ContactController
             201,
             Lang::get('submitted', [], 'contact')
         );
+    }
+
+    private function normalizeReportedUrl(string $raw): ?string
+    {
+        $trimmed = trim($raw);
+        if ($trimmed === '' || str_contains($trimmed, '://') || str_starts_with($trimmed, '//')) {
+            return null;
+        }
+
+        $path = str_starts_with($trimmed, '/') ? $trimmed : '/' . ltrim($trimmed, '/');
+        if (strlen($path) > 500 || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $path) === 1) {
+            return null;
+        }
+
+        return $path;
     }
 
     /**

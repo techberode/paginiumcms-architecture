@@ -534,6 +534,12 @@ final class SettingsController
             'developerRequiresAdmin' => (bool) ($layout['developerRequiresAdmin'] ?? $defaults['developerRequiresAdmin'] ?? true),
             'breadcrumbsEnabled' => (bool) ($layout['breadcrumbsEnabled'] ?? $defaults['breadcrumbsEnabled'] ?? true),
             'breadcrumbsOnHome' => (bool) ($layout['breadcrumbsOnHome'] ?? $defaults['breadcrumbsOnHome'] ?? false),
+            'breadcrumbsPosition' => in_array(
+                (string) ($layout['breadcrumbsPosition'] ?? $defaults['breadcrumbsPosition'] ?? 'above_content'),
+                ['above_content', 'below_hero'],
+                true
+            ) ? (string) ($layout['breadcrumbsPosition'] ?? $defaults['breadcrumbsPosition'] ?? 'above_content') : 'above_content',
+            'brokenContentReportOn404' => (bool) ($layout['brokenContentReportOn404'] ?? $defaults['brokenContentReportOn404'] ?? true),
             'notFoundPageSlug' => trim((string) ($layout['notFoundPageSlug'] ?? $defaults['notFoundPageSlug'] ?? '')),
             'serverErrorPageSlug' => trim((string) ($layout['serverErrorPageSlug'] ?? $defaults['serverErrorPageSlug'] ?? '')),
         ];

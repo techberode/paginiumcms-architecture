@@ -32,7 +32,8 @@
         "id": "next",
         "titleKey": "origin.snapshot.next",
         "items": [
-          { "titleKey": "origin.catalog.it98", "noteKey": "origin.snapshot.note_next" }
+          { "titleKey": "origin.catalog.it98", "noteKey": "origin.snapshot.note_next" },
+          { "titleKey": "origin.catalog.it101", "noteKey": "origin.snapshot.note_next" }
         ]
       }
     ]
@@ -99,6 +100,20 @@
       "items": [
         { "id": "98a", "titleKey": "origin.catalog.it98_workspace", "phase": "planned", "weight": 1 },
         { "id": "98b", "titleKey": "origin.catalog.it98_cli", "phase": "planned", "weight": 1 }
+      ],
+      "history": []
+    },
+    {
+      "id": "it.101",
+      "titleKey": "origin.catalog.it101",
+      "phase": "planned",
+      "doc": "docs/en/ITERATION_101.md",
+      "priority": "medium",
+      "items": [
+        { "id": "101a", "titleKey": "origin.catalog.it101_schema", "phase": "planned", "weight": 1 },
+        { "id": "101b", "titleKey": "origin.catalog.it101_presets", "phase": "planned", "weight": 1 },
+        { "id": "101c", "titleKey": "origin.catalog.it101_shortcode", "phase": "planned", "weight": 1 },
+        { "id": "101d", "titleKey": "origin.catalog.it101_submit", "phase": "planned", "weight": 1 }
       ],
       "history": []
     },

@@ -99,6 +99,11 @@ final class PaginationQuery
             $filters['stale'] = '1';
         }
 
+        $includeArchived = self::readFilterValue($params, 'include_archived');
+        if ($includeArchived === '1') {
+            $filters['include_archived'] = '1';
+        }
+
         return $filters;
     }
 

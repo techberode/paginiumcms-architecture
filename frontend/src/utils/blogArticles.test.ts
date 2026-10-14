@@ -75,5 +75,7 @@ describe('blogArticles', () => {
     expect(blogSortToApiSort('newest')).toBe('-createdAt');
     expect(blogSortToApiSort('oldest')).toBe('createdAt');
     expect(blogSortToApiSort('title')).toBe('title');
+    expect(blogSortToApiSort('titleDesc')).toBe('-title');
   });
+
 });

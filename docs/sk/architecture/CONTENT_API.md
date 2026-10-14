@@ -59,8 +59,10 @@ Odporúčaný explicitný query kontrakt:
 | `per_page` | settings default | max 100; `perPage` je legacy alias |
 | `status` | podľa identity | anonymous je serverom pripnutý na `published` |
 | `search` | — | min. dĺžka podľa validátora; title/slug/excerpt/tags |
-| `sort` | `-updatedAt` | allow-list fieldov; `-` znamená descending |
+| `sort` | `-updatedAt` | allow-list (`createdAt`, `title`, `slug`, `updatedAt`, `-popular`); `-` = descending (`title` A–Z, `-title` Z–A) |
 | `tag` / `filter[tag]` | — | exact normalizovaný tag pre articles |
+| `category` / `filter[category]` | — | presná kategória článku (vrátane `archive` pri explicitnom filtri) |
+| `include_archived` | — | pri `1` verejný zoznam **neaplikuje** predvolené `exclude_category=archive` (napr. najnovší článok vrátane archívu) |
 | `author` / `filter[author]` | — | dokumentovaný match, nie voľný regex |
 | `date_from`, `date_to` | — | validovaný ISO dátum a jednoznačná timezone policy |
 | `locale` | site default | voliteľný filter zoznamu; public `published` = ľubovoľný locale published, ak nie je pinned (It.73 §15) |

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { PageRenderer } from './PageRenderer';
 import { PublicSystemErrorPanel } from './PublicSystemErrorPanel';
+import { BrokenContentReportForm } from './BrokenContentReportForm';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { PUBLIC_SPINNER } from '../../theme/publicUiClasses';
@@ -18,6 +19,8 @@ export interface PublicNotFoundContentProps {
 export const PublicNotFoundContent: React.FC<PublicNotFoundContentProps> = ({ missingSlug }) => {
   const { getPageBySlug, loading: siteLoading } = usePublicSite();
   const { settings, loading: settingsLoading } = useSettingsContext();
+  const referer = useMemo(() => (typeof document !== 'undefined' ? document.referrer : ''), []);
+  const reportEnabled = settings.layout?.brokenContentReportOn404 !== false;
 
   if (siteLoading || settingsLoading) {
     return (
@@ -28,9 +31,26 @@ export const PublicNotFoundContent: React.FC<PublicNotFoundContentProps> = ({ mi
   }
 
   const resolved = resolvePublicErrorPage('notFound', settings.layout, getPageBySlug, missingSlug);
+  const reportBlock =
+    reportEnabled && missingSlug ? (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <BrokenContentReportForm reportedPath={`/${missingSlug.replace(/^\/+/, '')}`} referer={referer} />
+      </div>
+    ) : null;
+
   if (resolved.page) {
-    return <PageRenderer page={resolved.page} />;
+    return (
+      <>
+        <PageRenderer page={resolved.page} />
+        {reportBlock}
+      </>
+    );
   }
 
-  return <PublicSystemErrorPanel kind="notFound" missingSlug={missingSlug} />;
+  return (
+    <>
+      <PublicSystemErrorPanel kind="notFound" missingSlug={missingSlug} />
+      {reportBlock}
+    </>
+  );
 };

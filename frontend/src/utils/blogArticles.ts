@@ -1,7 +1,7 @@
 import type { Article } from '../api/types';
 import { contentDateToTimestamp, resolveContentDate } from './contentDates';
 
-export type BlogSort = 'newest' | 'oldest' | 'title' | 'popular';
+export type BlogSort = 'newest' | 'oldest' | 'title' | 'titleDesc' | 'popular';
 
 export function blogSortToApiSort(sort: BlogSort): string {
   switch (sort) {
@@ -9,6 +9,8 @@ export function blogSortToApiSort(sort: BlogSort): string {
       return 'createdAt';
     case 'title':
       return 'title';
+    case 'titleDesc':
+      return '-title';
     case 'popular':
       return '-popular';
     case 'newest':
@@ -18,7 +20,7 @@ export function blogSortToApiSort(sort: BlogSort): string {
 }
 
 export function parseBlogSort(value: string | null): BlogSort {
-  if (value === 'oldest' || value === 'title' || value === 'popular') {
+  if (value === 'oldest' || value === 'title' || value === 'titleDesc' || value === 'popular') {
     return value;
   }
   return 'newest';
@@ -35,6 +37,8 @@ export function sortPublishedArticles(articles: Article[], sort: BlogSort): Arti
       return copy.sort((a, b) => getArticleDate(a) - getArticleDate(b));
     case 'title':
       return copy.sort((a, b) => a.title.localeCompare(b.title, 'sk'));
+    case 'titleDesc':
+      return copy.sort((a, b) => b.title.localeCompare(a.title, 'sk'));
     case 'newest':
     default:
       return copy.sort((a, b) => getArticleDate(b) - getArticleDate(a));

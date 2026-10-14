@@ -249,6 +249,8 @@ export interface PublicSettings {
     developerRequiresAdmin: boolean;
     breadcrumbsEnabled?: boolean;
     breadcrumbsOnHome?: boolean;
+    breadcrumbsPosition?: 'above_content' | 'below_hero';
+    brokenContentReportOn404?: boolean;
     notFoundPageSlug?: string;
     serverErrorPageSlug?: string;
     showReadingProgress?: boolean;

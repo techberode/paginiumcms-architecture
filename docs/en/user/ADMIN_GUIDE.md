@@ -92,6 +92,14 @@ Articles use the same editor core and can additionally contain excerpt, tags, fe
 
 **Blog index (`/blog`):** The article list is a dedicated SPA route (not a row under `/pages`). To customize the hero/intro, create a **published page** with slug **`blog`** (Pages → New). Use **Header hero image** in the page editor (drag in the preview to reposition); the hero appears inside the intro greybox above the article grid—not as a full-width site header. See [PAGE_HERO_IMAGES.md](PAGE_HERO_IMAGES.md) for **21:9 / 2560×1097** generation specs and safe zones. The CMS bar on `/blog` opens that page for editing. Menu link **`/blog`** still points at the list; do not expect a separate `/{slug}` URL for slug `blog`.
 
+**Latest article highlight:** On the public list, the newest **published** article (including **archive** category when nothing newer exists) appears at the top with a body teaser and **Read full article** — it is omitted from the grid row below to avoid duplication.
+
+**Sort:** Newest, Oldest, Title A–Z, **Title Z–A**, Most read (`sort=titleDesc` → API `-title`).
+
+**Layout → breadcrumbs:** **Breadcrumb position** — above main content (default) or **below hero** on pages, article detail, and blog list.
+
+**404 broken-content reports:** **Layout → Broken-content report form on 404** (default on). Messages land in **Messages** with subject *Broken content/link report*; see [SHORTCODES_AND_WIDGETS.md §5](SHORTCODES_AND_WIDGETS.md#5-custom-404-and-500-pages).
+
 **Bulk actions:** When you select rows, the bulk bar shows **“X of Y selected”** (Y = total records matching current filters). Confirm dialogs for publish, draft, archive, and delete repeat that ratio (e.g. “Publish 3 of 47 selected items?”). Always verify filters before bulk publish or delete.
 
 **Print on public blog:** Settings → Content → **Enable article print** (`content.articlePrintEnabled`, default off). When on, visitors see **Print article** on blog detail; printing hides navigation, comments, and chrome.

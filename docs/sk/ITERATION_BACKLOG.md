@@ -24,6 +24,7 @@ Tento dokument opravuje starý backlog, v ktorom sa miešali hotové iterácie, 
 
 | Poradie | Položka | Priorita | Stav | Dôvod |
 |---------|---------|----------|------|-------|
+| 0d | **It.101** Verejný form builder (widgety a shortcodes) | 🟡 P1 | ⏳ plánované | [ITERATION_101.md](ITERATION_101.md) · EN [../en/ITERATION_101.md](../en/ITERATION_101.md) · hlásenie 404 už dnes mimo 101 |
 | 1 | Dokončiť dvojjazyčnú dokumentáciu | 🔴 | ✅ | It.18 konsolidácia; SK detail catch-up odložený |
 | 2 | **It.68** Hybrid Engine foundation | 🔴 | ✅ | `v2.1.0-beta.28` — [ITERATION_68](../en/ITERATION_68.md) |
 | 3 | **It.69** Unified cache + Redis + HTTP validators | 🔴 | ✅ | `v2.1.0-beta.26` — [ITERATION_69](../en/ITERATION_69.md) |

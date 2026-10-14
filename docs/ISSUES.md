@@ -5703,6 +5703,8 @@ Prose anchor styles exclude `.pg-btn` / `.pg-btn-primary`.
 
 Settings → Layout: `notFoundPageSlug`, `serverErrorPageSlug`; `PublicSystemErrorPanel` fallback; `PublicRouteErrorBoundary` for render errors.
 
+**Follow-up (Unreleased):** `brokenContentReportOn404` appends `BrokenContentReportForm` with `reportedUrl` + referer → `POST /api/contact` (Message Desk). `breadcrumbsPosition` (`above_content` | `below_hero`). Docs: [SHORTCODES_AND_WIDGETS.md §5](en/user/SHORTCODES_AND_WIDGETS.md#5-custom-404-and-500-pages), SK [SHORTCODES_A_WIDGETY.md](sk/user/SHORTCODES_A_WIDGETY.md).
+
 ---
 
 <a id="iss-185"></a>

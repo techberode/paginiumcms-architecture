@@ -49,6 +49,21 @@ export const publicSk: MessageTree = {
     serverErrorBody: 'Stránku sa nepodarilo zobraziť. Skúste to neskôr alebo prejdite na úvod.',
     pageNotFound: 'Stránka „:slug“ neexistuje.',
   },
+  brokenReport: {
+    title: 'Nahlásiť nefunkčný odkaz alebo chýbajúci obsah',
+    hint: 'URL sme doplnili automaticky — stačí krátky popis, ak viete, odkiaľ ste prišli.',
+    submit: 'Odoslať hlásenie',
+    sent: 'Ďakujeme — hlásenie bolo odoslané do správy správcovi.',
+    fields: {
+      url: 'Nefunkčná adresa',
+      details: 'Doplňujúce informácie (nepovinné)',
+      detailsPlaceholder: 'Napr. odkaz z newslettera, stará záložka, očakávaný obsah…',
+    },
+    toast: {
+      success: 'Hlásenie bolo odoslané.',
+      failed: 'Odoslanie zlyhalo — skúste to neskôr.',
+    },
+  },
   backToTop: {
     label: 'Späť hore',
   },
@@ -361,6 +376,7 @@ export const publicSk: MessageTree = {
       pageOf: ' · strana :page / :totalPages',
       updated: 'Upravené :date',
       readMore: 'Čítať celý článok',
+      latestFeatured: 'Najnovší článok',
       emptyTitle: 'Nenašli sa žiadne články',
       showAll: 'Zobraziť všetky',
     },
@@ -368,6 +384,7 @@ export const publicSk: MessageTree = {
       newest: 'Najnovšie',
       oldest: 'Najstaršie',
       title: 'Podľa názvu (A–Z)',
+      titleDesc: 'Podľa názvu (Z–A)',
       popular: 'Najčítanejšie',
     },
     sidebar: {

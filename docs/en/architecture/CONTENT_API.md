@@ -59,8 +59,10 @@ Recommended explicit query contract:
 | `per_page` | settings default | max 100; `perPage` is a legacy alias |
 | `status` | identity-dependent | anonymous is server-pinned to `published` |
 | `search` | — | minimum length by validator; title/slug/excerpt/tags |
-| `sort` | `-updatedAt` | allow-listed fields; `-` means descending |
+| `sort` | `-updatedAt` | allow-listed fields (`createdAt`, `title`, `slug`, `updatedAt`, `-popular`); `-` means descending (e.g. `title` A–Z, `-title` Z–A) |
 | `tag` / `filter[tag]` | — | exact normalized article tag |
+| `category` / `filter[category]` | — | exact article category (includes `archive` when explicitly requested) |
+| `include_archived` | — | when `1`, public anonymous lists **do not** apply the default `exclude_category=archive` filter (use for “latest published including archive”) |
 | `author` / `filter[author]` | — | documented match, not a free-form regex |
 | `date_from`, `date_to` | — | validated ISO date and unambiguous timezone policy |
 | `locale` | site default | optional list filter; public `published` = any locale published unless pinned (It.73 §15) |

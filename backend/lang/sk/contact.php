@@ -9,4 +9,6 @@ return [
     'email_invalid' => 'Platná e-mailová adresa je povinná.',
     'email_disposable' => 'Použite trvalú schránku, nie jednorazovú adresu.',
     'phone_invalid' => 'Zadajte predvoľbu a telefónne číslo v tvare +421909554887.',
+    'broken_url_invalid' => 'Neplatná cesta URL (použite relatívnu cestu na webe).',
+    'broken_report_default_note' => '(Bez doplnenia od návštevníka.)',
 ];

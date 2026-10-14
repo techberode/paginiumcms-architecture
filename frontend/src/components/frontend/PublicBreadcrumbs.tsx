@@ -5,8 +5,13 @@ import { useI18n } from '../../context/I18nContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { isHomeTemplatePage, resolveSiteHomePage } from '../../utils/siteHomePage';
+import { resolvePublicBreadcrumbsPlacement } from '../../utils/publicBreadcrumbsPlacement';
 
-export const PublicBreadcrumbs: React.FC = () => {
+type PublicBreadcrumbsProps = {
+  className?: string;
+};
+
+export const PublicBreadcrumbs: React.FC<PublicBreadcrumbsProps> = ({ className = '' }) => {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const { settings } = useSettingsContext();
@@ -66,7 +71,7 @@ export const PublicBreadcrumbs: React.FC = () => {
   }
 
   return (
-    <nav className="pg-breadcrumbs" aria-label={t('public.breadcrumbs.ariaLabel')}>
+    <nav className={`pg-breadcrumbs ${className}`.trim()} aria-label={t('public.breadcrumbs.ariaLabel')}>
       <ol className="pg-breadcrumbs-list">
         {crumbs.map((crumb, index) => {
           const isLast = index === crumbs.length - 1;
@@ -90,6 +95,15 @@ export const PublicBreadcrumbs: React.FC = () => {
       </ol>
     </nav>
   );
+};
+
+/** Renders breadcrumbs when layout position is below the page/article hero. */
+export const PublicBreadcrumbsBelowHero: React.FC<{ className?: string }> = ({ className }) => {
+  const { settings } = useSettingsContext();
+  if (resolvePublicBreadcrumbsPlacement(settings?.layout) !== 'below_hero') {
+    return null;
+  }
+  return <PublicBreadcrumbs className={className} />;
 };
 
 export default PublicBreadcrumbs;

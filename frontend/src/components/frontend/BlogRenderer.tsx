@@ -33,6 +33,7 @@ import {
   resolveBlogItemsPerPage,
   type BlogSort,
 } from '../../utils/blogArticles';
+import { BlogLatestPreview } from './BlogLatestPreview';
 import { formatContentDateLabels } from '../../utils/contentDates';
 import { formatReadingTime, resolveShowReadingTime } from '../../utils/readingTime';
 import { resolveArticlePrintEnabled } from '../../utils/contentPublicSettings';
@@ -52,6 +53,7 @@ import {
 import { usePublicSite } from '../../context/PublicSiteContext';
 import { PageRenderer } from './PageRenderer';
 import { ArticleDetailSkeleton } from './ArticleDetailSkeleton';
+import { PublicBreadcrumbsBelowHero } from './PublicBreadcrumbs';
 
 export const BlogRenderer: React.FC = () => {
   const { t, locale } = useI18n();
@@ -61,6 +63,7 @@ export const BlogRenderer: React.FC = () => {
         { value: 'newest' as const, label: t('public.blog.sort.newest') },
         { value: 'oldest' as const, label: t('public.blog.sort.oldest') },
         { value: 'title' as const, label: t('public.blog.sort.title') },
+        { value: 'titleDesc' as const, label: t('public.blog.sort.titleDesc') },
         { value: 'popular' as const, label: t('public.blog.sort.popular') },
       ] satisfies { value: BlogSort; label: string }[],
     [t]
@@ -113,6 +116,7 @@ export const BlogRenderer: React.FC = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [navArticles, setNavArticles] = useState<Article[]>([]);
   const [sidebarData, setSidebarData] = useState<BlogSidebarPayload | null>(null);
+  const [latestHighlightArticle, setLatestHighlightArticle] = useState<Article | null>(null);
   const articleShellRef = useRef<HTMLDivElement>(null);
   const [articleShellMinHeightPx, setArticleShellMinHeightPx] = useState(0);
 
@@ -184,6 +188,35 @@ export const BlogRenderer: React.FC = () => {
   }, [slug, currentPage, itemsPerPage, selectedTag, selectedCategory, sort]);
 
   useEffect(() => {
+    if (slug) {
+      setLatestHighlightArticle(null);
+      return;
+    }
+
+    let cancelled = false;
+    const loadLatestHighlight = async () => {
+      const params = new URLSearchParams({
+        page: '1',
+        per_page: '1',
+        sort: '-createdAt',
+        include_archived: '1',
+      });
+      const response = await apiClient.get<Article[]>(`/api/articles?${params.toString()}`);
+      if (cancelled) {
+        return;
+      }
+      const first = response.success ? response.data?.[0] : undefined;
+      setLatestHighlightArticle(first ?? null);
+    };
+
+    void loadLatestHighlight();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, locale]);
+
+  useEffect(() => {
     if (!slug) {
       setActiveArticle(null);
       return;
@@ -244,6 +277,10 @@ export const BlogRenderer: React.FC = () => {
   const totalPages = listMeta?.total_pages ?? 1;
   const safePage = Math.min(currentPage, Math.max(1, totalPages));
   const paginatedArticles = listArticles;
+  const latestFeaturedArticle = latestHighlightArticle;
+  const gridArticles = latestFeaturedArticle
+    ? paginatedArticles.filter((item) => item.id !== latestFeaturedArticle.id && item.slug !== latestFeaturedArticle.slug)
+    : paginatedArticles;
 
   const hasPrev = safePage > 1;
   const hasNext = safePage < totalPages;
@@ -597,6 +634,8 @@ export const BlogRenderer: React.FC = () => {
           {image ? <ArticleHeroImage article={activeArticle} /> : null}
         </header>
 
+            <PublicBreadcrumbsBelowHero className="mb-4 sm:mb-6 pg-no-print" />
+
             <main className="mt-10">
           <div
             className={`${PUBLIC_CARD} p-8 sm:p-12 pg-print-body`}
@@ -775,6 +814,7 @@ export const BlogRenderer: React.FC = () => {
       <main className={`${blogListMaxWidthClass(listLayout.width)} mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8`}>
         {wrapWithSidebar(
           <>
+        <PublicBreadcrumbsBelowHero className="mb-4 sm:mb-6" />
         {filteredTotal > 0 && (
           <p className="text-center text-xs font-semibold text-theme-text-muted mb-4 sm:mb-6">
             {t('public.blog.list.range', { start: rangeStart, end: rangeEnd, total: filteredTotal })}
@@ -782,8 +822,20 @@ export const BlogRenderer: React.FC = () => {
           </p>
         )}
 
+        {latestFeaturedArticle ? (
+          <BlogLatestPreview
+            article={latestFeaturedArticle}
+            locale={locale}
+            showReadingTime={showReadingTime}
+            latestLabel={t('public.blog.list.latestFeatured')}
+            archiveCategoryLabel={t('public.blog.categoryArchive')}
+            readMoreLabel={t('public.blog.list.readMore')}
+            onOpenArticle={() => navigate(`/blog/${latestFeaturedArticle.slug}`)}
+          />
+        ) : null}
+
         <div className={blogListGridClass(listLayout.columns, sidebarActive, listLayout.cardSize)}>
-          {paginatedArticles.map((article) => {
+          {gridArticles.map((article) => {
             const author = article.author || String(
               settings.content?.blogAuthorName || settings.general?.siteName || article.frontMatter?.author || t('public.defaults.editorial')
             );

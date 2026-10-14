@@ -204,7 +204,7 @@ Webflow **Kebite**-style agency templates combine hero, services, portfolio, tea
 | CTA band | `[cta-banner title="…" cta="…" href="/contact"/]` or `[widget type="form-cta" href="/contact"/]` |
 | Contact / map | Contact page + `[widget type="map-embed" src="…"/]` (Google embed allow-list) |
 | Blog | Built-in `/blog` + article heroes; link from `[link-row]` + `[link-chip]` |
-| 404 | Publish page slug `404` → **Settings → Layout → notFoundPageSlug** |
+| 404 | **Settings → Layout → notFoundPageSlug** + optional **broken-content report form** (prefilled URL); see [SHORTCODES_AND_WIDGETS.md §5](SHORTCODES_AND_WIDGETS.md#5-custom-404-and-500-pages) |
 | Full-bleed band + motion | `[section-band]` — background image, overlay, `reveal` / `hover-effect` presets |
 
 **Suggested home page flow (markdown body):**

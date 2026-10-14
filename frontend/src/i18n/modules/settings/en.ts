@@ -1246,6 +1246,14 @@ export const settingsEn: MessageTree = {
         "label": "Breadcrumbs on home page",
         "help": "Off = hide breadcrumbs on the home page only."
       },
+      "breadcrumbsPosition": {
+        "label": "Breadcrumb position",
+        "help": "Above content (before hero) or below the page/article hero section."
+      },
+      "brokenContentReportOn404": {
+        "label": "404 broken-content report form",
+        "help": "Prefills the broken URL; submissions go to Message Desk as contact messages."
+      },
       "showReadingProgress": {
         "label": "Reading progress bar",
         "help": "Shows a thin progress line at the top on blog articles and published pages. Hidden when prefers-reduced-motion is on."

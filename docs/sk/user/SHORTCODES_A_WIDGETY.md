@@ -136,6 +136,25 @@ Anglický cookbook: [SHORTCODE_COOKBOOK.md](../../en/user/SHORTCODE_COOKBOOK.md)
 
 ---
 
+## Vlastná 404 a 500
+
+**Nastavenia → Layout → Chybové stránky** (skupina *Rozloženie stránky*)
+
+| Pole | Popis |
+|------|--------|
+| **notFoundPageSlug** | Slug publikovanej stránky pri neexistujúcej URL (menu + pätička ostávajú). Rovnako pre chýbajúce články a hlboké cesty. |
+| **serverErrorPageSlug** | Stránka pri páde verejného React renderu. |
+| **brokenContentReportOn404** | Formulár nahlásenia pod obsahom 404 (predvolene zapnuté). URL a referer sa doplnia automaticky; odoslanie → Message Desk cez `/api/contact`. |
+| **breadcrumbsPosition** | **Nad obsahom** alebo **Pod hero** (stránka, detail článku, blog). |
+
+Prázdne slugy = vestavné panely Paginium. **Nepresmerúvaj** mŕtve URL na kontakt — stratíš kontext a 404 report v analytike.
+
+**Kontrolný zoznam, ak custom 404 „nefunguje“:** stránka **published**; slug v nastaveniach bez úvodného `/`; hard refresh; `/api/settings/public` obsahuje `layout.notFoundPageSlug`; vyhradené trasy (`blog`, `features`, `cookies`) nie sú cieľom chýbajúceho slug.
+
+Plánovaný **form builder** pre ďalšie formuláre: [ITERATION_101.md](../ITERATION_101.md).
+
+---
+
 ## Súvisiace
 
-- [GALLERY.md](GALLERY.md) · [CONTENT_EDITOR.md](CONTENT_EDITOR.md) · [LANDING_PAGE](../../en/user/LANDING_PAGE.md)
+- [GALLERY.md](GALLERY.md) · [CONTENT_EDITOR.md](CONTENT_EDITOR.md) · [LANDING_PAGE.md](LANDING_PAGE.md)

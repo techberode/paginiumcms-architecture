@@ -2072,7 +2072,7 @@ class ContentController
             return $filters;
         }
 
-        if (!empty($filters['category'])) {
+        if (!empty($filters['category']) || !empty($filters['include_archived'])) {
             return $filters;
         }
 
@@ -2090,7 +2090,7 @@ class ContentController
             return $query;
         }
 
-        if (!empty($query->filters['category'])) {
+        if (!empty($query->filters['category']) || !empty($query->filters['include_archived'])) {
             return $query;
         }
 

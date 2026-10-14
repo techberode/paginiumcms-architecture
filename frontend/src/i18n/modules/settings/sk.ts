@@ -1823,6 +1823,14 @@ export const settingsSk: MessageTree = {
         "label": "Drobčeky aj na úvodnej stránke",
         "help": "Vypnuté = na domovskej stránke sa drobčeky nezobrazia."
       },
+      "breadcrumbsPosition": {
+        "label": "Pozícia drobčekov",
+        "help": "Nad obsahom (pred hero) alebo pod hero sekciou stránky/článku."
+      },
+      "brokenContentReportOn404": {
+        "label": "Formulár nahlásenia na 404",
+        "help": "Automaticky vyplní nefunkčnú URL; správa ide do Message Desk (kontakt)."
+      },
       "showReadingProgress": {
         "label": "Indikátor čítania",
         "help": "Tenká lišta navrchu pri článkoch a stránkach. Skryté pri prefers-reduced-motion."

@@ -29,6 +29,7 @@ import {
   stripHeroDuplicateFromHtml,
 } from '../../utils/pageHero';
 import { isHomeTemplatePage, landingHeroPresentInBody } from '../../utils/siteHomePage';
+import { PublicBreadcrumbsBelowHero } from './PublicBreadcrumbs';
 
 export type PageRendererVariant = 'full' | 'embed';
 
@@ -313,6 +314,7 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ page, variant = 'ful
       <main ref={pageMainRef} className={mainClass}>
         <ComingSoonCountdown kind="page" slug={page.slug} />
         {topHeader}
+        {!embed ? <PublicBreadcrumbsBelowHero className="px-0 sm:px-0 mb-4 sm:mb-6" /> : null}
 
         {isHome && !useLandingShell && !embed && heroFlags.headerBand ? (
           contentBlock

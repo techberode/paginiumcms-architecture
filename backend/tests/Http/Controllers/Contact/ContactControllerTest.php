@@ -141,6 +141,23 @@ class ContactControllerTest extends TestCase
         $this->assertSame('staff', $thread[0]['authorType'] ?? null);
     }
 
+    public function testSubmitBrokenContentReport(): void
+    {
+        $response = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [
+            'name' => 'Reporter',
+            'email' => 'reporter-broken@example.com',
+            'reportedUrl' => '/missing-page',
+            'referer' => 'https://example.com/newsletter',
+            'message' => '',
+            'phonePrefix' => '',
+            'phoneNumber' => '',
+        ]));
+
+        $payload = json_encode($this->getJsonResponse($response));
+        $this->assertIsString($payload);
+        $this->assertSame(201, $response->getStatusCode(), $payload);
+    }
+
     public function testSubmitRequiresE164Phone(): void
     {
         $missing = $this->handleRequest($this->createJsonRequest('POST', '/api/contact', [

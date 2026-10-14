@@ -49,6 +49,21 @@ export const publicEn: MessageTree = {
     serverErrorBody: 'We could not render this page. Try again later or return to the home page.',
     pageNotFound: 'Page “:slug” does not exist.',
   },
+  brokenReport: {
+    title: 'Report a broken link or missing content',
+    hint: 'We filled in the URL automatically — add a short note if you know where you came from.',
+    submit: 'Send report',
+    sent: 'Thank you — your report was sent to the site team.',
+    fields: {
+      url: 'Broken address',
+      details: 'Additional details (optional)',
+      detailsPlaceholder: 'e.g. newsletter link, old bookmark, what you expected to find…',
+    },
+    toast: {
+      success: 'Report sent.',
+      failed: 'Could not send — try again later.',
+    },
+  },
   backToTop: {
     label: 'Back to top',
   },
@@ -388,6 +403,7 @@ export const publicEn: MessageTree = {
       pageOf: ' · page :page / :totalPages',
       updated: 'Updated :date',
       readMore: 'Read full article',
+      latestFeatured: 'Latest article',
       emptyTitle: 'No articles found',
       showAll: 'Show all',
     },
@@ -395,6 +411,7 @@ export const publicEn: MessageTree = {
       newest: 'Newest',
       oldest: 'Oldest',
       title: 'By title (A–Z)',
+      titleDesc: 'By title (Z–A)',
       popular: 'Most read',
     },
     sidebar: {

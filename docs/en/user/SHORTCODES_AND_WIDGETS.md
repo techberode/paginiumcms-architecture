@@ -166,6 +166,8 @@ Editor charts (Mermaid, etc.) remain in the **article editor**; body widgets abo
 
 - **notFoundPageSlug** — published page slug shown when a public slug does not exist (nav + footer intact). Also used for missing blog articles and deep unknown paths (e.g. `/old/nested/link`).
 - **serverErrorPageSlug** — published page shown when the public React tree throws during render.
+- **brokenContentReportOn404** (default on) — appends a **broken-link report form** below the custom or built-in 404 content. **Reported URL** and **Referer** are prefilled; submission uses `POST /api/contact` with `reportedUrl` → Message Desk (subject *Broken content/link report*, high priority). Do **not** redirect missing URLs to `/contact` — keep the 404 semantics and capture context on the error page.
+- **breadcrumbsPosition** — `above_content` (default, above the main column) or `below_hero` (under the page/article/blog hero block).
 
 Leave empty to use the built-in Paginium error panels (`PublicSystemErrorPanel`). Create dedicated pages (e.g. layout `landing`) for branded errors.
 

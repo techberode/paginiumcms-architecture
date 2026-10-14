@@ -30,6 +30,7 @@ class ContactMessage implements JsonSerializable
     public const SUBJECT_SALES = 'Obchodné informácie';
     public const SUBJECT_PARTNERSHIP = 'Spolupráca';
     public const SUBJECT_REGISTRATION = 'Žiadosť o registráciu';
+    public const SUBJECT_BROKEN_CONTENT = 'Nahlásenie nefunkčného obsahu/odkazu';
 
     /** @var list<string> */
     public const SUBJECT_PRESETS = [
@@ -38,6 +39,7 @@ class ContactMessage implements JsonSerializable
         self::SUBJECT_SALES,
         self::SUBJECT_PARTNERSHIP,
         self::SUBJECT_REGISTRATION,
+        self::SUBJECT_BROKEN_CONTENT,
     ];
 
     private string $id;

@@ -13,6 +13,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Public 404:** broken-content report form (prefilled URL/referer → Message Desk via `/api/contact`); optional custom page via `layout.notFoundPageSlug`; toggle `layout.brokenContentReportOn404`
+- **Public blog:** latest-article highlight (includes archived when newest), sort **Z–A** (`titleDesc`), `GET /api/articles?include_archived=1` for highlight fetch
+- **Layout:** `layout.breadcrumbsPosition` — breadcrumbs above content or below hero (pages, articles, blog)
+- **It.101 (planned):** public form builder — [ITERATION_101.md](docs/en/ITERATION_101.md) · SK [docs/sk/ITERATION_101.md](docs/sk/ITERATION_101.md)
 - **Editor:** Autosave for new unsaved pages/articles (provisional `koncept-DDMMYYYY-*` slug, `GET /api/drafts/pending`, Pages/Articles banner, desk `content_draft` queue item) — if not already on `main` from a prior slice, still pending separate ship
 - **It.100 (living):** further tuning (P3 async beyond logs, Redis job projections, prod metrics) — [ITERATION_100.md](docs/en/ITERATION_100.md)
 - **It.98:** workspace + CLI — [ITERATION_98.md](docs/en/ITERATION_98.md)
