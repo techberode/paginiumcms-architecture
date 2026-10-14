@@ -40,6 +40,8 @@ import { resolveArticlePrintEnabled } from '../../utils/contentPublicSettings';
 import { BTN_PRIMARY, INPUT_THEME, PUBLIC_CARD, PUBLIC_SPINNER } from '../../theme/publicUiClasses';
 import { blogSidebarApi, type BlogSidebarPayload } from '../../api/blogSidebar';
 import { BlogSidebar } from './BlogSidebar';
+import { BlogTagFacetList } from './BlogTagFacetList';
+import { normalizeTagFacets } from '../../utils/blogTagFacets';
 import { ContentShareBar } from './ContentShareBar';
 import { ComingSoonCountdown } from './ComingSoonCountdown';
 import { resolveBlogSidebarSettings } from '../../utils/blogSidebarSettings';
@@ -271,7 +273,11 @@ export const BlogRenderer: React.FC = () => {
     };
   }, [slug, sort]);
 
-  const allTags = listMeta?.tags ?? [];
+  const tagFacets = useMemo(
+    () => normalizeTagFacets(listMeta?.tagFacets, listMeta?.tags),
+    [listMeta?.tagFacets, listMeta?.tags]
+  );
+  const tagFacetLimit = listMeta?.tagFacetLimit ?? sidebarData?.tagFacetLimit ?? 28;
   const totalPublished = listMeta?.total_published ?? listMeta?.total ?? 0;
   const filteredTotal = listMeta?.total ?? 0;
   const totalPages = listMeta?.total_pages ?? 1;
@@ -773,23 +779,15 @@ export const BlogRenderer: React.FC = () => {
             >
               {t('public.blog.list.allArticles', { count: totalPublished })}
             </button>
-            {!sidebarActive || !sidebarSettings.showTags
-              ? allTags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => updateListParams({ page: 1, tag: selectedTag === tag ? null : tag })}
-                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                      selectedTag === tag
-                        ? `${BTN_PRIMARY} shadow-md`
-                        : 'bg-theme-surface hover:bg-theme-surface-elevated text-theme-text-muted'
-                    }`}
-                  >
-                    <Tag className="w-3 h-3" />
-                    <span>{tag}</span>
-                  </button>
-                ))
-              : null}
+            {(!sidebarActive || !sidebarSettings.showTags) && tagFacets.length > 0 ? (
+              <BlogTagFacetList
+                facets={tagFacets}
+                selectedTag={selectedTag}
+                limit={tagFacetLimit}
+                onSelectTag={(tag) => updateListParams({ page: 1, tag })}
+                variant="chips"
+              />
+            ) : null}
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <label htmlFor="blog-sort" className="text-xs font-bold text-theme-text-muted uppercase tracking-wide">

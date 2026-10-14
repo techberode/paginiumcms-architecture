@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 11 October 2026 · register **ISS-001–ISS-198** · latest public release tag **`v2.1.0-beta.98`**
+> **Last updated:** 14 October 2026 · register **ISS-001–ISS-199** · latest public release tag **`v2.1.0-beta.98`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -221,6 +221,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-196](#iss-196) | Post-login CSRF stale token → `render-preview` 403 + log WARNING noise | Low (ops / UX) | ✅ Fixed (Unreleased) — refresh token after login; `csrf_invalid` → INFO |
 | [ISS-197](#iss-197) | Residual `npm audit` high (Tailwind 3 build chain) after safe fix | Low (supply-chain / dev) | ⏳ **Monitor** — 6 high remain (braces); DOMPurify/ESLint chain fixed (Unreleased) |
 | [ISS-198](#iss-198) | `GET /api/auth/me/desk` multi-second (comment N+1 + double desk compose) | High (ops / FPM pool) | ✅ Fixed (Unreleased) — index + single compose |
+| [ISS-199](#iss-199) | Oct 2026 config audit — public debug PHP, Docker nginx/Redis, XFF spoof | High (security / ops) | ✅ Fixed (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6107,6 +6108,41 @@ After `npm audit fix` (without `--force`), **`npm audit` still reports high** fi
 ### Cross-links
 
 - [ITERATION_100.md](en/ITERATION_100.md) · [ADMIN_LOAD_SIMULATION.md](en/developer/ADMIN_LOAD_SIMULATION.md)
+
+---
+
+<a id="iss-199"></a>
+
+## ISS-199 – Configuration audit remediation (docroot, Docker, client IP)
+
+[↑ Overview](#overview)
+
+| Field | Value |
+|---|---|
+| **Severity** | High — information disclosure, open Redis bind, rate-limit / firewall bypass via spoofed `X-Forwarded-For` |
+| **Status** | ✅ Fixed (**Unreleased**, Oct 2026) |
+| **Area** | `backend/public/` · `docker/nginx/default.conf` · `docker-compose.yml` · `ClientIpResolver` · middleware |
+
+### Symptom
+
+External configuration audit (commit baseline `f5409d3`) reported: standalone **`debug.php` / test PHP** in the public docroot; Docker nginx passing **any `*.php`** to FPM; Redis **`0.0.0.0:6379`** on local compose profile; firewall / rate limit / access log using **leftmost** `X-Forwarded-For` when the direct peer was a trusted proxy (prepend spoof).
+
+### Resolution
+
+- Removed **`debug.php`**, **`test.php`**, **`test-di.php`**, **`test-autoload.php`** from `backend/public/`.
+- Docker **`default.conf`**: only **`location = /index.php`** → FPM; other **`*.php` → 404**; deny **`/storage/*.php`**.
+- Local compose Redis port **`127.0.0.1:6379:6379`** (production override already uses `ports: !reset []` — see [docker-compose.prod.yml](deploy/docker-compose.prod.yml)).
+- **`ClientIpResolver`**: walk XFF chain from the right; **`FirewallMiddleware`**, **`RateLimitMiddleware`**, **`RequestLoggingMiddleware`** delegate to resolver (regression test for prepend spoof).
+
+### Verification
+
+- `ClientIpResolverTest::testIgnoresSpoofedLeftmostForwardedForWhenProxyAppends`
+- `./scripts/iteration-gate.sh`
+- Docs: [SECURITY.md](en/developer/SECURITY.md) §6 forwarded headers / docroot
+
+### Residual (audit backlog, not in this fix)
+
+Code Editor write surface, `.htaccess` CSP vs nginx, Docker image hardening, gitleaks/CI pin — track separately.
 
 ---
 

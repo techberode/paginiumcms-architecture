@@ -635,6 +635,18 @@ export const settingsSk: MessageTree = {
       "blogSidebarPopularCount": {
         "label": "Sidebar — počet najčítanejších"
       },
+      "blogTagFacetsEnabled": {
+        "label": "Blog — zoskupovať tagy",
+        "help": "Podobné tagy sa zlúčia vo filtri (beta35→beta, redirect:…→redirect, diakritika)."
+      },
+      "blogSidebarTagLimit": {
+        "label": "Blog — max. tagov vo widgete",
+        "help": "Koľko skupín tagov zobraziť naraz; zvyšok cez vyhľadávanie alebo „Zobraziť viac“."
+      },
+      "blogTagFacetSynonyms": {
+        "label": "Blog — mapovanie tagov (JSON)",
+        "help": "Voliteľné synonymá, napr. {\"media\":[\"média\",\"médii\"],\"redirect\":[\"redirectly\"]}."
+      },
       "showReadingTime": {
         "label": "Zobraziť odhadovaný čas čítania",
         "help": "Na blog kartách a detaile článku (počítané z dĺžky textu)."

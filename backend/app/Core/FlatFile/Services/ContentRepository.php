@@ -205,6 +205,14 @@ class ContentRepository implements ContentRepositoryInterface
     /**
      * {@inheritDoc}
      */
+    public function listTagUsageCounts(string $type, array $filters = []): array
+    {
+        return $this->queryIndex->listTagUsageCounts($type, $filters);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function listDistinctCategories(string $type, array $filters = []): array
     {
         return $this->queryIndex->listDistinctCategories($type, $filters);

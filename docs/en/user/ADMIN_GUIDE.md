@@ -100,6 +100,8 @@ Articles use the same editor core and can additionally contain excerpt, tags, fe
 
 **404 broken-content reports:** **Layout → Broken-content report form on 404** (default on). Messages land in **Messages** with subject *Broken content/link report*; see [SHORTCODES_AND_WIDGETS.md §5](SHORTCODES_AND_WIDGETS.md#5-custom-404-and-500-pages).
 
+**Blog tag facets (no per-article cleanup):** Settings → Content → **Blog — group tags** (default on) collapses noisy tags on `/blog` (e.g. `beta35`/`beta36` → **beta**, `redirect:…` → prefix). Optional **Blog — tag mapping (JSON)** merges synonyms (`media` / `média`). **Blog — max tags in widget** limits visible chips; search and “Show more” cover the rest. Sidebar uses the same facets as the list API (`tagFacets`).
+
 **Bulk actions:** When you select rows, the bulk bar shows **“X of Y selected”** (Y = total records matching current filters). Confirm dialogs for publish, draft, archive, and delete repeat that ratio (e.g. “Publish 3 of 47 selected items?”). Always verify filters before bulk publish or delete.
 
 **Print on public blog:** Settings → Content → **Enable article print** (`content.articlePrintEnabled`, default off). When on, visitors see **Print article** on blog detail; printing hides navigation, comments, and chrome.

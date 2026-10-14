@@ -1702,6 +1702,13 @@
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
+.pg-blog-tag-count {
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  opacity: 0.75;
+}
+
 .pg-blog-tag-chip:hover,
 .pg-blog-tag-chip.is-active {
   border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));

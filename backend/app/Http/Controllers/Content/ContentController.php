@@ -50,6 +50,8 @@ use PaginiumCMS\Core\Content\BlogAuthorSettings;
 use PaginiumCMS\Core\Content\Services\ContentEditorialReviewService;
 use PaginiumCMS\Core\Content\Models\CategoryRecord;
 use PaginiumCMS\Core\Content\Services\BlogSidebarService;
+use PaginiumCMS\Core\Content\Services\BlogTagFacetService;
+use PaginiumCMS\Core\Content\Support\ArticleTagFilter;
 use PaginiumCMS\Core\Content\Services\ContentNewsArchiveService;
 use PaginiumCMS\Core\Content\Services\NewsArchivePolicy;
 use PaginiumCMS\Support\AppTimezone;
@@ -98,6 +100,7 @@ class ContentController
         private ContentEditorialReviewService $editorialReview,
         private ContentNewsArchiveService $newsArchive,
         private NewsArchivePolicy $newsArchivePolicy,
+        private BlogTagFacetService $blogTagFacets,
     ) {
     }
 
@@ -1782,6 +1785,9 @@ class ContentController
         $defaultPerPage = (int) $this->settings->get('content.itemsPerPage', PaginationQuery::DEFAULT_PER_PAGE);
         $query = PaginationQuery::fromRequest($request, max(1, min(100, $defaultPerPage)));
         $query = $this->applyPublicArticleFeedFilters($request, $this->applyPublicFilters($request, $query), $type);
+        if ($type === 'article') {
+            $query = $this->applyArticleTagFacetFilter($query);
+        }
 
         if (!$this->isPaginationRequested($request)) {
             $filters = $this->applyPublicArticleListFilters($request, $this->extractFilters($request), $type);
@@ -1850,7 +1856,14 @@ class ContentController
                 $facetFilters['status'] = 'published';
             }
 
-            $metaExtra['tags'] = $this->repository->listDistinctTags('article', $facetFilters);
+            $rawTags = $this->repository->listDistinctTags('article', $facetFilters);
+            $tagUsage = $this->repository->listTagUsageCounts('article', $facetFilters);
+            $metaExtra['tagFacets'] = $this->blogTagFacets->buildFacets($rawTags, $tagUsage);
+            $metaExtra['tagFacetLimit'] = $this->blogTagFacets->maxVisible();
+            $metaExtra['tags'] = array_map(
+                static fn (array $facet): string => $facet['key'],
+                $metaExtra['tagFacets']
+            );
             $metaExtra['categories'] = $this->repository->listDistinctCategories('article', $facetFilters);
             if (!$this->isAuthenticated($request)) {
                 $metaExtra['total_published'] = $this->repository->countIndexed('article', $facetFilters);
@@ -2057,6 +2070,44 @@ class ContentController
 
         $days = $this->newsArchivePolicy->clampRetentionDays((int) $raw);
         $article->setNewsRetentionDays($days);
+    }
+
+    private function applyArticleTagFacetFilter(PaginationQuery $query): PaginationQuery
+    {
+        $selected = trim((string) ($query->filters['tag'] ?? ''));
+        if ($selected === '' || !$this->blogTagFacets->isEnabled()) {
+            return $query;
+        }
+
+        $facetFilters = $query->filters;
+        unset(
+            $facetFilters['tag'],
+            $facetFilters[ArticleTagFilter::NEEDLES_FILTER_KEY],
+            $facetFilters['category'],
+            $facetFilters['author'],
+            $facetFilters['date_from'],
+            $facetFilters['date_to']
+        );
+        if (!isset($facetFilters['status'])) {
+            $facetFilters['status'] = 'published';
+        }
+
+        $rawTags = $this->repository->listDistinctTags('article', $facetFilters);
+        $needles = $this->blogTagFacets->expandFilterNeedles($selected, $rawTags);
+        if ($needles === []) {
+            return $query;
+        }
+
+        $filters = $query->filters;
+        $filters[ArticleTagFilter::NEEDLES_FILTER_KEY] = implode("\x1e", $needles);
+
+        return new PaginationQuery(
+            $query->page,
+            $query->perPage,
+            $query->search,
+            $query->sort,
+            $filters
+        );
     }
 
     /**

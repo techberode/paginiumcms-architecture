@@ -35,6 +35,11 @@ final class FallbackQueryIndex implements QueryIndexInterface
         return $this->delegate(fn (QueryIndexInterface $index): array => $index->listDistinctTags($type, $filters));
     }
 
+    public function listTagUsageCounts(string $type, array $filters = []): array
+    {
+        return $this->delegate(fn (QueryIndexInterface $index): array => $index->listTagUsageCounts($type, $filters));
+    }
+
     public function listDistinctCategories(string $type, array $filters = []): array
     {
         return $this->delegate(

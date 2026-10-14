@@ -387,6 +387,12 @@ export const publicSk: MessageTree = {
       titleDesc: 'Podľa názvu (Z–A)',
       popular: 'Najčítanejšie',
     },
+    tags: {
+      searchLabel: 'Filtrovať tagy',
+      searchPlaceholder: 'Hľadať tag…',
+      showMore: 'Zobraziť ďalších :count',
+      groupHint: 'Zahŕňa tagy: :aliases',
+    },
     sidebar: {
       tags: 'Tagy',
       allTags: 'Všetky',

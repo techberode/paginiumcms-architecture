@@ -6,6 +6,7 @@ namespace PaginiumCMS\Tests\Core\Content\Services;
 
 use PaginiumCMS\Core\Analytics\Contracts\ReporterInterface;
 use PaginiumCMS\Core\Content\Services\BlogSidebarService;
+use PaginiumCMS\Core\Content\Services\BlogTagFacetService;
 use PaginiumCMS\Core\Content\Services\NewsArchivePolicy;
 use PaginiumCMS\Core\Content\Services\CategoryCatalogSeeder;
 use PaginiumCMS\Core\Content\Services\CategoryRepository;
@@ -53,8 +54,13 @@ final class BlogSidebarServiceTest extends TestCase
             ->method('listDistinctTags')
             ->with('article', ['status' => 'published'])
             ->willReturn(['news', 'security']);
+        $repository->expects($this->once())
+            ->method('listTagUsageCounts')
+            ->with('article', ['status' => 'published'])
+            ->willReturn(['news' => 1, 'security' => 2]);
 
         $reporter = $this->createMock(ReporterInterface::class);
+        $tagFacets = new BlogTagFacetService($settings);
 
         $service = new BlogSidebarService(
             $settings,
@@ -62,13 +68,14 @@ final class BlogSidebarServiceTest extends TestCase
             $reporter,
             $this->categories,
             $this->categorySeeder,
-            new NewsArchivePolicy($settings)
+            new NewsArchivePolicy($settings),
+            $tagFacets
         );
         $payload = $service->buildPublicPayload();
 
         $this->assertTrue($payload['enabled']);
         $this->assertSame('left', $payload['placement']);
-        $this->assertSame(['news', 'security'], $payload['tags']);
+        $this->assertCount(2, $payload['tagFacets']);
         $this->assertSame([], $payload['latest']);
         $this->assertSame([], $payload['popular']);
     }
@@ -97,13 +104,16 @@ final class BlogSidebarServiceTest extends TestCase
             ['uri' => '/blog/beta', 'views' => 3, 'title' => 'Beta'],
         ]);
 
+        $tagFacets = new BlogTagFacetService($settings);
+
         $service = new BlogSidebarService(
             $settings,
             $repository,
             $reporter,
             $this->categories,
             $this->categorySeeder,
-            new NewsArchivePolicy($settings)
+            new NewsArchivePolicy($settings),
+            $tagFacets
         );
         $result = $service->findArticlesByPopularity(new PaginationQuery(1, 10, '', '-popular', ['status' => 'published']));
 

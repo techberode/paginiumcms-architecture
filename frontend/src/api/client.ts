@@ -44,6 +44,8 @@ export interface PaginationMeta {
   total: number;
   total_pages: number;
   tags?: string[];
+  tagFacets?: Array<{ key: string; label: string; count: number; aliases: string[] }>;
+  tagFacetLimit?: number;
   categories?: string[];
   total_published?: number;
 }

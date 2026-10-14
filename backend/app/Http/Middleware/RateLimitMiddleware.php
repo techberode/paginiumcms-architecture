@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\Cache\CacheManager;
+use PaginiumCMS\Core\Security\ClientIpResolver;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -101,22 +102,10 @@ class RateLimitMiddleware implements MiddlewareInterface
      */
     protected function getClientIp(ServerRequestInterface $request): string
     {
-        $remoteAddr = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
-
-        if (!in_array($remoteAddr, $this->trustedProxies, true)) {
-            return $remoteAddr;
-        }
-
-        $forwardedFor = $request->getHeaderLine('X-Forwarded-For');
-        if ($forwardedFor === '') {
-            return $remoteAddr;
-        }
-
-        // Prvá IP v zozname je pôvodný klient (nginx pridáva ďalšie za ňu)
-        $parts = array_map('trim', explode(',', $forwardedFor));
-        $clientIp = $parts[0];
-
-        return filter_var($clientIp, FILTER_VALIDATE_IP) ? $clientIp : $remoteAddr;
+        return ClientIpResolver::resolve(
+            $request->getServerParams(),
+            ClientIpResolver::normalizeTrustedProxies($this->trustedProxies)
+        );
     }
 
     protected function getCacheKey(ServerRequestInterface $request): string

@@ -29,6 +29,19 @@ final class ClientIpResolverTest extends TestCase
         $this->assertSame('192.168.10.100', $ip);
     }
 
+    public function testIgnoresSpoofedLeftmostForwardedForWhenProxyAppends(): void
+    {
+        $ip = ClientIpResolver::resolve(
+            [
+                'REMOTE_ADDR' => '192.168.10.26',
+                'HTTP_X_FORWARDED_FOR' => '8.8.8.8, 203.0.113.50',
+            ],
+            ['192.168.10.26']
+        );
+
+        $this->assertSame('203.0.113.50', $ip);
+    }
+
     public function testIgnoresForwardedForFromUntrustedProxy(): void
     {
         $ip = ClientIpResolver::resolve(

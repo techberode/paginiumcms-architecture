@@ -26,6 +26,7 @@ final class BlogSidebarService
         private CategoryRepository $categories,
         private CategoryCatalogSeeder $categorySeeder,
         private NewsArchivePolicy $newsArchivePolicy,
+        private BlogTagFacetService $tagFacets,
     ) {
     }
 
@@ -40,7 +41,8 @@ final class BlogSidebarService
             return [
                 'enabled' => false,
                 'placement' => $config['placement'],
-                'tags' => [],
+                'tagFacets' => [],
+                'tagFacetLimit' => $this->tagFacets->maxVisible(),
                 'categories' => [],
                 'latest' => [],
                 'popular' => [],
@@ -53,9 +55,10 @@ final class BlogSidebarService
         return [
             'enabled' => true,
             'placement' => $config['placement'],
-            'tags' => $config['showTags']
-                ? $this->repository->listDistinctTags('article', $facetFilters)
+            'tagFacets' => $config['showTags']
+                ? $this->buildTagFacets($facetFilters)
                 : [],
+            'tagFacetLimit' => $this->tagFacets->maxVisible(),
             'categories' => $config['showCategories']
                 ? $this->categories->summarizeForSlugs(
                     $this->repository->listDistinctCategories('article', $facetFilters)
@@ -242,6 +245,18 @@ final class BlogSidebarService
             'latestCount' => max(1, min(20, (int) ($content['blogSidebarLatestCount'] ?? 5))),
             'popularCount' => max(1, min(20, (int) ($content['blogSidebarPopularCount'] ?? 5))),
         ];
+    }
+
+    /**
+     * @param array<string, string> $facetFilters
+     * @return list<array{key: string, label: string, count: int, aliases: list<string>}>
+     */
+    private function buildTagFacets(array $facetFilters): array
+    {
+        $raw = $this->repository->listDistinctTags('article', $facetFilters);
+        $usage = $this->repository->listTagUsageCounts('article', $facetFilters);
+
+        return $this->tagFacets->buildFacets($raw, $usage);
     }
 
     private function extractArticleSlugFromUri(string $uri): string

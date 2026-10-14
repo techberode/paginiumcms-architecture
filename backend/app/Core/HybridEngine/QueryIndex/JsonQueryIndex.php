@@ -32,6 +32,11 @@ final class JsonQueryIndex implements QueryIndexInterface
         return $this->contentIndex->listDistinctTags($type, $filters);
     }
 
+    public function listTagUsageCounts(string $type, array $filters = []): array
+    {
+        return $this->contentIndex->listTagUsageCounts($type, $filters);
+    }
+
     public function listDistinctCategories(string $type, array $filters = []): array
     {
         return $this->contentIndex->listDistinctCategories($type, $filters);

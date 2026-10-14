@@ -151,7 +151,9 @@ Important rules:
 - WAF may stop a request before the JSON responder; clients must handle text or empty `403` responses.
 - CORS is not authorization. `Access-Control-Allow-Origin` does not protect an endpoint from a server-to-server client.
 - `APP_ENV=testing` exceptions must not be activatable in production through a request header.
-- Forwarded headers are trusted only from the `TRUSTED_PROXIES` allow-list.
+- Forwarded headers are trusted only from the `TRUSTED_PROXIES` allow-list (`ClientIpResolver::trustedProxiesFromEnv()`).
+- When the direct peer is a trusted proxy, client IP is taken from `X-Forwarded-For` by walking the chain **from the right** (immediate peer outward) and picking the first IP **not** in `TRUSTED_PROXIES` — not the leftmost entry (which clients can prepend to spoof). Firewall, rate limit, and access logs use the same resolver.
+- Production docroot is **`backend/public/`** only: no standalone debug PHP scripts; Docker dev nginx executes **`index.php`** as the sole PHP entry and denies `/storage/*.php`. Local Docker Redis binds **`127.0.0.1:6379`**; production stack override must not publish Redis to the host (see [docker-compose.prod.yml](../deploy/docker-compose.prod.yml)).
 - Body scanning has explicit limits and bypasses only precisely defined multipart/code-editor flows, not a wildcard based on URL naming.
 
 ## 7. Authentication and sessions

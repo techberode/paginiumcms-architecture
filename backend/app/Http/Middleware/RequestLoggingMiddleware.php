@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Middleware;
 
 use PaginiumCMS\Core\Logging\Services\AccessLogService;
+use PaginiumCMS\Core\Security\ClientIpResolver;
 use PaginiumCMS\Support\LogSanitizer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -148,22 +149,10 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
 
     private function resolveClientIp(ServerRequestInterface $request): string
     {
-        $remoteAddr = $request->getServerParams()['REMOTE_ADDR'] ?? '127.0.0.1';
-        $remoteAddr = is_string($remoteAddr) ? $remoteAddr : '127.0.0.1';
-
-        if ($this->trustedProxies === [] || !in_array($remoteAddr, $this->trustedProxies, true)) {
-            return $remoteAddr;
-        }
-
-        $forwarded = $request->getHeaderLine('X-Forwarded-For');
-        if ($forwarded === '') {
-            return $remoteAddr;
-        }
-
-        $parts = array_map('trim', explode(',', $forwarded));
-        $clientIp = $parts[0];
-
-        return filter_var($clientIp, FILTER_VALIDATE_IP) ? $clientIp : $remoteAddr;
+        return ClientIpResolver::resolve(
+            $request->getServerParams(),
+            ClientIpResolver::normalizeTrustedProxies($this->trustedProxies)
+        );
     }
 
     private function userIdFromRequest(ServerRequestInterface $request): ?string

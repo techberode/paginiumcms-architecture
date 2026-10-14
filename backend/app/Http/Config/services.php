@@ -136,6 +136,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\MarkdownParserInterface;
 use PaginiumCMS\Core\Conflict\Contracts\ConflictLoggerInterface;
 use PaginiumCMS\Core\Content\BlogAuthorSettings;
 use PaginiumCMS\Core\Content\Services\BlogSidebarService;
+use PaginiumCMS\Core\Content\Services\BlogTagFacetService;
 use PaginiumCMS\Core\Content\Services\CategoryCatalogSeeder;
 use PaginiumCMS\Core\Content\Services\CategoryRepository;
 use PaginiumCMS\Core\Content\LocalizedContentApplicator;
@@ -1577,6 +1578,9 @@ return [
             get(ContentCacheService::class),
         ),
 
+    BlogTagFacetService::class => create(BlogTagFacetService::class)
+        ->constructor(get(SettingsRepositoryInterface::class)),
+
     BlogSidebarService::class => create(BlogSidebarService::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -1585,6 +1589,7 @@ return [
             get(CategoryRepository::class),
             get(CategoryCatalogSeeder::class),
             get(\PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class),
+            get(BlogTagFacetService::class),
         ),
 
     CategoryRepository::class => create(CategoryRepository::class)
@@ -1642,6 +1647,7 @@ return [
             get(\PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class),
             get(\PaginiumCMS\Core\Content\Services\ContentNewsArchiveService::class),
             get(\PaginiumCMS\Core\Content\Services\NewsArchivePolicy::class),
+            get(BlogTagFacetService::class),
         ),
     \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class => create(
         \PaginiumCMS\Core\Content\Services\ContentEditorialReviewService::class

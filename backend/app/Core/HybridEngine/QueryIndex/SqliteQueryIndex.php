@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\HybridEngine\QueryIndex;
 
+use PaginiumCMS\Core\Content\Support\ArticleTagFilter;
 use PaginiumCMS\Core\FlatFile\Models\ContentIndexEntry;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Http\Support\PaginationQuery;
@@ -93,6 +94,23 @@ final class SqliteQueryIndex implements QueryIndexInterface
         sort($unique, SORT_NATURAL | SORT_FLAG_CASE);
 
         return $unique;
+    }
+
+    public function listTagUsageCounts(string $type, array $filters = []): array
+    {
+        $entries = $this->applyIndexFilters($this->loadEntriesForType($type), $filters);
+        $counts = [];
+        foreach ($entries as $entry) {
+            foreach ($entry->tags as $tag) {
+                $tag = trim($tag);
+                if ($tag === '') {
+                    continue;
+                }
+                $counts[$tag] = ($counts[$tag] ?? 0) + 1;
+            }
+        }
+
+        return $counts;
     }
 
     public function listDistinctCategories(string $type, array $filters = []): array
@@ -256,19 +274,11 @@ final class SqliteQueryIndex implements QueryIndexInterface
             ));
         }
 
-        if (!empty($filters['tag'])) {
-            $needle = mb_strtolower($filters['tag']);
+        $tagNeedles = ArticleTagFilter::needlesFromFilters($filters);
+        if ($tagNeedles !== []) {
             $entries = array_values(array_filter(
                 $entries,
-                static function (ContentIndexEntry $e) use ($needle): bool {
-                    foreach ($e->tags as $tag) {
-                        if (mb_strtolower($tag) === $needle) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
+                static fn (ContentIndexEntry $e): bool => ArticleTagFilter::entryMatches($e, $tagNeedles)
             ));
         }
 

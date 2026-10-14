@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\FlatFile\Services;
 
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\Support\ArticleTagFilter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Models\Content;
@@ -207,6 +208,40 @@ final class ContentIndexService
             sort($unique, SORT_NATURAL | SORT_FLAG_CASE);
 
             return $unique;
+        });
+    }
+
+    /**
+     * @param array<string, string> $filters
+     * @return array<string, int> tag => number of indexed entries containing the tag
+     */
+    public function listTagUsageCounts(string $type, array $filters = []): array
+    {
+        return $this->withLockedIndex(function (array &$items) use ($type, $filters): array {
+            $entries = array_map(
+                fn (array $row): ContentIndexEntry => ContentIndexEntry::fromArray($row),
+                $items
+            );
+
+            $entries = array_values(array_filter(
+                $entries,
+                static fn (ContentIndexEntry $e): bool => $e->type === $type
+            ));
+
+            $entries = $this->applyIndexFilters($entries, $filters);
+
+            $counts = [];
+            foreach ($entries as $entry) {
+                foreach ($entry->tags as $tag) {
+                    $tag = trim($tag);
+                    if ($tag === '') {
+                        continue;
+                    }
+                    $counts[$tag] = ($counts[$tag] ?? 0) + 1;
+                }
+            }
+
+            return $counts;
         });
     }
 
@@ -456,19 +491,11 @@ final class ContentIndexService
             ));
         }
 
-        if (!empty($filters['tag'])) {
-            $needle = mb_strtolower($filters['tag']);
+        $tagNeedles = ArticleTagFilter::needlesFromFilters($filters);
+        if ($tagNeedles !== []) {
             $entries = array_values(array_filter(
                 $entries,
-                static function (ContentIndexEntry $e) use ($needle): bool {
-                    foreach ($e->tags as $tag) {
-                        if (mb_strtolower($tag) === $needle) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
+                static fn (ContentIndexEntry $e): bool => ArticleTagFilter::entryMatches($e, $tagNeedles)
             ));
         }
 

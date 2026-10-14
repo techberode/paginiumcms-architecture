@@ -1,6 +1,7 @@
 import React from 'react';
 import { Flame, Hash, Sparkles, Tag } from 'lucide-react';
 import type { BlogSidebarPayload } from '../../api/blogSidebar';
+import { BlogTagFacetList } from './BlogTagFacetList';
 import { useI18n } from '../../context/I18nContext';
 
 interface BlogSidebarProps {
@@ -51,27 +52,22 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
 
   return (
     <aside className="pg-blog-aside" data-testid="blog-sidebar">
-      {settings.showTags && data.tags.length > 0 ? (
+      {settings.showTags && data.tagFacets.length > 0 ? (
         <SidebarSection title={t('public.blog.sidebar.tags')} icon={<Tag className="h-4 w-4" />}>
-          <div className="pg-blog-tag-list">
-            <button
-              type="button"
-              onClick={() => onSelectTag(null)}
-              className={`pg-blog-tag-chip ${selectedTag === null ? 'is-active' : ''}`}
-            >
-              {t('public.blog.sidebar.allTags')}
-            </button>
-            {data.tags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => onSelectTag(selectedTag === tag ? null : tag)}
-                className={`pg-blog-tag-chip ${selectedTag === tag ? 'is-active' : ''}`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => onSelectTag(null)}
+            className={`pg-blog-tag-chip mb-2 ${selectedTag === null ? 'is-active' : ''}`}
+          >
+            {t('public.blog.sidebar.allTags')}
+          </button>
+          <BlogTagFacetList
+            facets={data.tagFacets}
+            selectedTag={selectedTag}
+            limit={data.tagFacetLimit ?? 28}
+            onSelectTag={onSelectTag}
+            variant="sidebar"
+          />
         </SidebarSection>
       ) : null}
 

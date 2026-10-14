@@ -81,10 +81,17 @@ Example:
     "total": 143,
     "total_pages": 8,
     "tags": ["news", "php"],
+    "tagFacets": [
+      { "key": "news", "label": "news", "count": 12, "aliases": ["news"] },
+      { "key": "beta", "label": "beta", "count": 8, "aliases": ["beta", "beta35", "beta36"] }
+    ],
+    "tagFacetLimit": 28,
     "total_published": 120
   }
 }
 ```
+
+`tags` lists facet **keys** for backward compatibility. Prefer `tagFacets` for public UI (grouped labels, counts, aliases). Filter with `?tag={key}` or any alias; the API expands to all aliases when **Blog — group tags** is enabled (`content.blogTagFacetsEnabled`).
 
 Admin-only aggregates must not leak draft counts to anonymous clients.
 

@@ -414,6 +414,12 @@ export const publicEn: MessageTree = {
       titleDesc: 'By title (Z–A)',
       popular: 'Most read',
     },
+    tags: {
+      searchLabel: 'Filter tags',
+      searchPlaceholder: 'Search tag…',
+      showMore: 'Show :count more',
+      groupHint: 'Includes tags: :aliases',
+    },
     sidebar: {
       tags: 'Tags',
       allTags: 'All',

@@ -13,6 +13,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Security (config audit):** remove public `debug.php` / test PHP from docroot; Docker nginx front-controller only + deny `/storage/*.php`; local Redis bind `127.0.0.1`; `ClientIpResolver` + middleware unified XFF walk (anti-spoof) — [ISS-199](docs/ISSUES.md#iss-199)
+- **Public blog tags:** facet grouping (`tagFacets` on list meta + sidebar), auto rules + optional JSON synonyms in Settings → Content; filter matches whole group
 - **Public 404:** broken-content report form (prefilled URL/referer → Message Desk via `/api/contact`); optional custom page via `layout.notFoundPageSlug`; toggle `layout.brokenContentReportOn404`
 - **Public blog:** latest-article highlight (includes archived when newest), sort **Z–A** (`titleDesc`), `GET /api/articles?include_archived=1` for highlight fetch
 - **Layout:** `layout.breadcrumbsPosition` — breadcrumbs above content or below hero (pages, articles, blog)

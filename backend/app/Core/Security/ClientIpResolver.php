@@ -10,6 +10,26 @@ namespace PaginiumCMS\Core\Security;
 final class ClientIpResolver
 {
     /**
+     * @param array<int|string, mixed> $trustedProxies
+     * @return list<string>
+     */
+    public static function normalizeTrustedProxies(array $trustedProxies): array
+    {
+        $normalized = [];
+        foreach ($trustedProxies as $proxy) {
+            if (!is_string($proxy) && !is_int($proxy)) {
+                continue;
+            }
+            $value = trim((string) $proxy);
+            if ($value !== '') {
+                $normalized[] = $value;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
      * @param array<string, mixed>|null $serverParams
      * @param list<string> $trustedProxies
      */
@@ -27,10 +47,23 @@ final class ClientIpResolver
             return $remoteAddr;
         }
 
-        $parts = array_map('trim', explode(',', $forwardedFor));
-        $clientIp = $parts[0];
+        $chain = [];
+        foreach (explode(',', $forwardedFor) as $part) {
+            $candidate = trim($part);
+            if ($candidate !== '' && filter_var($candidate, FILTER_VALIDATE_IP)) {
+                $chain[] = $candidate;
+            }
+        }
+        $chain[] = $remoteAddr;
 
-        return filter_var($clientIp, FILTER_VALIDATE_IP) ? $clientIp : $remoteAddr;
+        for ($index = count($chain) - 1; $index >= 0; $index--) {
+            $candidate = $chain[$index];
+            if (!in_array($candidate, $trustedProxies, true)) {
+                return $candidate;
+            }
+        }
+
+        return $remoteAddr;
     }
 
     /**

@@ -81,10 +81,17 @@ Príklad:
     "total": 143,
     "total_pages": 8,
     "tags": ["news", "php"],
+    "tagFacets": [
+      { "key": "news", "label": "news", "count": 12, "aliases": ["news"] },
+      { "key": "beta", "label": "beta", "count": 8, "aliases": ["beta", "beta35", "beta36"] }
+    ],
+    "tagFacetLimit": 28,
     "total_published": 120
   }
 }
 ```
+
+`tags` = kľúče facetov (spätná kompatibilita). UI má používať `tagFacets`. Filter `?tag={key}` alebo alias; BE rozšíri skupinu pri **Blog — zoskupovať tagy**.
 
 Admin-only agregácie nesmú leaknúť počet draftov anonymnému klientovi.
 

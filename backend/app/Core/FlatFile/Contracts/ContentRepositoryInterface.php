@@ -95,6 +95,12 @@ interface ContentRepositoryInterface
 
     /**
      * @param array<string, string> $filters
+     * @return array<string, int>
+     */
+    public function listTagUsageCounts(string $type, array $filters = []): array;
+
+    /**
+     * @param array<string, string> $filters
      * @return list<string>
      */
     public function listDistinctCategories(string $type, array $filters = []): array;

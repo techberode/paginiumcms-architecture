@@ -90,6 +90,8 @@ Slug je súčasť URL a identity súboru. Jeho zmena môže vyžadovať redirect
 
 **404 — hlásenie obsahu:** **Layout → Formulár nahlásenia na 404** (predvolene zapnuté). Správy v **Správy** / Message Desk; detail [SHORTCODES_A_WIDGETY.md](SHORTCODES_A_WIDGETY.md) a [LANDING_PAGE.md](LANDING_PAGE.md).
 
+**Tagy blogu (bez ručného čistenía článkov):** **Nastavenia → Obsah → Blog — zoskupovať tagy** (predvolene zap) zlučuje podobné tagy na `/blog`. Voliteľné **Blog — mapovanie tagov (JSON)** pre synonymá (`media` / `média`). **Blog — max. tagov vo widgete** + vyhľadávanie / „Zobraziť viac“ v sidebare.
+
 **Bulk akcie:** Pri výbere riadkov lišta ukáže **„X z Y vybraných“** (Y = celkový počet záznamov podľa aktuálnych filtrov). Potvrdzovacie dialógy pri publikovaní, koncepte, archivácii a mazaní používajú rovnaký pomer.
 
 **Tlač na verejnom blogu:** Nastavenia → Obsah → **Povoliť tlač článkov** (`content.articlePrintEnabled`, predvolene vypnuté). Po zapnutí sa na detaile článku zobrazí **Tlačiť článok**; tlač skryje navigáciu, komentáre a chrome.

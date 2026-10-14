@@ -635,6 +635,18 @@ export const settingsEn: MessageTree = {
       "blogSidebarPopularCount": {
         "label": "Sidebar — popular count"
       },
+      "blogTagFacetsEnabled": {
+        "label": "Blog — group tags",
+        "help": "Merge similar tags in the public filter (beta35→beta, redirect:…→redirect, diacritics)."
+      },
+      "blogSidebarTagLimit": {
+        "label": "Blog — max tags in widget",
+        "help": "How many tag groups to show at once; use search or “Show more” for the rest."
+      },
+      "blogTagFacetSynonyms": {
+        "label": "Blog — tag mapping (JSON)",
+        "help": "Optional synonyms, e.g. {\"media\":[\"média\",\"médii\"],\"redirect\":[\"redirectly\"]}."
+      },
       "showReadingTime": {
         "label": "Show estimated reading time",
         "help": "On blog cards and article detail (computed from text length)."

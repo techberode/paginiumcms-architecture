@@ -14,10 +14,18 @@ export interface BlogSidebarArticle {
   views?: number;
 }
 
+export interface BlogTagFacet {
+  key: string;
+  label: string;
+  count: number;
+  aliases: string[];
+}
+
 export interface BlogSidebarPayload {
   enabled: boolean;
   placement: 'left' | 'right';
-  tags: string[];
+  tagFacets: BlogTagFacet[];
+  tagFacetLimit?: number;
   categories: BlogSidebarCategory[];
   latest: BlogSidebarArticle[];
   popular: BlogSidebarArticle[];
