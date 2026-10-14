@@ -21,7 +21,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **It.100 (living):** further tuning (P3 async beyond logs, Redis job projections, prod metrics) — [ITERATION_100.md](docs/en/ITERATION_100.md)
 - **It.98:** workspace + CLI — [ITERATION_98.md](docs/en/ITERATION_98.md)
 - **Deferred:** It.97 CSP/embed facades · in-CMS docs portal — [DOCS_PORTAL_PLANNED.md](docs/en/developer/DOCS_PORTAL_PLANNED.md)
-- **Deps (monitor):** Residual frontend `npm audit` high (Tailwind 3 build chain) — [ISS-197](docs/ISSUES.md#iss-197)
+- **Deps:** Frontend `npm audit` 12→6 — DOMPurify, brace-expansion, fast-uri, source-map-js, postcss-selector-parser overrides; **6 high** remain (Tailwind 3 `braces` dev chain) — [ISS-197](docs/ISSUES.md#iss-197)
 
 ## Release index
 

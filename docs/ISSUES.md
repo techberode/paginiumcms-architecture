@@ -219,7 +219,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-194](#iss-194) | Admin live preview stuck on “Rendering…” | High (editor UX) | ✅ Fixed — stable preview effect deps |
 | [ISS-195](#iss-195) | Upload polyglot gaps on raster images / SVG / PDF | **Medium (security)** | 🟡 **It.99** shipped — Tier 1 + naming; PDF + optional re-encode residual |
 | [ISS-196](#iss-196) | Post-login CSRF stale token → `render-preview` 403 + log WARNING noise | Low (ops / UX) | ✅ Fixed (Unreleased) — refresh token after login; `csrf_invalid` → INFO |
-| [ISS-197](#iss-197) | Residual `npm audit` high (Tailwind 3 build chain) after safe fix | Low (supply-chain / dev) | ⏳ **Monitor** — accepted defer; Tailwind 4 or upstream |
+| [ISS-197](#iss-197) | Residual `npm audit` high (Tailwind 3 build chain) after safe fix | Low (supply-chain / dev) | ⏳ **Monitor** — 6 high remain (braces); DOMPurify/ESLint chain fixed (Unreleased) |
 | [ISS-198](#iss-198) | `GET /api/auth/me/desk` multi-second (comment N+1 + double desk compose) | High (ops / FPM pool) | ✅ Fixed (Unreleased) — index + single compose |
 
 ## CI failures (GitHub Actions)
@@ -6042,14 +6042,17 @@ The login page bootstrapped a CSRF token into `localStorage`. **`POST /api/auth/
 
 ### Symptom
 
-After `npm audit fix` (without `--force`), **`npm audit` still reports ~5 high** findings. GitHub Dependabot may show a smaller set (e.g. 3 moderate + 1 low). `npm fund` output is unrelated (sponsorship only).
+After `npm audit fix` (without `--force`), **`npm audit` still reports high** findings in the Tailwind 3 glob chain. GitHub Dependabot may show a smaller set. `npm fund` output is unrelated (sponsorship only).
+
+**Maintenance (Unreleased, Oct 2026):** `npm audit fix` + `frontend/package.json` **overrides** (`dompurify` ^3.4.17, `fast-uri` ^3.1.8, `postcss-selector-parser` ^7.1.6, `source-map-js` ^1.2.2, nested `minimatch` → patched `brace-expansion`) reduced the report from **12 → 6** (all **braces** / Tailwind dev tree). ESLint runs clean; Vitest + `vite build` pass.
 
 ### Assessment
 
 | Bucket | Packages | Runtime risk on PaginiumCMS |
 |--------|----------|-----------------------------|
-| Tailwind 3 chain | `braces`, `chokidar`, `micromatch`, `postcss-selector-parser` | **Low** — affects `vite build` / dev watcher, not visitors |
-| ESLint chain | `brace-expansion` | **Low** — CI/lint only |
+| Tailwind 3 chain | `braces`, `chokidar`, `micromatch`, `fast-glob` | **Low** — affects `vite build` / dev watcher, not visitors; **no patched `braces` on npm** except via Tailwind 4 |
+| ESLint chain | `brace-expansion` | **Mitigated (Unreleased)** — nested overrides; CI/lint only |
+| DOMPurify | direct + Monaco transitive | **Mitigated (Unreleased)** — ^3.4.17; app uses default sanitize (not `IN_PLACE`) |
 | **React Router** | `react-router-dom@7.18.2` | **Mitigated** — [ISS-089](#iss-089) RSC-only GHSA not reachable in Vite SPA; re-check on new advisories |
 
 `npm audit fix --force` would pull **Tailwind 4** (breaking) — out of scope for a silent hotfix.
@@ -6058,11 +6061,12 @@ After `npm audit fix` (without `--force`), **`npm audit` still reports ~5 high**
 
 - Backlog item **#34** in [ITERATION_BACKLOG.md](en/ITERATION_BACKLOG.md) §1b.
 - Before each **beta tag**: `cd frontend && npm audit`; read Dependabot; document any new **SPA-reachable** CVE in a new ISS entry.
-- Optional next slice: bump **DOMPurify** on maintenance PR; plan **Tailwind 4** as its own iteration.
+- Plan **Tailwind 4** (or upstream `braces` fix) as its own iteration to clear the remaining 6 highs.
 
 ### Verification
 
-- No code change required while status is **Monitor**.
+- `cd frontend && npm audit` — expect **6 high** (braces) until Tailwind 4 or upstream fix.
+- `npm run lint`, `npm test`, `npm run build` after any override change.
 - Exit criteria: `npm audit --audit-level=high` → 0 **or** documented accept list with expiry date.
 
 ---
