@@ -37,27 +37,35 @@ final class ClientIpResolver
     {
         $server = $serverParams ?? $_SERVER;
         $remoteAddr = (string) ($server['REMOTE_ADDR'] ?? 'unknown');
-
-        if ($trustedProxies === [] || !in_array($remoteAddr, $trustedProxies, true)) {
-            return $remoteAddr;
-        }
-
         $forwardedFor = (string) ($server['HTTP_X_FORWARDED_FOR'] ?? '');
-        if ($forwardedFor === '') {
+
+        return self::resolveFromForwardedFor($remoteAddr, $forwardedFor, $trustedProxies);
+    }
+
+    /**
+     * Single implementation of the trusted-proxy walk (used by resolve() and HTTP middlewares).
+     *
+     * `X-Forwarded-For` is honoured only when the direct peer is a trusted proxy. The list is then
+     * walked from the RIGHT (the hop closest to us) and the first address that is NOT a trusted proxy
+     * is the client. Taking the leftmost entry is unsafe: a proxy using `$proxy_add_x_forwarded_for`
+     * only appends, so the leftmost value is whatever the client chose to send.
+     * Malformed entries fail closed to the direct peer address.
+     *
+     * @param list<string> $trustedProxies
+     */
+    public static function resolveFromForwardedFor(string $remoteAddr, string $forwardedFor, array $trustedProxies): string
+    {
+        if ($trustedProxies === [] || $forwardedFor === '' || !in_array($remoteAddr, $trustedProxies, true)) {
             return $remoteAddr;
         }
 
-        $chain = [];
-        foreach (explode(',', $forwardedFor) as $part) {
-            $candidate = trim($part);
-            if ($candidate !== '' && filter_var($candidate, FILTER_VALIDATE_IP)) {
-                $chain[] = $candidate;
+        foreach (array_reverse(array_map('trim', explode(',', $forwardedFor))) as $candidate) {
+            if ($candidate === '') {
+                continue;
             }
-        }
-        $chain[] = $remoteAddr;
-
-        for ($index = count($chain) - 1; $index >= 0; $index--) {
-            $candidate = $chain[$index];
+            if (filter_var($candidate, FILTER_VALIDATE_IP) === false) {
+                return $remoteAddr;
+            }
             if (!in_array($candidate, $trustedProxies, true)) {
                 return $candidate;
             }

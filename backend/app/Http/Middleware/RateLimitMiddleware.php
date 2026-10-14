@@ -102,8 +102,12 @@ class RateLimitMiddleware implements MiddlewareInterface
      */
     protected function getClientIp(ServerRequestInterface $request): string
     {
-        return ClientIpResolver::resolve(
-            $request->getServerParams(),
+        $remoteAddr = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
+        $remoteAddr = is_string($remoteAddr) ? $remoteAddr : 'unknown';
+
+        return ClientIpResolver::resolveFromForwardedFor(
+            $remoteAddr,
+            $request->getHeaderLine('X-Forwarded-For'),
             ClientIpResolver::normalizeTrustedProxies($this->trustedProxies)
         );
     }

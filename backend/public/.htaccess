@@ -5,6 +5,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Only the front controller may execute; block stray *.php in the docroot.
+    RewriteRule ^(?!index\.php$).+\.php$ - [F,L]
+
     # Block script-like URLs under /storage/ (Apache parity with nginx It.99 deploy templates).
     RewriteRule ^storage/.+\.(php|phtml|php5|phar)$ - [F,L]
 

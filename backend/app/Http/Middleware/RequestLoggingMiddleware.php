@@ -149,8 +149,12 @@ final class RequestLoggingMiddleware implements MiddlewareInterface
 
     private function resolveClientIp(ServerRequestInterface $request): string
     {
-        return ClientIpResolver::resolve(
-            $request->getServerParams(),
+        $remoteAddr = $request->getServerParams()['REMOTE_ADDR'] ?? '127.0.0.1';
+        $remoteAddr = is_string($remoteAddr) ? $remoteAddr : '127.0.0.1';
+
+        return ClientIpResolver::resolveFromForwardedFor(
+            $remoteAddr,
+            $request->getHeaderLine('X-Forwarded-For'),
             ClientIpResolver::normalizeTrustedProxies($this->trustedProxies)
         );
     }

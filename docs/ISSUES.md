@@ -6130,15 +6130,24 @@ External configuration audit (commit baseline `f5409d3`) reported: standalone **
 ### Resolution
 
 - Removed **`debug.php`**, **`test.php`**, **`test-di.php`**, **`test-autoload.php`** from `backend/public/`.
-- Docker **`default.conf`**: only **`location = /index.php`** → FPM; other **`*.php` → 404**; deny **`/storage/*.php`**.
+- **Apache:** `backend/public/.htaccess` — only **`index.php`** may execute (`RewriteRule` blocks other `*.php` in docroot).
+- Docker **`default.conf`**: only **`location = /index.php`** → FPM; other **`*.php` → 404**; **`/storage/*.php` → 403**.
 - Local compose Redis port **`127.0.0.1:6379:6379`** (production override already uses `ports: !reset []` — see [docker-compose.prod.yml](deploy/docker-compose.prod.yml)).
-- **`ClientIpResolver`**: walk XFF chain from the right; **`FirewallMiddleware`**, **`RateLimitMiddleware`**, **`RequestLoggingMiddleware`** delegate to resolver (regression test for prepend spoof).
+- **`ClientIpResolver::resolveFromForwardedFor()`**: walk **`X-Forwarded-For` from the right**; first IP not in `TRUSTED_PROXIES`; malformed hop → fail closed to **`REMOTE_ADDR`**. Firewall, rate limit, and access logs delegate to the same helper.
 
 ### Verification
 
-- `ClientIpResolverTest::testIgnoresSpoofedLeftmostForwardedForWhenProxyAppends`
+- `ClientIpResolverTest` — leftmost spoof, multi-hop trusted proxies, malformed XFF entry (+ existing cases).
 - `./scripts/iteration-gate.sh`
 - Docs: [SECURITY.md](en/developer/SECURITY.md) §6 forwarded headers / docroot
+
+### Production (`TRUSTED_PROXIES`)
+
+Default **`127.0.0.1,::1`** is correct only when PHP’s direct peer is loopback. **Outer nginx → Docker nginx → PHP-FPM** usually yields a **bridge IP** (e.g. `172.x`) as `REMOTE_ADDR`; if that IP is **not** listed, `X-Forwarded-For` is **ignored** and all visitors share one bucket (rate limit / firewall / logs).
+
+1. `docker compose exec -T php sh -c 'printenv TRUSTED_PROXIES; php -r "echo \\$_SERVER[\"REMOTE_ADDR\"]??\"\";"'` (or inspect `http_access` after one request).
+2. Set `.env` **`TRUSTED_PROXIES=127.0.0.1,::1,<REMOTE_ADDR PHP sees from inner nginx>`** (comma-separated hops only — no CIDR in resolver today).
+3. Outer nginx should keep **`$proxy_add_x_forwarded_for`** (append, not replace) so right-to-left walk stays safe after ISS-199.
 
 ### Residual (audit backlog, not in this fix)
 

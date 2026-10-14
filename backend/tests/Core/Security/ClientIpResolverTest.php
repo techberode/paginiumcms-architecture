@@ -29,17 +29,43 @@ final class ClientIpResolverTest extends TestCase
         $this->assertSame('192.168.10.100', $ip);
     }
 
-    public function testIgnoresSpoofedLeftmostForwardedForWhenProxyAppends(): void
+    public function testIgnoresClientSuppliedLeftmostEntry(): void
     {
         $ip = ClientIpResolver::resolve(
             [
-                'REMOTE_ADDR' => '192.168.10.26',
-                'HTTP_X_FORWARDED_FOR' => '8.8.8.8, 203.0.113.50',
+                'REMOTE_ADDR' => '127.0.0.1',
+                'HTTP_X_FORWARDED_FOR' => '1.2.3.4, 203.0.113.7',
             ],
-            ['192.168.10.26']
+            ['127.0.0.1']
         );
 
-        $this->assertSame('203.0.113.50', $ip);
+        $this->assertSame('203.0.113.7', $ip);
+    }
+
+    public function testSkipsMultipleTrustedHopsFromTheRight(): void
+    {
+        $ip = ClientIpResolver::resolve(
+            [
+                'REMOTE_ADDR' => '172.18.0.1',
+                'HTTP_X_FORWARDED_FOR' => '198.51.100.9, 10.0.0.5',
+            ],
+            ['172.18.0.1', '10.0.0.5']
+        );
+
+        $this->assertSame('198.51.100.9', $ip);
+    }
+
+    public function testMalformedEntryFallsBackToPeer(): void
+    {
+        $ip = ClientIpResolver::resolve(
+            [
+                'REMOTE_ADDR' => '127.0.0.1',
+                'HTTP_X_FORWARDED_FOR' => '203.0.113.7, not-an-ip',
+            ],
+            ['127.0.0.1']
+        );
+
+        $this->assertSame('127.0.0.1', $ip);
     }
 
     public function testIgnoresForwardedForFromUntrustedProxy(): void
