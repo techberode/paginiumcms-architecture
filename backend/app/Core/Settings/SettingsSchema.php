@@ -593,6 +593,17 @@ final class SettingsSchema
                     ['key' => 'trustedHtmlAllowedTags', 'type' => 'text', 'label' => 'Trusted HTML — povolené tagy (It.91)', 'default' => 'div,span,p,a,img,table,thead,tbody,tr,th,td,ul,ol,li,strong,em,blockquote,code,pre,h1,h2,h3,h4,br', 'rules' => ['string', 'max:2000'], 'help' => 'HTMLPurifier whitelist pre :::html-safe. Nikdy nepridávajte script, iframe, object, embed.'],
                 ],
             ],
+            'backups' => [
+                'label' => 'Zálohy (off-site)',
+                'superAdminOnly' => true,
+                'fields' => [
+                    ['key' => 'offsiteWebDavEnabled', 'type' => 'bool', 'label' => 'Upload záloh na WebDAV (Nextcloud)', 'default' => false, 'rules' => ['bool'], 'help' => 'Po každej úspešnej lokálnej zálohe (manuálnej aj scheduled) sa ZIP odošle cez WebDAV PUT.'],
+                    ['key' => 'offsiteWebDavUrl', 'type' => 'url', 'label' => 'WebDAV base URL', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Nextcloud: https://cloud.example.com/remote.php/dav/files/USERNAME (bez koncového lomítka). Musí prejsť OutboundUrlGuard.'],
+                    ['key' => 'offsiteWebDavUsername', 'type' => 'string', 'label' => 'WebDAV používateľ', 'default' => '', 'rules' => ['string', 'max:128']],
+                    ['key' => 'offsiteWebDavPassword', 'type' => 'password', 'label' => 'WebDAV heslo / app token', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Nextcloud odporúča app password. Šifrované at-rest, nikdy sa nevracia do API po uložení.'],
+                    ['key' => 'offsiteWebDavPathPrefix', 'type' => 'string', 'label' => 'Priečinok na cloude', 'default' => 'PaginiumCMS/backups', 'rules' => ['string', 'max:256'], 'help' => 'Relatívna cesta pod WebDAV base (vytvorí sa pri upload-e).'],
+                ],
+            ],
             'uploadSecurity' => [
                 'label' => 'Bezpečnosť uploadu',
                 'fields' => [

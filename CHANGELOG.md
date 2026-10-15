@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Backup off-site:** optional Nextcloud/WebDAV upload after each backup (Settings → System → Backups off-site)
 - **Backup restore:** binary-safe media write (`writeBinary`); `backup:inspect-media` and `backup:restore-archive` CLI; post-restore `archiveMedia` + registry report in admin API; login/2FA recovery docs; `user:disable-2fa` CLI
 - **Backup & media integrity (ISS-200):** restore prunes orphans via backup `manifest.json`; `content:verify-media` CLI; post-restore `mediaIntegrity` in admin API; [MEDIA_OPERATIONS.md](docs/en/developer/MEDIA_OPERATIONS.md) runbook
 - **Blog/admin fixes (ISS-200):** numeric tag facets no longer 500 list/sidebar; article hero/OG editor sync (`seoImage` SSOT, broken preview warning)

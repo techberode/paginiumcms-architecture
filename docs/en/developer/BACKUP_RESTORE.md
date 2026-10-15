@@ -48,6 +48,60 @@ Restore of `mode=incremental` walks `baseBackupId` to the full baseline, restore
 
 Scheduled backups persist `includes` and `mode` in `storage/backups/schedule.json`.
 
+### Scheduled backup (cron)
+
+**Admin:** Backups → enable schedule → **Daily**, **Full**, scope **Content (full tree)** + **Config**, set **Keep** (e.g. 7–14).
+
+**Off-site (Nextcloud WebDAV):** Settings → System → **Backups (off-site)** — after each successful local backup the ZIP is uploaded via WebDAV PUT (scheduled + manual). Google Drive is not built-in; use rclone below if needed.
+
+**Cron (Docker example, 02:00):**
+
+```cron
+0 2 * * * flock -n /run/lock/paginium-backup.lock /path/to/stack.sh exec -T -u www-data php php backend/bin/console backup:run-schedule >> /var/log/paginiumcms/backup.log 2>&1
+```
+
+Alternative: enable scheduler job **`backup-scheduled`** (`backup.scheduled`) with expression `0 2 * * *` and run `scheduler:run` every minute ([CRON.md](../../deploy/CRON.md)). Both paths call the same `runScheduledBackupIfDue()` gate (`schedule.json` `next_run`).
+
+**Tips:**
+
+- Default includes `["content","config"]` = pages, blog, **media**, data, navigation, trash + app config — suitable for daily disaster recovery.
+- Prefer **`mode: full`** for nightly jobs unless disk is tight; incremental needs an intact baseline chain.
+- After enabling the schedule, run once manually: `php backend/bin/console backup:run-schedule` (confirms ZIP + `backup:inspect-media` healthy).
+- Cron at 02:00 only runs when `next_run` in `schedule.json` is due; if the first run was scheduled for later the same day, either wait or trigger manually once.
+
+### Off-site copy (Nextcloud WebDAV in CMS)
+
+1. In Nextcloud: create an **app password** for the CMS server user.
+2. Admin → Settings → System → **Backups (off-site)**:
+   - Enable upload
+   - **WebDAV base URL:** `https://your-cloud.example.com/remote.php/dav/files/USERNAME`
+   - Username + app password
+   - Folder: `PaginiumCMS/backups` (default)
+3. Production `APP_ENV=production` requires **HTTPS** Nextcloud URL (OutboundUrlGuard).
+4. Trigger a manual backup once and confirm the ZIP appears in Nextcloud.
+
+Upload failures are logged server-side; local backup still succeeds.
+
+### Off-site copy (rclone — optional, e.g. Google Drive)
+
+Alternative or second copy: **rclone** on the host after a successful local backup.
+
+1. Install [rclone](https://rclone.org/) on the server (not inside a throwaway container unless configured there).
+2. Configure a remote:
+   - **Nextcloud:** `rclone config` → `webdav` → URL `https://your-cloud/remote.php/dav/files/USER/` + app password.
+   - **Google Drive:** `rclone config` → `drive` → OAuth (headless `rclone authorize` on a workstation, paste token on server).
+3. Sync only the backup directory (outside web root):
+
+```bash
+# Example: daily at 03:00, after CMS backup at 02:00
+0 3 * * * rclone copy /var/www/paginiumcms.com/backend/storage/backups remote:PaginiumCMS/backups \
+  --max-age 24h --transfers 2 --log-file /var/log/paginiumcms/rclone-backup.log --log-level INFO
+```
+
+Use `copy` or `sync` deliberately: `sync` deletes remote files not present locally (respects CMS retention after `keep` pruning). Encrypt the remote bucket or Nextcloud folder; backup ZIPs contain full site content and secrets in `data/`.
+
+Optional: `rclone copy … && rclone delete … --min-age 30d` on the remote for long retention independent of CMS `keep`.
+
 ---
 
 ## Create backup

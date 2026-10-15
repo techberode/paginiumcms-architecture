@@ -31,6 +31,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'codePolicy',
       'playground',
       'engine',
+      'backups',
       'systemUpdate',
     ],
   },

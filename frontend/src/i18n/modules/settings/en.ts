@@ -89,6 +89,7 @@ export const settingsEn: MessageTree = {
     "analytics": "Analytics retention",
     "scheduler": "Job scheduler",
     "systemUpdate": "System update (deploy)",
+    "backups": "Backups (off-site)",
     "codePolicy": "Code policy",
     "playground": "Component playground",
     "teamChat": "Team chat history",

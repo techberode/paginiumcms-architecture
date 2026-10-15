@@ -37,6 +37,7 @@ class BackupManager implements BackupInterface
         private ?ContentCacheService $contentCache = null,
         private ?ContentIndexService $contentIndex = null,
         private ?ContentRepositoryInterface $contentRepository = null,
+        private ?BackupOffsiteWebDavService $offsiteWebDav = null,
     ) {
         $this->reader = $reader;
         $this->writer = $writer;
@@ -134,6 +135,10 @@ class BackupManager implements BackupInterface
 
         $this->saveMetadata($metadata);
         $this->saveManifestSidecar($metadata, $liveFiles, $deletes);
+
+        if ($this->offsiteWebDav !== null && $this->offsiteWebDav->isEnabled()) {
+            $this->offsiteWebDav->uploadZipIfConfigured($fullPath, basename($fullPath));
+        }
 
         return $metadata;
     }
