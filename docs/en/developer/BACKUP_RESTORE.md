@@ -120,6 +120,19 @@ When an article is deleted through the CMS, the file moves to `content/trash/` a
 
 Always verify restore with a **delete → restore** drill on a dev copy ([ISS-163](../ISSUES.md#iss-163)).
 
+### Login / 2FA after restore
+
+Restore brings back **`data/users/*.json` and `data/settings.json` from the backup timestamp**. It does **not** keep your current password or authenticator pairing from after that date.
+
+| Symptom | Cause | Recovery (CLI on server) |
+|---------|--------|---------------------------|
+| **401** wrong password | Backup has an **older password hash** | `php backend/bin/console user:reset-password you@example.com 'NewSecurePass1!'` |
+| Password OK, **invalid TOTP** | Backup has an **old 2FA secret**; phone app still has the **new** secret | `php backend/bin/console user:disable-2fa you@example.com` then log in and set up 2FA again in Account → Security |
+| **429** too many attempts | Lockout from failed tries | `php backend/bin/console security:clear-lockouts` (or wait) |
+| User missing | Backup scope omitted `data` / users | `php backend/bin/console user:list` — create with `user:create` if needed |
+
+`.env` **`APP_KEY`** is not restored from ZIP. If encrypted fields (`enc:`) in restored users cannot decrypt, reset password and disable 2FA via CLI, then re-enable 2FA.
+
 ---
 
 ## Path contract (FileWriter)
@@ -148,6 +161,19 @@ Restore must **not** prefix paths with `content/` when calling `FileWriter`. A r
 | Prod backup on dev shows no content | Expected if ZIP is legacy data-only | Same as row 1 |
 | Heroes show alt text; many broken `/storage/…` URLs | Blog restored without `media/` from the **same** backup, or pre-fix merge-only restore left mismatched files | Full restore with default `includes: ["content","config"]`; run `content:verify-media`; never mix blog from backup A with media from live disk |
 | Media grid shows metadata but **blank thumbnails** | `media/registry.json` restored while binaries missing (partial scope, mixed snapshots, or legacy merge) | `php backend/bin/console media:reconcile --json`; full restore with `content/media/` from one backup; optional `--prune-registry` then re-upload; [MEDIA_OPERATIONS.md](MEDIA_OPERATIONS.md) |
+| Restore reports success but **files still missing** | ZIP never contained them (`includes` without `media`/`content`, legacy data-only backup, or incremental without baseline); backup taken when binaries were already gone | **Before restore:** `unzip -l storage/backups/<file>.zip \| grep 'content/media/' \| wc -l` — must be &gt; 0 for images. Restore a **`mode: full`** backup with default scope, not import-only. After deploy with binary-safe restore fix, retry restore once. |
+
+### Verify a backup actually contains media (before restore)
+
+On the server (path inside PHP container if using Docker):
+
+```bash
+ZIP=$(php -r 'echo json_decode(file_get_contents("storage/backups/BACKUP_ID.json"), true)["filePath"] ?? "";')
+unzip -l "$ZIP" | grep -E 'content/(media|blog)/' | head -20
+unzip -l "$ZIP" | grep -c 'content/media/' || true
+```
+
+If the media count is **0**, restore cannot bring images back — pick another archive or restore files from off-site copy.
 
 ### Clean up orphan double-`content/` tree (after bad restore)
 

@@ -398,6 +398,34 @@ class BackupManagerTest extends TestCase
         }
     }
 
+    public function testRestorePreservesBinaryMediaBytes(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_bin_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/media', 0755, true);
+        // JPEG SOI + invalid UTF-8 sequence — must survive restore unchanged.
+        $bytes = "\xFF\xD8\xFF\xE0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xFF\xD9";
+        file_put_contents($contentPath . '/media/photo.jpg', $bytes);
+
+        $validator = new FileValidator($contentPath);
+        $manager = new BackupManager(new FileReader($validator), new FileWriter($validator), $backupPath, $contentPath);
+
+        try {
+            $backup = $manager->create('binary-media', ['includes' => ['content']]);
+            unlink($contentPath . '/media/photo.jpg');
+            $this->assertTrue($manager->restore($backup->getId()));
+            $this->assertSame($bytes, file_get_contents($contentPath . '/media/photo.jpg'));
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
     public function testRestorePrunesOrphanMediaNotInBackupManifest(): void
     {
         if (!class_exists(\ZipArchive::class)) {

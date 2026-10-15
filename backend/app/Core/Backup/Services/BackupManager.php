@@ -803,7 +803,8 @@ class BackupManager implements BackupInterface
             if (is_file($sourcePath)) {
                 $relativeDest = $this->toContentRelativePath($destPath);
                 if ($relativeDest !== null) {
-                    $this->writer->write($relativeDest, FileHelper::read($sourcePath), false);
+                    // Binary-safe restore (images/PDF must not pass through utf8_normalize in FileWriter::write).
+                    $this->writer->writeBinary($relativeDest, FileHelper::read($sourcePath), false);
                 } else {
                     copy($sourcePath, $destPath);
                 }

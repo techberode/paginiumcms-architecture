@@ -86,6 +86,7 @@ use PaginiumCMS\Core\FlatFile\Commands\ContentImportCommand;
 use PaginiumCMS\Core\Seo\Commands\RedirectValidateCommand;
 use PaginiumCMS\Modules\Security\Commands\ListUsersCommand;
 use PaginiumCMS\Modules\Security\Commands\ResetUserPasswordCommand;
+use PaginiumCMS\Modules\Security\Commands\UserDisableTwoFactorCommand;
 use PaginiumCMS\Modules\Security\Commands\UserCreateCommand;
 use PaginiumCMS\Modules\Demo\Commands\RunDemoResetCommand;
 use PaginiumCMS\Modules\Security\Commands\ClearLoginLockoutsCommand;
@@ -715,6 +716,15 @@ $containerBuilder->addDefinitions([
             $container->get(PasswordPolicyInterface::class),
             $container->get(FileReaderInterface::class),
             $container->get(DemoMode::class)
+        );
+    },
+
+    UserDisableTwoFactorCommand::class => function ($container) {
+        return new UserDisableTwoFactorCommand(
+            $container->get(UserRepository::class),
+            $container->get(TwoFactorInterface::class),
+            $container->get(FileReaderInterface::class),
+            $container->get(DemoMode::class),
         );
     },
 

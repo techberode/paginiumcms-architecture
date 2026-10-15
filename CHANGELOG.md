@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Backup restore:** binary-safe media write (`writeBinary`); pre-restore ZIP media check + post-restore login/2FA recovery docs; `user:disable-2fa` CLI
 - **Backup & media integrity (ISS-200):** restore prunes orphans via backup `manifest.json`; `content:verify-media` CLI; post-restore `mediaIntegrity` in admin API; [MEDIA_OPERATIONS.md](docs/en/developer/MEDIA_OPERATIONS.md) runbook
 - **Blog/admin fixes (ISS-200):** numeric tag facets no longer 500 list/sidebar; article hero/OG editor sync (`seoImage` SSOT, broken preview warning)
 - **Media library:** multi-upload dedupe + drop-zone click guard; `POST /api/media/move` rename with registry + content reference rewrite; **`media:reconcile`** CLI (`--prune-registry`) for registry-vs-disk drift after restore; admin grid “file missing on disk” hint
