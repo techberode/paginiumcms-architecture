@@ -75,6 +75,18 @@ interface BackupInterface
     public function verifyIntegrity(string $backupId): array;
 
     /**
+     * @return array{
+     *     healthy: bool,
+     *     mode: string,
+     *     restoreChainBackups: int,
+     *     manifestMediaFiles: int,
+     *     zipMediaBinaries: int,
+     *     manifestMediaWithoutZipBinary: list<string>
+     * }
+     */
+    public function inspectMediaCoverage(string $backupId): array;
+
+    /**
      * Naplánuje automatické zálohovanie.
      *
      * @param string $interval Interval (daily, weekly, monthly).

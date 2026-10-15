@@ -80,6 +80,8 @@ use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Core\Backup\Services\BackupManager;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\Backup\Services\BackupScheduler;
+use PaginiumCMS\Core\Backup\Commands\BackupInspectMediaCommand;
+use PaginiumCMS\Core\Backup\Commands\BackupRestoreArchiveCommand;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentExportCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentImportCommand;
@@ -670,11 +672,24 @@ $containerBuilder->addDefinitions([
             $container->get(JsonResponder::class),
             $container->get(\PaginiumCMS\Core\Security\Upload\UploadPolicyEngine::class),
             $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentMediaIntegrityService::class),
+            $container->get(\PaginiumCMS\Modules\Media\Services\MediaRegistryReconcileService::class),
         );
     },
 
     BackupScheduler::class => function ($container) {
         return new BackupScheduler($container->get(BackupInterface::class));
+    },
+
+    BackupInspectMediaCommand::class => function ($container) {
+        return new BackupInspectMediaCommand($container->get(BackupInterface::class));
+    },
+
+    BackupRestoreArchiveCommand::class => function ($container) {
+        return new BackupRestoreArchiveCommand(
+            $container->get(BackupInterface::class),
+            $container->get(\PaginiumCMS\Modules\Media\Services\MediaRegistryReconcileService::class),
+            $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentMediaIntegrityService::class),
+        );
     },
 
     RunBackupScheduleCommand::class => function ($container) {

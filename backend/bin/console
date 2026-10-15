@@ -5,6 +5,8 @@ declare(strict_types=1);
 
 use Symfony\Component\Console\Application;
 use PaginiumCMS\Modules\Audit\Commands\RunAuditCommand;
+use PaginiumCMS\Core\Backup\Commands\BackupInspectMediaCommand;
+use PaginiumCMS\Core\Backup\Commands\BackupRestoreArchiveCommand;
 use PaginiumCMS\Core\Backup\Commands\RunBackupScheduleCommand;
 use PaginiumCMS\Core\Monitoring\Commands\RunMonitoringScheduleCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentExportCommand;
@@ -45,6 +47,8 @@ $container = $app->getContainer();
 $application = new Application('PaginiumCMS', '2.0');
 $application->addCommand($container->get(RunAuditCommand::class));
 $application->addCommand($container->get(RunBackupScheduleCommand::class));
+$application->addCommand($container->get(BackupInspectMediaCommand::class));
+$application->addCommand($container->get(BackupRestoreArchiveCommand::class));
 $application->addCommand($container->get(RunMonitoringScheduleCommand::class));
 $application->addCommand($container->get(RunSchedulerCommand::class));
 $application->addCommand($container->get(RunJobCommand::class));

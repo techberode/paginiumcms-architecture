@@ -203,7 +203,8 @@ class BackupManager implements BackupInterface
 
     public function getBackup(string $backupId): ?BackupMetadata
     {
-        $metadataPath = $this->backupPath . '/' . $backupId . '.json';
+        $normalizedId = str_ends_with($backupId, '.json') ? substr($backupId, 0, -5) : $backupId;
+        $metadataPath = $this->backupPath . '/' . $normalizedId . '.json';
         if (!file_exists($metadataPath)) {
             return null;
         }
@@ -357,6 +358,77 @@ class BackupManager implements BackupInterface
         $this->saveMetadata($metadata);
 
         return $metadata;
+    }
+
+    /**
+     * Compare media paths in the backup manifest vs binaries present across the restore chain ZIPs.
+     * Detects "hollow" backups where registry/metadata was captured but image files were missing on disk at backup time.
+     *
+     * @return array{
+     *     healthy: bool,
+     *     mode: string,
+     *     restoreChainBackups: int,
+     *     manifestMediaFiles: int,
+     *     zipMediaBinaries: int,
+     *     manifestMediaWithoutZipBinary: list<string>
+     * }
+     */
+    public function inspectMediaCoverage(string $reference): array
+    {
+        $reference = trim($reference);
+        if ($reference === '') {
+            throw new \RuntimeException('Backup reference is empty');
+        }
+
+        if (is_file($reference) && str_ends_with(strtolower($reference), '.zip')) {
+            return $this->inspectMediaCoverageInZip($reference, BackupScope::MODE_FULL, 1);
+        }
+
+        $metadata = $this->resolveBackupMetadata($reference);
+        $chain = $this->resolveRestoreChain($metadata);
+        $binariesInChain = [];
+
+        foreach ($chain as $item) {
+            $zipPath = $item->getFilePath();
+            if (!is_file($zipPath)) {
+                $sibling = $this->guessZipBesideMetadata($reference, $item->getId());
+                if ($sibling !== null) {
+                    $zipPath = $sibling;
+                }
+            }
+            if (!is_file($zipPath)) {
+                continue;
+            }
+            foreach (array_keys($this->collectMediaBinaryPathsInZip($zipPath)) as $entry) {
+                $binariesInChain[$entry] = true;
+            }
+        }
+
+        $tip = $chain[count($chain) - 1];
+        $manifestPaths = array_keys($this->loadManifestHashes($tip));
+        $manifestMedia = [];
+        foreach ($manifestPaths as $path) {
+            if ($this->isMediaBinaryZipPath($path)) {
+                $manifestMedia[] = $path;
+            }
+        }
+
+        $missing = [];
+        foreach ($manifestMedia as $path) {
+            if (!isset($binariesInChain[$path])) {
+                $missing[] = $path;
+            }
+        }
+        sort($missing);
+
+        return [
+            'healthy' => $missing === [],
+            'mode' => $metadata->getMode(),
+            'restoreChainBackups' => count($chain),
+            'manifestMediaFiles' => count($manifestMedia),
+            'zipMediaBinaries' => count($binariesInChain),
+            'manifestMediaWithoutZipBinary' => $missing,
+        ];
     }
 
     /**
@@ -879,6 +951,139 @@ class BackupManager implements BackupInterface
             }
         }
         return false;
+    }
+
+    private function isMediaBinaryZipPath(string $zipPath): bool
+    {
+        if (!str_starts_with($zipPath, 'content/media/')) {
+            return false;
+        }
+        if (str_ends_with($zipPath, '/')) {
+            return false;
+        }
+        $base = basename($zipPath);
+
+        return !in_array($base, ['registry.json', 'folders.json', '.paginium-folder'], true);
+    }
+
+    private function resolveBackupMetadata(string $reference): BackupMetadata
+    {
+        if (is_file($reference) && str_ends_with(strtolower($reference), '.json')) {
+            $data = JsonHelper::decode(FileHelper::read($reference));
+            if ($data === [] || !isset($data['id'])) {
+                throw new \RuntimeException('Invalid backup metadata JSON: ' . $reference);
+            }
+
+            return $this->hydrateMetadata($data);
+        }
+
+        $metadata = $this->getBackup($reference);
+        if ($metadata === null) {
+            throw new \RuntimeException(
+                'Záloha nebola nájdená. Použi ID (backup_…), cestu k .json metadátam, alebo priamo cestu k .zip.'
+            );
+        }
+
+        return $metadata;
+    }
+
+    private function guessZipBesideMetadata(string $reference, string $backupId): ?string
+    {
+        if (!is_file($reference) || !str_ends_with(strtolower($reference), '.json')) {
+            return null;
+        }
+
+        $dir = dirname($reference);
+        $candidates = glob($dir . '/*.zip') ?: [];
+        if ($candidates === []) {
+            return null;
+        }
+
+        foreach ($candidates as $candidate) {
+            if (str_contains(basename($candidate), substr($backupId, 7, 12))) {
+                return $candidate;
+            }
+        }
+
+        return $candidates[0];
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function collectMediaBinaryPathsInZip(string $zipPath): array
+    {
+        $binaries = [];
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            return [];
+        }
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entry = (string) $zip->getNameIndex($i);
+            if ($this->isMediaBinaryZipPath($entry)) {
+                $binaries[$entry] = true;
+            }
+        }
+        $zip->close();
+
+        return $binaries;
+    }
+
+    /**
+     * @return array{
+     *     healthy: bool,
+     *     mode: string,
+     *     restoreChainBackups: int,
+     *     manifestMediaFiles: int,
+     *     zipMediaBinaries: int,
+     *     manifestMediaWithoutZipBinary: list<string>
+     * }
+     */
+    private function inspectMediaCoverageInZip(string $zipPath, string $mode, int $chainLength): array
+    {
+        $binariesInChain = $this->collectMediaBinaryPathsInZip($zipPath);
+        $manifestPaths = array_keys($this->loadManifestHashesFromZipFile($zipPath));
+        $manifestMedia = [];
+        foreach ($manifestPaths as $path) {
+            if ($this->isMediaBinaryZipPath($path)) {
+                $manifestMedia[] = $path;
+            }
+        }
+
+        $missing = [];
+        foreach ($manifestMedia as $path) {
+            if (!isset($binariesInChain[$path])) {
+                $missing[] = $path;
+            }
+        }
+        sort($missing);
+
+        return [
+            'healthy' => $missing === [],
+            'mode' => $mode,
+            'restoreChainBackups' => $chainLength,
+            'manifestMediaFiles' => count($manifestMedia),
+            'zipMediaBinaries' => count($binariesInChain),
+            'manifestMediaWithoutZipBinary' => $missing,
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function loadManifestHashesFromZipFile(string $zipPath): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            return [];
+        }
+        $raw = $zip->getFromName('manifest.json');
+        $zip->close();
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+
+        return $this->hashesFromManifest(JsonHelper::decode($raw));
     }
 
     private function sanitizeName(string $name): string

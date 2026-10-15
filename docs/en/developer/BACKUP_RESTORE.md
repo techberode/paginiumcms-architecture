@@ -165,7 +165,20 @@ Restore must **not** prefix paths with `content/` when calling `FileWriter`. A r
 
 ### Verify a backup actually contains media (before restore)
 
-On the server (path inside PHP container if using Docker):
+**CLI (≥ Unreleased):** accepts backup id, metadata `.json`, or direct `.zip` path:
+
+```bash
+php backend/bin/console backup:inspect-media backup_6acc8c69bdf462.96920436 --json
+php backend/bin/console backup:inspect-media /path/to/downloaded-backup.zip --json
+```
+
+Restore a downloaded ZIP without library registration:
+
+```bash
+php backend/bin/console backup:restore-archive /path/to/downloaded-backup.zip
+```
+
+Manual unzip check on the server:
 
 ```bash
 ZIP=$(php -r 'echo json_decode(file_get_contents("storage/backups/BACKUP_ID.json"), true)["filePath"] ?? "";')

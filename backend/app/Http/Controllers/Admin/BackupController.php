@@ -7,6 +7,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentMediaIntegrityService;
+use PaginiumCMS\Modules\Media\Services\MediaRegistryReconcileService;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use PaginiumCMS\Core\Backup\Services\BackupScope;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
@@ -28,6 +29,7 @@ class BackupController
         private JsonResponder $json,
         private UploadPolicyEngine $uploadPolicy,
         private ContentMediaIntegrityService $contentMediaIntegrity,
+        private MediaRegistryReconcileService $mediaRegistryReconcile,
     ) {
     }
 
@@ -184,15 +186,32 @@ class BackupController
             }
 
             $mediaIntegrity = $this->contentMediaIntegrity->scan();
+            $mediaRegistry = $this->mediaRegistryReconcile->report();
+            $archiveMedia = $this->backup->inspectMediaCoverage($id);
+
             $message = 'Záloha bola obnovená';
-            if ($mediaIntegrity['missingTotal'] > 0) {
+            if (!$archiveMedia['healthy']) {
+                $message = sprintf(
+                    'Záloha bola obnovená, ale archív neobsahuje %d binárnych médií z manifestu (obnoví sa len katalóg — súbory treba nahrať znova alebo z inej zálohy).',
+                    count($archiveMedia['manifestMediaWithoutZipBinary'])
+                );
+            } elseif ($mediaRegistry['registryMissingFile'] !== []) {
+                $message = sprintf(
+                    'Záloha bola obnovená, ale %d položiek v registry nemá súbor na disku — skontroluj oprávnenia úložiska alebo obnov znova po deployi.',
+                    count($mediaRegistry['registryMissingFile'])
+                );
+            } elseif ($mediaIntegrity['missingTotal'] > 0) {
                 $message = sprintf(
                     'Záloha bola obnovená, ale %d odkazov na médiá stále smeruje na chýbajúce súbory (blog a media musia pochádzať z tej istej zálohy).',
                     $mediaIntegrity['missingTotal']
                 );
             }
 
-            return $this->json->success($response, ['mediaIntegrity' => $mediaIntegrity], 200, $message);
+            return $this->json->success($response, [
+                'mediaIntegrity' => $mediaIntegrity,
+                'mediaRegistry' => $mediaRegistry,
+                'archiveMedia' => $archiveMedia,
+            ], 200, $message);
         } catch (\Exception $e) {
             return $this->json->error($response, $e->getMessage(), 500);
         }

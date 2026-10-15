@@ -398,6 +398,36 @@ class BackupManagerTest extends TestCase
         }
     }
 
+    public function testInspectMediaCoverageDetectsHealthyArchive(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_inspect_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/media', 0755, true);
+        file_put_contents($contentPath . '/media/hero.jpg', 'binary');
+
+        $validator = new FileValidator($contentPath);
+        $manager = new BackupManager(new FileReader($validator), new FileWriter($validator), $backupPath, $contentPath);
+
+        try {
+            $backup = $manager->create('media-check', ['includes' => ['content']]);
+            $report = $manager->inspectMediaCoverage($backup->getId());
+            $this->assertTrue($report['healthy']);
+            $this->assertSame(1, $report['zipMediaBinaries']);
+
+            $byZip = $manager->inspectMediaCoverage($backup->getFilePath());
+            $this->assertTrue($byZip['healthy']);
+            $this->assertSame(1, $byZip['zipMediaBinaries']);
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
     public function testRestorePreservesBinaryMediaBytes(): void
     {
         if (!class_exists(\ZipArchive::class)) {
