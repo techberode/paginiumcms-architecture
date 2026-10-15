@@ -432,6 +432,8 @@ use PaginiumCMS\Modules\Media\Services\MediaImageOptimizer;
 use PaginiumCMS\Modules\Media\Services\MediaOptimizePreviewStore;
 use PaginiumCMS\Modules\Media\Services\MediaRepository;
 use PaginiumCMS\Modules\Media\Commands\MediaMigrateCommand;
+use PaginiumCMS\Modules\Media\Commands\MediaReconcileCommand;
+use PaginiumCMS\Modules\Media\Services\MediaRegistryReconcileService;
 use PaginiumCMS\Modules\Media\Commands\MediaMigrateRollbackCommand;
 use PaginiumCMS\Modules\Media\Commands\MediaMigrateVerifyCommand;
 use PaginiumCMS\Modules\Media\Commands\MediaStorageProbeCommand;
@@ -1183,6 +1185,13 @@ return [
             get(MediaMigrationJournalStore::class),
             get(SettingsRepositoryInterface::class)
         ),
+    MediaRegistryReconcileService::class => create(MediaRegistryReconcileService::class)
+        ->constructor(
+            get(MediaRepositoryInterface::class),
+            get(FileReaderInterface::class),
+        ),
+    MediaReconcileCommand::class => create(MediaReconcileCommand::class)
+        ->constructor(get(MediaRegistryReconcileService::class)),
     MediaMigrateCommand::class => create(MediaMigrateCommand::class)
         ->constructor(get(MediaMigrationService::class)),
     MediaMigrateVerifyCommand::class => create(MediaMigrateVerifyCommand::class)

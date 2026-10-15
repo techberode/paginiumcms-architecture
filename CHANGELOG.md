@@ -15,7 +15,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 - **Backup & media integrity (ISS-200):** restore prunes orphans via backup `manifest.json`; `content:verify-media` CLI; post-restore `mediaIntegrity` in admin API; [MEDIA_OPERATIONS.md](docs/en/developer/MEDIA_OPERATIONS.md) runbook
 - **Blog/admin fixes (ISS-200):** numeric tag facets no longer 500 list/sidebar; article hero/OG editor sync (`seoImage` SSOT, broken preview warning)
-- **Media library:** multi-upload dedupe + drop-zone click guard; `POST /api/media/move` rename with registry + content reference rewrite
+- **Media library:** multi-upload dedupe + drop-zone click guard; `POST /api/media/move` rename with registry + content reference rewrite; **`media:reconcile`** CLI (`--prune-registry`) for registry-vs-disk drift after restore; admin grid “file missing on disk” hint
+- **Docs:** [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md) restore semantics (merge/overwrite vs manifest prune; not “missing files only”)
 - **Security (config audit):** remove public `debug.php` / test PHP from docroot; Docker nginx front-controller only + deny `/storage/*.php`; local Redis bind `127.0.0.1`; `ClientIpResolver` + middleware unified XFF walk (anti-spoof) — [ISS-199](docs/ISSUES.md#iss-199)
 - **Public blog tags:** facet grouping (`tagFacets` on list meta + sidebar), auto rules + optional JSON synonyms in Settings → Content; filter matches whole group
 - **Public 404:** broken-content report form (prefilled URL/referer → Message Desk via `/api/contact`); optional custom page via `layout.notFoundPageSlug`; toggle `layout.brokenContentReportOn404`

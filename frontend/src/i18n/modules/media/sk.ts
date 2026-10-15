@@ -38,6 +38,9 @@ export const mediaSk: MessageTree = {
     previewFit: 'Náhľad (prispôsobiť obrazovke)',
     previewNative: 'Náhľad v natívnom rozlíšení',
   },
+  preview: {
+    fileMissing: 'Súbor na disku chýba (registry po obnove zálohy)',
+  },
   dropzone: {
     title: 'Presuňte súbory sem alebo kliknite pre výber',
     uploadTo: 'Nahrať do: :folder',

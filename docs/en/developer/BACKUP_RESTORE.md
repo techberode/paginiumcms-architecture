@@ -90,6 +90,26 @@ Flow:
 
 After restore, the admin API returns a **`mediaIntegrity`** scan: broken `/storage/…` references still present in markdown/front matter. CLI: `php backend/bin/console content:verify-media --json`.
 
+### Restore semantics (merge vs “only missing files”)
+
+Restore is **not** rsync-style “copy only if missing or hash differs”. It always:
+
+1. **Overwrites** every file path present in the ZIP (merge into `storage/app/content/` and `config/`).
+2. **Deletes** on-disk files under scoped subtrees (`blog/`, `media/`, `pages/`, …) that are **not** listed in the backup `manifest.json` (when the manifest exists).
+3. Applies **`deletes.json`** paths for incremental archives.
+
+It does **not** wipe the entire content tree before step 1. Subtrees **outside** the backup scope (e.g. restore with `includes: ["data"]` only) are untouched — that is a common cause of **registry vs missing binaries** in Media. See [MEDIA_OPERATIONS.md](MEDIA_OPERATIONS.md) (`media:reconcile`).
+
+| Question | Answer |
+|----------|--------|
+| Same path already on disk? | Overwritten with archive bytes |
+| File on disk but not in manifest (scoped subtree)? | Removed after restore (manifest prune) |
+| File missing on disk but in ZIP? | Written |
+| Compare SHA with live disk before write? | No — every archived file is written |
+| Legacy ZIP without `manifest.json`? | Merge overwrite only; **no** orphan prune |
+
+**Incremental restore:** `resolveRestoreChain()` applies baseline full ZIP, then each delta in order (each pass: merge + deletes + manifest prune for that ZIP).
+
 ### Soft delete (trash) scenario
 
 When an article is deleted through the CMS, the file moves to `content/trash/` and the index entry is removed. Restoring a backup taken **before** the delete:
@@ -127,6 +147,7 @@ Restore must **not** prefix paths with `content/` when calling `FileWriter`. A r
 | Download dialog stuck | Browser blob revoke race (fixed ISS-163) | Use current frontend (direct download link) |
 | Prod backup on dev shows no content | Expected if ZIP is legacy data-only | Same as row 1 |
 | Heroes show alt text; many broken `/storage/…` URLs | Blog restored without `media/` from the **same** backup, or pre-fix merge-only restore left mismatched files | Full restore with default `includes: ["content","config"]`; run `content:verify-media`; never mix blog from backup A with media from live disk |
+| Media grid shows metadata but **blank thumbnails** | `media/registry.json` restored while binaries missing (partial scope, mixed snapshots, or legacy merge) | `php backend/bin/console media:reconcile --json`; full restore with `content/media/` from one backup; optional `--prune-registry` then re-upload; [MEDIA_OPERATIONS.md](MEDIA_OPERATIONS.md) |
 
 ### Clean up orphan double-`content/` tree (after bad restore)
 

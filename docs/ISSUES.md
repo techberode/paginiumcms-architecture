@@ -6184,13 +6184,15 @@ Code Editor write surface, `.htaccess` CSP vs nginx, Docker image hardening, git
 - Restore **manifest prune** for scoped subtrees; `content:verify-media`; restore API `mediaIntegrity` payload.
 - SEO/OG sync on save, editor hydrate fallback, `seoImage` priority on public preview, broken OG preview message.
 - Media: upload dedupe + in-flight guard; `POST /api/media/move` with registry update + `ContentMediaReferenceRewriter`.
+- **`media:reconcile`** CLI + admin grid message when thumbnail URLs 404 (registry row without binary on disk).
 
 ### Operator recovery (maintenance)
 
 1. Deploy Unreleased build; `git pull` + restart PHP.
-2. **One** full backup restore (`content` + `config`) from a ZIP that contains `content/blog/` **and** `content/media/`.
-3. `php backend/bin/console content:verify-media --json` — fix remaining gaps via Media re-upload or **Rename** (rewrites article links).
-4. Per article: SEO OG → pick media → **Save**.
+2. **One** full backup restore (`content` + `config`) from a ZIP that contains `content/blog/` **and** `content/media/` (same archive — restore merges/overwrites; see [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md) restore semantics).
+3. `php backend/bin/console media:reconcile --json` — if many `registryMissingFile`, restore was partial/mixed or prune registry then re-upload.
+4. `php backend/bin/console content:verify-media --json` — fix remaining gaps via Media re-upload or **Rename** (rewrites article links).
+5. Per article: SEO OG → pick media → **Save**.
 
 ---
 

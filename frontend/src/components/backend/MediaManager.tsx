@@ -1087,11 +1087,13 @@ const MediaCard: React.FC<MediaCardProps> = ({
   const previewUrl = resolveAdminMediaPreviewUrl(file.path);
   const fallbackUrl = resolvePublicMediaUrl(file.url);
   const [thumbnailSrc, setThumbnailSrc] = useState(previewUrl);
+  const [thumbnailMissing, setThumbnailMissing] = useState(false);
   const isImage = isImageMedia(file);
   const isVideo = isVideoMedia(file);
 
   useEffect(() => {
     setThumbnailSrc(resolveAdminMediaPreviewUrl(file.path));
+    setThumbnailMissing(false);
   }, [file.path]);
 
   return (
@@ -1127,6 +1129,12 @@ const MediaCard: React.FC<MediaCardProps> = ({
             onClick={onPreview}
             aria-label={`Preview ${file.fileName}`}
           >
+            {thumbnailMissing ? (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-center text-xs text-amber-800 dark:text-amber-200">
+                <MediaFileTypeIcon file={file} size={32} />
+                <span>{t('media.preview.fileMissing')}</span>
+              </div>
+            ) : (
             <img
               src={thumbnailSrc}
               alt={file.altText || file.fileName}
@@ -1135,9 +1143,12 @@ const MediaCard: React.FC<MediaCardProps> = ({
               onError={() => {
                 if (thumbnailSrc !== fallbackUrl) {
                   setThumbnailSrc(fallbackUrl);
+                  return;
                 }
+                setThumbnailMissing(true);
               }}
             />
+            )}
             <span className="absolute inset-0 bg-black/0 group-hover/preview:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover/preview:opacity-100">
               <Expand className="w-8 h-8 text-white drop-shadow" />
             </span>

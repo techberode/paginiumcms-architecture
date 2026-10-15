@@ -38,6 +38,9 @@ export const mediaEn: MessageTree = {
     previewFit: 'Preview (fit to screen)',
     previewNative: 'Preview at native resolution',
   },
+  preview: {
+    fileMissing: 'File missing on disk (registry drift after restore)',
+  },
   dropzone: {
     title: 'Drag & drop files here, or click to browse',
     uploadTo: 'Upload to: :folder',
