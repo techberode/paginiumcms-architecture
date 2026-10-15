@@ -47,6 +47,10 @@ use PaginiumCMS\Core\Cache\Commands\PurgeContentCacheCommand;
 use PaginiumCMS\Core\Cache\Commands\WarmAdminOverviewCacheCommand;
 use PaginiumCMS\Core\Cache\Services\CacheAdminService;
 use PaginiumCMS\Core\FlatFile\Commands\ContentDiagnoseCommand;
+use PaginiumCMS\Core\FlatFile\Commands\ContentVerifyMediaCommand;
+use PaginiumCMS\Core\FlatFile\Services\ContentMediaIntegrityService;
+use PaginiumCMS\Core\FlatFile\Services\ContentMediaReferenceExtractor;
+use PaginiumCMS\Core\FlatFile\Services\ContentMediaReferenceRewriter;
 use PaginiumCMS\Core\FlatFile\Commands\ContentExportCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentImportCommand;
 use PaginiumCMS\Core\FlatFile\Commands\ContentLocaleMigrateCommand;
@@ -1713,7 +1717,9 @@ return [
             get(StockImageCatalog::class),
             get(StockImageImporter::class),
             get(JsonResponder::class),
-            get(ContentPathAclGuard::class)
+            get(ContentPathAclGuard::class),
+            get(ContentMediaReferenceRewriter::class),
+            get(ContentCacheService::class),
         ),
 
     // Code editor / versioning / audit (auto-discovered admin routes)
@@ -2538,6 +2544,20 @@ return [
             get(ContentRepositoryInterface::class),
             get(ContentIndexService::class),
             get(ContentCacheService::class)
+        ),
+    ContentMediaReferenceExtractor::class => create(ContentMediaReferenceExtractor::class),
+    ContentMediaIntegrityService::class => create(ContentMediaIntegrityService::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(FileReaderInterface::class),
+            get(ContentMediaReferenceExtractor::class),
+        ),
+    ContentVerifyMediaCommand::class => create(ContentVerifyMediaCommand::class)
+        ->constructor(get(ContentMediaIntegrityService::class)),
+    ContentMediaReferenceRewriter::class => create(ContentMediaReferenceRewriter::class)
+        ->constructor(
+            get(ContentRepositoryInterface::class),
+            get(\PaginiumCMS\Modules\Media\Services\MediaUrlResolver::class),
         ),
     ContentExportService::class => create(ContentExportService::class)
         ->constructor(get(ContentRepositoryInterface::class)),

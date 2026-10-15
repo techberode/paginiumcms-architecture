@@ -326,7 +326,7 @@ class MediaRepositoryTest extends TestCase
         $moved = $this->repository->findAll(['folder' => 'dest']);
         $this->assertCount(1, $moved);
         $this->assertStringStartsWith('media/dest/image_', $moved[0]->getPath());
-        $this->assertSame('logo.png', $moved[0]->getFileName());
+        $this->assertSame($media->getFileName(), $moved[0]->getFileName());
     }
 
     public function testCopyFolderDuplicatesFiles(): void

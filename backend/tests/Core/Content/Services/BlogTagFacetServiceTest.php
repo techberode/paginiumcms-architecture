@@ -28,6 +28,21 @@ final class BlogTagFacetServiceTest extends TestCase
         $this->assertContains('beta36', $beta['aliases']);
     }
 
+    public function testNumericTagsFromArrayKeysDoNotThrow(): void
+    {
+        // listDistinctTags() normalizes array_keys() values (e.g. int 404) to strings before calling here.
+        $service = $this->serviceWithSettings(['blogTagFacetsEnabled' => true]);
+        /** @var list<string> $raw */
+        $raw = ['404', 'beta35', 'security'];
+        $facets = $service->buildFacets($raw, ['beta35' => 1, 'security' => 2]);
+
+        $this->assertContains('security', array_column($facets, 'key'));
+        $this->assertNotEmpty($service->expandFilterNeedles('security', $raw));
+
+        $disabled = $this->serviceWithSettings(['blogTagFacetsEnabled' => false]);
+        $this->assertCount(3, $disabled->buildFacets($raw, []));
+    }
+
     public function testExpandFilterNeedlesReturnsAllAliases(): void
     {
         $service = $this->serviceWithSettings(['blogTagFacetsEnabled' => true]);

@@ -90,7 +90,8 @@ final class SqliteQueryIndex implements QueryIndexInterface
                 $tags[$tag] = true;
             }
         }
-        $unique = array_keys($tags);
+        // array_keys() turns numeric tags ("404", "2026") into ints; contract is list<string>.
+        $unique = array_map('strval', array_keys($tags));
         sort($unique, SORT_NATURAL | SORT_FLAG_CASE);
 
         return $unique;

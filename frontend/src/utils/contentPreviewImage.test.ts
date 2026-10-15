@@ -8,14 +8,31 @@ import {
 } from './contentPreviewImage';
 
 describe('contentPreviewImage', () => {
-  it('prefers featuredImage then seoImage', () => {
+  it('ignores alt-like strings that are not image paths', () => {
     expect(
       pickContentImageRaw({
-        featuredImage: '',
+        featuredImage: 'Diagram architektúry hybridného renderu',
+        ogImage: '',
+        frontMatter: { seoImage: 'media/hero.jpg' },
+      })
+    ).toBe('media/hero.jpg');
+
+    expect(
+      pickContentImageRaw({
+        featuredImage: '404',
+        ogImage: '/storage/app/content/media/ok.png',
+      })
+    ).toBe('/storage/app/content/media/ok.png');
+  });
+
+  it('prefers seoImage over stale featuredImage paths', () => {
+    expect(
+      pickContentImageRaw({
+        featuredImage: '/storage/app/content/media/stale.jpg',
         ogImage: '/storage/app/content/media/a.jpg',
         frontMatter: { seoImage: '/storage/b.jpg' },
       })
-    ).toBe('/storage/app/content/media/a.jpg');
+    ).toBe('/storage/b.jpg');
 
     expect(
       pickContentImageRaw({
@@ -29,6 +46,12 @@ describe('contentPreviewImage', () => {
         frontMatter: { seoImage: '/storage/app/content/media/seo.jpg' },
       })
     ).toBe('/storage/app/content/media/seo.jpg');
+  });
+
+  it('rewrites admin media file URLs to public storage', () => {
+    expect(
+      resolveContentImageUrl('/api/media/file/media%2Fhero.jpg')
+    ).toBe('/storage/app/content/media/hero.jpg');
   });
 
   it('normalizes storage and media paths', () => {

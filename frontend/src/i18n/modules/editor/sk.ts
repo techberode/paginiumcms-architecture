@@ -107,6 +107,8 @@ export const editorSk: MessageTree = {
     pickFromMedia: 'Vybrať z médií',
     removePreview: 'Odstrániť náhľad',
     ogPreviewAlt: 'Náhľad OG obrázka',
+    ogPreviewBroken:
+      'Obrázok sa nenačíta (chýbajúci súbor alebo zlá cesta). Vyber znova z médií a ulož článok.',
     ogHint: 'Použije sa pre sociálne siete',
     ogHintArticle: 'Použije sa pre sociálne siete a ako náhľad článku v zozname',
     canonical: 'Kanonická URL (voliteľné)',

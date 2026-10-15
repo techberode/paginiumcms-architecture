@@ -668,6 +668,7 @@ $containerBuilder->addDefinitions([
             $container->get(BackupInterface::class),
             $container->get(JsonResponder::class),
             $container->get(\PaginiumCMS\Core\Security\Upload\UploadPolicyEngine::class),
+            $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentMediaIntegrityService::class),
         );
     },
 

@@ -1248,10 +1248,22 @@ class ContentController
             if ($image !== '') {
                 $frontMatter['featuredImage'] = $image;
             } else {
-                unset($frontMatter['featuredImage']);
+                unset($frontMatter['featuredImage'], $frontMatter['featured_image'], $frontMatter['ogImage']);
             }
+            unset($frontMatter['featured_image'], $frontMatter['ogImage']);
             if ($content instanceof Article) {
                 $content->setFeaturedImage($image);
+            }
+            if ((int) ($frontMatter['schemaVersion'] ?? 1) >= 2 && isset($frontMatter['localizedContent']) && is_array($frontMatter['localizedContent'])) {
+                $defaultLocale = strtolower(trim((string) ($frontMatter['defaultLocale'] ?? 'sk')));
+                $writeLocale = strtolower(trim((string) ($data['locale'] ?? $defaultLocale)));
+                $targetLocale = $writeLocale !== '' ? $writeLocale : $defaultLocale;
+                if (isset($frontMatter['localizedContent'][$targetLocale]) && is_array($frontMatter['localizedContent'][$targetLocale])) {
+                    if (!isset($frontMatter['localizedContent'][$targetLocale]['seo']) || !is_array($frontMatter['localizedContent'][$targetLocale]['seo'])) {
+                        $frontMatter['localizedContent'][$targetLocale]['seo'] = [];
+                    }
+                    $frontMatter['localizedContent'][$targetLocale]['seo']['ogImage'] = $image;
+                }
             }
         }
 
@@ -1841,36 +1853,55 @@ class ContentController
             ? $this->contentCache->rememberArticleListPaginated($cachePayload, $loader)
             : $this->contentCache->rememberPageListPaginated($cachePayload, $loader);
 
+        if (!$this->isPaginatedListCachePayload($result)) {
+            if ($type === 'article') {
+                $this->contentCache->invalidateArticle();
+            } else {
+                $this->contentCache->invalidatePage();
+            }
+            $result = $loader();
+        }
+
         $metaExtra = [];
         if ($type === 'article') {
-            $facetFilters = $query->filters;
-            unset(
-                $facetFilters['tag'],
-                $facetFilters['category'],
-                $facetFilters['author'],
-                $facetFilters['date_from'],
-                $facetFilters['date_to']
-            );
+            try {
+                $facetFilters = $query->filters;
+                unset(
+                    $facetFilters['tag'],
+                    $facetFilters['category'],
+                    $facetFilters['author'],
+                    $facetFilters['date_from'],
+                    $facetFilters['date_to'],
+                    $facetFilters[ArticleTagFilter::NEEDLES_FILTER_KEY],
+                );
 
-            if (!$this->isAuthenticated($request)) {
-                $facetFilters['status'] = 'published';
-            }
+                if (!$this->isAuthenticated($request)) {
+                    $facetFilters['status'] = 'published';
+                }
 
-            $rawTags = $this->repository->listDistinctTags('article', $facetFilters);
-            $tagUsage = $this->repository->listTagUsageCounts('article', $facetFilters);
-            $metaExtra['tagFacets'] = $this->blogTagFacets->buildFacets($rawTags, $tagUsage);
-            $metaExtra['tagFacetLimit'] = $this->blogTagFacets->maxVisible();
-            $metaExtra['tags'] = array_map(
-                static fn (array $facet): string => $facet['key'],
-                $metaExtra['tagFacets']
-            );
-            $metaExtra['categories'] = $this->repository->listDistinctCategories('article', $facetFilters);
-            if (!$this->isAuthenticated($request)) {
-                $metaExtra['total_published'] = $this->repository->countIndexed('article', $facetFilters);
+                $rawTags = $this->repository->listDistinctTags('article', $facetFilters);
+                $tagUsage = $this->repository->listTagUsageCounts('article', $facetFilters);
+                $metaExtra['tagFacets'] = $this->blogTagFacets->buildFacets($rawTags, $tagUsage);
+                $metaExtra['tagFacetLimit'] = $this->blogTagFacets->maxVisible();
+                $metaExtra['tags'] = array_map(
+                    static fn (array $facet): string => (string) $facet['key'],
+                    $metaExtra['tagFacets']
+                );
+                $metaExtra['categories'] = $this->repository->listDistinctCategories('article', $facetFilters);
+                if (!$this->isAuthenticated($request)) {
+                    $metaExtra['total_published'] = $this->repository->countIndexed('article', $facetFilters);
+                }
+            } catch (\Throwable) {
+                $metaExtra = [];
             }
         }
 
-        $meta = new PaginationMeta($query->page, $query->perPage, $result['total'], $metaExtra);
+        $meta = new PaginationMeta(
+            $query->page,
+            $query->perPage,
+            (int) $result['total'],
+            $metaExtra
+        );
 
         $response = $this->json->paginated($response, $result['items'], $meta);
 
@@ -1882,6 +1913,16 @@ class ContentController
         $params = $request->getQueryParams();
 
         return isset($params['page']) || isset($params['per_page']) || isset($params['perPage']);
+    }
+
+    /**
+     * @param mixed $payload
+     */
+    private function isPaginatedListCachePayload(mixed $payload): bool
+    {
+        return is_array($payload)
+            && array_key_exists('total', $payload)
+            && is_array($payload['items'] ?? null);
     }
 
     private function applyPublicFilters(ServerRequestInterface $request, PaginationQuery $query): PaginationQuery

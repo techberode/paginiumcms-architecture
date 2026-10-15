@@ -71,6 +71,13 @@ interface MediaRepositoryInterface
     public function moveFolder(string $from, string $to): string;
 
     /**
+     * Move or rename a file under `media/` (updates registry; does not rewrite content — use ContentMediaReferenceRewriter).
+     *
+     * @throws FlatFileException
+     */
+    public function moveFile(string $fromPath, string $toPath): MediaFile;
+
+    /**
      * @throws FlatFileException
      */
     public function copyFolder(string $from, string $to): string;

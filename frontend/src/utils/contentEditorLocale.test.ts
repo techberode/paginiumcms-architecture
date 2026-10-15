@@ -25,6 +25,29 @@ describe('contentEditorLocale', () => {
     expect(hydrated.localeStatus.en).toBe('draft');
   });
 
+  it('uses flat ogImage in editor when locale slice seo ogImage is empty', () => {
+    const data: ContentEditorLoadData = {
+      title: 'Post',
+      content: 'Body',
+      status: 'published',
+      ogImage: '/storage/app/content/media/hero.jpg',
+      defaultLocale: 'sk',
+      schemaVersion: 2,
+      localizedContent: {
+        sk: {
+          title: 'Post',
+          body: 'Body',
+          seo: { title: '', description: '', canonical: '', ogImage: '', noIndex: false },
+        },
+      },
+      localeStatus: { sk: 'published' },
+    };
+
+    const hydrated = hydrateLocaleEditorFromLoad(data, 'markdown', 'markdown');
+
+    expect(hydrated.localeStates.sk?.seo.ogImage).toBe('/storage/app/content/media/hero.jpg');
+  });
+
   it('falls back to non-default locale slice when default locale is empty', () => {
     const data: ContentEditorLoadData = {
       title: '',

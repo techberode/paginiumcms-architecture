@@ -558,6 +558,40 @@ class MediaRepository implements MediaRepositoryInterface
         return $to;
     }
 
+    public function moveFile(string $fromPath, string $toPath): MediaFile
+    {
+        $fromPath = $this->normalizeMediaStoragePath($fromPath);
+        $toPath = $this->normalizeMediaStoragePath($toPath);
+
+        if ($fromPath === $toPath) {
+            $existing = $this->findByPath($fromPath);
+            if ($existing === null) {
+                throw new FlatFileException(Lang::get('not_found', [], 'media'));
+            }
+
+            return $existing;
+        }
+
+        $file = $this->findByPath($fromPath);
+        if ($file === null) {
+            throw new FlatFileException(Lang::get('not_found', [], 'media'));
+        }
+
+        if ($this->findByPath($toPath) !== null || $this->reader->exists($toPath)) {
+            throw new FlatFileException(Lang::get('file_exists', [], 'media'));
+        }
+
+        $relativeInside = substr($toPath, strlen(self::MEDIA_DIR . '/'));
+        $newFolder = dirname($relativeInside);
+        if ($newFolder === '.') {
+            $newFolder = '';
+        }
+
+        $this->relocateMediaFileToPath($file, $toPath, $newFolder, basename($toPath));
+
+        return $file;
+    }
+
     public function copyFolder(string $from, string $to): string
     {
         $from = $this->normalizeFolder($from);
@@ -1343,6 +1377,19 @@ class MediaRepository implements MediaRepositoryInterface
             return;
         }
 
+        $this->relocateMediaFileToPath($file, $newPath, $newFolder);
+    }
+
+    private function relocateMediaFileToPath(
+        MediaFile $file,
+        string $newPath,
+        string $newFolder,
+        ?string $newFileName = null,
+    ): void
+    {
+        $newFolder = $this->normalizeFolder($newFolder);
+        $oldPath = $file->getPath();
+
         $storage = $this->storage();
         $binary = $storage->read($oldPath);
         $storage->put($newPath, $binary);
@@ -1372,8 +1419,25 @@ class MediaRepository implements MediaRepositoryInterface
 
         $file->setPath($newPath);
         $file->setFolder($newFolder);
+        if ($newFileName !== null && $newFileName !== '') {
+            $file->setFileName($newFileName);
+        }
         $file->setUrl($storage->publicUrl($newPath));
         $this->replaceRegistryEntry($oldPath, $file);
+    }
+
+    private function normalizeMediaStoragePath(string $path): string
+    {
+        $path = str_replace('\\', '/', trim($path));
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, 'content/')) {
+            $path = substr($path, strlen('content/'));
+        }
+        if (!str_starts_with($path, self::MEDIA_DIR . '/')) {
+            $path = self::MEDIA_DIR . '/' . ltrim($path, '/');
+        }
+
+        return $path;
     }
 
     private function replaceRegistryEntry(string $previousPath, MediaFile $file): void

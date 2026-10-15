@@ -418,6 +418,31 @@ export async function updateMediaAlt(path: string, altText: string): Promise<boo
   return updateMediaMetadata(path, { altText });
 }
 
+export interface MoveMediaFileResult {
+  ok: boolean;
+  media?: MediaFile;
+  contentRewrite?: { filesUpdated: number; replacements: number };
+  error?: string;
+}
+
+/** Move/rename a file under `media/`; updates registry and rewrites content references. */
+export async function moveMediaFile(from: string, to: string): Promise<MoveMediaFileResult> {
+  const res = await apiClient.post<{ media: MediaFile; contentRewrite: { filesUpdated: number; replacements: number } }>(
+    '/api/media/move',
+    { from, to }
+  );
+
+  if (res.success && res.data?.media) {
+    return {
+      ok: true,
+      media: res.data.media,
+      contentRewrite: res.data.contentRewrite,
+    };
+  }
+
+  return { ok: false, error: res.error ?? 'Move failed.' };
+}
+
 /** Delete a media file by its storage path. */
 export async function deleteMedia(path: string): Promise<boolean> {
   const res = await apiClient.delete(`/api/media/${encodeURIComponent(path)}`);

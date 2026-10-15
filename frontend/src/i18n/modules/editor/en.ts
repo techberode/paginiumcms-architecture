@@ -107,6 +107,8 @@ export const editorEn: MessageTree = {
     pickFromMedia: 'Pick from media',
     removePreview: 'Remove preview',
     ogPreviewAlt: 'OG image preview',
+    ogPreviewBroken:
+      'This image URL does not load (missing file or wrong path). Pick media again and save the article.',
     ogHint: 'Used for social networks',
     ogHintArticle: 'Used for social networks and as article thumbnail in lists',
     canonical: 'Canonical URL (optional)',

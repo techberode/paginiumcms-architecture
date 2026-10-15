@@ -86,6 +86,9 @@ Flow:
 4. Merge `config/` → `storage/app/config/` when present.
 5. **Rebuild** content index from disk (`ContentIndexService::rebuild`).
 6. **Purge** content caches (`ContentCacheService::purgeAll`).
+7. **Prune scoped orphans** (when `manifest.json` is present): for each content subtree present in the manifest (`blog/`, `media/`, `pages/`, …), delete on-disk files that are **not** listed in the manifest. This makes a full restore a true point-in-time snapshot instead of a merge that leaves newer orphan media (which breaks hero/body image URLs in hundreds of articles).
+
+After restore, the admin API returns a **`mediaIntegrity`** scan: broken `/storage/…` references still present in markdown/front matter. CLI: `php backend/bin/console content:verify-media --json`.
 
 ### Soft delete (trash) scenario
 
@@ -123,6 +126,7 @@ Restore must **not** prefix paths with `content/` when calling `FileWriter`. A r
 | Import fails with 403 | Missing CSRF on upload (fixed ISS-163) | Use current frontend; ensure `X-CSRF-TOKEN` on `POST /api/admin/backups/import` |
 | Download dialog stuck | Browser blob revoke race (fixed ISS-163) | Use current frontend (direct download link) |
 | Prod backup on dev shows no content | Expected if ZIP is legacy data-only | Same as row 1 |
+| Heroes show alt text; many broken `/storage/…` URLs | Blog restored without `media/` from the **same** backup, or pre-fix merge-only restore left mismatched files | Full restore with default `includes: ["content","config"]`; run `content:verify-media`; never mix blog from backup A with media from live disk |
 
 ### Clean up orphan double-`content/` tree (after bad restore)
 
@@ -161,6 +165,7 @@ PHPUnit regression: `BackupManagerTest::testCreateAndRestoreRoundTripIncludesPag
 
 ## Related documents
 
+- [MEDIA_OPERATIONS.md](MEDIA_OPERATIONS.md) — upload, rename, hero/OG, recovery after restore
 - [STORAGE.md](../architecture/STORAGE.md) §11 — trash, backup policy
 - [ISS-163](../ISSUES.md#iss-163) — incident register
 - [FIRST_STEPS.md](../user/FIRST_STEPS.md) §11 — first backup drill

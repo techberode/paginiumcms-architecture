@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 14 October 2026 · register **ISS-001–ISS-199** · latest public release tag **`v2.1.0-beta.98`**
+> **Last updated:** 15 October 2026 · register **ISS-001–ISS-200** · latest public release tag **`v2.1.0-beta.98`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -222,6 +222,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-197](#iss-197) | Residual `npm audit` high (Tailwind 3 build chain) after safe fix | Low (supply-chain / dev) | ⏳ **Monitor** — 6 high remain (braces); DOMPurify/ESLint chain fixed (Unreleased) |
 | [ISS-198](#iss-198) | `GET /api/auth/me/desk` multi-second (comment N+1 + double desk compose) | High (ops / FPM pool) | ✅ Fixed (Unreleased) — index + single compose |
 | [ISS-199](#iss-199) | Oct 2026 config audit — public debug PHP, Docker nginx/Redis, XFF spoof | High (security / ops) | ✅ Fixed (Unreleased) |
+| [ISS-200](#iss-200) | Oct 2026 prod — blog 500 (numeric tags), backup/media mismatch, hero/OG editor | **Critical (content ops)** | ✅ Fixed (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6152,6 +6153,44 @@ Default **`127.0.0.1,::1`** is correct only when PHP’s direct peer is loopback
 ### Residual (audit backlog, not in this fix)
 
 Code Editor write surface, `.htaccess` CSP vs nginx, Docker image hardening, gitleaks/CI pin — track separately.
+
+---
+
+## ISS-200 – Oct 2026 prod — blog list 500, backup/media drift, hero/OG editor
+
+| Field | Value |
+|--------|--------|
+| **Severity** | Critical (public blog + admin content ops) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Docs** | [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md) · [MEDIA_OPERATIONS.md](en/developer/MEDIA_OPERATIONS.md) |
+
+### Symptoms
+
+- `/api/articles`, `/api/blog/sidebar` **500** after deploy (maintenance enabled).
+- Blog heroes show **alt text only**; many `/storage/…` URLs 404 after partial or mixed restore.
+- Admin **SEO OG image** changes appeared ignored (empty SEO field while stale `featuredImage` still drove public hero).
+- Media library: selecting **multiple uploads** could store the **same file several times** (drop zone + click race).
+
+### Root causes
+
+1. **`BlogTagFacetService` + `strict_types`:** `listDistinctTags()` used `array_keys()` → numeric tags (`"404"`) became **int** → `trim()` TypeError.
+2. **Backup restore merge-only:** files on disk **not in the ZIP manifest** remained → articles pointed at URLs from backup while `media/` held newer/orphan files ([ISS-163](ISS-163) path fix did not address merge semantics).
+3. **Schema v2 locale SEO vs flat `featuredImage`:** editor hydrated empty `localizedContent.*.seo.ogImage` while flat front matter still had (broken) hero URL; public pick order preferred stale `featuredImage`.
+4. **Upload UI:** drop handler + dropzone `click` could re-trigger file picker / overlapping batches.
+
+### Fixes (Unreleased)
+
+- Numeric tag normalization at index/facet source + regression tests.
+- Restore **manifest prune** for scoped subtrees; `content:verify-media`; restore API `mediaIntegrity` payload.
+- SEO/OG sync on save, editor hydrate fallback, `seoImage` priority on public preview, broken OG preview message.
+- Media: upload dedupe + in-flight guard; `POST /api/media/move` with registry update + `ContentMediaReferenceRewriter`.
+
+### Operator recovery (maintenance)
+
+1. Deploy Unreleased build; `git pull` + restart PHP.
+2. **One** full backup restore (`content` + `config`) from a ZIP that contains `content/blog/` **and** `content/media/`.
+3. `php backend/bin/console content:verify-media --json` — fix remaining gaps via Media re-upload or **Rename** (rewrites article links).
+4. Per article: SEO OG → pick media → **Save**.
 
 ---
 

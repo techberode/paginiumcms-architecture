@@ -457,10 +457,20 @@ final class LocalizedContentWriter
         if (trim((string) ($frontMatter['canonical'] ?? '')) === '' || trim((string) ($seo['canonical'] ?? '')) !== '') {
             $frontMatter['canonical'] = (string) ($seo['canonical'] ?? '');
         }
-        if (trim((string) ($frontMatter['seoImage'] ?? '')) === '' || trim((string) ($seo['ogImage'] ?? '')) !== '') {
-            $frontMatter['seoImage'] = (string) ($seo['ogImage'] ?? '');
+        $sliceOgImage = trim((string) ($seo['ogImage'] ?? ''));
+        if ($writingDefault || $writtenLocale === null || $sliceOgImage !== '') {
+            $frontMatter['seoImage'] = $sliceOgImage;
+            if ($sliceOgImage === '') {
+                unset($frontMatter['featuredImage'], $frontMatter['featured_image'], $frontMatter['ogImage']);
+            } else {
+                $frontMatter = $this->mirrorSeoImageToFeatured($frontMatter);
+            }
+        } elseif (trim((string) ($frontMatter['seoImage'] ?? '')) === '') {
+            $frontMatter['seoImage'] = $sliceOgImage;
+            $frontMatter = $this->mirrorSeoImageToFeatured($frontMatter);
+        } else {
+            $frontMatter = $this->mirrorSeoImageToFeatured($frontMatter);
         }
-        $frontMatter = $this->mirrorSeoImageToFeatured($frontMatter);
         if (!($frontMatter['noIndex'] ?? false) && ($seo['noIndex'] ?? false) === true) {
             $frontMatter['noIndex'] = true;
         }

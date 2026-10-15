@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Media;
 
-use PaginiumCMS\Http\Support\RequestJsonBody;
+use PaginiumCMS\Core\Cache\ContentCacheService;
 use PaginiumCMS\Core\FlatFile\Exception\FlatFileException;
+use PaginiumCMS\Core\FlatFile\Services\ContentMediaReferenceRewriter;
+use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface;
 use PaginiumCMS\Modules\Media\MediaFormats;
@@ -27,7 +29,9 @@ class MediaController
         private StockImageCatalog $stockImageCatalog,
         private StockImageImporter $stockImageImporter,
         private JsonResponder $json,
-        private ContentPathAclGuard $pathAcl
+        private ContentPathAclGuard $pathAcl,
+        private ContentMediaReferenceRewriter $contentMediaRewriter,
+        private ContentCacheService $contentCache,
     ) {
     }
 
@@ -238,6 +242,51 @@ class MediaController
                 ['deletedFiles' => $deletedFiles],
                 200,
                 Lang::get('folder_deleted', [], 'media')
+            );
+        } catch (FlatFileException $e) {
+            return $this->json->error($response, $e->getMessage(), 400);
+        } catch (AuthorizationException $e) {
+            return $this->json->error($response, $e->getMessage(), 403);
+        }
+    }
+
+    public function moveMediaFile(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $data = RequestJsonBody::decode($request);
+        if (!is_array($data)) {
+            return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        $from = trim((string) ($data['from'] ?? ''));
+        $to = trim((string) ($data['to'] ?? ''));
+        if ($from === '' || $to === '') {
+            return $this->json->error($response, Lang::get('paths_required', [], 'media'), 400);
+        }
+
+        try {
+            $user = $this->resolveUser($request);
+            $this->pathAcl->requireAccess($user, $from, 'media:delete');
+            $destFolder = str_contains($to, '/')
+                ? substr($to, 0, (int) strrpos($to, '/'))
+                : '';
+            $this->pathAcl->requireAccess(
+                $user,
+                $this->pathAcl->mediaFolderPath($destFolder),
+                'media:upload'
+            );
+
+            $media = $this->mediaRepository->moveFile($from, $to);
+            $rewrite = $this->contentMediaRewriter->rewritePaths($from, $to);
+            $this->contentCache->purgeAll();
+
+            return $this->json->success(
+                $response,
+                [
+                    'media' => $media->jsonSerialize(),
+                    'contentRewrite' => $rewrite,
+                ],
+                200,
+                Lang::get('file_moved', [], 'media')
             );
         } catch (FlatFileException $e) {
             return $this->json->error($response, $e->getMessage(), 400);

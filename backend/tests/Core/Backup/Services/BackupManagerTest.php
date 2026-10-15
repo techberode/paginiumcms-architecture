@@ -398,6 +398,37 @@ class BackupManagerTest extends TestCase
         }
     }
 
+    public function testRestorePrunesOrphanMediaNotInBackupManifest(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_prune_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/blog', 0755, true);
+        mkdir($contentPath . '/media', 0755, true);
+        file_put_contents($contentPath . '/blog/post.md', "---\ntitle: Post\n---\n# Post");
+        file_put_contents($contentPath . '/media/in-backup.jpg', 'jpg');
+
+        $validator = new FileValidator($contentPath);
+        $manager = new BackupManager(new FileReader($validator), new FileWriter($validator), $backupPath, $contentPath);
+
+        try {
+            $backup = $manager->create('with-media', ['includes' => ['content']]);
+            file_put_contents($contentPath . '/media/orphan-after-backup.jpg', 'orphan');
+            $this->assertFileExists($contentPath . '/media/orphan-after-backup.jpg');
+            $this->assertTrue($manager->restore($backup->getId()));
+
+            $this->assertFileExists($contentPath . '/media/in-backup.jpg');
+            $this->assertFileDoesNotExist($contentPath . '/media/orphan-after-backup.jpg');
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
     public function testSchedulePersistsIncludesAndMode(): void
     {
         $this->backupManager->scheduleBackup('weekly', 5, [

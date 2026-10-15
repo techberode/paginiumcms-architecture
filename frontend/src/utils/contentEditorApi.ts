@@ -58,5 +58,7 @@ export interface ContentSaveResponse {
   slug?: string;
   revision?: string;
   path?: string;
+  ogImage?: string;
+  featuredImage?: string;
   localeStatus?: Record<string, ContentEditorStatus>;
 }

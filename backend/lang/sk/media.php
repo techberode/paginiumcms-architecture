@@ -13,6 +13,8 @@ return [
     'folder_invalid' => 'Neplatný názov alebo cesta priečinka',
     'folder_not_empty' => 'Priečinok nie je prázdny. Najprv vymažte obsah alebo použite rekurzívne mazanie.',
     'folder_exists' => 'Priečinok s touto cestou už existuje',
+    'file_exists' => 'Na cieľovej ceste už existuje súbor',
+    'file_moved' => 'Súbor presunutý a odkazy v obsahu aktualizované',
     'folder_move_into_self' => 'Priečinok nemožno presunúť do seba alebo do svojho podpriečinka',
     'folder_created' => 'Priečinok bol vytvorený',
     'folder_deleted' => 'Priečinok bol vymazaný',

@@ -28,6 +28,7 @@ import {
   deleteMedia,
   deleteMediaFolder,
   moveMediaFolder,
+  moveMediaFile,
   downloadMediaFile,
   formatMediaSize,
   importStockImage,
@@ -84,6 +85,8 @@ export const MediaManager: React.FC = () => {
     folder === '' ? t('media.folder.all') : folder;
   const openInNewTab = useOpenLinksInNewTab();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadInFlightRef = useRef(false);
+  const suppressDropzoneClickRef = useRef(false);
   const [items, setItems] = useState<MediaFile[]>([]);
   const [folders, setFolders] = useState<string[]>(['']);
   const [loading, setLoading] = useState(true);
@@ -212,15 +215,31 @@ export const MediaManager: React.FC = () => {
   }, [loadMedia]);
 
   const handleUploadFiles = async (files: FileList | File[]) => {
-    const list = Array.from(files);
-    if (list.length === 0) {
+    if (uploadInFlightRef.current) {
       return;
     }
 
+    const deduped: File[] = [];
+    const seen = new Set<string>();
+    for (const file of Array.from(files)) {
+      const key = `${file.name}:${file.size}:${file.lastModified}`;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      deduped.push(file);
+    }
+
+    if (deduped.length === 0) {
+      return;
+    }
+
+    uploadInFlightRef.current = true;
     setUploading(true);
     let successCount = 0;
 
-    for (const file of list) {
+    try {
+    for (const file of deduped) {
       const isVideo =
         file.type.toLowerCase().startsWith('video/') || /\.(webm|mp4)$/i.test(file.name);
       const maxBytes = isVideo
@@ -250,8 +269,35 @@ export const MediaManager: React.FC = () => {
       );
       await loadMedia();
     }
+    } finally {
+      uploadInFlightRef.current = false;
+      setUploading(false);
+    }
+  };
 
-    setUploading(false);
+  const handleRenameFile = async (file: MediaFile) => {
+    const nextName = window.prompt(t('media.fileRenamePrompt'), file.fileName);
+    if (!nextName?.trim()) {
+      return;
+    }
+    const safeName = nextName.trim().replace(/[/\\]+/g, '');
+    if (safeName === '' || safeName === file.fileName) {
+      return;
+    }
+    const folderPrefix = file.folder !== '' ? `${file.folder}/` : '';
+    const toPath = `media/${folderPrefix}${safeName}`;
+    const result = await moveMediaFile(file.path, toPath);
+    if (result.ok) {
+      const refs = result.contentRewrite?.filesUpdated ?? 0;
+      toast.success(
+        refs > 0
+          ? t('media.toast.fileRenamedWithRefs', { count: String(refs) })
+          : t('media.toast.fileRenamed')
+      );
+      await loadMedia();
+    } else {
+      toast.error(result.error || t('media.toast.fileRenameFailed'));
+    }
   };
 
   const handleStockImport = async () => {
@@ -373,7 +419,9 @@ export const MediaManager: React.FC = () => {
 
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
+    event.stopPropagation();
     setDragOver(false);
+    suppressDropzoneClickRef.current = true;
     if (event.dataTransfer.files.length > 0) {
       void handleUploadFiles(event.dataTransfer.files);
     }
@@ -810,7 +858,15 @@ export const MediaManager: React.FC = () => {
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        onClick={() => !uploading && fileInputRef.current?.click()}
+        onClick={() => {
+          if (suppressDropzoneClickRef.current) {
+            suppressDropzoneClickRef.current = false;
+            return;
+          }
+          if (!uploading) {
+            fileInputRef.current?.click();
+          }
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -913,6 +969,7 @@ export const MediaManager: React.FC = () => {
                   : undefined
               }
               onPreviewPdf={isPdfMedia(file) ? () => setPdfPreviewFile(file) : undefined}
+              onRename={() => void handleRenameFile(file)}
               onDelete={() => handleDelete(file)}
             />
           ))}
@@ -929,6 +986,7 @@ export const MediaManager: React.FC = () => {
           onDownload={handleDownload}
           onPreview={openPreview}
           onDelete={handleDelete}
+          onRename={handleRenameFile}
           onStartEdit={startEditMeta}
           sortField={sortField}
           sortDirection={sortDirection}
@@ -995,6 +1053,7 @@ interface MediaCardProps {
   selected: boolean;
   onToggleSelect: () => void;
   onStartEdit: () => void;
+  onRename: () => void;
   onCopyUrl: () => void;
   onDownload: () => void;
   onPreview: () => void;
@@ -1012,6 +1071,7 @@ const MediaCard: React.FC<MediaCardProps> = ({
   selected,
   onToggleSelect,
   onStartEdit,
+  onRename,
   onCopyUrl,
   onDownload,
   onPreview,
@@ -1175,6 +1235,14 @@ const MediaCard: React.FC<MediaCardProps> = ({
           <button
             type="button"
             className="btn btn-secondary text-xs px-2 py-1"
+            title={t('media.actions.renameFile')}
+            onClick={onRename}
+          >
+            {t('media.actions.renameShort')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary text-xs px-2 py-1"
             title={t('media.actions.copyUrl')}
             onClick={onCopyUrl}
           >
@@ -1215,6 +1283,7 @@ interface MediaListTableProps {
   onDownload: (file: MediaFile) => void;
   onPreview: (file: MediaFile) => void;
   onDelete: (file: MediaFile) => void;
+  onRename: (file: MediaFile) => void;
   onStartEdit: (file: MediaFile) => void;
   sortField: string;
   sortDirection: 'asc' | 'desc';
@@ -1232,6 +1301,7 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
   onDownload,
   onPreview,
   onDelete,
+  onRename,
   onStartEdit,
   sortField,
   sortDirection,
@@ -1363,6 +1433,14 @@ const MediaListTable: React.FC<MediaListTableProps> = ({
                       onClick={() => onStartEdit(file)}
                     >
                       <Pencil className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-xs px-2 py-1"
+                      title={t('media.actions.renameFile')}
+                      onClick={() => onRename(file)}
+                    >
+                      {t('media.actions.renameShort')}
                     </button>
                     <button type="button" className="btn btn-secondary text-xs px-2 py-1" onClick={() => onCopyUrl(file)}>
                       <Copy className="w-3 h-3" />

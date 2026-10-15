@@ -854,6 +854,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         }
 
         if (response.success) {
+          const savedOgImage =
+            typeof response.data?.ogImage === 'string'
+              ? response.data.ogImage
+              : typeof response.data?.featuredImage === 'string'
+                ? response.data.featuredImage
+                : null;
+          if (savedOgImage !== null) {
+            setSeo((prev) => ({ ...prev, ogImage: savedOgImage }));
+          }
           setConflict(null);
           setCommitMessage('');
           setContentFormat(stored.contentFormat);

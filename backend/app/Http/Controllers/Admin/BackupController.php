@@ -6,6 +6,7 @@ namespace PaginiumCMS\Http\Controllers\Admin;
 
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Backup\Contracts\BackupInterface;
+use PaginiumCMS\Core\FlatFile\Services\ContentMediaIntegrityService;
 use PaginiumCMS\Core\Backup\Models\BackupMetadata;
 use PaginiumCMS\Core\Backup\Services\BackupScope;
 use PaginiumCMS\Core\Security\Upload\UploadPolicyEngine;
@@ -26,6 +27,7 @@ class BackupController
         private BackupInterface $backup,
         private JsonResponder $json,
         private UploadPolicyEngine $uploadPolicy,
+        private ContentMediaIntegrityService $contentMediaIntegrity,
     ) {
     }
 
@@ -181,7 +183,16 @@ class BackupController
                 return $this->json->error($response, 'Obnova zálohy zlyhala', 500);
             }
 
-            return $this->json->success($response, null, 200, 'Záloha bola obnovená');
+            $mediaIntegrity = $this->contentMediaIntegrity->scan();
+            $message = 'Záloha bola obnovená';
+            if ($mediaIntegrity['missingTotal'] > 0) {
+                $message = sprintf(
+                    'Záloha bola obnovená, ale %d odkazov na médiá stále smeruje na chýbajúce súbory (blog a media musia pochádzať z tej istej zálohy).',
+                    $mediaIntegrity['missingTotal']
+                );
+            }
+
+            return $this->json->success($response, ['mediaIntegrity' => $mediaIntegrity], 200, $message);
         } catch (\Exception $e) {
             return $this->json->error($response, $e->getMessage(), 500);
         }

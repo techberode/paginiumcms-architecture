@@ -55,10 +55,15 @@ export function localeStateFromSlice(
   localeStatus: ContentEditorStatus,
   editorMode: EditorMode,
   fallbackFormat: ContentFormat = 'markdown',
-  fallback?: { title?: string; body?: string }
+  fallback?: { title?: string; body?: string; ogImage?: string }
 ): LocaleEditorState {
   if (!slice) {
-    return { ...emptyLocaleEditorState(), status: localeStatus };
+    const empty = { ...emptyLocaleEditorState(), status: localeStatus };
+    const fallbackOg = String(fallback?.ogImage ?? '').trim();
+    if (fallbackOg !== '') {
+      empty.seo = { ...empty.seo, ogImage: fallbackOg };
+    }
+    return empty;
   }
 
   let rawBody = String(slice.body ?? '');
@@ -74,6 +79,9 @@ export function localeStateFromSlice(
   const title = String(slice.title ?? '').trim() !== '' ? String(slice.title ?? '') : fallbackTitle;
   const format = fallbackFormat;
 
+  const sliceOgImage = String(slice.seo?.ogImage ?? '').trim();
+  const fallbackOgImage = String(fallback?.ogImage ?? '').trim();
+
   return {
     title,
     content: valueForEditorMode(rawBody, format, editorMode),
@@ -84,7 +92,7 @@ export function localeStateFromSlice(
       seoTitle: String(slice.seo?.title ?? ''),
       seoDescription: String(slice.seo?.description ?? ''),
       canonical: String(slice.seo?.canonical ?? ''),
-      ogImage: String(slice.seo?.ogImage ?? ''),
+      ogImage: sliceOgImage !== '' ? sliceOgImage : fallbackOgImage,
       noIndex: Boolean(slice.seo?.noIndex ?? false),
       tags: '',
     },
@@ -106,11 +114,13 @@ export function hydrateLocaleEditorFromLoad(
   const localized = data.localizedContent ?? {};
   const statusMap = data.localeStatus ?? {};
   const localeStates: Partial<Record<ContentLocaleCode, LocaleEditorState>> = {};
+  const flatOgImage = String(data.ogImage ?? data.featuredImage ?? '').trim();
   const flatFallback = {
     title: data.title ?? '',
     body: bodyLooksLikeMetadataLeak(String(data.content ?? ''))
       ? stripEmbeddedMetadataLeak(String(data.content ?? ''))
       : String(data.content ?? ''),
+    ogImage: flatOgImage,
   };
 
   for (const code of SUPPORTED_LOCALES) {
@@ -122,7 +132,7 @@ export function hydrateLocaleEditorFromLoad(
         localeStatus,
         editorMode,
         contentFormat,
-        code === defaultLocale ? flatFallback : undefined
+        code === defaultLocale ? flatFallback : flatOgImage !== '' ? { ogImage: flatOgImage } : undefined
       );
     }
   }

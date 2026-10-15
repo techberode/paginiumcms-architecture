@@ -59,6 +59,7 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
 }) => {
   const { t } = useI18n();
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [previewBroken, setPreviewBroken] = useState(false);
   const patch = (partial: Partial<SeoFormValues>) => onChange({ ...values, ...partial });
   const previewSrc = seoImagePreviewSrc(values.ogImage);
 
@@ -118,7 +119,10 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
           <input
             type="url"
             value={values.ogImage}
-            onChange={(e) => patch({ ogImage: e.target.value })}
+            onChange={(e) => {
+              setPreviewBroken(false);
+              patch({ ogImage: e.target.value });
+            }}
             disabled={disabled}
             className="form-input min-w-0 flex-1"
             placeholder={t('editor.seo.ogImagePlaceholder')}
@@ -145,17 +149,21 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
             </button>
           )}
         </div>
-        {previewSrc !== '' && (
+        {previewSrc !== '' && !previewBroken && (
           <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40">
             <img
               src={previewSrc}
               alt={t('editor.seo.ogPreviewAlt')}
               className="max-h-40 w-full object-cover"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none';
-              }}
+              onLoad={() => setPreviewBroken(false)}
+              onError={() => setPreviewBroken(true)}
             />
           </div>
+        )}
+        {values.ogImage.trim() !== '' && (previewBroken || previewSrc === '') && (
+          <p className="mt-2 text-xs text-amber-700 dark:text-amber-300" role="status">
+            {t('editor.seo.ogPreviewBroken')}
+          </p>
         )}
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {showTags ? t('editor.seo.ogHintArticle') : t('editor.seo.ogHint')}
@@ -205,6 +213,7 @@ export const SeoMetadataPanel: React.FC<SeoMetadataPanelProps> = ({
         title={t('editor.seo.pickImageTitle')}
         urlFormat="storage"
         onSelect={(url) => {
+          setPreviewBroken(false);
           patch({ ogImage: url });
         }}
       />

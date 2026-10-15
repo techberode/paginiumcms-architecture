@@ -31,6 +31,7 @@ return function (App $app): void {
         ->add($auth);
 
     $app->group('/api/media', function (RouteCollectorProxy $group) use ($controller) {
+        $group->post('/move', [$controller, 'moveMediaFile']);
         $group->post('/folders/move', [$controller, 'moveFolder']);
         $group->post('/folders/copy', [$controller, 'copyFolder']);
         $group->post('/folders', [$controller, 'createFolder']);

@@ -48,7 +48,7 @@ final class BlogTagFacetService
         $groups = [];
 
         foreach ($rawTags as $raw) {
-            $raw = trim($raw);
+            $raw = trim((string) $raw);
             if ($raw === '') {
                 continue;
             }
@@ -70,7 +70,7 @@ final class BlogTagFacetService
 
         $facets = [];
         foreach ($groups as $groupKey => $group) {
-            $aliases = array_keys($group['rawTags']);
+            $aliases = array_map('strval', array_keys($group['rawTags']));
             sort($aliases, SORT_NATURAL | SORT_FLAG_CASE);
 
             $count = 0;
@@ -117,6 +117,7 @@ final class BlogTagFacetService
         }
 
         $usage = [];
+        $allRawTags = array_map('strval', $allRawTags);
         foreach ($allRawTags as $tag) {
             $usage[$tag] = 1;
         }
@@ -238,7 +239,7 @@ final class BlogTagFacetService
     {
         $facets = [];
         foreach ($rawTags as $tag) {
-            $tag = trim($tag);
+            $tag = trim((string) $tag);
             if ($tag === '') {
                 continue;
             }
@@ -313,7 +314,7 @@ final class BlogTagFacetService
     {
         $needles = [];
         foreach ($aliases as $alias) {
-            $lower = mb_strtolower(trim($alias));
+            $lower = mb_strtolower(trim((string) $alias));
             if ($lower !== '') {
                 $needles[$lower] = true;
             }

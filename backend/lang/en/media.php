@@ -13,6 +13,8 @@ return [
     'folder_invalid' => 'Invalid folder name or path',
     'folder_not_empty' => 'Folder is not empty. Delete contents first or use recursive delete.',
     'folder_exists' => 'A folder with that path already exists',
+    'file_exists' => 'A file already exists at the target path',
+    'file_moved' => 'File moved and content references updated',
     'folder_move_into_self' => 'Cannot move a folder into itself or its subfolder',
     'folder_created' => 'Folder created',
     'folder_deleted' => 'Folder deleted',

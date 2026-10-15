@@ -283,6 +283,12 @@ class BackupManager implements BackupInterface
         $zip->extractTo($tempDir);
         $zip->close();
 
+        $manifestHashes = [];
+        $manifestFile = $tempDir . '/manifest.json';
+        if (is_file($manifestFile)) {
+            $manifestHashes = $this->hashesFromManifest(JsonHelper::decode(FileHelper::read($manifestFile)));
+        }
+
         // Obnova obsahu — current format: content/{pages,blog,media,data,…}
         $contentDir = $tempDir . '/content';
         if (is_dir($contentDir)) {
@@ -302,6 +308,10 @@ class BackupManager implements BackupInterface
         }
 
         $this->applyDeclaredDeletes($tempDir . '/deletes.json');
+
+        if ($manifestHashes !== []) {
+            $this->pruneScopedOrphansAfterRestore($manifestHashes);
+        }
 
         // Vyčistenie
         $this->removeDirectory($tempDir);
@@ -896,6 +906,93 @@ class BackupManager implements BackupInterface
         }
 
         $this->contentCache?->purgeAll();
+    }
+
+    /**
+     * Remove on-disk files under scoped content subtrees that are not listed in the backup manifest.
+     * Prevents merge-only restore from leaving newer/orphan media that no longer matches article URLs.
+     *
+     * @param array<string, string> $manifestZipPaths
+     */
+    private function pruneScopedOrphansAfterRestore(array $manifestZipPaths): void
+    {
+        /** @var array<string, array<string, true>> $allowedBySubtree */
+        $allowedBySubtree = [];
+        /** @var array<string, true> $activeSubtrees */
+        $activeSubtrees = [];
+
+        foreach (array_keys($manifestZipPaths) as $zipPath) {
+            if (!str_starts_with($zipPath, 'content/')) {
+                continue;
+            }
+            $relative = substr($zipPath, strlen('content/'));
+            $slash = strpos($relative, '/');
+            if ($slash === false) {
+                continue;
+            }
+            $subtree = substr($relative, 0, $slash);
+            if (!in_array($subtree, BackupScope::CONTENT_SUBTREES, true)) {
+                continue;
+            }
+            $activeSubtrees[$subtree] = true;
+            if (!isset($allowedBySubtree[$subtree])) {
+                $allowedBySubtree[$subtree] = [];
+            }
+            $allowedBySubtree[$subtree][$relative] = true;
+        }
+
+        foreach (array_keys($activeSubtrees) as $subtree) {
+            $allowed = $allowedBySubtree[$subtree];
+            $absoluteRoot = $this->contentPath . '/' . $subtree;
+            if (!is_dir($absoluteRoot)) {
+                continue;
+            }
+            $this->pruneOrphanFilesUnder($absoluteRoot, $subtree, $allowed);
+        }
+    }
+
+    /**
+     * @param array<string, true> $allowedRelativePaths Paths relative to content root (e.g. media/foo.jpg).
+     */
+    private function pruneOrphanFilesUnder(string $absoluteDir, string $subtreePrefix, array $allowedRelativePaths): void
+    {
+        $entries = scandir($absoluteDir);
+        if ($entries === false) {
+            return;
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+
+            $absolute = $absoluteDir . '/' . $entry;
+            $relative = $subtreePrefix . '/' . $entry;
+            if (is_dir($absolute)) {
+                $this->pruneOrphanFilesUnder($absolute, $subtreePrefix . '/' . $entry, $allowedRelativePaths);
+                continue;
+            }
+
+            if (!is_file($absolute)) {
+                continue;
+            }
+
+            $zipStyle = 'content/' . str_replace('\\', '/', $relative);
+            if ($this->isExcluded($zipStyle)) {
+                continue;
+            }
+
+            if (isset($allowedRelativePaths[$relative])) {
+                continue;
+            }
+
+            $writerRelative = str_replace('\\', '/', $relative);
+            try {
+                $this->writer->delete($writerRelative, false);
+            } catch (\Throwable) {
+                @unlink($absolute);
+            }
+        }
     }
 
     private function calculateNextRun(string $interval): string

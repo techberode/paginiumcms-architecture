@@ -10,31 +10,73 @@ type ContentImageSource = {
   frontMatter?: Record<string, unknown> | null;
 };
 
+/** True when the value looks like a media path/URL, not human alt/caption text stored by mistake. */
+export function isContentImageReference(raw: string): boolean {
+  const value = raw.trim();
+  if (value === '') {
+    return false;
+  }
+  if (/^https?:\/\//i.test(value)) {
+    return true;
+  }
+  if (value.startsWith('/')) {
+    return true;
+  }
+  if (value.startsWith('media/') || value.startsWith('content/media/')) {
+    return true;
+  }
+
+  return /\.(avif|gif|jpe?g|png|svg|webp)(\?[^#]*)?(#.*)?$/i.test(value);
+}
+
 /** Raw path/URL from API or front matter (first non-empty wins). */
 export function pickContentImageRaw(source: ContentImageSource): string {
   const fm = source.frontMatter ?? {};
 
+  // SEO / OG image is the editor source of truth; legacy featuredImage may be stale after restore.
   const candidates: unknown[] = [
-    source.featuredImage,
-    source.ogImage,
     fm.seoImage,
+    source.ogImage,
+    fm.ogImage,
+    source.featuredImage,
     fm.featuredImage,
     fm.featured_image,
-    fm.ogImage,
   ];
 
   for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim() !== '') {
-      return candidate.trim();
+    if (typeof candidate === 'string') {
+      const trimmed = candidate.trim();
+      if (trimmed !== '' && isContentImageReference(trimmed)) {
+        return trimmed;
+      }
     }
   }
 
   return '';
 }
 
+/** Map admin-only media file URLs to public /storage/ (anonymous blog must not use /api/media/file). */
+export function normalizePublicContentImageUrl(raw: string): string {
+  const value = raw.trim();
+  if (!value.startsWith('/api/media/file/')) {
+    return value;
+  }
+
+  const encoded = value.slice('/api/media/file/'.length);
+  let path = decodeURIComponent(encoded).replace(/^\/+/, '');
+  if (path.startsWith('content/media/')) {
+    path = path.slice('content/'.length);
+  }
+  if (!path.startsWith('media/')) {
+    path = `media/${path}`;
+  }
+
+  return `/storage/app/content/${path}`;
+}
+
 /** Browser-ready URL for public `<img src>` (same-origin /storage or absolute). */
 export function resolveContentImageUrl(raw: string): string {
-  const value = raw.trim();
+  let value = normalizePublicContentImageUrl(raw.trim());
   if (value === '') {
     return '';
   }
