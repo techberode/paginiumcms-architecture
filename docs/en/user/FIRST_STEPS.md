@@ -129,7 +129,9 @@ After the first changes you should be able to locate:
 - firewall incidents only for real scenarios,
 - a successfully created backup with integrity verification.
 
-**Restore drill (recommended on dev/staging):** create a backup, soft-delete one article, restore, confirm the article reappears. If restore “succeeds” but content is missing, see [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md) (wrong path `content/content/`, legacy ZIP without `blog/`, or stale cache — [ISS-163](../ISSUES.md#iss-163)).
+**Production habit:** enable a **daily** scheduled backup (Platform → Backups) and ensure host cron runs `scheduler:run` ([CRON.md](../../deploy/CRON.md)). For a copy outside the server, configure **Settings → System → Backups (off-site)** (Nextcloud/WebDAV) — step-by-step in [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md#nextcloud-webdav-off-site-operator-guide).
+
+**Restore drill (recommended on dev/staging):** create a backup, soft-delete one article, restore, confirm the article reappears. If restore “succeeds” but content is missing, see [BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md) (wrong path `content/content/`, legacy ZIP without `blog/`, or stale cache — [ISS-163](../ISSUES.md#iss-163)). If media thumbnails stay blank after restore, see [MEDIA_OPERATIONS.md](../developer/MEDIA_OPERATIONS.md) and [ISS-200](../ISSUES.md#iss-200).
 
 ## 12. What is not automatic
 

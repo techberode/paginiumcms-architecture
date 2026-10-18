@@ -17,7 +17,13 @@ class BackupScheduler
     }
 
     /**
-     * @return array{ran: bool, reason?: string, backup?: mixed}
+     * @return array{
+     *     ran: bool,
+     *     reason?: string,
+     *     backup?: mixed,
+     *     offsiteUploaded?: bool|null,
+     *     offsiteError?: string|null
+     * }
      */
     public function runIfDue(): array
     {

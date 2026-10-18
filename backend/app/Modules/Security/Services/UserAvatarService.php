@@ -62,7 +62,7 @@ final class UserAvatarService
             );
         }
 
-        $folder = 'avatars/' . $user->getId();
+        $folder = $this->avatarFolderForUser($user);
         $media = $this->media->saveUpload(
             'avatar.' . $processed['extension'],
             $binary,
@@ -139,5 +139,25 @@ final class UserAvatarService
         }
 
         return $relative;
+    }
+
+    /**
+     * Media folder segments allow letters, digits, underscore, hyphen only.
+     * User ids from uniqid('user_', true) contain dots — map those before saveUpload().
+     */
+    private function avatarFolderForUser(User $user): string
+    {
+        $id = trim($user->getId());
+        if ($id === '') {
+            throw new FlatFileException('Chýba identifikátor používateľa.');
+        }
+
+        $safe = preg_replace('/[^\p{L}\p{N}_-]+/u', '_', $id) ?? $id;
+        $safe = trim($safe, '_');
+        if ($safe === '') {
+            throw new FlatFileException('Neplatný identifikátor používateľa pre avatar.');
+        }
+
+        return 'avatars/' . $safe;
     }
 }

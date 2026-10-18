@@ -16,7 +16,8 @@ The retained current profile includes, for example:
 |---|---|---|---|
 | `content-scheduled-publish` | `content.scheduled_publish` | every minute | publish due content |
 | `monitoring-pipeline` | `monitoring.pipeline` | every minute | monitoring and log scanning |
-| `backup-scheduled` | `backup.scheduled` | daily at 02:00 | scheduled CMS backup |
+| `backup-scheduled` | `backup.scheduled` | daily at 02:00 | scheduled CMS backup (see [BACKUP_RESTORE.md](../en/developer/BACKUP_RESTORE.md#scheduled-backup-cron); optional Nextcloud upload after success — [ISS-201](../ISSUES.md#iss-201)) |
+| `storage-retention` | `storage.retention` | daily at 03:00 | trash / content-version / draft-orphan retention ([STORAGE.md](../en/architecture/STORAGE.md#14-storage-retention-trash-versions-drafts); Settings → **storageRetention** — [ISS-202](../ISSUES.md#iss-202)) |
 | `admin-cache-warm` | `admin_cache.warm` | every minute | **disabled by default** — pre-warm admin P2 cache (It.100c); same as `cache:warm-admin` |
 | `host-metrics-collect` | `host_metrics.collect` | every 5 min | **disabled by default** — host load/RAM/disk snapshot (It.82d); requires Engine host metrics ON |
 
@@ -25,7 +26,10 @@ Optional CLI equivalents (host cron instead of scheduler jobs):
 ```bash
 php backend/bin/console cache:warm-admin
 php backend/bin/console metrics:host-collect
+php backend/bin/console backup:run-schedule   # same due check as backup.scheduled when not using scheduler:run
 ```
+
+Configure backup scope and schedule in **Platform → Backups** (`storage/backups/schedule.json`). After each successful archive, off-site WebDAV upload runs when enabled in **Settings → System → Backups (off-site)**.
 
 See [ADMIN_OPERATIONS.md](../developer/ADMIN_OPERATIONS.md) · [HOST_METRICS.md](../developer/HOST_METRICS.md).
 

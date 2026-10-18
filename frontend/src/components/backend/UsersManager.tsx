@@ -51,6 +51,7 @@ import { summarizeBulkResult } from '../../types/bulk';
 import { RegistrationInvitesPanel } from './RegistrationInvitesPanel';
 import { RegistrationOptionsPanel } from './RegistrationOptionsPanel';
 import { AdminTabs } from '../ui/AdminTabs';
+import { normalizeAvatarDisplaySize, type AvatarDisplaySize } from '../../utils/avatarDisplaySize';
 
 type UsersTab = 'list' | 'form' | 'invites';
 
@@ -93,6 +94,7 @@ export const UsersManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingAvatarUrl, setEditingAvatarUrl] = useState<string | null>(null);
+  const [editingAvatarDisplaySize, setEditingAvatarDisplaySize] = useState<AvatarDisplaySize>('md');
   const [twoFactorEnforced, setTwoFactorEnforced] = useState(false);
   const [twoFactorSecret, setTwoFactorSecret] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -239,6 +241,7 @@ export const UsersManager: React.FC = () => {
     setTab('form');
     setEditingId(user.id);
     setEditingAvatarUrl(user.avatarUrl ?? null);
+    setEditingAvatarDisplaySize(normalizeAvatarDisplaySize(user.avatarDisplaySize));
     setForm({
       email: user.email,
       username: user.username ?? deriveUsername(user.email),
@@ -433,8 +436,13 @@ export const UsersManager: React.FC = () => {
               userId={editingId}
               name={form.name || form.email}
               avatarUrl={editingAvatarUrl}
+              avatarDisplaySize={editingAvatarDisplaySize}
               onAvatarUpdated={(url) => {
                 setEditingAvatarUrl(url);
+                void load();
+              }}
+              onDisplaySizeUpdated={(size) => {
+                setEditingAvatarDisplaySize(size);
                 void load();
               }}
             />

@@ -14,6 +14,7 @@ import { AccountPublicProfileForm, draftFromUser, type AccountPublicDraft } from
 import { AdminTabs } from '../ui/AdminTabs';
 import { AdminWidgetCard } from '../ui/AdminWidgetCard';
 import { ADMIN_INPUT, ADMIN_PAGE_SUBTITLE, ADMIN_PAGE_TITLE } from '../../theme/adminUiClasses';
+import { normalizeAvatarDisplaySize, type AvatarDisplaySize } from '../../utils/avatarDisplaySize';
 
 type AccountTab = 'profile' | 'public' | 'security' | 'preferences';
 
@@ -51,6 +52,7 @@ export const AccountView: React.FC = () => {
   const [notifyFailedLogin, setNotifyFailedLogin] = useState(true);
   const [notifySecurityIncident, setNotifySecurityIncident] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarDisplaySize, setAvatarDisplaySize] = useState<AvatarDisplaySize>('md');
   const [publicDraft, setPublicDraft] = useState<AccountPublicDraft | null>(null);
 
   useEffect(() => {
@@ -68,6 +70,7 @@ export const AccountView: React.FC = () => {
     setNotifyFailedLogin(user.notifyFailedLogin !== false);
     setNotifySecurityIncident(user.notifySecurityIncident !== false);
     setAvatarUrl(user.avatarUrl ?? null);
+    setAvatarDisplaySize(normalizeAvatarDisplaySize(user.avatarDisplaySize));
     setPublicDraft(draftFromUser(user));
   }, [user]);
 
@@ -169,11 +172,16 @@ export const AccountView: React.FC = () => {
                 userId={user.id}
                 name={name || email}
                 avatarUrl={avatarUrl}
+                avatarDisplaySize={avatarDisplaySize}
                 selfService
                 embedded
                 onAvatarUpdated={(url) => {
                   setAvatarUrl(url);
                   updateUser({ ...user, avatarUrl: url });
+                }}
+                onDisplaySizeUpdated={(size) => {
+                  setAvatarDisplaySize(size);
+                  updateUser({ ...user, avatarDisplaySize: size });
                 }}
               />
             </AdminWidgetCard>

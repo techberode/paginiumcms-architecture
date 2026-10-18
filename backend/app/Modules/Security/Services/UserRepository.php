@@ -300,6 +300,10 @@ class UserRepository
                 $user->setDeskBubbleY((int) $value);
             } elseif ($key === 'avatarUrl') {
                 $user->setAvatarUrl(is_string($value) ? $value : null);
+            } elseif ($key === 'avatarDisplaySize') {
+                $user->setAvatarDisplaySize(
+                    UserProfileFields::normalizeAvatarDisplaySize(is_string($value) ? $value : 'md')
+                );
             } elseif ($key === 'username') {
                 $user->setUsername((string) $value);
             } elseif ($key === 'registrationOptionId') {
@@ -362,6 +366,7 @@ class UserRepository
             'deskBubbleX' => $user->getDeskBubbleX(),
             'deskBubbleY' => $user->getDeskBubbleY(),
             'avatarUrl' => $user->getAvatarUrl(),
+            'avatarDisplaySize' => $user->getAvatarDisplaySize(),
             'registrationOptionId' => $user->getRegistrationOptionId(),
             'active' => $user->isActive(),
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),

@@ -141,7 +141,7 @@ final class UserController
         $user->setUsername($username);
         $user->setName($validated['name']);
         $user->setBio(trim((string) ($payload['bio'] ?? '')));
-        UserProfileFields::apply($user, array_intersect_key($payload, array_flip(['jobTitle', 'phone', 'timezone'])));
+        UserProfileFields::apply($user, array_intersect_key($payload, array_flip(['jobTitle', 'phone', 'timezone', 'avatarDisplaySize'])));
         $user->setRoles([(string) $validated['role']]);
         $user->setActive((bool) ($payload['active'] ?? true));
         $user->setPassword($password);
@@ -214,7 +214,7 @@ final class UserController
             $user->setBio((string) $validated['bio']);
         }
 
-        UserProfileFields::apply($user, array_intersect_key($payload, array_flip(['jobTitle', 'phone', 'timezone'])));
+        UserProfileFields::apply($user, array_intersect_key($payload, array_flip(['jobTitle', 'phone', 'timezone', 'avatarDisplaySize'])));
 
         if (isset($validated['role'])) {
             $this->assertCanAssignRole($request, (string) $validated['role']);

@@ -9,26 +9,33 @@ import { authApi } from '../../api/auth';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 import { AuthorAvatarField } from './AuthorAvatarField';
+import { updateUser } from '../../api/users';
+import type { AvatarDisplaySize } from '../../utils/avatarDisplaySize';
+import { normalizeAvatarDisplaySize } from '../../utils/avatarDisplaySize';
 
 interface UserAvatarPickerProps {
   userId: string;
   name: string;
   avatarUrl?: string | null;
+  avatarDisplaySize?: AvatarDisplaySize;
   disabled?: boolean;
   selfService?: boolean;
   /** Skip the outer card when nested inside AdminWidgetCard. */
   embedded?: boolean;
   onAvatarUpdated: (url: string | null) => void;
+  onDisplaySizeUpdated?: (size: AvatarDisplaySize) => void;
 }
 
 export const UserAvatarPicker: React.FC<UserAvatarPickerProps> = ({
   userId,
   name,
   avatarUrl,
+  avatarDisplaySize = 'md',
   disabled = false,
   selfService = false,
   embedded = false,
   onAvatarUpdated,
+  onDisplaySizeUpdated,
 }) => {
   const { t } = useI18n();
   const { error: toastError, success } = useToast();
@@ -58,6 +65,23 @@ export const UserAvatarPicker: React.FC<UserAvatarPickerProps> = ({
       }
       onAvatarUpdated(res.data.user.avatarUrl ?? null);
       success(t('users.avatar.success'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDisplaySizeChange = async (size: AvatarDisplaySize) => {
+    const normalized = normalizeAvatarDisplaySize(size);
+    setBusy(true);
+    try {
+      const res = selfService
+        ? await authApi.updateProfile({ avatarDisplaySize: normalized })
+        : await updateUser(userId, { avatarDisplaySize: normalized });
+      if (!res.success || !res.data?.user) {
+        toastError(res.error || t('users.avatar.failed'));
+        return;
+      }
+      onDisplaySizeUpdated?.(normalizeAvatarDisplaySize(res.data.user.avatarDisplaySize));
     } finally {
       setBusy(false);
     }
@@ -94,6 +118,9 @@ export const UserAvatarPicker: React.FC<UserAvatarPickerProps> = ({
         mode="upload"
         previewName={name}
         onUploadFile={handleUpload}
+        displaySize={avatarDisplaySize}
+        showDisplaySizeControl
+        onDisplaySizeChange={(size) => void handleDisplaySizeChange(size)}
       />
 
       {avatarUrl && (

@@ -40,6 +40,8 @@ use PaginiumCMS\Core\Scheduler\Handlers\AdminOverviewCacheWarmHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\HostMetricsCollectHandler;
 use PaginiumCMS\Core\Cache\Contracts\AdminOverviewCacheWarmRunner;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\StorageRetentionHandler;
+use PaginiumCMS\Core\FlatFile\Services\ContentStorageRetentionService;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Performance\HostMetricsCollector;
 use PaginiumCMS\Core\Performance\HostMetricsSettings;
@@ -127,6 +129,7 @@ final class ScheduledJobRunnerTest extends TestCase
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             $this->makeMaintenanceCleanupHandler($settings, $reader, $writer),
+            $this->makeStorageRetentionHandler($settings),
             new ContentScheduledPublishHandler(
                 $scheduledPublish,
                 $this->noopPublishNotifications()
@@ -179,6 +182,7 @@ final class ScheduledJobRunnerTest extends TestCase
             new BackupScheduledHandler($backup),
             new MonitoringPipelineHandler($this->buildMonitoringScheduler()),
             $this->makeMaintenanceCleanupHandler($settings, $reader, $writer),
+            $this->makeStorageRetentionHandler($settings),
             new ContentScheduledPublishHandler(
                 $scheduledPublish,
                 $this->noopPublishNotifications()
@@ -356,6 +360,24 @@ final class ScheduledJobRunnerTest extends TestCase
             new HostMetricsSettings($settings),
             new HostMetricsCollector(),
             new HostMetricsStore($reader, $writer)
+        );
+    }
+
+    private function makeStorageRetentionHandler(SettingsRepositoryInterface $settings): StorageRetentionHandler
+    {
+        $storageSettings = $this->createMock(SettingsRepositoryInterface::class);
+        $storageSettings->method('group')->with('storageRetention')->willReturn([
+            'trashAutoPurgeEnabled' => false,
+            'contentVersionRetentionEnabled' => false,
+            'draftOrphanPruneEnabled' => false,
+        ]);
+
+        $trash = $this->createMock(\PaginiumCMS\Core\FlatFile\Services\TrashService::class);
+        $versions = $this->createMock(\PaginiumCMS\Core\Versioning\Services\EnhancedVersionManager::class);
+        $drafts = $this->createMock(\PaginiumCMS\Core\Drafts\Contracts\DraftManagerInterface::class);
+
+        return new StorageRetentionHandler(
+            new ContentStorageRetentionService($storageSettings, $trash, $versions, $drafts)
         );
     }
 

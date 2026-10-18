@@ -22,6 +22,8 @@ class BackupMetadata implements JsonSerializable
     private string $baseBackupId = '';
     private int $filesPacked = 0;
     private int $filesTotal = 0;
+    private ?bool $offsiteUploaded = null;
+    private ?string $offsiteError = null;
 
     public function __construct()
     {
@@ -185,6 +187,30 @@ class BackupMetadata implements JsonSerializable
         return $this;
     }
 
+    public function getOffsiteUploaded(): ?bool
+    {
+        return $this->offsiteUploaded;
+    }
+
+    public function setOffsiteUploaded(?bool $offsiteUploaded): self
+    {
+        $this->offsiteUploaded = $offsiteUploaded;
+
+        return $this;
+    }
+
+    public function getOffsiteError(): ?string
+    {
+        return $this->offsiteError;
+    }
+
+    public function setOffsiteError(?string $offsiteError): self
+    {
+        $this->offsiteError = $offsiteError !== null && trim($offsiteError) !== '' ? trim($offsiteError) : null;
+
+        return $this;
+    }
+
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
@@ -227,6 +253,8 @@ class BackupMetadata implements JsonSerializable
             'baseBackupId' => $this->baseBackupId !== '' ? $this->baseBackupId : null,
             'filesPacked' => $this->filesPacked,
             'filesTotal' => $this->filesTotal,
+            'offsiteUploaded' => $this->offsiteUploaded,
+            'offsiteError' => $this->offsiteError,
         ];
     }
 }

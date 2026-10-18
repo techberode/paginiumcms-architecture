@@ -29,9 +29,21 @@ final class BackupScheduledHandler implements JobHandlerInterface
         $result = $this->backups->runScheduledBackupIfDue();
         $ran = (bool) $result['ran'];
 
+        $message = 'Backup not due';
+        if ($ran) {
+            $offsite = $result['offsiteUploaded'] ?? null;
+            if ($offsite === true) {
+                $message = 'Backup created; off-site upload OK';
+            } elseif ($offsite === false) {
+                $message = 'Backup created; off-site upload failed — check PHP error log';
+            } else {
+                $message = 'Backup created';
+            }
+        }
+
         return new JobRunResult(
             $ran,
-            $ran ? 'Backup created' : 'Backup not due',
+            $message,
             $result,
             isset($result['reason']) ? (string) $result['reason'] : null
         );

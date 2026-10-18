@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, CircleUser, KeyRound, LogOut, Shield, UserRound } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
+import { resolveUserAvatarUrl } from '../../api/users';
+import { avatarCompactClass } from '../../utils/avatarDisplaySize';
 
 interface AdminAccountMenuProps {
   variant: 'header' | 'topnav';
@@ -80,9 +82,9 @@ export const AdminAccountMenu: React.FC<AdminAccountMenuProps> = ({
       >
         {user.avatarUrl ? (
           <img
-            src={user.avatarUrl}
+            src={resolveUserAvatarUrl(user.avatarUrl)}
             alt=""
-            className={compact ? 'w-6 h-6 rounded-md object-cover border border-admin-border' : 'w-8 h-8 rounded-lg object-cover border border-admin-border'}
+            className={`${avatarCompactClass(user.avatarDisplaySize)} ${compact ? 'rounded-md' : 'rounded-lg'} object-cover border border-admin-border`}
           />
         ) : (
           <div

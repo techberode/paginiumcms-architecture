@@ -11,6 +11,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\StorageRetentionHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
@@ -59,6 +60,8 @@ return [
             get(\PaginiumCMS\Core\Analytics\Services\AnalyticsRetentionService::class),
             get(\PaginiumCMS\Core\Logging\Services\LogRetentionService::class)
         ),
+    StorageRetentionHandler::class => create(StorageRetentionHandler::class)
+        ->constructor(get(\PaginiumCMS\Core\FlatFile\Services\ContentStorageRetentionService::class)),
     ContentScheduledPublishHandler::class => create(ContentScheduledPublishHandler::class)
         ->constructor(
             get(\PaginiumCMS\Core\FlatFile\Services\ContentScheduledPublishService::class),
@@ -97,6 +100,7 @@ return [
             get(BackupScheduledHandler::class),
             get(MonitoringPipelineHandler::class),
             get(MaintenanceCleanupHandler::class),
+            get(StorageRetentionHandler::class),
             get(ContentScheduledPublishHandler::class),
             get(ContentNewsAutoArchiveHandler::class),
             get(SystemDeployHandler::class),

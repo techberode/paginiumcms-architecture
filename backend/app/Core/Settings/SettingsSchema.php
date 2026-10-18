@@ -593,6 +593,17 @@ final class SettingsSchema
                     ['key' => 'trustedHtmlAllowedTags', 'type' => 'text', 'label' => 'Trusted HTML — povolené tagy (It.91)', 'default' => 'div,span,p,a,img,table,thead,tbody,tr,th,td,ul,ol,li,strong,em,blockquote,code,pre,h1,h2,h3,h4,br', 'rules' => ['string', 'max:2000'], 'help' => 'HTMLPurifier whitelist pre :::html-safe. Nikdy nepridávajte script, iframe, object, embed.'],
                 ],
             ],
+            'storageRetention' => [
+                'label' => 'Úložisko — retencia (kôš, verzie, koncepty)',
+                'superAdminOnly' => true,
+                'fields' => [
+                    ['key' => 'trashAutoPurgeEnabled', 'type' => 'bool', 'label' => 'Automatické vyprázdnenie koša', 'default' => false, 'rules' => ['bool'], 'help' => 'Scheduler job storage-retention (default 03:00) natrvalo zmaže položky v koši staršie ako retencia nižšie. Pred zapnutím odporúčame dennú zálohu.'],
+                    ['key' => 'trashRetentionDays', 'type' => 'int', 'label' => 'Retencia koša (dni)', 'default' => 1, 'rules' => ['required', 'int', 'min:1', 'max:365'], 'help' => 'Položky v koši staršie ako N dní sa pri jobe vymažú (1 = vhodné pri dennej zálohe).'],
+                    ['key' => 'contentVersionRetentionEnabled', 'type' => 'bool', 'label' => 'Retencia histórie verzií obsahu', 'default' => false, 'rules' => ['bool'], 'help' => 'Zmaže staré snapshoty v data/versions; vždy ponechá aspoň najnovšiu verziu na každý contentId.'],
+                    ['key' => 'contentVersionRetentionDays', 'type' => 'int', 'label' => 'Verzie — vek pred vymazaním (dni)', 'default' => 30, 'rules' => ['required', 'int', 'min:1', 'max:3650'], 'help' => 'Verzie staršie ako N dní sa vymažú (okrem najnovšej na položku). Koncepty (drafts) týmto jobom neovplyvní.'],
+                    ['key' => 'draftOrphanPruneEnabled', 'type' => 'bool', 'label' => 'Koncepty — ponechať len posledný rozpracovaný „nový“ koncept', 'default' => true, 'rules' => ['bool'], 'help' => 'Pre každého editora a typ (page/article) ponechá najnovší unsaved-new koncept bez publikovaného súboru; staršie duplicity zmaže (bez časovej retencie).'],
+                ],
+            ],
             'backups' => [
                 'label' => 'Zálohy (off-site)',
                 'superAdminOnly' => true,
@@ -602,6 +613,7 @@ final class SettingsSchema
                     ['key' => 'offsiteWebDavUsername', 'type' => 'string', 'label' => 'WebDAV používateľ', 'default' => '', 'rules' => ['string', 'max:128']],
                     ['key' => 'offsiteWebDavPassword', 'type' => 'password', 'label' => 'WebDAV heslo / app token', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Nextcloud odporúča app password. Šifrované at-rest, nikdy sa nevracia do API po uložení.'],
                     ['key' => 'offsiteWebDavPathPrefix', 'type' => 'string', 'label' => 'Priečinok na cloude', 'default' => 'PaginiumCMS/backups', 'rules' => ['string', 'max:256'], 'help' => 'Relatívna cesta pod WebDAV base (vytvorí sa pri upload-e).'],
+                    ['key' => 'backupZipDeflateLevel', 'type' => 'int', 'label' => 'ZIP kompresia (0–9)', 'default' => 6, 'rules' => ['int', 'min:0', 'max:9'], 'help' => 'Deflate pre manuálne aj scheduled zálohy. 0 = bez kompresie (rýchlejšie, väčší ZIP), 6 = odporúčané, 9 = najmenší súbor.'],
                 ],
             ],
             'uploadSecurity' => [

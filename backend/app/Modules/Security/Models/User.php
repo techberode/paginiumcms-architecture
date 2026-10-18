@@ -59,6 +59,7 @@ class User implements JsonSerializable
         'support' => false,
     ];
     private ?string $avatarUrl = null;
+    private string $avatarDisplaySize = 'md';
     private bool $chatEnabled = false;
     private bool $deskMailEnabled = false;
     private bool $deskBubbleEnabled = true;
@@ -464,6 +465,18 @@ class User implements JsonSerializable
         return $this;
     }
 
+    public function getAvatarDisplaySize(): string
+    {
+        return $this->avatarDisplaySize;
+    }
+
+    public function setAvatarDisplaySize(string $avatarDisplaySize): self
+    {
+        $this->avatarDisplaySize = $avatarDisplaySize;
+
+        return $this;
+    }
+
     public function isTwoFactorEnabled(): bool
     {
         return $this->twoFactorEnabled;
@@ -559,6 +572,7 @@ class User implements JsonSerializable
             'deskBubbleX' => $this->deskBubbleX,
             'deskBubbleY' => $this->deskBubbleY,
             'avatarUrl' => $this->avatarUrl,
+            'avatarDisplaySize' => $this->avatarDisplaySize,
             'roles' => $this->roles,
             'registrationOptionId' => $this->registrationOptionId,
             'active' => $this->active,

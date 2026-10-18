@@ -33,6 +33,13 @@ class RunBackupScheduleCommand extends Command
             if (isset($result['backup']) && is_object($result['backup']) && method_exists($result['backup'], 'getId')) {
                 $output->writeln('ID: ' . $result['backup']->getId());
             }
+            if (array_key_exists('offsiteUploaded', $result)) {
+                if ($result['offsiteUploaded'] === true) {
+                    $output->writeln('<info>Off-site WebDAV: upload OK</info>');
+                } elseif ($result['offsiteUploaded'] === false) {
+                    $output->writeln('<error>Off-site WebDAV: upload failed — ' . (string) ($result['offsiteError'] ?? 'see error log') . '</error>');
+                }
+            }
 
             return Command::SUCCESS;
         }

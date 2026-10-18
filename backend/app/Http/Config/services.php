@@ -188,6 +188,7 @@ use PaginiumCMS\Core\HybridEngine\QueryIndex\SqliteQueryIndex;
 use PaginiumCMS\Core\FlatFile\Services\ContentStalenessService;
 use PaginiumCMS\Core\FlatFile\Services\JsonContentStorage;
 use PaginiumCMS\Core\FlatFile\Services\MarkdownContentStorage;
+use PaginiumCMS\Core\FlatFile\Services\ContentStorageRetentionService;
 use PaginiumCMS\Core\FlatFile\Services\TrashService;
 use PaginiumCMS\Core\Feeds\Services\FeedGenerator;
 use PaginiumCMS\Core\Feeds\Services\RobotsTxtGenerator;
@@ -2432,6 +2433,13 @@ return [
         ),
     TrashService::class => create(TrashService::class)
         ->constructor(get(FileReaderInterface::class)),
+    ContentStorageRetentionService::class => create(ContentStorageRetentionService::class)
+        ->constructor(
+            get(SettingsRepositoryInterface::class),
+            get(TrashService::class),
+            get(EnhancedVersionManager::class),
+            get(DraftManagerInterface::class)
+        ),
     TrashController::class => create(TrashController::class)
         ->constructor(
             get(TrashService::class),

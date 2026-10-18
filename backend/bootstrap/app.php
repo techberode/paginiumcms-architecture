@@ -671,6 +671,7 @@ $containerBuilder->addDefinitions([
             $container->get(\PaginiumCMS\Core\FlatFile\Services\ContentIndexService::class),
             $container->get(\PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Backup\Services\BackupOffsiteWebDavService::class),
+            $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
         );
     },
 

@@ -13,12 +13,13 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Storage retention:** Settings → **storageRetention** — auto trash purge, content version history by age (keep latest), draft orphan cleanup; job `storage-retention` at 03:00 — [STORAGE.md](docs/en/architecture/STORAGE.md#14-storage-retention-trash-versions-drafts) · [ISS-202](docs/ISSUES.md#iss-202)
 - **Backup off-site:** optional Nextcloud/WebDAV upload after each backup (Settings → System → Backups off-site)
 - **Backup restore:** binary-safe media write (`writeBinary`); `backup:inspect-media` and `backup:restore-archive` CLI; post-restore `archiveMedia` + registry report in admin API; login/2FA recovery docs; `user:disable-2fa` CLI
 - **Backup & media integrity (ISS-200):** restore prunes orphans via backup `manifest.json`; `content:verify-media` CLI; post-restore `mediaIntegrity` in admin API; [MEDIA_OPERATIONS.md](docs/en/developer/MEDIA_OPERATIONS.md) runbook
 - **Blog/admin fixes (ISS-200):** numeric tag facets no longer 500 list/sidebar; article hero/OG editor sync (`seoImage` SSOT, broken preview warning)
 - **Media library:** multi-upload dedupe + drop-zone click guard; `POST /api/media/move` rename with registry + content reference rewrite; **`media:reconcile`** CLI (`--prune-registry`) for registry-vs-disk drift after restore; admin grid “file missing on disk” hint
-- **Docs:** [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md) restore semantics (merge/overwrite vs manifest prune; not “missing files only”)
+- **Docs:** [BACKUP_RESTORE.md](docs/en/developer/BACKUP_RESTORE.md) — restore semantics, CLI table, Nextcloud WebDAV operator guide, security; [ISS-201](docs/ISSUES.md#iss-201); [CRON.md](docs/deploy/CRON.md) + [FIRST_STEPS.md](docs/en/user/FIRST_STEPS.md) cross-links; [MEDIA_OPERATIONS.md](docs/en/developer/MEDIA_OPERATIONS.md) restore diagnostics
 - **Security (config audit):** remove public `debug.php` / test PHP from docroot; Docker nginx front-controller only + deny `/storage/*.php`; local Redis bind `127.0.0.1`; `ClientIpResolver` + middleware unified XFF walk (anti-spoof) — [ISS-199](docs/ISSUES.md#iss-199)
 - **Public blog tags:** facet grouping (`tagFacets` on list meta + sidebar), auto rules + optional JSON synonyms in Settings → Content; filter matches whole group
 - **Public 404:** broken-content report form (prefilled URL/referer → Message Desk via `/api/contact`); optional custom page via `layout.notFoundPageSlug`; toggle `layout.brokenContentReportOn404`

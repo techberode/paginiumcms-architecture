@@ -148,6 +148,40 @@ class TrashService
     }
 
     /**
+     * Permanently removes trash items whose deletedAt is older than the given number of days.
+     */
+    public function purgeOlderThan(int $days): int
+    {
+        if ($days < 1 || !is_dir($this->trashPath)) {
+            return 0;
+        }
+
+        $cutoff = time() - ($days * 86400);
+        $removed = 0;
+
+        foreach ($this->listItems() as $item) {
+            $deletedAt = $item['deletedAt'];
+            if ($deletedAt === '') {
+                continue;
+            }
+
+            $timestamp = strtotime($deletedAt);
+            if ($timestamp === false || $timestamp >= $cutoff) {
+                continue;
+            }
+
+            try {
+                $this->purge((string) $item['id']);
+                ++$removed;
+            } catch (FlatFileException) {
+                continue;
+            }
+        }
+
+        return $removed;
+    }
+
+    /**
      * @param list<string> $ids
      * @return array{filename: string, path: string, size: int, count: int}
      */

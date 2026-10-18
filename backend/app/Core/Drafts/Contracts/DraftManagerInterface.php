@@ -40,4 +40,9 @@ interface DraftManagerInterface
      * @return list<Draft>
      */
     public function listOrphansForUser(string $userId, ?string $type = null): array;
+
+    /**
+     * Removes redundant unsaved-new drafts (keeps newest per editor and content type).
+     */
+    public function pruneUnsavedNewOrphansKeepLatest(): int;
 }

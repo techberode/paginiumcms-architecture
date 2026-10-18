@@ -195,6 +195,62 @@ class EnhancedVersionManager implements VersionableInterface
     }
 
     /**
+     * Deletes version snapshots older than $days, always keeping at least $keepMinimum newest per contentId.
+     */
+    public function purgeVersionsOlderThan(int $days, int $keepMinimum = 1): int
+    {
+        if ($days < 1) {
+            return 0;
+        }
+
+        $keepMinimum = max(1, $keepMinimum);
+        $cutoff = time() - ($days * 86400);
+        $deleted = 0;
+
+        foreach ($this->getAllContentIds() as $contentId) {
+            $contentId = (string) $contentId;
+            $versions = $this->getVersions($contentId);
+            if ($versions === []) {
+                continue;
+            }
+
+            $protected = [];
+            foreach (array_slice($versions, 0, $keepMinimum) as $version) {
+                $protected[$version->getVersion()] = true;
+            }
+
+            foreach ($versions as $version) {
+                $number = $version->getVersion();
+                if (isset($protected[$number])) {
+                    continue;
+                }
+
+                $timestamp = strtotime($version->getCreatedAt());
+                if ($timestamp === false || $timestamp >= $cutoff) {
+                    continue;
+                }
+
+                $path = $this->getFullPath($contentId . '_' . $number . '.json');
+                if (!is_file($path)) {
+                    continue;
+                }
+
+                unlink($path);
+                ++$deleted;
+
+                $this->logger->logVersion(
+                    $contentId,
+                    $number,
+                    'deleted',
+                    ['deleted_by' => 'system', 'reason' => 'retention_days', 'days' => $days]
+                );
+            }
+        }
+
+        return $deleted;
+    }
+
+    /**
      * @return array<int|string, mixed>|null
      */
     public function getDiff(string $contentId, int $from, int $to): ?array
@@ -372,6 +428,9 @@ class EnhancedVersionManager implements VersionableInterface
                 $version->setFrontMatter($value);
             } elseif ($key === 'createdBy') {
                 $version->setCreatedBy($value);
+            } elseif ($key === 'createdAt') {
+                $prop = $reflection->getProperty('createdAt');
+                $prop->setValue($version, (string) $value);
             } elseif ($key === 'message') {
                 $version->setMessage($value);
             } elseif ($key === 'diff') {

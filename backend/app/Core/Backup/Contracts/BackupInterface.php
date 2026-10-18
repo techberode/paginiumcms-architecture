@@ -109,7 +109,13 @@ interface BackupInterface
     /**
      * Spustí zálohu podľa schedule.json, ak je termín splnený.
      *
-     * @return array{ran: bool, reason?: string, backup?: BackupMetadata}
+     * @return array{
+     *     ran: bool,
+     *     reason?: string,
+     *     backup?: BackupMetadata,
+     *     offsiteUploaded?: bool|null,
+     *     offsiteError?: string|null
+     * }
      */
     public function runScheduledBackupIfDue(): array;
 }

@@ -22,6 +22,7 @@ export interface CreateUserPayload {
   jobTitle?: string;
   phone?: string;
   timezone?: string;
+  avatarDisplaySize?: User['avatarDisplaySize'];
 }
 
 export interface UpdateUserPayload {
@@ -37,6 +38,7 @@ export interface UpdateUserPayload {
   jobTitle?: string;
   phone?: string;
   timezone?: string;
+  avatarDisplaySize?: User['avatarDisplaySize'];
 }
 
 export interface UsersListResponse {

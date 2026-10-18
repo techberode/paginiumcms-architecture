@@ -11,6 +11,7 @@ use PaginiumCMS\Core\Scheduler\Handlers\ContentScheduledPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\GitPublishHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\StaticRebuildHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MaintenanceCleanupHandler;
+use PaginiumCMS\Core\Scheduler\Handlers\StorageRetentionHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\MonitoringPipelineHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\SystemDeployHandler;
 use PaginiumCMS\Core\Scheduler\Handlers\WebhookDeliveryHandler;
@@ -29,6 +30,7 @@ final class JobHandlerRegistry
         private BackupScheduledHandler $backup,
         private MonitoringPipelineHandler $monitoring,
         private MaintenanceCleanupHandler $maintenanceCleanup,
+        private StorageRetentionHandler $storageRetention,
         private ContentScheduledPublishHandler $scheduledPublish,
         private ContentNewsAutoArchiveHandler $newsAutoArchive,
         private SystemDeployHandler $systemDeploy,
@@ -49,6 +51,7 @@ final class JobHandlerRegistry
             'backup.scheduled' => $this->backup,
             'monitoring.pipeline' => $this->monitoring,
             'maintenance.cleanup' => $this->maintenanceCleanup,
+            'storage.retention' => $this->storageRetention,
             'content.scheduled_publish' => $this->scheduledPublish,
             'content.news_auto_archive' => $this->newsAutoArchive,
             'system.deploy' => $this->systemDeploy,
@@ -73,6 +76,7 @@ final class JobHandlerRegistry
             ['key' => $this->backup->key(), 'label' => $this->backup->label()],
             ['key' => $this->monitoring->key(), 'label' => $this->monitoring->label()],
             ['key' => $this->maintenanceCleanup->key(), 'label' => $this->maintenanceCleanup->label()],
+            ['key' => $this->storageRetention->key(), 'label' => $this->storageRetention->label()],
             ['key' => $this->scheduledPublish->key(), 'label' => $this->scheduledPublish->label()],
             ['key' => $this->newsAutoArchive->key(), 'label' => $this->newsAutoArchive->label()],
             ['key' => $this->systemDeploy->key(), 'label' => $this->systemDeploy->label()],

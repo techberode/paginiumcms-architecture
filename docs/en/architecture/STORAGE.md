@@ -263,7 +263,23 @@ Production path in It.68:
 
 Rollback = restore previous DI bindings; no flat-file conversion required.
 
-## 14. Operations checklist
+## 14. Storage retention (trash, versions, drafts)
+
+Super-admin settings group **`storageRetention`** (Settings → System) controls automatic disk hygiene. **Media files and application logs are unchanged** — log retention stays under **Settings → Logging** and job `maintenance-cleanup`.
+
+| Setting | Default | Effect |
+|---------|---------|--------|
+| `trashAutoPurgeEnabled` | off | When on, permanently deletes trash items older than `trashRetentionDays`. |
+| `trashRetentionDays` | 1 | Suitable with daily backups: items stay in trash at least one day before purge. |
+| `contentVersionRetentionEnabled` | off | When on, deletes version snapshots in `data/versions/` older than `contentVersionRetentionDays`. |
+| `contentVersionRetentionDays` | 30 | Always keeps at least the **newest** version per `contentId`. |
+| `draftOrphanPruneEnabled` | on | Keeps only the latest **unsaved-new** draft per editor and type (`page` / `article`); no time-based rule. |
+
+**Scheduler:** system job `storage-retention` / handler `storage.retention` (default **03:00** daily). Manual run: `php backend/bin/console jobs:run storage-retention`. Toggles in settings apply on the next run; disabling trash/version retention skips that phase but the job can still prune draft orphans when enabled.
+
+**Off-site backups:** Nextcloud/WebDAV upload does not prune remote ZIPs — reduce old copies on the cloud manually or with host tools ([BACKUP_RESTORE.md](../developer/BACKUP_RESTORE.md#off-site-nextcloud-webdav)).
+
+## 15. Operations checklist
 
 - storage roots are not exposed through nginx except a controlled media route,
 - file ownership and mode match the PHP-FPM user model,

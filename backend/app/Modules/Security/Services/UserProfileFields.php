@@ -25,6 +25,9 @@ final class UserProfileFields
     /** @var list<string> */
     public const LOCALES = ['sk', 'en'];
 
+    /** @var list<string> */
+    public const AVATAR_DISPLAY_SIZES = ['sm', 'md', 'lg', 'xl'];
+
     /**
      * @param array<string, mixed> $payload
      */
@@ -117,6 +120,17 @@ final class UserProfileFields
         if (array_key_exists('deskBubbleY', $payload)) {
             $user->setDeskBubbleY((int) $payload['deskBubbleY']);
         }
+
+        if (array_key_exists('avatarDisplaySize', $payload)) {
+            $user->setAvatarDisplaySize(self::normalizeAvatarDisplaySize((string) $payload['avatarDisplaySize']));
+        }
+    }
+
+    public static function normalizeAvatarDisplaySize(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, self::AVATAR_DISPLAY_SIZES, true) ? $normalized : 'md';
     }
 
     public static function normalizePhone(string $phone): string

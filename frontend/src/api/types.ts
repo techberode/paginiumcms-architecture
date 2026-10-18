@@ -47,6 +47,7 @@ export interface User {
   twoFactorSecret?: string;
   twoFactorVerifiedAt?: number | null;
   avatarUrl?: string | null;
+  avatarDisplaySize?: 'sm' | 'md' | 'lg' | 'xl';
   createdAt: number;
   updatedAt: number;
 }

@@ -203,6 +203,15 @@ final class JobRegistryStore
                     'payload' => [],
                 ],
                 [
+                    'id' => 'storage-retention',
+                    'name' => 'Trash, versions, and draft orphan retention',
+                    'handler' => 'storage.retention',
+                    'cron' => '0 3 * * *',
+                    'enabled' => true,
+                    'system' => true,
+                    'payload' => [],
+                ],
+                [
                     'id' => 'host-metrics-collect',
                     'name' => 'Host metrics snapshot (It.82d)',
                     'handler' => 'host_metrics.collect',

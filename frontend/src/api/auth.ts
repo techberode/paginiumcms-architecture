@@ -44,6 +44,7 @@ export interface AccountProfilePayload {
   deskBubbleAnchor?: string;
   deskBubbleX?: number;
   deskBubbleY?: number;
+  avatarDisplaySize?: User['avatarDisplaySize'];
 }
 
 export interface DeskItem {

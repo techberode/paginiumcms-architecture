@@ -8,6 +8,12 @@ import {
   DEFAULT_BLOG_AUTHOR_AVATAR_URL,
   validateAvatarFile,
 } from '../../utils/avatarUpload';
+import {
+  AVATAR_DISPLAY_SIZES,
+  avatarPreviewClass,
+  type AvatarDisplaySize,
+  normalizeAvatarDisplaySize,
+} from '../../utils/avatarDisplaySize';
 import { MediaPickerModal } from './MediaPickerModal';
 
 export type AuthorAvatarFieldMode = 'media-only' | 'upload';
@@ -19,6 +25,9 @@ interface AuthorAvatarFieldProps {
   mode: AuthorAvatarFieldMode;
   previewName?: string;
   onUploadFile?: (file: File) => Promise<boolean>;
+  displaySize?: AvatarDisplaySize;
+  onDisplaySizeChange?: (size: AvatarDisplaySize) => void;
+  showDisplaySizeControl?: boolean;
 }
 
 export const AuthorAvatarField: React.FC<AuthorAvatarFieldProps> = ({
@@ -28,6 +37,9 @@ export const AuthorAvatarField: React.FC<AuthorAvatarFieldProps> = ({
   mode,
   previewName = '',
   onUploadFile,
+  displaySize = 'md',
+  onDisplaySizeChange,
+  showDisplaySizeControl = false,
 }) => {
   const { t } = useI18n();
   const { error: toastError } = useToast();
@@ -37,6 +49,7 @@ export const AuthorAvatarField: React.FC<AuthorAvatarFieldProps> = ({
 
   const previewSrc = value.trim() !== '' ? resolvePublicMediaUrl(value.trim()) : '';
   const labelInitial = previewName.trim().charAt(0).toUpperCase();
+  const previewSizeClass = avatarPreviewClass(normalizeAvatarDisplaySize(displaySize));
 
   const handleLocalUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -69,10 +82,12 @@ export const AuthorAvatarField: React.FC<AuthorAvatarFieldProps> = ({
           <img
             src={previewSrc}
             alt={previewName || t('editor.author.avatar')}
-            className="h-14 w-14 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700"
+            className={`${previewSizeClass} rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700`}
           />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 text-lg font-bold text-white">
+          <div
+            className={`flex ${previewSizeClass} items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 text-lg font-bold text-white`}
+          >
             {labelInitial || '?'}
           </div>
         )}
@@ -113,6 +128,24 @@ export const AuthorAvatarField: React.FC<AuthorAvatarFieldProps> = ({
           )}
         </div>
       </div>
+
+      {showDisplaySizeControl && onDisplaySizeChange && (
+        <label className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+          <span className="font-medium">{t('users.avatar.displaySize')}</span>
+          <select
+            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
+            value={normalizeAvatarDisplaySize(displaySize)}
+            disabled={disabled || busy}
+            onChange={(event) => onDisplaySizeChange(event.target.value as AvatarDisplaySize)}
+          >
+            {AVATAR_DISPLAY_SIZES.map((option) => (
+              <option key={option} value={option}>
+                {t(`users.avatar.displaySizes.${option}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <p className="text-xs text-slate-500">{t('users.avatar.limitsHint')}</p>
 

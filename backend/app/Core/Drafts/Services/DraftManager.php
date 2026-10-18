@@ -140,6 +140,60 @@ final class DraftManager implements DraftManagerInterface
         return $items;
     }
 
+    /**
+     * For unsaved-new drafts without a published file: keep only the newest per editor and content type.
+     */
+    public function pruneUnsavedNewOrphansKeepLatest(): int
+    {
+        /** @var array<string, list<Draft>> $groups */
+        $groups = [];
+
+        foreach (self::ALLOWED_TYPES as $contentType) {
+            $directory = $this->basePath . '/' . $contentType;
+
+            try {
+                $files = $this->reader->listFiles($directory, '*.json');
+            } catch (FlatFileException) {
+                continue;
+            }
+
+            foreach ($files as $relativeFile) {
+                $draft = $this->decodeDraftFile($contentType, (string) $relativeFile);
+                if ($draft === null || !$draft->isUnsavedNew()) {
+                    continue;
+                }
+
+                if ($this->content->findBySlug($draft->getSlug(), $contentType) !== null) {
+                    continue;
+                }
+
+                $userId = $draft->getSavedBy();
+                if ($userId === '') {
+                    continue;
+                }
+
+                $key = $userId . '|' . $contentType;
+                $groups[$key][] = $draft;
+            }
+        }
+
+        $deleted = 0;
+        foreach ($groups as $drafts) {
+            if (count($drafts) <= 1) {
+                continue;
+            }
+
+            usort($drafts, static fn (Draft $a, Draft $b): int => $b->getSavedAt() <=> $a->getSavedAt());
+
+            foreach (array_slice($drafts, 1) as $stale) {
+                $this->discard($stale->getType(), $stale->getSlug());
+                ++$deleted;
+            }
+        }
+
+        return $deleted;
+    }
+
     private function decodeDraftFile(string $type, string $relativePath): ?Draft
     {
         $basename = basename($relativePath, '.json');

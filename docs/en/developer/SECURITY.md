@@ -41,6 +41,8 @@ The complete local log remains outside the repository. The public workflow templ
 
 CI job **Secret scan (gitleaks)** in [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) runs on every push/PR (`--redact`). It scans the checkout plus commits added by that event (not unrelated historical branches). Binary is checksum-verified (gitleaks 8.30.1). Config: [`.gitleaks.toml`](../../../.gitleaks.toml) (PEM/OpenSSH only).
 
+**Reading GitHub Actions:** the workflow name is *CI*, not “gitleaks only”. A **red workflow** can still have a **green** `Secret scan (gitleaks)` job — check the job list. On success the log ends with `no leaks found` and (after the next deploy of `scripts/ci-gitleaks.sh`) a `::notice` line. A real gitleaks failure prints a **Finding** with file and rule `private-key-pem`. Do not infer a key leak from ISS-173 docs alone or from a failed *backend* step (`composer audit`, PHPStan, PHPUnit). CI does **not** run `scripts/secret-scan.sh`; that script is for local gate/hooks only.
+
 Before commit, `./scripts/iteration-gate.sh` runs `scripts/secret-scan.sh` (paths only, no secret bodies). Enable the repo hook with `./scripts/install-git-hooks.sh` (`core.hooksPath=.githooks`).
 
 Deploy keys live only on the host (`/var/lib/paginiumcms/secrets/github_deploy_key`). Never commit `paginiumcms`, `*.pub` key pairs, or `github_deploy_key`.

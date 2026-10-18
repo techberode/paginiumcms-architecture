@@ -79,13 +79,23 @@ Then re-upload assets or repeat a **full** backup restore that includes `content
 See [BACKUP_RESTORE.md](BACKUP_RESTORE.md):
 
 - Full restore prunes orphan files under `blog/`, `media/`, etc. using the backup `manifest.json`.
-- After restore, admin backup API returns `mediaIntegrity`; CLI: `php backend/bin/console content:verify-media --json`.
+- Restore writes media binaries with **`writeBinary()`** (not UTF-8 text write).
+- After restore, admin backup API returns `mediaIntegrity`, `mediaRegistry`, and `archiveMedia` (see [BACKUP_RESTORE.md](BACKUP_RESTORE.md)).
+
+| CLI | Purpose |
+|-----|---------|
+| `content:verify-media --json` | Broken `/storage/…` in pages/articles |
+| `media:reconcile --json` | `registry.json` vs disk (blank admin thumbs) |
+| `backup:inspect-media <id\|zip> --json` | Manifest media paths vs bytes inside a backup ZIP chain |
 
 **Recovery (maintenance window):**
 
-1. Full restore from one backup that contains **both** `content/blog/` and `content/media/` (default `includes: ["content","config"]`).
-2. Re-upload missing assets only if verify-media still reports gaps (archive was already inconsistent).
-3. Set OG image per article in SEO panel → **Save** (or rename/move files in Media if paths changed — references rewrite automatically).
+1. Full restore from one backup that contains **both** `content/blog/` and `content/media/` (default `includes: ["content","config"]`). Prefer admin Restore or `backup:restore-archive` — not manual unzip.
+2. `media:reconcile --json` then `content:verify-media --json`; optional `backup:inspect-media` on the same ZIP before/after.
+3. Re-upload missing assets only if verify-media still reports gaps (archive was already inconsistent).
+4. Set OG image per article in SEO panel → **Save** (or rename/move files in Media if paths changed — references rewrite automatically).
+
+Off-site copies (Nextcloud/WebDAV) are for DR only — restore always from local `storage/backups/` or a downloaded ZIP; see [ISS-201](../ISSUES.md#iss-201).
 
 ---
 
@@ -94,3 +104,4 @@ See [BACKUP_RESTORE.md](BACKUP_RESTORE.md):
 - [BACKUP_RESTORE.md](BACKUP_RESTORE.md)
 - [ISS-163](../ISSUES.md#iss-163) — restore path contract
 - [ISS-200](../ISSUES.md#iss-200) — Oct 2026 prod incident (tags, media, hero)
+- [ISS-201](../ISSUES.md#iss-201) — daily backup + Nextcloud off-site

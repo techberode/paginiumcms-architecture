@@ -12,6 +12,7 @@ use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentIndexService;
 use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
+use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
 
@@ -38,6 +39,7 @@ class BackupManager implements BackupInterface
         private ?ContentIndexService $contentIndex = null,
         private ?ContentRepositoryInterface $contentRepository = null,
         private ?BackupOffsiteWebDavService $offsiteWebDav = null,
+        private ?SettingsRepositoryInterface $settings = null,
     ) {
         $this->reader = $reader;
         $this->writer = $writer;
@@ -50,6 +52,10 @@ class BackupManager implements BackupInterface
      */
     public function create(string $name, array $options = []): BackupMetadata
     {
+        if (PHP_SAPI === 'cli') {
+            @set_time_limit(0);
+        }
+
         $includes = BackupScope::normalizeIncludes(
             isset($options['includes']) && is_array($options['includes'])
                 ? $options['includes']
@@ -90,6 +96,7 @@ class BackupManager implements BackupInterface
             throw new \RuntimeException('Nepodarilo sa vytvoriť ZIP archív');
         }
 
+        $deflateLevel = $this->zipDeflateLevel();
         $packed = 0;
         foreach ($liveFiles as $zipPath => $info) {
             $unchanged = $mode === BackupScope::MODE_INCREMENTAL
@@ -99,6 +106,9 @@ class BackupManager implements BackupInterface
                 continue;
             }
             $zip->addFile($info['absolute'], $zipPath);
+            if ($deflateLevel > 0) {
+                $zip->setCompressionName($zipPath, \ZipArchive::CM_DEFLATE, $deflateLevel);
+            }
             $packed++;
         }
 
@@ -133,12 +143,10 @@ class BackupManager implements BackupInterface
         $metadata->setStatus('completed');
         $metadata->setSha256(hash_file('sha256', $fullPath) ?: '');
 
+        $this->pushOffsiteUpload($metadata, $fullPath);
+
         $this->saveMetadata($metadata);
         $this->saveManifestSidecar($metadata, $liveFiles, $deletes);
-
-        if ($this->offsiteWebDav !== null && $this->offsiteWebDav->isEnabled()) {
-            $this->offsiteWebDav->uploadZipIfConfigured($fullPath, basename($fullPath));
-        }
 
         return $metadata;
     }
@@ -535,7 +543,13 @@ class BackupManager implements BackupInterface
     }
 
     /**
-     * @return array{ran: bool, reason?: string, backup?: BackupMetadata}
+     * @return array{
+     *     ran: bool,
+     *     reason?: string,
+     *     backup?: BackupMetadata,
+     *     offsiteUploaded?: bool|null,
+     *     offsiteError?: string|null
+     * }
      */
     public function runScheduledBackupIfDue(): array
     {
@@ -561,6 +575,15 @@ class BackupManager implements BackupInterface
             'includes' => $includes,
             'mode' => $mode,
         ]);
+
+        if ($backup->getOffsiteUploaded() === false && $this->offsiteWebDav !== null && $this->offsiteWebDav->isEnabled()) {
+            $zipPath = $backup->getFilePath();
+            if ($zipPath !== '' && is_file($zipPath)) {
+                $this->pushOffsiteUpload($backup, $zipPath);
+                $this->saveMetadata($backup);
+            }
+        }
+
         $schedule['last_run'] = date('Y-m-d H:i:s');
         $schedule['next_run'] = $this->calculateNextRun((string) ($schedule['interval'] ?? 'daily'));
         $schedule['includes'] = $includes;
@@ -570,7 +593,39 @@ class BackupManager implements BackupInterface
         $keep = max(1, (int) ($schedule['keep'] ?? 7));
         $this->pruneOldBackups($keep);
 
-        return ['ran' => true, 'backup' => $backup];
+        return [
+            'ran' => true,
+            'backup' => $backup,
+            'offsiteUploaded' => $backup->getOffsiteUploaded(),
+            'offsiteError' => $backup->getOffsiteError(),
+        ];
+    }
+
+    private function pushOffsiteUpload(BackupMetadata $metadata, string $fullPath): void
+    {
+        if ($this->offsiteWebDav === null || !$this->offsiteWebDav->isEnabled()) {
+            $metadata->setOffsiteUploaded(null);
+            $metadata->setOffsiteError(null);
+
+            return;
+        }
+
+        clearstatcache(true, $fullPath);
+        $result = $this->offsiteWebDav->uploadZipIfConfigured($fullPath, basename($fullPath));
+        $metadata->setOffsiteUploaded((bool) $result['uploaded']);
+        $metadata->setOffsiteError(isset($result['error']) ? (string) $result['error'] : null);
+    }
+
+    private function zipDeflateLevel(): int
+    {
+        if ($this->settings === null) {
+            return 6;
+        }
+
+        $group = $this->settings->group('backups');
+        $level = (int) ($group['backupZipDeflateLevel'] ?? 6);
+
+        return max(0, min(9, $level));
     }
 
     private function pruneOldBackups(int $keep): void
@@ -944,6 +999,12 @@ class BackupManager implements BackupInterface
         $metadata->setBaseBackupId((string) ($data['baseBackupId'] ?? ''));
         $metadata->setFilesPacked((int) ($data['filesPacked'] ?? 0));
         $metadata->setFilesTotal((int) ($data['filesTotal'] ?? 0));
+        if (array_key_exists('offsiteUploaded', $data)) {
+            $metadata->setOffsiteUploaded($data['offsiteUploaded'] === null ? null : (bool) $data['offsiteUploaded']);
+        }
+        if (array_key_exists('offsiteError', $data)) {
+            $metadata->setOffsiteError(isset($data['offsiteError']) ? (string) $data['offsiteError'] : null);
+        }
 
         return $metadata;
     }

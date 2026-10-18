@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 15 October 2026 · register **ISS-001–ISS-200** · latest public release tag **`v2.1.0-beta.98`**
+> **Last updated:** 18 October 2026 · register **ISS-001–ISS-202** · latest public release tag **`v2.1.0-beta.98`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -223,6 +223,8 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-198](#iss-198) | `GET /api/auth/me/desk` multi-second (comment N+1 + double desk compose) | High (ops / FPM pool) | ✅ Fixed (Unreleased) — index + single compose |
 | [ISS-199](#iss-199) | Oct 2026 config audit — public debug PHP, Docker nginx/Redis, XFF spoof | High (security / ops) | ✅ Fixed (Unreleased) |
 | [ISS-200](#iss-200) | Oct 2026 prod — blog 500 (numeric tags), backup/media mismatch, hero/OG editor | **Critical (content ops)** | ✅ Fixed (Unreleased) |
+| [ISS-201](#iss-201) | Scheduled backup + Nextcloud/WebDAV off-site copy (Oct 2026 ops) | Medium (ops / DR) | ✅ Shipped (Unreleased) |
+| [ISS-202](#iss-202) | Configurable trash / version / draft storage retention (Oct 2026 ops) | Low (disk / ops) | ✅ Shipped (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6174,7 +6176,7 @@ Code Editor write surface, `.htaccess` CSP vs nginx, Docker image hardening, git
 ### Root causes
 
 1. **`BlogTagFacetService` + `strict_types`:** `listDistinctTags()` used `array_keys()` → numeric tags (`"404"`) became **int** → `trim()` TypeError.
-2. **Backup restore merge-only:** files on disk **not in the ZIP manifest** remained → articles pointed at URLs from backup while `media/` held newer/orphan files ([ISS-163](ISS-163) path fix did not address merge semantics).
+2. **Backup restore merge-only:** files on disk **not in the ZIP manifest** remained → articles pointed at URLs from backup while `media/` held newer/orphan files ([ISS-163](#iss-163) path fix did not address merge semantics).
 3. **Schema v2 locale SEO vs flat `featuredImage`:** editor hydrated empty `localizedContent.*.seo.ogImage` while flat front matter still had (broken) hero URL; public pick order preferred stale `featuredImage`.
 4. **Upload UI:** drop handler + dropzone `click` could re-trigger file picker / overlapping batches.
 
@@ -6193,6 +6195,50 @@ Code Editor write surface, `.htaccess` CSP vs nginx, Docker image hardening, git
 3. `php backend/bin/console media:reconcile --json` — if many `registryMissingFile`, restore was partial/mixed or prune registry then re-upload.
 4. `php backend/bin/console content:verify-media --json` — fix remaining gaps via Media re-upload or **Rename** (rewrites article links).
 5. Per article: SEO OG → pick media → **Save**.
+
+---
+
+## ISS-201 – Scheduled backup + Nextcloud/WebDAV off-site copy
+
+| Field | Value |
+|--------|--------|
+| **Severity** | Medium (disaster recovery / operator workflow) |
+| **Status** | ✅ Shipped (Unreleased) |
+| **Docs** | [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md) · [CRON.md](deploy/CRON.md) |
+
+### Context
+
+After [ISS-200](#iss-200) recovery, production needed **daily full backups** and a **second copy** off the web server (Nextcloud on `randm.cloud`, folder `PaginiumCMS_Zálohy`). Local ZIPs under `storage/backups/` remain the primary restore source; off-site upload runs **after** a successful local archive write.
+
+### Shipped behaviour
+
+- **Scheduler:** job `backup-scheduled` / handler `backup.scheduled` (default 02:00) and CLI `backup:run-schedule` — same due logic as Platform → Backups schedule (`storage/backups/schedule.json`).
+- **Off-site:** Settings → System → **Backups (off-site)** — WebDAV PUT via `BackupOffsiteWebDavService` when `offsiteWebDavEnabled` is on. Password stored encrypted (`offsiteWebDavPassword`).
+- **Diagnostics:** `backup:inspect-media`, `backup:restore-archive`; restore API reports `archiveMedia` + `mediaRegistry` in addition to `mediaIntegrity` ([ISS-200](#iss-200)).
+- **Security:** production targets require HTTPS (`OutboundUrlGuard`); use Nextcloud **app passwords / `occ user:auth-tokens:add`**, not the login password; avoid `curl -u user:pass` in shell history (see [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md#app-password--auth-token-not-your-nextcloud-login-password)).
+
+### Operator checklist
+
+1. Platform → Backups: schedule **full** scope (`content` + `config`), confirm cron runs `scheduler:run` ([CRON.md](deploy/CRON.md)).
+2. Configure WebDAV base URL `https://<host>/remote.php/dav/files/<login>` — **not** the Files app browser URL.
+3. Manual backup once → confirm `.zip` in Nextcloud folder; check logs only if upload fails (local backup still OK).
+4. Keep app password rotation procedure if token was ever pasted into chat/terminal.
+
+---
+
+## ISS-202 – Trash, version history, and draft orphan retention
+
+| Field | Value |
+|--------|--------|
+| **Severity** | Low (disk usage / operator workflow) |
+| **Status** | ✅ Shipped (Unreleased) |
+| **Docs** | [STORAGE.md](en/architecture/STORAGE.md#14-storage-retention-trash-versions-drafts) · [CRON.md](deploy/CRON.md) |
+
+### Shipped behaviour
+
+- **Settings → System → storageRetention:** toggle auto trash purge + retention days; toggle content version purge by age (always keep newest per item); prune redundant unsaved-new draft orphans (latest per editor/type, no time rule).
+- **Scheduler:** `storage-retention` / `storage.retention` (default 03:00). CLI: `jobs:run storage-retention`.
+- **Out of scope (by design):** media compression, log retention (`maintenance-cleanup`), remote Nextcloud ZIP pruning (operator-managed — [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md#off-site-retention-operator-managed)).
 
 ---
 
