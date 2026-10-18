@@ -182,6 +182,8 @@ Optional: `rclone copy … && rclone delete … --min-age 30d` on the remote for
 
 PaginiumCMS uploads each successful local ZIP to WebDAV when enabled; it **does not** delete older files on Nextcloud. Plan manual cleanup (Files app, `occ`, or host `rclone delete --min-age …`) so remote storage does not grow without bound. Local ZIP count is still governed by Platform → Backups **keep**; trash and content-version retention are separate ([STORAGE.md](../architecture/STORAGE.md#14-storage-retention-trash-versions-drafts)).
 
+**Optional encryption before upload:** Settings → **Backups (off-site)** → enable **Encrypt ZIP before off-site upload** and set **Off-site encryption key** (stored encrypted with `APP_KEY`, separate from WebDAV password). Remote file is `*.zip.enc` (`enc:bk:s1:` libsodium payload). Decrypt offline with the same passphrase before restore.
+
 ---
 
 

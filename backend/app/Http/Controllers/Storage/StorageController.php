@@ -66,6 +66,10 @@ class StorageController
             return $response->withStatus(404);
         }
 
+        if (!MediaFormats::isAllowedPublicServeBasename(basename($realPath))) {
+            return $response->withStatus(404);
+        }
+
         $mime = mime_content_type($realPath) ?: 'application/octet-stream';
         $maxWidth = $this->resolveThumbnailWidth($request);
         if ($maxWidth > 0 && MediaThumbnailService::isSupportedRasterMime($mime)) {
@@ -94,7 +98,7 @@ class StorageController
             ->withBody($body)
             ->withHeader('Content-Type', $mime)
             ->withHeader('X-Content-Type-Options', 'nosniff')
-            ->withHeader('Cache-Control', 'public, max-age=604800, immutable');
+            ->withHeader('Cache-Control', 'public, max-age=86400, must-revalidate');
 
         if ($size !== false) {
             $response = $response->withHeader('Content-Length', (string) $size);

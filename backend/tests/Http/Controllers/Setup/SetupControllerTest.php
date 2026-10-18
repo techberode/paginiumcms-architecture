@@ -34,7 +34,7 @@ final class SetupControllerTest extends TestCase
         $this->assertUserIndexIsEmpty();
     }
 
-    public function testStatusWhenInstalledFlagSetButNoUsersNeedsSetup(): void
+    public function testStatusHiddenAfterInstallEvenWhenUserFilesMissing(): void
     {
         if (!TestStorageCleaner::purgeAllUsersForTesting()) {
             $this->markTestSkipped(
@@ -50,12 +50,8 @@ final class SetupControllerTest extends TestCase
         $response = $this->handleRequest(
             $this->createJsonRequest('GET', '/api/setup/status')
         );
-        $data = $this->getJsonResponse($response);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertTrue($data['data']['needsSetup']);
-        $this->assertTrue($data['data']['installed']);
-        $this->assertFalse($data['data']['hasUsers']);
+        $this->assertSame(404, $response->getStatusCode());
     }
 
     public function testCompleteCreatesAdminAndMarksInstalled(): void

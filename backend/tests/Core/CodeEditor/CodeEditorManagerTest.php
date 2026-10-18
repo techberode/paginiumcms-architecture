@@ -22,9 +22,8 @@ use PaginiumCMS\Core\FlatFile\Services\FileReader;
 use PaginiumCMS\Core\FlatFile\Services\FileValidator;
 use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Logging\Contracts\LoggerInterface;
-use PaginiumCMS\Core\Settings\Services\SettingsRepository;
-use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
+use PaginiumCMS\Tests\Support\SettingsTestHelper;
 use PHPUnit\Framework\TestCase;
 
 final class CodeEditorManagerTest extends TestCase
@@ -35,10 +34,13 @@ final class CodeEditorManagerTest extends TestCase
     {
         parent::setUp();
         $this->projectRoot = sys_get_temp_dir() . '/paginium_editor_' . uniqid();
-        mkdir($this->projectRoot . '/backend/app/Modules/Demo', 0777, true);
-        mkdir($this->projectRoot . '/backend/config', 0777, true);
-        file_put_contents($this->projectRoot . '/backend/app/Modules/Demo/sample.php', '<?php echo "ok";');
-        file_put_contents($this->projectRoot . '/backend/config/app.php', '<?php return [];');
+        mkdir($this->projectRoot . '/backend/app/Http/Extensions/Demo', 0777, true);
+        mkdir($this->projectRoot . '/data/shortcodes/definitions', 0777, true);
+        mkdir($this->projectRoot . '/data/layout', 0777, true);
+        file_put_contents(
+            $this->projectRoot . '/backend/app/Http/Extensions/Demo/sample.php',
+            "<?php\n\ndeclare(strict_types=1);\n\necho \"ok\";\n"
+        );
         chdir($this->projectRoot);
     }
 
@@ -52,20 +54,20 @@ final class CodeEditorManagerTest extends TestCase
     public function testReadsFileWithProjectRootPath(): void
     {
         $manager = $this->makeManager();
-        $content = $manager->readFile('backend/app/Modules/Demo/sample.php');
+        $content = $manager->readFile('backend/app/Http/Extensions/Demo/sample.php');
         $this->assertStringContainsString('echo', $content);
     }
 
     public function testRejectsTraversalPath(): void
     {
         $manager = $this->makeManager();
-        $this->assertFalse($manager->canEdit('backend/app/Modules/../Core/Foo.php'));
+        $this->assertFalse($manager->canEdit('backend/app/Http/Extensions/../Core/Foo.php'));
     }
 
     public function testListFilesReturnsFileInfoShape(): void
     {
         $manager = $this->makeManager();
-        $files = $manager->listFiles('backend/app/Modules');
+        $files = $manager->listFiles('backend/app/Http/Extensions');
         $this->assertNotEmpty($files);
         $this->assertArrayHasKey('path', $files[0]);
         $this->assertArrayHasKey('name', $files[0]);
@@ -79,13 +81,10 @@ final class CodeEditorManagerTest extends TestCase
         $files = $manager->listAllAllowedFiles();
         $paths = array_column($files, 'path');
 
-        $this->assertContains('backend/app/Modules/Demo/sample.php', $paths);
-        $this->assertContains('backend/config/app.php', $paths);
+        $this->assertContains('backend/app/Http/Extensions/Demo/sample.php', $paths);
         $this->assertSame($manager->getAllowedDirectories(), [
-            'backend/app/Modules',
             'backend/app/Http/Extensions',
             'backend/resources/views/themes',
-            'backend/config',
             'data/shortcodes/definitions',
             'data/layout',
         ]);
@@ -102,12 +101,12 @@ final class CodeEditorManagerTest extends TestCase
     public function testCreateDeleteAndRestoreFile(): void
     {
         $manager = $this->makeManager();
-        $path = 'backend/app/Modules/Demo/new.php';
+        $path = 'backend/app/Http/Extensions/Demo/new.php';
 
-        $manager->createFile($path, '<?php echo "v1";');
+        $manager->createFile($path, $this->untrustedExtensionPhp('v1'));
         $this->assertStringContainsString('v1', $manager->readFile($path));
 
-        $manager->writeFile($path, '<?php echo "v2";');
+        $manager->writeFile($path, $this->untrustedExtensionPhp('v2'));
         $backups = $manager->getBackups($path);
         $this->assertNotEmpty($backups);
 
@@ -118,15 +117,15 @@ final class CodeEditorManagerTest extends TestCase
         $this->assertFalse(file_exists($this->projectRoot . '/' . $path));
     }
 
+    private function untrustedExtensionPhp(string $marker): string
+    {
+        return "<?php\n\ndeclare(strict_types=1);\n\necho \"{$marker}\";\n";
+    }
+
     private function makeManager(): CodeEditorManager
     {
         $validator = new FileValidator($this->projectRoot);
-        $settings = new SettingsRepository(
-            new FileWriter($validator),
-            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->projectRoot),
-            new Validator(),
-            'data/settings.json'
-        );
+        $settings = SettingsTestHelper::repository($this->projectRoot);
 
         $policy = new CodePolicyEngine($settings, new SyntaxChecker(), new SecurityScanner());
         $userRepo = new UserRepository(new FileReader($validator), new FileWriter($validator), 'users');

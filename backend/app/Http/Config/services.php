@@ -324,6 +324,7 @@ use PaginiumCMS\Http\Controllers\Admin\ThemesController;
 use PaginiumCMS\Http\Controllers\Admin\ThemeStudioController;
 use PaginiumCMS\Http\Controllers\Admin\BlueprintController;
 use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
+use PaginiumCMS\Core\Setup\Services\SetupAccessGuard;
 use PaginiumCMS\Core\Setup\Services\SetupPreflightService;
 use PaginiumCMS\Core\Setup\Services\SetupStatusService;
 use PaginiumCMS\Http\Controllers\Setup\SetupController;
@@ -2402,10 +2403,12 @@ return [
             get(\PaginiumCMS\Core\Workflow\Services\OtpWorkflowService::class),
             get(HookEmitter::class)
         ),
+    \PaginiumCMS\Core\CodeEditor\Services\CodeEditorAccessPolicy::class => create(\PaginiumCMS\Core\CodeEditor\Services\CodeEditorAccessPolicy::class),
     CodeEditorController::class => create(GatedCodeEditorController::class)
         ->constructor(
             get(CodeEditorManager::class),
             get(DeveloperModeGate::class),
+            get(\PaginiumCMS\Core\CodeEditor\Services\CodeEditorAccessPolicy::class),
             get(JsonResponder::class)
         ),
     VersionController::class => create(VersionController::class)
@@ -2745,6 +2748,7 @@ return [
             get(ImplementationChecklistReader::class),
             get(OriginCatalogLabelResolver::class),
         ),
+    SetupAccessGuard::class => create(SetupAccessGuard::class),
     SetupStatusService::class => create(SetupStatusService::class)
         ->constructor(
             get(SettingsRepositoryInterface::class),
@@ -2764,6 +2768,7 @@ return [
     SetupController::class => create(SetupController::class)
         ->constructor(
             get(SetupStatusService::class),
+            get(SetupAccessGuard::class),
             get(SetupPreflightService::class),
             get(FirstAdminBootstrapService::class),
             get(SettingsRepositoryInterface::class),

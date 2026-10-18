@@ -12,6 +12,7 @@ import {
   type EmbedCaptionAlign,
   type ExternalEmbedProvider,
 } from '../../utils/embedShortcode';
+import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
 
 interface EmbedInsertModalProps {
   open: boolean;
@@ -206,7 +207,7 @@ export const EmbedInsertModal: React.FC<EmbedInsertModalProps> = ({
                 <div className="paginium-prose mx-auto max-w-[42rem] text-sm text-gray-700 dark:text-gray-300">
                   <p className="m-0 mb-3 leading-relaxed">{t('editor.embed.previewTextBefore')}</p>
                   {previewIframeHtml !== '' ? (
-                    <div dangerouslySetInnerHTML={{ __html: previewIframeHtml }} />
+                    <div dangerouslySetInnerHTML={{ __html: sanitizePublicHtml(previewIframeHtml) }} />
                   ) : (
                     <div
                       className={`embed-insert-preview-placeholder paginium-external-embed--align-${align} flex aspect-video w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 px-2 text-center text-xs text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400`}

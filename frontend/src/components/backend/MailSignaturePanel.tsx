@@ -1,4 +1,5 @@
 import React from 'react';
+import { sanitizePublicHtml } from '../../utils/sanitizeHtml';
 import { Link } from 'react-router-dom';
 import type { MailSignatureFields, MailSignaturePrefs, MailSignatureTemplateId } from '../../api/mail';
 import { useI18n } from '../../context/I18nContext';
@@ -129,8 +130,7 @@ export const MailSignaturePanel: React.FC<Props> = ({
           <div
             className="text-sm text-admin-text"
             data-testid="mail-signature-preview"
-            // Signature HTML is server-rendered from fixed templates with escaped fields.
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
+            dangerouslySetInnerHTML={{ __html: sanitizePublicHtml(previewHtml) }}
           />
         </div>
       ) : null}

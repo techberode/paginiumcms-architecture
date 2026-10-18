@@ -24,7 +24,7 @@ final class CodeEditorControllerTest extends TestCase
 
     public function testListFilesRequiresDeveloperUnlock(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
         unset($_SESSION['paginium_dev_unlocked_until'], $_SESSION['paginium_dev_unlock_method']);
 
         $request = $this->createJsonRequest('GET', '/api/admin/code-editor/files');
@@ -37,12 +37,12 @@ final class CodeEditorControllerTest extends TestCase
 
     public function testListFilesReturnsFileInfoArray(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
         $this->unlockDeveloperGate();
 
         $request = $this->createJsonRequest(
             'GET',
-            '/api/admin/code-editor/files?directory=backend/app/Modules'
+            '/api/admin/code-editor/files?directory=backend/app/Http/Extensions'
         );
         $response = $this->handleRequest($request);
         $data = $this->getJsonResponse($response);
@@ -58,7 +58,7 @@ final class CodeEditorControllerTest extends TestCase
 
     public function testListDirectoriesReturnsAllowedRoots(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
         $this->unlockDeveloperGate();
 
         $request = $this->createJsonRequest('GET', '/api/admin/code-editor/directories');
@@ -67,13 +67,13 @@ final class CodeEditorControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTrue($data['success']);
-        $this->assertContains('backend/app/Modules', $data['data']['directories']);
-        $this->assertContains('backend/config', $data['data']['directories']);
+        $this->assertContains('backend/app/Http/Extensions', $data['data']['directories']);
+        $this->assertNotContains('backend/app/Modules', $data['data']['directories']);
     }
 
     public function testListAllFilesUsesAllowedRootsOnly(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
         $this->unlockDeveloperGate();
 
         $request = $this->createJsonRequest('GET', '/api/admin/code-editor/files?directory=all');
@@ -99,11 +99,11 @@ final class CodeEditorControllerTest extends TestCase
 
     public function testSaveFileRejectsPolicyViolation(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
         $this->unlockDeveloperGate();
 
         $request = $this->createJsonRequest('POST', '/api/admin/code-editor/save', [
-            'path' => 'backend/app/Modules/PolicyTest.php',
+            'path' => 'backend/app/Http/Extensions/PolicyTest.php',
             'content' => '<?php eval("bad");',
         ]);
         $response = $this->handleRequest($request);
@@ -117,21 +117,21 @@ final class CodeEditorControllerTest extends TestCase
 
     public function testCreateDeleteAndRestoreFileFlow(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
         $this->unlockDeveloperGate();
 
-        $path = 'backend/app/Modules/CodeEditorFlowTest_' . uniqid() . '.php';
+        $path = 'backend/app/Http/Extensions/CodeEditorFlowTest_' . uniqid() . '.php';
 
         $createRequest = $this->createJsonRequest('POST', '/api/admin/code-editor/file', [
             'path' => $path,
-            'content' => '<?php echo "flow-v1";',
+            'content' => $this->untrustedExtensionPhp('flow-v1'),
         ]);
         $createResponse = $this->handleRequest($createRequest);
         $this->assertSame(201, $createResponse->getStatusCode());
 
         $saveRequest = $this->createJsonRequest('POST', '/api/admin/code-editor/save', [
             'path' => $path,
-            'content' => '<?php echo "flow-v2";',
+            'content' => $this->untrustedExtensionPhp('flow-v2'),
         ]);
         $this->assertSame(200, $this->handleRequest($saveRequest)->getStatusCode());
 
@@ -149,6 +149,11 @@ final class CodeEditorControllerTest extends TestCase
 
         $deleteRequest = $this->createJsonRequest('DELETE', '/api/admin/code-editor/file?path=' . rawurlencode($path));
         $this->assertSame(200, $this->handleRequest($deleteRequest)->getStatusCode());
+    }
+
+    private function untrustedExtensionPhp(string $marker): string
+    {
+        return "<?php\n\ndeclare(strict_types=1);\n\necho \"{$marker}\";\n";
     }
 
     private function unlockDeveloperGate(): void

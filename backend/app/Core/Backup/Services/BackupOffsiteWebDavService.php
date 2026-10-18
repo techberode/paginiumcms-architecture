@@ -16,6 +16,7 @@ final class BackupOffsiteWebDavService
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private OutboundUrlGuard $guard,
+        private BackupOffsiteArchiveCipher $archiveCipher,
     ) {
     }
 
@@ -60,6 +61,31 @@ final class BackupOffsiteWebDavService
 
         $relativeDir = $prefix;
         $remoteFileName = basename($remoteFileName);
+        $uploadPath = $localZipPath;
+        $contentType = 'application/zip';
+        $encryptedTemp = null;
+
+        if ((bool) ($group['offsiteEncryptEnabled'] ?? false)) {
+            $encryptionKey = trim((string) ($group['offsiteEncryptionKey'] ?? ''));
+            if ($encryptionKey === '') {
+                $this->logFailure($remoteFileName, 'offsiteEncryptEnabled but offsiteEncryptionKey is empty');
+
+                return ['uploaded' => false, 'error' => 'missing_encryption_key'];
+            }
+
+            try {
+                $encrypted = $this->archiveCipher->encryptZipFile($localZipPath, $remoteFileName, $encryptionKey);
+                $uploadPath = $encrypted['path'];
+                $remoteFileName = $encrypted['remoteName'];
+                $encryptedTemp = $encrypted['path'];
+                $contentType = 'application/octet-stream';
+            } catch (\Throwable $e) {
+                $this->logFailure($remoteFileName, $e->getMessage());
+
+                return ['uploaded' => false, 'error' => 'encrypt_failed'];
+            }
+        }
+
         $segments = $relativeDir !== '' ? explode('/', $relativeDir) : [];
         $segments[] = $remoteFileName;
         $encodedPath = implode('/', array_map('rawurlencode', $segments));
@@ -68,17 +94,28 @@ final class BackupOffsiteWebDavService
         try {
             $this->guard->assertAllowed($targetUrl);
         } catch (\Throwable $e) {
+            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+                @unlink($encryptedTemp);
+            }
             $this->logFailure($remoteFileName, $e->getMessage());
 
             return ['uploaded' => false, 'error' => 'url_blocked'];
         }
 
         if (!$this->ensureRemoteCollection($baseUrl, $username, $password, $prefix)) {
+            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+                @unlink($encryptedTemp);
+            }
+
             return ['uploaded' => false, 'error' => 'mkcol_failed'];
         }
 
-        $size = filesize($localZipPath);
+        $size = filesize($uploadPath);
         if ($size === false) {
+            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+                @unlink($encryptedTemp);
+            }
+
             return ['uploaded' => false, 'error' => 'stat_failed'];
         }
 
@@ -86,14 +123,21 @@ final class BackupOffsiteWebDavService
             @set_time_limit(0);
         }
 
-        $handle = fopen($localZipPath, 'rb');
+        $handle = fopen($uploadPath, 'rb');
         if ($handle === false) {
+            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+                @unlink($encryptedTemp);
+            }
+
             return ['uploaded' => false, 'error' => 'open_failed'];
         }
 
         $curl = curl_init($targetUrl);
         if ($curl === false) {
             fclose($handle);
+            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+                @unlink($encryptedTemp);
+            }
 
             return ['uploaded' => false, 'error' => 'curl_init_failed'];
         }
@@ -104,7 +148,7 @@ final class BackupOffsiteWebDavService
             CURLOPT_INFILESIZE => $size,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERPWD => $username . ':' . $password,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/zip'],
+            CURLOPT_HTTPHEADER => ['Content-Type: ' . $contentType],
             CURLOPT_TIMEOUT => max(120, (int) min(7200, (int) ($size / (256 * 1024)) + 120)),
             CURLOPT_FOLLOWLOCATION => false,
         ]);
@@ -114,6 +158,9 @@ final class BackupOffsiteWebDavService
         $curlError = curl_error($curl);
         curl_close($curl);
         fclose($handle);
+        if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+            @unlink($encryptedTemp);
+        }
 
         if ($httpCode >= 200 && $httpCode < 300) {
             error_log(sprintf(

@@ -12,6 +12,13 @@ use PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard;
  */
 final class MediaFormats
 {
+    /** @var list<string> */
+    private const BLOCKED_PUBLIC_SERVE_BASENAMES = [
+        'registry.json',
+        'folders.json',
+        '.paginium-folder',
+    ];
+
     /**
      * @var array<string, array{extensions: list<string>, previewable: bool}>
      */
@@ -382,6 +389,39 @@ final class MediaFormats
 
         if (str_starts_with($sample, '<?xml') || str_starts_with($sample, '<svg')) {
             return stripos($sample, '<svg') !== false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Public /storage route may only serve known media binaries — never registry/metadata JSON.
+     */
+    public static function isAllowedPublicServeBasename(string $basename): bool
+    {
+        $basename = trim($basename);
+        if ($basename === '' || str_starts_with($basename, '.')) {
+            return false;
+        }
+
+        if (in_array($basename, self::BLOCKED_PUBLIC_SERVE_BASENAMES, true)) {
+            return false;
+        }
+
+        $lower = strtolower($basename);
+        if (str_ends_with($lower, '.json') || str_ends_with($lower, '.meta.json')) {
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($basename, PATHINFO_EXTENSION));
+        if ($extension === '') {
+            return false;
+        }
+
+        foreach (self::FORMATS as $meta) {
+            if (in_array($extension, $meta['extensions'], true)) {
+                return true;
+            }
         }
 
         return false;

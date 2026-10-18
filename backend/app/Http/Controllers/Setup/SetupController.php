@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Http\Controllers\Setup;
 
 use PaginiumCMS\Core\Setup\Services\FirstAdminBootstrapService;
+use PaginiumCMS\Core\Setup\Services\SetupAccessGuard;
 use PaginiumCMS\Core\Setup\Services\SetupPreflightService;
 use PaginiumCMS\Core\Setup\Services\SetupStatusService;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -22,6 +23,7 @@ final class SetupController
 {
     public function __construct(
         private SetupStatusService $setupStatus,
+        private SetupAccessGuard $setupAccess,
         private SetupPreflightService $preflight,
         private FirstAdminBootstrapService $firstAdmin,
         private SettingsRepositoryInterface $settings,
@@ -32,27 +34,66 @@ final class SetupController
 
     public function preflight(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if (!$this->setupAccess->isInstalledProbeAllowed($this->setupStatus)) {
+            return $this->json->error($response, 'Not found', 404);
+        }
+
+        if (!$this->setupAccess->verifySetupToken($request)) {
+            return $this->json->error($response, 'Invalid or missing setup token', 403);
+        }
+
         return $this->json->success($response, $this->preflight->run());
     }
 
     public function status(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if (!$this->setupAccess->isInstalledProbeAllowed($this->setupStatus)) {
+            return $this->json->error($response, 'Not found', 404);
+        }
+
+        if (!$this->setupAccess->verifySetupToken($request)) {
+            return $this->json->error($response, 'Invalid or missing setup token', 403);
+        }
+
         return $this->json->success($response, [
             'needsSetup' => $this->setupStatus->needsSetup(),
             'installed' => $this->setupStatus->isInstalled(),
             'hasUsers' => $this->firstAdmin->hasUsers(),
+            'userStoreGap' => $this->setupStatus->hasUserStoreGap(),
+            'setupTokenRequired' => $this->setupAccess->tokenRequired(),
         ]);
     }
 
     public function complete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         if (!$this->setupStatus->needsSetup()) {
+            if ($this->setupStatus->hasUserStoreGap()) {
+                return $this->json->error(
+                    $response,
+                    'User storage is unreadable or inconsistent. Use CLI bootstrap-admin.php — HTTP setup is disabled.',
+                    503
+                );
+            }
+
             return $this->json->error($response, 'Setup already completed', 403);
         }
 
         $data = RequestJsonBody::decode($request);
         if ($data === null) {
             return $this->json->error($response, 'Invalid request body', 400);
+        }
+
+        $bodyToken = isset($data['setupToken']) ? (string) $data['setupToken'] : null;
+        if (!$this->setupAccess->verifySetupToken($request, $bodyToken)) {
+            return $this->json->error($response, 'Invalid or missing setup token', 403);
+        }
+
+        if ($this->setupStatus->hasUserStoreGap()) {
+            return $this->json->error(
+                $response,
+                'User storage is unreadable or inconsistent. Use CLI bootstrap-admin.php — HTTP setup is disabled.',
+                503
+            );
         }
 
         try {

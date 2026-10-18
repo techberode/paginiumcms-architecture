@@ -654,10 +654,15 @@ $containerBuilder->addDefinitions([
     // 9. BACKUP
     // ============================================
 
+    \PaginiumCMS\Core\Backup\Services\BackupOffsiteArchiveCipher::class => function () {
+        return new \PaginiumCMS\Core\Backup\Services\BackupOffsiteArchiveCipher();
+    },
+
     \PaginiumCMS\Core\Backup\Services\BackupOffsiteWebDavService::class => function ($container) {
         return new \PaginiumCMS\Core\Backup\Services\BackupOffsiteWebDavService(
             $container->get(\PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface::class),
             $container->get(\PaginiumCMS\Core\Security\Services\OutboundUrlGuard::class),
+            $container->get(\PaginiumCMS\Core\Backup\Services\BackupOffsiteArchiveCipher::class),
         );
     },
 

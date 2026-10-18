@@ -19,6 +19,7 @@ use PaginiumCMS\Core\Git\Services\PublishQueueStore;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
 use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Tests\Support\GitPublishTestHelper;
+use PaginiumCMS\Tests\Support\SettingsTestHelper;
 use PaginiumCMS\Tests\Support\StorageTestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -131,12 +132,7 @@ final class GitHubApiPublisherTest extends TestCase
         $validator = new FileValidator($this->baseDir);
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
-        $settings = new SettingsRepository(
-            $writer,
-            StorageTestHelper::localStorage($this->baseDir),
-            new Validator(),
-            'data/settings.json'
-        );
+        $settings = SettingsTestHelper::repository($this->baseDir);
         $settings->setGroup('engine', array_merge([
             'gitEnabled' => true,
             'gitPublishStrategy' => 'queued',

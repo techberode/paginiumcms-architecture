@@ -99,6 +99,19 @@ class StorageControllerTest extends TestCase
         $this->assertStringNotContainsString('Leak', (string) $response->getBody());
     }
 
+    public function testServeRejectsMediaRegistryJson(): void
+    {
+        $relative = 'app/content/media/registry.json';
+        file_put_contents($this->storageRoot . '/' . $relative, '{"items":[]}');
+
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/' . $relative);
+        $response = (new ResponseFactory())->createResponse();
+
+        $response = $this->controller->serve($request, $response, ['path' => $relative]);
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
     public function testServeMissingFileReturns404(): void
     {
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/storage/missing.txt');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Http\Controllers\Admin;
 
+use PaginiumCMS\Core\CodeEditor\Services\CodeEditorAccessPolicy;
 use PaginiumCMS\Core\CodeEditor\Services\CodeEditorManager;
 use PaginiumCMS\Core\Developer\DeveloperModeGate;
 use PaginiumCMS\Http\Support\JsonResponder;
@@ -20,6 +21,7 @@ class GatedCodeEditorController extends CodeEditorController
     public function __construct(
         CodeEditorManager $editor,
         private DeveloperModeGate $gate,
+        private CodeEditorAccessPolicy $accessPolicy,
         JsonResponder $json
     ) {
         parent::__construct($editor, $json);
@@ -99,6 +101,14 @@ class GatedCodeEditorController extends CodeEditorController
 
     private function gateDenied(): ?ResponseInterface
     {
+        if (!$this->accessPolicy->isEnabled()) {
+            return $this->json->error(
+                new Response(),
+                'Code editor is disabled in this environment. Set CODE_EDITOR_ENABLED=true to allow (SUPER_ADMIN only).',
+                403
+            );
+        }
+
         if (!$this->gate->isFeatureAvailable()) {
             return $this->json->error(
                 new Response(),

@@ -30,11 +30,19 @@ final class SetupStatusService
 
     public function needsSetup(): bool
     {
-        // Orphan recovery: PHPUnit/dev purge removed user files but left index / installed flag.
-        if ($this->users->findAll() === []) {
-            return true;
+        if ($this->isInstalled()) {
+            return false;
         }
 
-        return !$this->isInstalled();
+        if ($this->users->hasUserStoreGap()) {
+            return false;
+        }
+
+        return !$this->users->hasAnyUser();
+    }
+
+    public function hasUserStoreGap(): bool
+    {
+        return $this->users->hasUserStoreGap();
     }
 }

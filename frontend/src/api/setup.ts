@@ -35,6 +35,8 @@ export interface SetupCompletePayload {
   language: 'sk' | 'en';
   backendPort?: string;
   storageDriver?: 'local';
+  /** Set from VITE_SETUP_TOKEN when production requires SETUP_TOKEN on the server. */
+  setupToken?: string;
 }
 
 export interface SetupCompleteResult {
@@ -47,13 +49,27 @@ export interface SetupCompleteResult {
   errors?: Record<string, string[]>;
 }
 
+const setupTokenHeader = (): Record<string, string> => {
+  const token = import.meta.env.VITE_SETUP_TOKEN?.trim();
+  return token ? { 'X-Setup-Token': token } : {};
+};
+
+const withSetupToken = <T extends SetupCompletePayload>(payload: T): T => {
+  const token = import.meta.env.VITE_SETUP_TOKEN?.trim();
+  if (!token) {
+    return payload;
+  }
+
+  return { ...payload, setupToken: token };
+};
+
 export async function getSetupStatus(): Promise<SetupStatus | null> {
-  const res = await apiClient.get<SetupStatus>('/api/setup/status');
+  const res = await apiClient.get<SetupStatus>('/api/setup/status', { headers: setupTokenHeader() });
   return res.success && res.data ? res.data : null;
 }
 
 export async function getSetupPreflight(): Promise<SetupPreflight | null> {
-  const res = await apiClient.get<SetupPreflight>('/api/setup/preflight');
+  const res = await apiClient.get<SetupPreflight>('/api/setup/preflight', { headers: setupTokenHeader() });
   return res.success && res.data ? res.data : null;
 }
 
@@ -63,7 +79,7 @@ export async function completeSetup(payload: SetupCompletePayload): Promise<Setu
     loginRequired?: boolean;
     redirectTo?: string;
     user?: User;
-  }>('/api/setup/complete', payload);
+  }>('/api/setup/complete', withSetupToken(payload), { headers: setupTokenHeader() });
 
   if (res.success) {
     return {

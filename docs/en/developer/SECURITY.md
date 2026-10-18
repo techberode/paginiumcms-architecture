@@ -270,7 +270,7 @@ Bootstrap on app load calls `GET /api/auth/csrf-token` and stores the token in `
 - On logout, the client **clears** the stored CSRF token; the next bootstrap fetches a new one.
 - Axios may still self-heal once on `403` + `csrf_invalid`; that first rejection is logged at **INFO** in `http_access`, not WARNING ([ISS-196](../ISSUES.md#iss-196)).
 
-Exempt routes must be an exact allow-list. A public form without session CSRF needs alternative controls: origin/content-type policy, rate limit, anti-automation, input validation, and abuse monitoring.
+Exempt routes must be an exact allow-list (e.g. only `POST /api/comments`, not authenticated `…/reply` or `…/claim`). A public form without session CSRF needs alternative controls: origin/content-type policy, rate limit, anti-automation, input validation, and abuse monitoring.
 
 `SameSite` is a supplement, not the sole CSRF defense.
 
@@ -297,7 +297,7 @@ Authoritative data should remain outside the web root. The public storage contro
 - safe `Content-Type`, `Content-Disposition`, and CSP,
 - range/cache behavior according to the media contract.
 
-Direct public paths to users, settings, logs, backups, cache, developer tokens, and internal metadata are forbidden.
+Direct public paths to users, settings, logs, backups, cache, developer tokens, and internal metadata are forbidden. Under `/storage/.../media/`, only known **media file extensions** are served — never `registry.json`, `folders.json`, or other metadata JSON ([ISS-203](../ISSUES.md#iss-203)).
 
 Writes use a temporary file, validation, and atomic rename. Lock/revision protects logical consistency; filesystem permissions protect the host layer.
 
@@ -315,7 +315,8 @@ Rules:
 - key rotation uses a versioned ciphertext format and migration plan,
 - a data backup without the corresponding key may not be restorable,
 - storing the key beside the data weakens protection; keep it separately,
-- logs, audit, exception context, and telemetry apply redaction.
+- logs, audit, exception context, and telemetry apply redaction,
+- **settings `password` fields refuse save** when encryption is unavailable (no silent plaintext) — [ISS-203](../ISSUES.md#iss-203).
 
 Encryption at rest does not protect against a compromised running process that has the key. Host hardening and least privilege remain necessary.
 
@@ -377,7 +378,8 @@ Important boundaries:
 - filesystem jails require canonical paths and symlink-race controls,
 - Code Editor save does not mean registration, activation, frontend build, Git push, or deployment,
 - Vite `import.meta.glob` is a build-time mechanism,
-- Developer Mode uses a short unlock, 2FA/developer secret, audit, and a production fail-closed profile.
+- Developer Mode uses a short unlock, 2FA/developer secret, audit, and a production fail-closed profile,
+- Code Editor API is **SUPER_ADMIN** only; editable roots exclude `backend/app/Modules` and `backend/config`; production requires `CODE_EDITOR_ENABLED=true` ([ISS-203](../ISSUES.md#iss-203)).
 
 For an untrusted community ecosystem, the target should be stronger process/container isolation or a declarative extension model with constrained capability APIs.
 

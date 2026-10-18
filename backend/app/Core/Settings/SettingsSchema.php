@@ -614,6 +614,8 @@ final class SettingsSchema
                     ['key' => 'offsiteWebDavPassword', 'type' => 'password', 'label' => 'WebDAV heslo / app token', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Nextcloud odporúča app password. Šifrované at-rest, nikdy sa nevracia do API po uložení.'],
                     ['key' => 'offsiteWebDavPathPrefix', 'type' => 'string', 'label' => 'Priečinok na cloude', 'default' => 'PaginiumCMS/backups', 'rules' => ['string', 'max:256'], 'help' => 'Relatívna cesta pod WebDAV base (vytvorí sa pri upload-e).'],
                     ['key' => 'backupZipDeflateLevel', 'type' => 'int', 'label' => 'ZIP kompresia (0–9)', 'default' => 6, 'rules' => ['int', 'min:0', 'max:9'], 'help' => 'Deflate pre manuálne aj scheduled zálohy. 0 = bez kompresie (rýchlejšie, väčší ZIP), 6 = odporúčané, 9 = najmenší súbor.'],
+                    ['key' => 'offsiteEncryptEnabled', 'type' => 'bool', 'label' => 'Šifrovať ZIP pred off-site uploadom', 'default' => false, 'rules' => ['bool'], 'help' => 'Uploaduje .zip.enc (libsodium). Kľúč je oddelený od APP_KEY — pozri off-site encryption key.'],
+                    ['key' => 'offsiteEncryptionKey', 'type' => 'password', 'label' => 'Off-site encryption key', 'default' => '', 'rules' => ['string', 'max:512'], 'help' => 'Passphrase pre šifrovanie zálohy pred WebDAV. Uložené šifrované at-rest (APP_KEY). Na obnovu treba rovnaký kľúč + decrypt nástroj.'],
                 ],
             ],
             'uploadSecurity' => [

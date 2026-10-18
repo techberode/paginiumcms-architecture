@@ -134,7 +134,11 @@ Change the password and enable 2FA before exposing the host to the Internet.
 | GET | `/api/setup/preflight` | Server prerequisite checks + install hints |
 | POST | `/api/setup/complete` | One-time bootstrap (admin + settings) |
 
-Routes under `/api/setup/` are **CSRF-exempt** for the initial bootstrap only. Existing instances with user accounts are treated as installed even without the `installed` flag (legacy CLI bootstrap).
+Routes under `/api/setup/` are **CSRF-exempt** for the initial bootstrap only. After `general.installed = true`, setup endpoints return **404**.
+
+**Production:** set `SETUP_TOKEN` in `.env` and pass the same value to the browser setup flow (`VITE_SETUP_TOKEN` at build time, or header `X-Setup-Token` / JSON `setupToken` on `POST /api/setup/complete`). Without a token, production rejects setup calls.
+
+If the install flag is set but user files are missing or unreadable, HTTP setup stays closed — use `php backend/bin/bootstrap-admin.php` (fail-closed).
 
 ### CLI fallback (optional / advanced)
 

@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Security audit (ISS-203):** setup token + fail-closed install; hide setup API after install; block public media registry JSON; CSRF on comment reply/claim; SUPER_ADMIN code editor + `CODE_EDITOR_ENABLED`; optional off-site backup encryption; settings secrets require APP_KEY; SVG full scan; DOMPurify iframe allow-list
 - **Storage retention:** Settings → **storageRetention** — auto trash purge, content version history by age (keep latest), draft orphan cleanup; job `storage-retention` at 03:00 — [STORAGE.md](docs/en/architecture/STORAGE.md#14-storage-retention-trash-versions-drafts) · [ISS-202](docs/ISSUES.md#iss-202)
 - **Backup off-site:** optional Nextcloud/WebDAV upload after each backup (Settings → System → Backups off-site)
 - **Backup restore:** binary-safe media write (`writeBinary`); `backup:inspect-media` and `backup:restore-archive` CLI; post-restore `archiveMedia` + registry report in admin API; login/2FA recovery docs; `user:disable-2fa` CLI

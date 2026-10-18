@@ -19,10 +19,8 @@ final class CodeEditorManager implements CodeEditorInterface
 
     /** @var list<string> */
     private array $allowedPaths = [
-        'backend/app/Modules',
         'backend/app/Http/Extensions',
         'backend/resources/views/themes',
-        'backend/config',
         'data/shortcodes/definitions',
         'data/layout',
     ];

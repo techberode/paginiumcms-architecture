@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Core\Notification;
 
-use PaginiumCMS\Core\FlatFile\Services\FileReader;
-use PaginiumCMS\Core\FlatFile\Services\FileValidator;
-use PaginiumCMS\Core\FlatFile\Services\FileWriter;
 use PaginiumCMS\Core\Notification\Services\NotificationFactory;
 use PaginiumCMS\Core\Settings\Services\SettingsRepository;
-use PaginiumCMS\Core\Validation\Validator;
+use PaginiumCMS\Tests\Support\SettingsTestHelper;
 use PHPUnit\Framework\TestCase;
 
 final class NotificationFactoryTest extends TestCase
@@ -133,14 +130,7 @@ final class NotificationFactoryTest extends TestCase
 
     private function makeRepo(): SettingsRepository
     {
-        $validator = new FileValidator($this->baseDir);
-
-        return new SettingsRepository(
-            new FileWriter($validator),
-            \PaginiumCMS\Tests\Support\StorageTestHelper::localStorage($this->baseDir),
-            new Validator(),
-            'data/settings.json'
-        );
+        return SettingsTestHelper::repository($this->baseDir);
     }
 
     private function removeDir(string $dir): void

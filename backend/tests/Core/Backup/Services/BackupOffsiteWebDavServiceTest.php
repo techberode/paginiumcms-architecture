@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Tests\Core\Backup\Services;
 
+use PaginiumCMS\Core\Backup\Services\BackupOffsiteArchiveCipher;
 use PaginiumCMS\Core\Backup\Services\BackupOffsiteWebDavService;
 use PaginiumCMS\Core\Security\Services\OutboundUrlGuard;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
@@ -20,7 +21,7 @@ final class BackupOffsiteWebDavServiceTest extends TestCase
             'offsiteWebDavUsername' => 'user',
         ]);
 
-        $service = new BackupOffsiteWebDavService($settings, OutboundUrlGuard::fromEnv());
+        $service = new BackupOffsiteWebDavService($settings, OutboundUrlGuard::fromEnv(), new BackupOffsiteArchiveCipher());
         $result = $service->uploadZipIfConfigured('/tmp/missing.zip', 'backup.zip');
 
         $this->assertFalse($result['uploaded']);

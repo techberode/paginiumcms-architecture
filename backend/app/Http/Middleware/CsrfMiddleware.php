@@ -43,6 +43,11 @@ final class CsrfMiddleware implements MiddlewareInterface
      *
      * @var list<string>
      */
+    /** Anonymous public POST only (authenticated reply/claim require CSRF). */
+    private const EXEMPT_EXACT_PATHS = [
+        '/api/comments',
+    ];
+
     private const EXEMPT_PREFIXES = [
         '/api/auth/login',
         '/api/auth/register',
@@ -57,7 +62,6 @@ final class CsrfMiddleware implements MiddlewareInterface
         '/api/newsletter',
         '/api/analytics/pageview',
         '/api/maintenance',
-        '/api/comments',
         '/api/debug/client-event',
         '/api/demo/quick-login',
         '/api/setup/',
@@ -102,6 +106,10 @@ final class CsrfMiddleware implements MiddlewareInterface
 
     private function isExempt(string $path): bool
     {
+        if (in_array($path, self::EXEMPT_EXACT_PATHS, true)) {
+            return true;
+        }
+
         foreach (array_merge(self::EXEMPT_PREFIXES, $this->extraExemptPrefixes) as $prefix) {
             if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return true;

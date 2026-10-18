@@ -12,18 +12,21 @@ use PHPUnit\Framework\TestCase;
 
 final class SetupStatusServiceTest extends TestCase
 {
-    public function testNeedsSetupWhenNoUsersEvenIfInstalledFlagSet(): void
+    public function testDoesNotReopenSetupWhenInstalledFlagSetButNoUsers(): void
     {
         $settings = $this->createMock(SettingsRepositoryInterface::class);
         $settings->method('get')->with('general.installed')->willReturn(true);
 
         $users = $this->createMock(UserRepository::class);
         $users->method('findAll')->willReturn([]);
+        $users->method('hasUserStoreGap')->willReturn(true);
+        $users->method('hasAnyUser')->willReturn(false);
 
         $service = new SetupStatusService($settings, $users);
 
-        $this->assertTrue($service->needsSetup());
+        $this->assertFalse($service->needsSetup());
         $this->assertTrue($service->isInstalled());
+        $this->assertTrue($service->hasUserStoreGap());
     }
 
     public function testNeedsSetupWhenFreshInstall(): void
@@ -33,6 +36,8 @@ final class SetupStatusServiceTest extends TestCase
 
         $users = $this->createMock(UserRepository::class);
         $users->method('findAll')->willReturn([]);
+        $users->method('hasUserStoreGap')->willReturn(false);
+        $users->method('hasAnyUser')->willReturn(false);
 
         $service = new SetupStatusService($settings, $users);
 
@@ -47,6 +52,8 @@ final class SetupStatusServiceTest extends TestCase
 
         $users = $this->createMock(UserRepository::class);
         $users->method('findAll')->willReturn([new User()]);
+        $users->method('hasUserStoreGap')->willReturn(false);
+        $users->method('hasAnyUser')->willReturn(true);
 
         $service = new SetupStatusService($settings, $users);
 
@@ -61,6 +68,8 @@ final class SetupStatusServiceTest extends TestCase
 
         $users = $this->createMock(UserRepository::class);
         $users->method('findAll')->willReturn([new User()]);
+        $users->method('hasUserStoreGap')->willReturn(false);
+        $users->method('hasAnyUser')->willReturn(true);
 
         $service = new SetupStatusService($settings, $users);
 

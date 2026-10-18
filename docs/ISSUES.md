@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 18 October 2026 · register **ISS-001–ISS-202** · latest public release tag **`v2.1.0-beta.98`**
+> **Last updated:** 18 October 2026 · register **ISS-001–ISS-203** · latest public release tag **`v2.1.0-beta.98`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -225,6 +225,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-200](#iss-200) | Oct 2026 prod — blog 500 (numeric tags), backup/media mismatch, hero/OG editor | **Critical (content ops)** | ✅ Fixed (Unreleased) |
 | [ISS-201](#iss-201) | Scheduled backup + Nextcloud/WebDAV off-site copy (Oct 2026 ops) | Medium (ops / DR) | ✅ Shipped (Unreleased) |
 | [ISS-202](#iss-202) | Configurable trash / version / draft storage retention (Oct 2026 ops) | Low (disk / ops) | ✅ Shipped (Unreleased) |
+| [ISS-203](#iss-203) | Oct 2026 security audit — setup hijack, media registry leak, CSRF/comments | **High (security)** | ✅ Fixed (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6223,6 +6224,27 @@ After [ISS-200](#iss-200) recovery, production needed **daily full backups** and
 2. Configure WebDAV base URL `https://<host>/remote.php/dav/files/<login>` — **not** the Files app browser URL.
 3. Manual backup once → confirm `.zip` in Nextcloud folder; check logs only if upload fails (local backup still OK).
 4. Keep app password rotation procedure if token was ever pasted into chat/terminal.
+
+---
+
+## ISS-203 – Security audit remediation (setup, storage, CSRF, editor, off-site)
+
+| Field | Value |
+|--------|--------|
+| **Severity** | High (installation takeover, data exposure) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Docs** | [SECURITY.md](en/developer/SECURITY.md) · [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md) · [INSTALLATION.md](en/user/INSTALLATION.md) |
+
+### Shipped
+
+- **Setup (#1–2):** no HTTP reopen after `general.installed`; preflight/status **404** when installed; `SETUP_TOKEN` / `X-Setup-Token` in production; user-store gap → **503** + CLI `bootstrap-admin.php`.
+- **Storage (#3, #11):** public `/storage` serves only allow-listed media extensions; blocks `registry.json` and metadata; cache `max-age=86400, must-revalidate`.
+- **CSRF (#5):** exempt only `POST /api/comments` (not reply/claim).
+- **Code editor (#6):** **SUPER_ADMIN** only; `CODE_EDITOR_ENABLED` gate; removed `backend/app/Modules` and `backend/config` from editable roots.
+- **Off-site (#7):** optional libsodium encrypt before WebDAV (`offsiteEncryptEnabled` + `offsiteEncryptionKey`).
+- **FE (#8–9):** DOMPurify iframe host allow-list + fixed sandbox; embed/mail previews sanitized.
+- **Settings (#12):** secret fields refuse save without working `APP_KEY` encryption.
+- **SVG (#4):** full-file scan up to 2 MB on upload (polyglot guard).
 
 ---
 

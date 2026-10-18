@@ -75,6 +75,25 @@ class UserRepository
         return $this->dedupeById($users);
     }
 
+    public function hasAnyUser(): bool
+    {
+        return $this->findAll() !== [];
+    }
+
+    /**
+     * Index lists user ids but none could be read (permissions/corruption) — fail-closed for HTTP setup.
+     */
+    public function hasUserStoreGap(): bool
+    {
+        $this->ensureIndex();
+
+        if ($this->index->listIds() === []) {
+            return false;
+        }
+
+        return !$this->hasAnyUser();
+    }
+
     public function save(User $user): void
     {
         $id = $user->getId();

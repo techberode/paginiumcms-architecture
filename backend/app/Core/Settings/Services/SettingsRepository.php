@@ -7,6 +7,7 @@ namespace PaginiumCMS\Core\Settings\Services;
 use InvalidArgumentException;
 use PaginiumCMS\Core\FlatFile\Contracts\FileWriterInterface;
 use PaginiumCMS\Core\Security\Services\EncryptionService;
+use PaginiumCMS\Core\Security\Services\EncryptionUnavailableException;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Core\Settings\SettingsSchema;
 use PaginiumCMS\Core\Storage\Contracts\StorageInterface;
@@ -378,10 +379,6 @@ final class SettingsRepository implements SettingsRepositoryInterface
      */
     private function encryptSecrets(string $group, array $values): array
     {
-        if ($this->encryption === null) {
-            return $values;
-        }
-
         foreach (SettingsSchema::secretKeys()[$group] ?? [] as $key) {
             if (!isset($values[$key]) || !is_string($values[$key])) {
                 continue;
@@ -394,6 +391,11 @@ final class SettingsRepository implements SettingsRepositoryInterface
             if ($values[$key] === '') {
                 continue;
             }
+
+            if ($this->encryption === null || !$this->encryption->isEnabled()) {
+                throw EncryptionUnavailableException::forMissingAppKey();
+            }
+
             $values[$key] = $this->encryption->encrypt($values[$key]);
         }
 

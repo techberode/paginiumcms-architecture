@@ -17,7 +17,7 @@ final class PolyglotUploadGuard
 
     private const MAX_SCAN_CEILING = 262_144;
 
-    private const SVG_SCAN_MAX_BYTES = 16_384;
+    private const SVG_SCAN_MAX_BYTES = 2_097_152;
 
     /** @var list<string> */
     private const HTML_SCRIPT_MARKERS = [
@@ -99,7 +99,11 @@ final class PolyglotUploadGuard
 
     private function assertSvgFreeOfActiveContent(string $bytes): void
     {
-        $sample = substr($bytes, 0, self::SVG_SCAN_MAX_BYTES);
+        if (strlen($bytes) > self::SVG_SCAN_MAX_BYTES) {
+            throw new FlatFileException('SVG súbor presahuje maximálnu veľkosť pre bezpečnostnú kontrolu');
+        }
+
+        $sample = $bytes;
         if (preg_match('/<script\b/i', $sample) === 1) {
             throw new FlatFileException('SVG súbor obsahuje zakázaný script');
         }
