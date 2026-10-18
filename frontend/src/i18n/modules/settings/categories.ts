@@ -32,6 +32,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'playground',
       'engine',
       'backups',
+      'storageRetention',
       'systemUpdate',
     ],
   },

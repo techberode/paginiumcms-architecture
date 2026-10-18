@@ -90,6 +90,7 @@ export const settingsSk: MessageTree = {
     "scheduler": "Plánovač jobov",
     "systemUpdate": "Aktualizácia systému (deploy)",
     "backups": "Zálohy (off-site)",
+    "storageRetention": "Úložisko — retencia",
     "codePolicy": "Politika kódu",
     "playground": "Playground komponentov",
     "teamChat": "História tímového chatu",
