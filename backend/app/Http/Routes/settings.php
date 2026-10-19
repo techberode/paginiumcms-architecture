@@ -7,14 +7,15 @@ declare(strict_types=1);
  * Správa nastavení CMS (Iterácia 4). Auto-discovered z bootstrap/app.php.
  *
  *  - GET  /api/settings/public          (verejný – bez auth)
- *  - GET  /api/admin/settings           (ADMIN / SUPER_ADMIN)
- *  - GET  /api/admin/settings/{group}   (ADMIN / SUPER_ADMIN)
- *  - PUT  /api/admin/settings/{group}   (ADMIN / SUPER_ADMIN)
- *  - DELETE /api/admin/settings         (ADMIN / SUPER_ADMIN) – reset na predvolené
+ *  - GET  /api/admin/settings           (EDITOR / ADMIN / SUPER_ADMIN; group ACL v controlleri)
+ *  - GET  /api/admin/settings/{group}   (EDITOR / ADMIN / SUPER_ADMIN; group ACL v controlleri)
+ *  - PUT  /api/admin/settings/{group}   (EDITOR / ADMIN / SUPER_ADMIN; group ACL v controlleri)
+ *  - DELETE /api/admin/settings         (settings:manage + SUPER_ADMIN) – reset na predvolené
  */
 
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -32,7 +33,8 @@ return function (App $app): void {
         $controller = $container->get(SettingsController::class);
 
         $group->get('', [$controller, 'index']);
-        $group->delete('', [$controller, 'reset']);
+        $group->delete('', [$controller, 'reset'])
+            ->add(new PermissionMiddleware($container->get(AuthorizationInterface::class), 'settings:manage'));
         $group->get('/{group}', [$controller, 'show']);
         $group->put('/{group}', [$controller, 'update']);
     })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))

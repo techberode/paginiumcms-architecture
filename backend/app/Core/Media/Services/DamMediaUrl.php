@@ -32,7 +32,16 @@ final class DamMediaUrl
 
     private static function isAllowedMediaPath(string $url): bool
     {
-        if (!str_starts_with($url, '/')) {
+        if (!str_starts_with($url, '/') || str_starts_with($url, '//')) {
+            return false;
+        }
+
+        if (preg_match('/[\x00-\x1F\x7F\\\\]/', $url) === 1) {
+            return false;
+        }
+
+        $path = rawurldecode((string) parse_url($url, PHP_URL_PATH));
+        if (preg_match('#(^|/)\.\.(/|$)#', str_replace('\\', '/', $path)) === 1) {
             return false;
         }
 

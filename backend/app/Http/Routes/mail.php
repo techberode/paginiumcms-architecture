@@ -19,7 +19,7 @@ declare(strict_types=1);
  *  - GET  /api/admin/mail/messages
  *  - GET  /api/admin/mail/messages/{uid}
  *  - PUT  /api/admin/mail/messages/{uid}/tags
- *  - POST /api/admin/mail/send
+ *  - POST /api/admin/mail/send            (mail:send)
  *  - POST /api/admin/mail/messages/{uid}/spam
  *  - GET  /api/admin/mail/blocked-senders
  *  - DELETE /api/admin/mail/blocked-senders
@@ -41,7 +41,7 @@ return function (App $app): void {
     $container = RouteBootstrap::container($app);
     $authz = $container->get(AuthorizationInterface::class);
 
-    $app->group('/api/admin/mail', function (RouteCollectorProxy $group) use ($container) {
+    $app->group('/api/admin/mail', function (RouteCollectorProxy $group) use ($container, $authz) {
         $controller = $container->get(MailController::class);
 
         $group->get('', [$controller, 'status']);
@@ -59,7 +59,8 @@ return function (App $app): void {
         $group->post('/messages/{uid}/hide', [$controller, 'hide']);
         $group->post('/messages/{uid}/unhide', [$controller, 'unhide']);
         $group->post('/local-trash/empty', [$controller, 'emptyLocalTrash']);
-        $group->post('/send', [$controller, 'send']);
+        $group->post('/send', [$controller, 'send'])
+            ->add(new PermissionMiddleware($authz, 'mail:send'));
         $group->put('/drafts', [$controller, 'saveDraft']);
         $group->delete('/messages/{uid}', [$controller, 'deleteLocalMessage']);
         $group->post('/messages/{uid}/spam', [$controller, 'spam']);

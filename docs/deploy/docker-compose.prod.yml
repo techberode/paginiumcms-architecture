@@ -13,20 +13,19 @@ services:
     ports: !reset []
     image: redis:7.4-alpine
     restart: unless-stopped
-    command:
-      - redis-server
-      - --appendonly
-      - "yes"
-      - --maxmemory
-      - 256mb
-      - --maxmemory-policy
-      - allkeys-lru
+    # REDIS_PASSWORD (stack .env) enables requirepass; the same value is passed to PHP below.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru $${REDIS_PASSWORD:+--requirepass \"$$REDIS_PASSWORD\"}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    mem_limit: 384m
+    security_opt:
+      - no-new-privileges:true
     # Bind mount under STACK_DIR (no top-level `volumes:` block required — avoids merge errors
     # when operators paste only the `services:` section into STACK_DIR/docker-compose.prod.yml).
     volumes:
       - ${STACK_DIR}/redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli $${REDIS_PASSWORD:+-a \"$$REDIS_PASSWORD\" --no-auth-warning} ping | grep -q PONG"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -35,6 +34,13 @@ services:
     restart: unless-stopped
     init: true
     stop_grace_period: 30s
+    # Code mount stays RW and FPM master runs as root (workers = www-data): admin
+    # self-update runs git pull + npm build inside this container. Limits cap blast radius.
+    mem_limit: ${PHP_MEM_LIMIT:-3g}
+    cpus: ${PHP_CPUS:-2.0}
+    pids_limit: ${PHP_PIDS_LIMIT:-512}
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       redis:
         condition: service_healthy
@@ -61,12 +67,17 @@ services:
       GIT_CONFIG_VALUE_0: /var/www/html
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       # GITHUB_DEPLOY_SSH_KEY_PATH is set by docker-compose.deploy-key.yml (/run/secrets/…).
 
   nginx:
     restart: unless-stopped
     init: true
     stop_grace_period: 15s
+    mem_limit: ${NGINX_MEM_LIMIT:-256m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       - php
     ports: !override

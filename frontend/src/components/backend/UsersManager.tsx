@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { User } from '../../api/types';
 import {
-  listUsers,
+  fetchUsersList,
   createUser,
   updateUser,
   deleteUser,
@@ -91,6 +91,7 @@ export const UsersManager: React.FC = () => {
   const [actorIsSuperAdmin, setActorIsSuperAdmin] = useState(false);
   const [assignableRoles, setAssignableRoles] = useState<UserRole[]>(USER_ROLES);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingAvatarUrl, setEditingAvatarUrl] = useState<string | null>(null);
@@ -115,14 +116,17 @@ export const UsersManager: React.FC = () => {
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const data = await listUsers();
+      const data = await fetchUsersList();
       setUsers(data.users);
       setRequireTwoFactorStaff(data.meta?.require_two_factor_staff ?? true);
       setActorIsSuperAdmin(data.meta?.actor_is_super_admin ?? false);
       setAssignableRoles(
         data.meta?.assignable_roles?.length ? data.meta.assignable_roles : USER_ROLES
       );
+    } catch {
+      setLoadError(t('users.page.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -381,6 +385,26 @@ export const UsersManager: React.FC = () => {
     return (
       <div className="flex justify-center py-16">
         <div className="animate-spin h-10 w-10 border-b-2 border-indigo-600 rounded-full" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-6 lg:p-10 max-w-6xl mx-auto">
+        <div
+          role="alert"
+          className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300"
+        >
+          <p>{loadError}</p>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="mt-4 rounded-xl bg-rose-600 px-4 py-2 font-semibold text-white hover:bg-rose-700"
+          >
+            {t('users.page.retry')}
+          </button>
+        </div>
       </div>
     );
   }

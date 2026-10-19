@@ -16,6 +16,7 @@ declare(strict_types=1);
 use PaginiumCMS\Http\Controllers\Admin\UserController;
 use PaginiumCMS\Http\Controllers\Admin\GdprController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -42,6 +43,7 @@ return function (App $app): void {
         $group->post('/{id}/avatar', [$controller, 'uploadAvatar']);
         $group->delete('/{id}/avatar', [$controller, 'removeAvatar']);
     })
+        ->add(new PermissionMiddleware($container->get(AuthorizationInterface::class), 'user:manage'))
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));

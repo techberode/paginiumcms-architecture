@@ -15,6 +15,13 @@ updates:
           - minor
           - patch
 
+  # CI actions are pinned to commit SHAs; Dependabot bumps the SHA + version comment.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+
   - package-ecosystem: npm
     directory: /frontend
     schedule:

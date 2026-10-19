@@ -6,6 +6,7 @@ import { Check, Copy, Loader2, QrCode, Shield, Smartphone } from 'lucide-react';
 import { authApi } from '../../api/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 
 const COMPATIBLE_APPS = [
   'Google Authenticator',
@@ -19,6 +20,7 @@ export const TwoFactorSettings: React.FC = () => {
   const { user, updateUser, refreshUser } = useAuth();
   const confirmDestructive = useAdminConfirm();
   const toast = useToast();
+  const { t } = useI18n();
   const [enabled, setEnabled] = useState(false);
   const [verified, setVerified] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -71,12 +73,12 @@ export const TwoFactorSettings: React.FC = () => {
         setSecret(data.secret);
         setEnabled(true);
         setVerified(false);
-        toast.info('Naskenujte QR kód v autentifikátore a zadajte overovací kód');
+        toast.info(t('twoFactor.toast.scanQr'));
         if (user) {
           updateUser({ ...user, twoFactorEnabled: true });
         }
       } else {
-        toast.error('Nepodarilo sa aktivovať 2FA');
+        toast.error(t('twoFactor.toast.enableFailed'));
       }
     } finally {
       setBusy(false);
@@ -93,11 +95,11 @@ export const TwoFactorSettings: React.FC = () => {
         setQrCode(null);
         setSecret(null);
         setVerifyCode('');
-        toast.success('2FA je aktívna');
+        toast.success(t('twoFactor.toast.active'));
         await loadStatus();
         await refreshUser();
       } else {
-        toast.error('Neplatný kód – skúste aktuálny kód z autentifikátora');
+        toast.error(t('twoFactor.toast.invalidCode'));
       }
     } finally {
       setBusy(false);
@@ -105,7 +107,7 @@ export const TwoFactorSettings: React.FC = () => {
   };
 
   const handleDisable = async () => {
-    if (!(await confirmDestructive('Naozaj chcete vypnúť dvojfaktorové overenie?'))) {
+    if (!(await confirmDestructive(t('twoFactor.confirmDisable')))) {
       return;
     }
 
@@ -118,7 +120,7 @@ export const TwoFactorSettings: React.FC = () => {
         setQrCode(null);
         setSecret(null);
         setVerifyCode('');
-        toast.success('2FA deaktivovaná');
+        toast.success(t('twoFactor.toast.disabled'));
         await refreshUser();
       }
     } finally {
@@ -131,15 +133,19 @@ export const TwoFactorSettings: React.FC = () => {
     try {
       await navigator.clipboard.writeText(secret);
       setCopied(true);
-      toast.success('Tajný kľúč skopírovaný');
+      toast.success(t('twoFactor.toast.secretCopied'));
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Kopírovanie zlyhalo');
+      toast.error(t('twoFactor.toast.copyFailed'));
     }
   };
 
   const showSetup = enabled && !verified && qrCode;
-  const statusLabel = verified ? 'Aktívne' : enabled ? 'Čaká na overenie' : 'Vypnuté';
+  const statusLabel = verified
+    ? t('twoFactor.status.active')
+    : enabled
+      ? t('twoFactor.status.pending')
+      : t('twoFactor.status.off');
   const statusClass = verified
     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
     : enabled
@@ -151,7 +157,7 @@ export const TwoFactorSettings: React.FC = () => {
       <div className="card">
         <div className="card-body flex items-center gap-3 text-sm text-gray-500">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Načítavam stav 2FA…
+          {t('twoFactor.loading')}
         </div>
       </div>
     );
@@ -164,18 +170,16 @@ export const TwoFactorSettings: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Shield className="w-5 h-5 text-indigo-600" />
-              Dvojfaktorové overenie (2FA)
+              {t('twoFactor.title')}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              TOTP kód z mobilnej aplikácie pri každom prihlásení.
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('twoFactor.subtitle')}</p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusClass}`}>{statusLabel}</span>
         </div>
 
         {verified && (
           <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/20 p-4 text-sm text-emerald-800 dark:text-emerald-200">
-            2FA je zapnutá a overená. Pri ďalšom prihlásení zadáte 6-miestny kód z autentifikátora.
+            {t('twoFactor.activeNotice')}
           </div>
         )}
 
@@ -184,7 +188,7 @@ export const TwoFactorSettings: React.FC = () => {
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <p className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-indigo-500" />
-                Kompatibilné aplikácie
+                {t('twoFactor.compatibleApps')}
               </p>
               <ul className="flex flex-wrap gap-2">
                 {COMPATIBLE_APPS.map((app) => (
@@ -199,7 +203,7 @@ export const TwoFactorSettings: React.FC = () => {
             </div>
 
             <button onClick={handleEnable} disabled={busy} className="btn btn-primary">
-              {busy ? 'Generujem QR kód…' : 'Začať nastavenie 2FA'}
+              {busy ? t('twoFactor.generating') : t('twoFactor.start')}
             </button>
           </div>
         )}
@@ -212,12 +216,8 @@ export const TwoFactorSettings: React.FC = () => {
                   1
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Nainštalujte autentifikátor
-                  </p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                    Odporúčame Google Authenticator (Android / iOS) alebo Authy.
-                  </p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('twoFactor.step1Title')}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t('twoFactor.step1Body')}</p>
                 </div>
               </li>
 
@@ -227,23 +227,19 @@ export const TwoFactorSettings: React.FC = () => {
                 </span>
                 <div className="flex-1 space-y-4">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      Naskenujte QR kód
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                      V aplikácii zvoľte „Pridať účet“ → „Naskenovať QR kód“.
-                    </p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('twoFactor.step2Title')}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t('twoFactor.step2Body')}</p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-center gap-6">
                     <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                      <img src={qrCode} alt="QR kód pre Google Authenticator" className="w-52 h-52" />
+                      <img src={qrCode} alt={t('twoFactor.qrAlt')} className="w-52 h-52" />
                     </div>
 
                     {secret && (
                       <div className="w-full sm:flex-1 space-y-2">
                         <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                          Manuálne zadanie (ak QR nefunguje)
+                          {t('twoFactor.manualEntry')}
                         </p>
                         <div className="flex items-center gap-2">
                           <code className="flex-1 text-sm font-mono bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg break-all">
@@ -253,7 +249,7 @@ export const TwoFactorSettings: React.FC = () => {
                             type="button"
                             onClick={() => void handleCopySecret()}
                             className="btn btn-secondary shrink-0"
-                            title="Skopírovať tajný kľúč"
+                            title={t('twoFactor.copySecret')}
                           >
                             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                           </button>
@@ -269,7 +265,7 @@ export const TwoFactorSettings: React.FC = () => {
                     className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
                   >
                     <QrCode className="w-3.5 h-3.5" />
-                    Obnoviť QR kód
+                    {t('twoFactor.refreshQr')}
                   </button>
                 </div>
               </li>
@@ -280,12 +276,8 @@ export const TwoFactorSettings: React.FC = () => {
                 </span>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      Zadajte overovací kód
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                      6-miestny kód z aplikácie (obnovuje sa každých 30 s).
-                    </p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('twoFactor.step3Title')}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t('twoFactor.step3Body')}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <input
@@ -299,7 +291,7 @@ export const TwoFactorSettings: React.FC = () => {
                       placeholder="000000"
                     />
                     <button onClick={handleVerify} disabled={busy || verifyCode.length !== 6} className="btn btn-primary">
-                      Overiť a aktivovať
+                      {t('twoFactor.verify')}
                     </button>
                   </div>
                 </div>
@@ -310,13 +302,13 @@ export const TwoFactorSettings: React.FC = () => {
 
         {enabled && verified && (
           <button onClick={handleDisable} disabled={busy} className="btn btn-secondary">
-            Vypnúť 2FA
+            {t('twoFactor.disable')}
           </button>
         )}
 
         {enabled && !verified && !qrCode && (
           <button onClick={() => void loadQrCode()} disabled={busy} className="btn btn-secondary">
-            Zobraziť QR kód znova
+            {t('twoFactor.showQrAgain')}
           </button>
         )}
       </div>

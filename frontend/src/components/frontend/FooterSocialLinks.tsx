@@ -3,12 +3,16 @@ import React from 'react';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { useI18n } from '../../context/I18nContext';
 import { SocialBrandLink } from '../ui/SocialBrandIcon';
+import { safeOptionalHref } from '../../security/safeUrl';
 
-function socialHref(platform: string, url: string): string {
+const EMAIL_PATTERN = /^[^\s@:/?#]+@[^\s@:/?#]+$/;
+
+function socialHref(platform: string, url: string): string | undefined {
   if (platform === 'email') {
-    return url.startsWith('mailto:') ? url : `mailto:${url}`;
+    const address = url.trim().replace(/^mailto:/i, '');
+    return EMAIL_PATTERN.test(address) ? `mailto:${address}` : undefined;
   }
-  return url;
+  return safeOptionalHref(url);
 }
 
 export const FooterSocialLinks: React.FC<{ className?: string }> = ({ className = '' }) => {
@@ -32,6 +36,9 @@ export const FooterSocialLinks: React.FC<{ className?: string }> = ({ className 
       >
         {social.links.map((link) => {
           const href = socialHref(link.platform, link.url);
+          if (href === undefined) {
+            return null;
+          }
           const external = link.platform !== 'email';
 
           return (

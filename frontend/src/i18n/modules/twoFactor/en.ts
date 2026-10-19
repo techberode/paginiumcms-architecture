@@ -1,0 +1,40 @@
+import type { MessageTree } from '../../types';
+
+/** Account 2FA settings (English). */
+export const twoFactorEn: MessageTree = {
+  title: 'Two-factor authentication (2FA)',
+  subtitle: 'A TOTP code from a mobile app at every sign-in.',
+  loading: 'Loading 2FA status…',
+  status: {
+    active: 'Active',
+    pending: 'Awaiting verification',
+    off: 'Off',
+  },
+  activeNotice: '2FA is enabled and verified. Next time you sign in, enter the 6-digit code from your authenticator.',
+  compatibleApps: 'Compatible apps',
+  start: 'Start 2FA setup',
+  generating: 'Generating QR code…',
+  step1Title: 'Install an authenticator',
+  step1Body: 'We recommend Google Authenticator (Android / iOS) or Authy.',
+  step2Title: 'Scan the QR code',
+  step2Body: 'In the app choose “Add account” → “Scan QR code”.',
+  qrAlt: 'QR code for Google Authenticator',
+  manualEntry: 'Manual entry (if the QR code does not work)',
+  copySecret: 'Copy secret key',
+  refreshQr: 'Refresh QR code',
+  step3Title: 'Enter the verification code',
+  step3Body: '6-digit code from the app (refreshes every 30 s).',
+  verify: 'Verify and enable',
+  disable: 'Disable 2FA',
+  showQrAgain: 'Show QR code again',
+  confirmDisable: 'Do you really want to disable two-factor authentication?',
+  toast: {
+    scanQr: 'Scan the QR code in your authenticator and enter the verification code',
+    enableFailed: 'Could not enable 2FA',
+    active: '2FA is active',
+    invalidCode: 'Invalid code – try the current code from your authenticator',
+    disabled: '2FA disabled',
+    secretCopied: 'Secret key copied',
+    copyFailed: 'Copy failed',
+  },
+};

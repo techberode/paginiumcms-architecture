@@ -3,17 +3,24 @@
 # Backend API:  http://localhost:8080
 # Frontend dev: docker compose --profile dev up frontend  → http://localhost:3025
 # FE build:     docker compose --profile build run --rm frontend-build
+#
+# Published ports bind to 127.0.0.1 by default. For LAN testing set
+# PAGINIUM_BIND=0.0.0.0 in your shell/.env (never on an internet-facing host).
+# REDIS_PASSWORD (optional) enables Redis requirepass; PHP reads the same variable.
 
 services:
   redis:
     profiles: ["cache"]
     image: redis:7.4-alpine
+    command: ["sh", "-c", "exec redis-server $${REDIS_PASSWORD:+--requirepass \"$$REDIS_PASSWORD\"}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli $${REDIS_PASSWORD:+-a \"$$REDIS_PASSWORD\" --no-auth-warning} ping | grep -q PONG"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -30,6 +37,7 @@ services:
       APP_DEBUG: "true"
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -38,7 +46,7 @@ services:
     depends_on:
       - php
     ports:
-      - "8080:80"
+      - "${PAGINIUM_BIND:-127.0.0.1}:8080:80"
     volumes:
       - .:/var/www/html:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
@@ -56,7 +64,7 @@ services:
     working_dir: /var/www/html/frontend
     command: sh -c "npm ci && npm run dev:lan"
     ports:
-      - "3025:3025"
+      - "${PAGINIUM_BIND:-127.0.0.1}:3025:3025"
     volumes:
       - .:/var/www/html
     # Prázdne → axios ide na rovnaký origin (:3025) cez Vite proxy; cookies fungujú.

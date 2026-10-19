@@ -7,10 +7,14 @@ namespace PaginiumCMS\Core\Setup\Services;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Gates browser setup with optional SETUP_TOKEN (required in production when configured).
+ * Gates browser setup with SETUP_TOKEN. The token may be omitted only in explicit
+ * development environments; any other APP_ENV (including typos like `prod`) fails closed.
  */
 final class SetupAccessGuard
 {
+    /** @var list<string> */
+    private const TOKEN_OPTIONAL_ENVS = ['development', 'local', 'testing', 'test'];
+
     public function isInstalledProbeAllowed(SetupStatusService $status): bool
     {
         return !$status->isInstalled();
@@ -46,6 +50,6 @@ final class SetupAccessGuard
     {
         $env = strtolower(trim((string) (getenv('APP_ENV') ?: 'production')));
 
-        return in_array($env, ['production', 'staging'], true);
+        return !in_array($env, self::TOKEN_OPTIONAL_ENVS, true);
     }
 }

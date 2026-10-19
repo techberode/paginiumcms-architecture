@@ -60,12 +60,12 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
       setAllowedRoots(roots);
       setFiles(allFiles);
     } catch (err) {
-      toast.error('Nepodarilo sa načítať súbory');
+      toast.error(t('devtools.editor.filesLoadFailed'));
       console.error(err);
     } finally {
       setLoadingFiles(false);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   const loadFile = useCallback(async (path: string) => {
     setLoadingFile(true);
@@ -88,12 +88,12 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
           toast.success(t('playground.imported'));
         }
       } else {
-        setError('Nepodarilo sa načítať súbor');
+        setError(t('devtools.editor.fileLoadFailed'));
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Nepodarilo sa načítať súbor';
+      const message = err instanceof Error ? err.message : t('devtools.editor.fileLoadFailed');
       setError(message);
-      toast.error('Nepodarilo sa načítať súbor');
+      toast.error(t('devtools.editor.fileLoadFailed'));
       console.error(err);
     } finally {
       setLoadingFile(false);
@@ -145,7 +145,7 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
     if (!currentFile || !isDirty) return;
 
     const ok = await confirmDestructive(
-      `Uložiť zmeny do súboru?\n\n${currentFile}\n\nChybný PHP kód môže znefunkčniť CMS. Pokračovať?`
+      t('devtools.editor.confirmSave', { file: currentFile })
     );
     if (!ok) return;
 
@@ -159,18 +159,18 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
       if (result.success) {
         setOriginalContent(content);
         setIsDirty(false);
-        setSuccess('Súbor uložený');
-        toast.success('Súbor uložený');
+        setSuccess(t('devtools.editor.saved'));
+        toast.success(t('devtools.editor.saved'));
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        const message = result.error || 'Uloženie zlyhalo';
+        const message = result.error || t('devtools.editor.saveFailed');
         setError(message);
         toast.error(message);
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Uloženie zlyhalo';
+      const message = err instanceof Error ? err.message : t('devtools.editor.saveFailed');
       setError(message);
-      toast.error('Uloženie zlyhalo');
+      toast.error(t('devtools.editor.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -210,19 +210,15 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
   const handleRevert = () => {
     setContent(originalContent);
     setIsDirty(false);
-    toast.info('Changes reverted');
+    toast.info(t('devtools.editor.reverted'));
   };
 
   const handleLockEditor = async () => {
     if (isDirty) {
-      const ok = await confirmDestructive(
-        'Máte neuložené zmeny. Naozaj chcete zamknúť Code Editor bez uloženia?'
-      );
+      const ok = await confirmDestructive(t('devtools.editor.confirmLockDirty'));
       if (!ok) return;
     } else {
-      const ok = await confirmDestructive(
-        'Zamknúť Code Editor? Na ďalšie úpravy kódu budete musieť znova zadať TOTP kód.'
-      );
+      const ok = await confirmDestructive(t('devtools.editor.confirmLock'));
       if (!ok) return;
     }
 
@@ -270,9 +266,9 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
               onClick={() => void handleLockEditor()}
               disabled={locking}
               className="px-3 py-1.5 text-sm border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded disabled:opacity-50"
-              title="Zamknúť Code Editor (vyžaduje znova TOTP)"
+              title={t('devtools.editor.lockTitle')}
             >
-              {locking ? 'Zamykam…' : 'Zamknúť editor'}
+              {locking ? t('devtools.editor.locking') : t('devtools.editor.lock')}
             </button>
             <button
               type="button"
@@ -341,7 +337,7 @@ const CodeEditorContent: React.FC<CodeEditorProps> = ({ initialPath = '' }) => {
         <div className="code-editor-body">
           <div className="file-tree hidden md:block">
             {loadingFiles ? (
-              <div className="p-4 text-sm text-gray-500">Načítavam strom súborov…</div>
+              <div className="p-4 text-sm text-gray-500">{t('devtools.editor.treeLoading')}</div>
             ) : (
               <FileTree
                 files={files}

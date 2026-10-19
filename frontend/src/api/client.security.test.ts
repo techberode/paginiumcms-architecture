@@ -233,4 +233,49 @@ describe('ApiClient security', () => {
 
     window.removeEventListener('paginium:auth-expired', authExpired);
   });
+
+  it('postBlobWithCsrf refreshes the token once on 403 csrf_invalid and retries', async () => {
+    storage.set('csrf_token', 'stale-token');
+    const { default: client } = await loadClientModule();
+
+    const csrfError = {
+      isAxiosError: true,
+      response: {
+        status: 403,
+        data: new Blob([JSON.stringify({ success: false, code: 'csrf_invalid' })], { type: 'application/json' }),
+      },
+    };
+    axiosState.instance.post
+      .mockRejectedValueOnce(csrfError)
+      .mockResolvedValueOnce({ status: 200, data: new Blob(['zip']) });
+    axiosState.instance.get.mockResolvedValueOnce({ data: { success: true, token: 'fresh-token' } });
+
+    const result = await client.postBlobWithCsrf('/api/media/bulk-download', { paths: ['/a.png'] });
+
+    expect(result.ok).toBe(true);
+    expect(axiosState.instance.post).toHaveBeenCalledTimes(2);
+    expect(axiosState.instance.post.mock.calls[0][2].headers['X-CSRF-TOKEN']).toBe('stale-token');
+    expect(axiosState.instance.post.mock.calls[1][2].headers['X-CSRF-TOKEN']).toBe('fresh-token');
+  });
+
+  it('postBlobWithCsrf does not loop when the retried request is still rejected', async () => {
+    storage.set('csrf_token', 'stale-token');
+    const { default: client } = await loadClientModule();
+
+    const csrfError = {
+      isAxiosError: true,
+      response: {
+        status: 403,
+        data: new Blob([JSON.stringify({ success: false, code: 'csrf_invalid' })], { type: 'application/json' }),
+      },
+    };
+    axiosState.instance.post.mockRejectedValue(csrfError);
+    axiosState.instance.get.mockResolvedValue({ data: { success: true, token: 'fresh-token' } });
+
+    const result = await client.postBlobWithCsrf('/api/media/bulk-download', { paths: [] });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(403);
+    expect(axiosState.instance.post).toHaveBeenCalledTimes(2);
+  });
 });

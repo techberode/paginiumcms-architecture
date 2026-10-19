@@ -182,7 +182,36 @@ Optional: `rclone copy … && rclone delete … --min-age 30d` on the remote for
 
 PaginiumCMS uploads each successful local ZIP to WebDAV when enabled; it **does not** delete older files on Nextcloud. Plan manual cleanup (Files app, `occ`, or host `rclone delete --min-age …`) so remote storage does not grow without bound. Local ZIP count is still governed by Platform → Backups **keep**; trash and content-version retention are separate ([STORAGE.md](../architecture/STORAGE.md#14-storage-retention-trash-versions-drafts)).
 
-**Optional encryption before upload:** Settings → **Backups (off-site)** → enable **Encrypt ZIP before off-site upload** and set **Off-site encryption key** (stored encrypted with `APP_KEY`, separate from WebDAV password). Remote file is `*.zip.enc` (`enc:bk:s1:` libsodium payload). Decrypt offline with the same passphrase before restore.
+**Optional encryption before upload:** Settings → **Backups (off-site)** → enable **Encrypt ZIP before off-site upload** and set **Off-site encryption key** (stored encrypted with `APP_KEY`, separate from WebDAV password). Remote file is `*.zip.enc`. Decrypt offline with the same passphrase before restore (see below).
+
+<a id="off-site-encryption-format"></a>
+
+### Off-site encryption format and offline decrypt (ISS-204)
+
+New archives use format **`enc:bk:s2:`** (requires PHP `ext-sodium`; the official `php:8.5-fpm` image and CI include it):
+
+| Part | Size | Content |
+|---|---:|---|
+| Prefix | 10 B | `enc:bk:s2:` |
+| Salt | 16 B | random, per file |
+| KDF params | 8 B | `pack('NN', opslimit, memlimit)` — Argon2id (`sodium_crypto_pwhash`, default *INTERACTIVE*); on decrypt the header is untrusted and rejected unless `1 ≤ opslimit ≤ 16` and `8 KiB ≤ memlimit ≤ 1 GiB` (decrypt-DoS cap) |
+| Stream header | 24 B | XChaCha20-Poly1305 secretstream header |
+| Chunks | n × (4 B length + ciphertext) | 64 KiB plaintext chunks; the last one carries `TAG_FINAL` |
+
+The ZIP is streamed (never fully loaded into memory). Decryption fails on a wrong passphrase, a modified chunk, truncation (no `TAG_FINAL`) or trailing bytes, and removes the partial output. Legacy **`enc:bk:s1:`** files (SHA-256 key + secretbox, pre-ISS-204) still decrypt with the same command.
+
+```bash
+# Passphrase from env (CI/automation) — never pass it as a CLI argument
+PAGINIUM_BACKUP_PASSPHRASE='…' php backend/bin/console backup:decrypt-offsite /tmp/nightly.zip.enc /tmp/nightly.zip
+
+# Hidden prompt (interactive); output defaults to the input path without ".enc"
+php backend/bin/console backup:decrypt-offsite /tmp/nightly.zip.enc
+
+# On the same instance: use the stored Settings key (decrypted with APP_KEY)
+php backend/bin/console backup:decrypt-offsite /tmp/nightly.zip.enc --from-settings --force
+```
+
+Then import the plain ZIP through `backup:restore-archive` or Platform → Backups. Keep the passphrase **outside** the CMS (password manager): if the server and its `APP_KEY` are lost, `--from-settings` is unavailable.
 
 ---
 

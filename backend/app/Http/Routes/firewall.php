@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Admin\FirewallController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -29,6 +30,7 @@ return function (App $app): void {
         $group->post('/whitelist/bulk-remove', [$controller, 'bulkRemoveWhitelist']);
         $group->delete('/whitelist/{ip}', [$controller, 'removeWhitelist']);
     })
+        ->add(new PermissionMiddleware($authz, 'system:manage'))
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($auth);

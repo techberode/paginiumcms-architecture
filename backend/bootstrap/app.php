@@ -75,6 +75,7 @@ use PaginiumCMS\Http\Controllers\Auth\TwoFactorController;
 use PaginiumCMS\Http\Support\JsonResponder;
 use PaginiumCMS\Http\Controllers\Admin\BackupController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Core\Backup\Services\BackupManager;
@@ -1009,7 +1010,8 @@ $app->group('/api/admin', function (RouteCollectorProxy $group) use ($container)
     $group->delete('/backups/{id}', [$backupController, 'deleteBackup']);
     $group->get('/backups/schedule', [$backupController, 'getSchedule']);
     $group->post('/backups/schedule', [$backupController, 'scheduleBackup']);
-})->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
+})->add(new PermissionMiddleware($container->get(AuthorizationInterface::class), 'backup:manage'))
+    ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['ADMIN', 'SUPER_ADMIN']))
     ->add($container->get(TwoFactorMiddleware::class))
     ->add($container->get(AuthMiddleware::class));
 

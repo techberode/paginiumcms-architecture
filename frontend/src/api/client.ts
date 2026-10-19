@@ -60,6 +60,18 @@ export interface ApiError {
   status?: number;
 }
 
+async function isCsrfInvalidBlob(blob: Blob | undefined): Promise<boolean> {
+  if (!blob) {
+    return false;
+  }
+  try {
+    const payload = JSON.parse(await blob.text()) as { code?: unknown };
+    return payload.code === 'csrf_invalid';
+  } catch {
+    return false;
+  }
+}
+
 class ApiClient {
   private client: AxiosInstance;
   private static instance: ApiClient;
@@ -229,6 +241,29 @@ class ApiClient {
       }
       throw error;
     }
+  }
+
+  /**
+   * Binary POST with CSRF attached and a single token refresh + retry on `403 csrf_invalid`
+   * (blob responses bypass the JSON self-heal in the response interceptor).
+   */
+  public async postBlobWithCsrf(
+    url: string,
+    data: unknown
+  ): Promise<{ ok: boolean; status: number; blob?: Blob; errorBlob?: Blob }> {
+    const send = async (csrfRetried: boolean): Promise<{ ok: boolean; status: number; blob?: Blob; errorBlob?: Blob }> => {
+      const csrf = this.getCsrfToken() ?? (await this.refreshCsrfToken()) ?? '';
+      const response = await this.postRawBlob(url, data, csrf);
+      if (response.status === 403 && !csrfRetried && (await isCsrfInvalidBlob(response.errorBlob))) {
+        const fresh = await this.refreshCsrfToken();
+        if (fresh) {
+          return send(true);
+        }
+      }
+      return response;
+    };
+
+    return send(false);
   }
 
   public setAuthToken(_token: string): void {

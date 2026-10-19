@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { getDeveloperStatus, lockDeveloperMode, unlockDeveloperMode } from '../../api/developer';
 import { useToast } from '../../hooks/useToast';
+import { useI18n } from '../../context/I18nContext';
 import {
   DeveloperUnlockGateContext,
 } from './useDeveloperUnlockGate';
@@ -21,6 +22,7 @@ export const DeveloperUnlockGate: React.FC<DeveloperUnlockGateProps> = ({ childr
   const [devToken, setDevToken] = useState('');
   const [unlocking, setUnlocking] = useState(false);
   const toast = useToast();
+  const { t } = useI18n();
 
   const refresh = async () => {
     setLoading(true);
@@ -45,21 +47,21 @@ export const DeveloperUnlockGate: React.FC<DeveloperUnlockGateProps> = ({ childr
         setUnlocked(false);
         setTotpCode('');
         setDevToken('');
-        toast.success('Code Editor zamknutý — na úpravy kódu znova zadajte TOTP');
+        toast.success(t('devtools.unlock.locked'));
         return true;
       }
-      toast.error(result.error || 'Zamknutie zlyhalo');
+      toast.error(result.error || t('devtools.unlock.lockFailed'));
       return false;
     } finally {
       setLocking(false);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!totpCode.trim() && !devToken.trim()) {
-      toast.error('Zadajte TOTP kód z autentifikátora alebo dev token');
+      toast.error(t('devtools.unlock.codeRequired'));
       return;
     }
 
@@ -70,10 +72,10 @@ export const DeveloperUnlockGate: React.FC<DeveloperUnlockGateProps> = ({ childr
         token: devToken.trim() || undefined,
       });
       if (result.success) {
-        toast.success('Developer Mode odomknutý');
+        toast.success(t('devtools.unlock.unlocked'));
         setUnlocked(true);
       } else {
-        toast.error(result.error || 'Odomknutie zlyhalo');
+        toast.error(result.error || t('devtools.unlock.unlockFailed'));
       }
     } finally {
       setUnlocking(false);
@@ -92,19 +94,14 @@ export const DeveloperUnlockGate: React.FC<DeveloperUnlockGateProps> = ({ childr
     return (
       <div className="max-w-lg mx-auto card mt-8">
         <div className="card-body space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Developer Mode nie je povolený</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Na <strong>PHP backend serveri</strong> (Docker na <code className="text-xs">192.168.10.20:8080</code>,
-            nie nginx na :8081) nastavte v <code className="text-xs">.env</code>:
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('devtools.unlock.unavailableTitle')}</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{t('devtools.unlock.unavailableBody')}</p>
           <pre className="text-xs bg-slate-100 dark:bg-slate-800 p-3 rounded-lg overflow-x-auto">
 {`DEVELOPER_MODE=true
 # alebo APP_DEBUG=true
 # alebo APP_ENV=development`}
           </pre>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Po úprave reštartujte PHP/Docker kontajner a obnovte stránku.
-          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('devtools.unlock.unavailableRestart')}</p>
         </div>
       </div>
     );
@@ -117,20 +114,20 @@ export const DeveloperUnlockGate: React.FC<DeveloperUnlockGateProps> = ({ childr
           <div className="flex items-start gap-3">
             <ShieldCheck className="w-6 h-6 text-indigo-600 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Odomknutie Developer Mode</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('devtools.unlock.title')}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Pred úpravou zdrojového kódu zadajte TOTP kód z autentifikátora (musíte mať zapnutú 2FA v{' '}
+                {t('devtools.unlock.introBefore')}{' '}
                 <Link to="/account/security" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-                  Bezpečnosti účtu
+                  {t('devtools.unlock.introLink')}
                 </Link>
-                ) alebo registrovaný dev token.
+                {t('devtools.unlock.introAfter')}
               </p>
             </div>
           </div>
           <form className="space-y-3" onSubmit={handleUnlock}>
             <input
               className="form-input w-full text-center tracking-[0.3em] font-mono"
-              placeholder="TOTP kód (6 číslic)"
+              placeholder={t('devtools.unlock.totpPlaceholder')}
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}
@@ -139,12 +136,12 @@ export const DeveloperUnlockGate: React.FC<DeveloperUnlockGateProps> = ({ childr
             />
             <input
               className="form-input w-full font-mono text-sm"
-              placeholder="Dev token (voliteľné)"
+              placeholder={t('devtools.unlock.tokenPlaceholder')}
               value={devToken}
               onChange={(e) => setDevToken(e.target.value)}
             />
             <button type="submit" disabled={unlocking} className="btn btn-primary w-full">
-              {unlocking ? 'Odomykam…' : 'Odomknúť Developer Mode'}
+              {unlocking ? t('devtools.unlock.submitting') : t('devtools.unlock.submit')}
             </button>
           </form>
         </div>

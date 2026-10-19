@@ -27,10 +27,11 @@ const IFRAME_HOST_SUFFIXES = [
 
 let iframeHookInstalled = false;
 
-function isAllowedIframeSrc(src: string): boolean {
+export function isAllowedIframeSrc(src: string): boolean {
   try {
     const url = new URL(src, window.location.origin);
-    if (url.protocol !== 'https:') {
+    // sandbox below grants allow-scripts + allow-same-origin: a same-origin frame could escape it.
+    if (url.protocol !== 'https:' || url.origin === window.location.origin) {
       return false;
     }
     const host = url.hostname.toLowerCase();

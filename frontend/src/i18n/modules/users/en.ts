@@ -4,6 +4,8 @@ export const usersEn: MessageTree = {
   page: {
     title: 'User management',
     subtitle: 'Manage accounts, roles, avatars, and security settings.',
+    loadFailed: 'Could not load the user list.',
+    retry: 'Try again',
   },
   tabs: {
     list: 'Users',

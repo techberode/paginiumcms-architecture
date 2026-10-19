@@ -11,6 +11,8 @@ export const skCore: MessageTree = {
     search: 'Hľadať',
     error: 'Chyba',
     success: 'Hotovo',
+    viewLoadFailed: 'Túto sekciu sa nepodarilo načítať. Možno bola nasadená nová verzia.',
+    reload: 'Obnoviť stránku',
   },
   otp: {
     codeRequired: 'Zadajte overovací kód',
@@ -33,6 +35,13 @@ export const skCore: MessageTree = {
       success: 'Heslo bolo zmenené',
       failed: 'Zmena hesla zlyhala',
       mismatch: 'Nové heslá sa nezhodujú',
+    },
+    errors: {
+      loginFailed: 'Prihlásenie zlyhalo',
+      registerFailed: 'Registrácia zlyhala',
+      otpVerifyFailed: 'Overenie kódu zlyhalo',
+      otpResendFailed: 'Odoslanie kódu zlyhalo',
+      totpInvalid: 'Neplatný TOTP kód',
     },
   },
   nav: {

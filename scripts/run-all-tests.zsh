@@ -29,7 +29,7 @@ if [[ ! -f vendor/bin/phpunit ]]; then
 fi
 
 PROJECT_ROOT=$PWD
-TOTAL_STEPS=22
+TOTAL_STEPS=23
 CLEANUP_STEP=19
 
 typeset -a FAILED_STEPS
@@ -544,6 +544,23 @@ run_step 22 "Secret scan (ISS-173 private-key gate)" \
   './scripts/secret-scan.sh --self-test && ./scripts/secret-scan.sh'
 
 # ==================================================
+# ISS-204 — audit 2026-10-18 (RBAC routes, CSRF prefixes, SSRF, backup cipher, URL allow-lists)
+# ==================================================
+
+run_step 23 "PHPUnit audit 2026-10-18 pack (ISS-204)" \
+  'vendor/bin/phpunit --colors=always \
+     backend/tests/Http/Routes/RoutePermissionHardeningTest.php \
+     backend/tests/Modules/Security/Services/AuthorizationManagerSettingsReloadTest.php \
+     backend/tests/Http/Middleware/CsrfMiddlewareTest.php \
+     backend/tests/Modules/Media/Services/StockImageImporterTest.php \
+     backend/tests/Modules/Gallery/Services/GalleryItemValidatorTest.php \
+     backend/tests/Core/Media/DamMediaUrlTest.php \
+     backend/tests/Core/Setup/SetupAccessGuardTest.php \
+     backend/tests/Core/Support/Services/TeamKanbanAccessTest.php \
+     backend/tests/Core/Backup/Services/BackupOffsiteArchiveCipherTest.php \
+     backend/tests/Core/Backup/Commands/BackupDecryptOffsiteCommandTest.php'
+
+# ==================================================
 # ZÁVEREČNÝ SÚHRN
 # ==================================================
 print ""
@@ -574,6 +591,7 @@ labels=(
   "PHPUnit XSS/Zip/headers pack"
   "Security static grep (OutboundUrlGuard hygiene)"
   "Secret scan (ISS-173 private-key gate)"
+  "PHPUnit audit 2026-10-18 pack (ISS-204)"
 )
 
 i=1

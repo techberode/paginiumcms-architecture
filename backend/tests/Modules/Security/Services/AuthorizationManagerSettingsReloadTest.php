@@ -90,4 +90,51 @@ final class AuthorizationManagerSettingsReloadTest extends TestCase
 
         $this->assertTrue($authz->hasPermission($user, 'content:embed-external'));
     }
+
+    public function testLegacyAdminSettingsKeepSystemBackupAndMetricsManage(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('accessControl')->willReturn([
+            'permissionsAdmin' => 'user:manage,content:manage,media:manage,settings:manage,logs:view,metrics:read',
+        ]);
+
+        $authz = new AuthorizationManager(null, $settings);
+
+        $user = new User();
+        $user->setRoles(['ADMIN']);
+
+        foreach (['system:manage', 'backup:manage', 'metrics:manage', 'mail:send'] as $permission) {
+            $this->assertTrue($authz->hasPermission($user, $permission), $permission);
+        }
+    }
+
+    public function testEditorWithMailboxKeepsSendAfterUpgrade(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('accessControl')->willReturn([
+            'permissionsEditor' => 'content:create,content:edit,media:upload',
+        ]);
+
+        $authz = new AuthorizationManager(null, $settings);
+
+        $user = new User();
+        $user->setRoles(['EDITOR']);
+
+        $this->assertTrue($authz->hasPermission($user, 'mail:read-own'));
+        $this->assertTrue($authz->hasPermission($user, 'mail:send'));
+        $this->assertFalse($authz->hasPermission($user, 'system:manage'));
+        $this->assertFalse($authz->hasPermission($user, 'backup:manage'));
+    }
+
+    public function testCustomRoleCanReadMailboxWithoutSending(): void
+    {
+        $authz = new AuthorizationManager();
+        $authz->setRolePermissions('MAIL_READER', ['mail:read-own']);
+
+        $user = new User();
+        $user->setRoles(['MAIL_READER']);
+
+        $this->assertTrue($authz->hasPermission($user, 'mail:read-own'));
+        $this->assertFalse($authz->hasPermission($user, 'mail:send'));
+    }
 }

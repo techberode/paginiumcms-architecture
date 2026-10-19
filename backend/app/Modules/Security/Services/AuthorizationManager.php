@@ -16,6 +16,14 @@ use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
  */
 class AuthorizationManager implements AuthorizationInterface
 {
+    /**
+     * Permissions that replaced former ADMIN role gates (ISS-204); kept for ADMIN even when the
+     * stored settings list predates them, so upgrades never lock admins out. Custom roles opt in.
+     *
+     * @var list<string>
+     */
+    private const ADMIN_GUARANTEED = ['system:manage', 'backup:manage', 'metrics:manage'];
+
     /** @var array<string, array<int, string>> Mapovanie rolí na oprávnenia */
     private array $rolePermissions = [];
 
@@ -277,6 +285,15 @@ class AuthorizationManager implements AuthorizationInterface
             $permissions = PermissionCatalog::normalizeList($permissions);
         }
 
+        if ($role === AuthorizationInterface::ROLE_ADMIN) {
+            foreach (self::ADMIN_GUARANTEED as $guaranteed) {
+                if (!in_array($guaranteed, $permissions, true)) {
+                    $permissions[] = $guaranteed;
+                }
+            }
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
         if ($role === AuthorizationInterface::ROLE_ADMIN
             && !$this->hasContentDomainPermission($permissions)
         ) {
@@ -330,6 +347,14 @@ class AuthorizationManager implements AuthorizationInterface
             && !in_array(ExternalEmbedContentService::PERMISSION_EMBED_EXTERNAL, $permissions, true)
         ) {
             $permissions[] = ExternalEmbedContentService::PERMISSION_EMBED_EXTERNAL;
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if (in_array($role, [AuthorizationInterface::ROLE_ADMIN, AuthorizationInterface::ROLE_EDITOR], true)
+            && in_array('mail:read-own', $permissions, true)
+            && !in_array('mail:send', $permissions, true)
+        ) {
+            $permissions[] = 'mail:send';
             $permissions = PermissionCatalog::normalizeList($permissions);
         }
 

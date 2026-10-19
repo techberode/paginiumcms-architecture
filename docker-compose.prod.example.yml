@@ -11,6 +11,12 @@
 services:
   php:
     restart: unless-stopped
+    # Code mount stays RW (admin self-update builds in-container); limits cap blast radius.
+    mem_limit: ${PHP_MEM_LIMIT:-3g}
+    cpus: ${PHP_CPUS:-2.0}
+    pids_limit: ${PHP_PIDS_LIMIT:-512}
+    security_opt:
+      - no-new-privileges:true
     build:
       context: ${APP_ROOT}
       dockerfile: docker/php/Dockerfile
@@ -25,6 +31,10 @@ services:
 
   nginx:
     restart: unless-stopped
+    mem_limit: ${NGINX_MEM_LIMIT:-256m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       - php
     # !override — base docker-compose.yml also maps 8080:80; merge would bind BOTH ports.

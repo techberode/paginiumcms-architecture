@@ -51,7 +51,7 @@ final class GalleryItemValidator
 
         if (array_key_exists('linkUrl', $payload)) {
             $url = trim((string) $payload['linkUrl']);
-            if ($url !== '' && (mb_strlen($url) > self::MAX_LINK_URL || filter_var($url, FILTER_VALIDATE_URL) === false)) {
+            if ($url !== '' && (mb_strlen($url) > self::MAX_LINK_URL || !self::isSafeLinkUrl($url))) {
                 return Lang::get('invalid_link_url', [], 'gallery');
             }
         }
@@ -64,6 +64,28 @@ final class GalleryItemValidator
         }
 
         return null;
+    }
+
+    /**
+     * Only http(s) absolute URLs or site-relative paths. FILTER_VALIDATE_URL alone accepts
+     * `javascript://host/%0aalert(1)`, which executes when rendered as an href.
+     */
+    public static function isSafeLinkUrl(string $url): bool
+    {
+        if (preg_match('/[\x00-\x20\x7f\\\\]/', $url) === 1) {
+            return false;
+        }
+
+        if (str_starts_with($url, '/')) {
+            return !str_starts_with($url, '//');
+        }
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (!is_string($scheme) || !in_array(strtolower($scheme), ['http', 'https'], true)) {
+            return false;
+        }
+
+        return filter_var($url, FILTER_VALIDATE_URL) !== false;
     }
 
     private function isAllowedMediaPath(string $path): bool

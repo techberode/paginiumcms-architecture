@@ -4,6 +4,8 @@ export const usersSk: MessageTree = {
   page: {
     title: 'Správa používateľov',
     subtitle: 'Spravujte prístupové účty, role, avatary a zabezpečenie používateľov systému.',
+    loadFailed: 'Zoznam používateľov sa nepodarilo načítať.',
+    retry: 'Skúsiť znova',
   },
   tabs: {
     list: 'Používatelia',
@@ -59,6 +61,7 @@ export const usersSk: MessageTree = {
     success: 'Avatar bol aktualizovaný',
     removed: 'Avatar bol odstránený',
     failed: 'Nahranie avataru zlyhalo',
+    invalidType: 'Nepodporovaný typ obrázka. Použite JPEG, PNG alebo WebP.',
     limitsHint: 'Server automaticky zmenší väčšie súbory na max. 512×512 px a 512 KB (JPEG, PNG, WebP).',
     displaySize: 'Veľkosť náhľadu',
     displaySizes: {

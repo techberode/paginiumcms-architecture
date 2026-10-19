@@ -23,7 +23,7 @@ class DevTokenRegistry
             mkdir($dir, 0755, true);
         }
         if (!file_exists($this->registryPath)) {
-            file_put_contents($this->registryPath, json_encode(['tokens' => []], JSON_PRETTY_PRINT));
+            file_put_contents($this->registryPath, json_encode(['tokens' => []], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
     }
 
@@ -45,8 +45,8 @@ class DevTokenRegistry
 
     /**
      * @param array{hash: string, label: string, expires_at: int, single_use?: bool} $entry
- * @param array<int|string, mixed> $entry
- */public function register(array $entry): void
+     */
+    public function register(array $entry): void
     {
         $data = $this->load();
         $data['tokens'][] = [
@@ -67,7 +67,7 @@ class DevTokenRegistry
     public function findByHash(string $hash): ?array
     {
         foreach ($this->load()['tokens'] as $token) {
-            if (($token['hash'] ?? '') === $hash) {
+            if (hash_equals((string) ($token['hash'] ?? ''), $hash)) {
                 return $token;
             }
         }
@@ -79,7 +79,7 @@ class DevTokenRegistry
     {
         $data = $this->load();
         foreach ($data['tokens'] as &$token) {
-            if ($token['hash'] === $hash) {
+            if (hash_equals((string) ($token['hash'] ?? ''), $hash)) {
                 $token['used_at'] = date('c');
                 break;
             }
@@ -90,26 +90,28 @@ class DevTokenRegistry
 
     /**
      * @return array<int, array<int|string, mixed>>
- */public function listRegistered(): array
+     */
+    public function listRegistered(): array
     {
         return $this->load()['tokens'];
     }
 
     /**
      * @return array{tokens: array<int, array<int|string, mixed>>}
- * @return array<int|string, mixed>
- */private function load(): array
+     */
+    private function load(): array
     {
         $raw = file_get_contents($this->registryPath);
         $data = json_decode($raw ?: '{}', true);
+        $tokens = is_array($data) && is_array($data['tokens'] ?? null) ? $data['tokens'] : [];
 
-        return is_array($data) ? $data + ['tokens' => []] : ['tokens' => []];
+        return ['tokens' => array_values(array_filter($tokens, 'is_array'))];
     }
 
     /**
      * @param array{tokens: array<int, array<int|string, mixed>>} $data
- * @param array<int|string, mixed> $data
- */private function save(array $data): void
+     */
+    private function save(array $data): void
     {
         file_put_contents(
             $this->registryPath,

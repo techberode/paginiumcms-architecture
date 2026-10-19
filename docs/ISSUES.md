@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 18 October 2026 · register **ISS-001–ISS-203** · latest public release tag **`v2.1.0-beta.98`**
+> **Last updated:** 18 October 2026 · register **ISS-001–ISS-204** · latest public release tag **`v2.1.0-beta.98`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -226,6 +226,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-201](#iss-201) | Scheduled backup + Nextcloud/WebDAV off-site copy (Oct 2026 ops) | Medium (ops / DR) | ✅ Shipped (Unreleased) |
 | [ISS-202](#iss-202) | Configurable trash / version / draft storage retention (Oct 2026 ops) | Low (disk / ops) | ✅ Shipped (Unreleased) |
 | [ISS-203](#iss-203) | Oct 2026 security audit — setup hijack, media registry leak, CSRF/comments | **High (security)** | ✅ Fixed (Unreleased) |
+| [ISS-204](#iss-204) | 18 Oct 2026 full audit — gallery stored XSS, route RBAC, dead CSRF exemptions, SSRF redirects, backup KDF | **High (security)** | ✅ Fixed (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6224,6 +6225,48 @@ After [ISS-200](#iss-200) recovery, production needed **daily full backups** and
 2. Configure WebDAV base URL `https://<host>/remote.php/dav/files/<login>` — **not** the Files app browser URL.
 3. Manual backup once → confirm `.zip` in Nextcloud folder; check logs only if upload fails (local backup still OK).
 4. Keep app password rotation procedure if token was ever pasted into chat/terminal.
+
+---
+
+## ISS-204 – Full audit remediation (18 Oct 2026)
+
+| Field | Value |
+|--------|--------|
+| **Severity** | High (one exploitable stored XSS; remaining items hardening / defense-in-depth) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Docs** | [SECURITY.md](en/developer/SECURITY.md#route-permission-map-iss-204) · [BACKUP_RESTORE.md](en/developer/BACKUP_RESTORE.md#off-site-encryption-format) · [CHANGELOG](../CHANGELOG.md) |
+
+### Symptoms / findings
+
+- **Stored XSS (high):** `GalleryItemValidator` accepted any URL passing `FILTER_VALIDATE_URL`, including `javascript://example.com/%0aalert(1)`; the value was rendered into `href` in the admin and on the public gallery.
+- **Dead CSRF exemptions:** `'/api/setup/'` and `'/api/webhooks/'` ended with `/` and `isExempt()` appended another `/`, so they never matched — the HMAC-signed GitHub release webhook received `403 csrf_invalid` in production (fail-closed bug, not a bypass). Theme import and media bulk-download bypassed the shared CSRF client.
+- **Route authorization debt:** mutating admin routes (users, extensions, firewall, system update, code editor, cache, jobs, GitHub, logs, trash, backups) were gated only by `RoleMiddleware`; destructive `POST /api/admin/metrics/apm/clear` only by `metrics:read`; mail send only by `mail:read-own`. `DELETE /api/admin/settings` (reset **all** settings) was reachable by EDITOR.
+- **SSRF:** stock image import validated only the first URL; `file_get_contents` followed redirects to unchecked hosts. Telegram adapter skipped `OutboundUrlGuard`.
+- **Off-site backup cipher:** key = `SHA-256(passphrase)` (no salt/KDF), whole ZIP held in memory; documented offline decrypt tool did not exist.
+- **Infra/config:** Apache CSP allowed `unsafe-inline`/`unsafe-eval`; dev compose published ports on `0.0.0.0`; Redis without password; no explicit nginx deny for private trees; CI actions pinned to mutable tags; `.env.example` missing `APP_KEY` and API secrets; setup token optional for any `APP_ENV` other than `production`/`staging`.
+
+### Shipped
+
+- **Gallery / URLs:** `GalleryItemValidator::isSafeLinkUrl()` (http/https or `/path`, rejects `//`, control chars, backslash); `GalleryItem::fromArray()` drops unsafe stored links; FE `safeOptionalHref()` for gallery, media gallery and footer social links. `DamMediaUrl` rejects traversal (`..`, `%2e%2e`), backslash, control chars and protocol-relative paths. FE iframe sanitizer rejects same-origin `src`.
+- **RBAC:** new permissions `system:manage`, `backup:manage`, `metrics:manage`, `mail:send` with upgrade guards in `AuthorizationManager::applyRoleGuards()` (ADMIN keeps system/backup/metrics; ADMIN/EDITOR with `mail:read-own` keep `mail:send`). Full map: [SECURITY.md](en/developer/SECURITY.md#route-permission-map-iss-204). Settings reset → SUPER_ADMIN only.
+- **CSRF:** exempt prefixes `'/api/setup'`, `'/api/webhooks'` + `rtrim` normalisation; `apiClient.postBlobWithCsrf()` (one refresh + retry on `403 csrf_invalid`); theme import through `apiClient`.
+- **SSRF:** `StockImageImporter` manual redirect loop (max 3) with HTTPS + host allow-list + `OutboundUrlGuard` per hop; `TelegramAdapter` token format check + guard + `follow_location = 0`.
+- **Backup:** format `enc:bk:s2:` — Argon2id salt + KDF params in header (bounded on decrypt), XChaCha20-Poly1305 secretstream, 64 KiB chunks, `TAG_FINAL` + trailing-data check; legacy `s1` decrypt; CLI `backup:decrypt-offsite`.
+- **Setup:** `SetupAccessGuard` token optional only for `development|local|testing|test`.
+- **Logging/tokens:** `DevTokenRegistry` `hash_equals`; `DebugController` `LogSanitizer` + 8 KiB context cap.
+- **Infra/CI:** see CHANGELOG `[Unreleased]` → ISS-204 (CSP, nginx deny, `PAGINIUM_BIND`, `REDIS_PASSWORD`, prod resource limits, SHA-pinned actions, `npm audit --omit=dev --audit-level=high`, mandatory libsodium in CI).
+- **Quality:** dead stubs/middleware removed, `vimeo/psalm` dropped, admin route code splitting, `UsersManager` error state, FE type alignment, i18n modules `devtools` + `twoFactor`.
+- **Operator action on upgrade:** refresh the stack-local `docker-compose.prod.yml` and recreate containers — [DEPLOY.md §13.1](deploy/DEPLOY.md#upgrade-iss-204).
+
+### Accepted / deferred (by design)
+
+| Item | Decision |
+|---|---|
+| Team chat / team kanban / comment reply-claim routes | Authorization is **resource-scoped** (room/board membership, assignment) and cannot be expressed as a global permission. Kept in services (`requireAccess`, `canReplyComments`); regression tests `TeamKanbanAccessTest` + `TeamChatStoreTest`. |
+| Mail account / password routes | Scoped to the actor's own mailbox credentials (`mail:read-own`); only outbound send is a separate permission. |
+| Prod PHP container: RW code mount, FPM master as root | Required by admin self-update (`git pull` + `npm run build:prod` in-container). Mitigated with `mem_limit`/`cpus`/`pids_limit` + `no-new-privileges`; workers run as `www-data`. |
+| `npm audit` high in dev deps (`braces` via Tailwind 3) | No patched version; build-time only — [ISS-197](#iss-197). Runtime deps gated at `high`. |
+| God-files, `Core/Event` vs `Core/Events` naming, `docs/sk` migration, remaining controller HTTP tests | Tracked refactors; no behavioural risk. Split per domain when touched. |
 
 ---
 

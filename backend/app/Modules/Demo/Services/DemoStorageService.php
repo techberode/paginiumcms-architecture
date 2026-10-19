@@ -263,7 +263,7 @@ final class DemoStorageService
 
     private function writeLastResetTimestamp(int $timestamp): void
     {
-        $payload = json_encode(['reset_at' => $timestamp], JSON_THROW_ON_ERROR);
+        $payload = json_encode(['reset_at' => $timestamp], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         $this->writeDemoFile(self::LAST_RESET_FILE, $payload);
     }
 

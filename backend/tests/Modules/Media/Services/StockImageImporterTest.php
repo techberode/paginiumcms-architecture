@@ -73,7 +73,7 @@ class StockImageImporterTest extends TestCase
             new MediaOptimizePreviewStore($reader, $writer),
             new \PaginiumCMS\Core\Security\Upload\PolyglotUploadGuard($settings)
         );
-        $importer = new StockImageImporter($repository, $settings, $catalog, $policyEngine);
+        $importer = new StockImageImporter($repository, $settings, $catalog, $policyEngine, new OutboundUrlGuard(true, true));
 
         $media = $importer->import('', 'stock');
 
@@ -105,9 +105,39 @@ class StockImageImporterTest extends TestCase
         $catalog = new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json');
         $mediaRepo = $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class);
         $policyEngine = UploadPolicyEngineTestFactory::create($settings);
-        $importer = new StockImageImporter($mediaRepo, $settings, $catalog, $policyEngine);
+        $importer = new StockImageImporter($mediaRepo, $settings, $catalog, $policyEngine, new OutboundUrlGuard(true, true));
 
         $this->expectException(\PaginiumCMS\Core\FlatFile\Exception\FlatFileException::class);
         $importer->import('food');
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function rejectedDownloadUrls(): iterable
+    {
+        yield 'foreign host' => ['https://evil.example/a.jpg'];
+        yield 'metadata ip' => ['https://169.254.169.254/latest/meta-data'];
+        yield 'plain http' => ['http://images.unsplash.com/photo.jpg'];
+        yield 'lookalike host' => ['https://images.unsplash.com.evil.example/a.jpg'];
+        yield 'userinfo' => ['https://user@images.unsplash.com/a.jpg'];
+    }
+
+    /**
+     * @dataProvider rejectedDownloadUrls
+     */
+    public function testDownloadUrlIsRejected(string $url): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $importer = new StockImageImporter(
+            $this->createMock(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
+            $settings,
+            new StockImageCatalog(__DIR__ . '/Fixtures/stock-images-test.json'),
+            UploadPolicyEngineTestFactory::create($settings),
+            new OutboundUrlGuard(false, false),
+        );
+
+        $this->expectException(\PaginiumCMS\Core\FlatFile\Exception\FlatFileException::class);
+        $importer->assertDownloadableUrl($url);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Admin\TrashController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -26,6 +27,7 @@ return function (App $app): void {
         $group->get('/backups/{filename}/download', [$controller, 'downloadBackup']);
         $group->post('/{id}/restore', [$controller, 'restore']);
     })
+        ->add(new PermissionMiddleware($authz, 'content:delete'))
         ->add(new RoleMiddleware($authz, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($auth);

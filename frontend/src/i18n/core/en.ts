@@ -11,6 +11,8 @@ export const enCore: MessageTree = {
     search: 'Search',
     error: 'Error',
     success: 'Done',
+    viewLoadFailed: 'This section failed to load. A new version may have been deployed.',
+    reload: 'Reload page',
   },
   otp: {
     codeRequired: 'Enter the verification code',
@@ -33,6 +35,13 @@ export const enCore: MessageTree = {
       success: 'Password changed',
       failed: 'Password change failed',
       mismatch: 'New passwords do not match',
+    },
+    errors: {
+      loginFailed: 'Sign-in failed',
+      registerFailed: 'Registration failed',
+      otpVerifyFailed: 'Code verification failed',
+      otpResendFailed: 'Could not send the code',
+      totpInvalid: 'Invalid TOTP code',
     },
   },
   nav: {

@@ -1,4 +1,5 @@
 import type { GalleryItem } from '../../../api/gallery';
+import { safeOptionalHref } from '../../../security/safeUrl';
 import { inferPublicMediaKind, inferVideoMimeFromPath } from '../../../utils/mediaKindFromPath';
 import type { ProseLightboxSlide } from '../../../utils/proseImageLightbox';
 import type { PaginiumMediaSlide } from './types';
@@ -52,7 +53,7 @@ export function galleryItemsToMediaSlides(
   const showFeatureTags = options.showFeatureTags ?? true;
 
   return items.map((item) => {
-    const link = item.linkUrl?.trim() ?? '';
+    const link = safeOptionalHref(item.linkUrl) ?? '';
     const tag = item.featureTag?.trim() ?? '';
     const kind = inferPublicMediaKind(item.mediaPath);
     const base = {

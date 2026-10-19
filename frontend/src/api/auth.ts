@@ -3,6 +3,14 @@
 import apiClient, { type ApiResponse } from './client';
 import { User, LoginRequest, RegisterRequest } from './types';
 import { validateAvatarFile } from '../utils/avatarUpload';
+import { normalizeLocale, translate } from '../i18n';
+
+/** Client-side fallback when the API returned no message; locale follows <html lang> (SiteBrandingHead). */
+function authFallback(key: 'loginFailed' | 'registerFailed' | 'otpVerifyFailed' | 'otpResendFailed' | 'totpInvalid'): string {
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang : '';
+
+  return translate(normalizeLocale(lang || 'sk'), `auth.errors.${key}`);
+}
 
 export interface LoginResult {
   success: boolean;
@@ -71,7 +79,7 @@ export const authApi = {
     if (res.success && res.user) {
       return { success: true, user: res.user as User, requiresTwoFactor: Boolean(res.requires_two_factor) };
     }
-    return { success: false, error: res.error || 'Prihlásenie zlyhalo' };
+    return { success: false, error: res.error || authFallback('loginFailed') };
   },
 
   register: async (data: RegisterRequest): Promise<RegisterResult> => {
@@ -102,7 +110,7 @@ export const authApi = {
       return { success: true, user: res.user as User };
     }
 
-    return { success: false, error: res.error || 'Registrácia zlyhala' };
+    return { success: false, error: res.error || authFallback('registerFailed') };
   },
 
   verifyRegisterOtp: async (challengeId: string, code: string): Promise<RegisterResult> => {
@@ -119,7 +127,7 @@ export const authApi = {
       return { success: true, user: res.user as User };
     }
 
-    return { success: false, error: res.error || 'Overenie kódu zlyhalo' };
+    return { success: false, error: res.error || authFallback('otpVerifyFailed') };
   },
 
   resendRegisterOtp: async (challengeId: string): Promise<RegisterResult> => {
@@ -138,7 +146,7 @@ export const authApi = {
       };
     }
 
-    return { success: false, error: res.error || 'Odoslanie kódu zlyhalo' };
+    return { success: false, error: res.error || authFallback('otpResendFailed') };
   },
 
   logout: async (): Promise<boolean> => {
@@ -380,7 +388,7 @@ export const authApi = {
       if (res.success && res.user) {
         return { success: true, user: res.user as User };
       }
-      return { success: false, error: res.error || 'Neplatný TOTP kód' };
+      return { success: false, error: res.error || authFallback('totpInvalid') };
     },
   },
 };

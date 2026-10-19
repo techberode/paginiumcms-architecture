@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Modules\Gallery\Models;
 
 use JsonSerializable;
+use PaginiumCMS\Modules\Gallery\Services\GalleryItemValidator;
 
 final class GalleryItem implements JsonSerializable
 {
@@ -159,7 +160,7 @@ final class GalleryItem implements JsonSerializable
         $tag = trim((string) ($entry['featureTag'] ?? ''));
         $item->featureTag = $tag === '' ? null : $tag;
         $url = trim((string) ($entry['linkUrl'] ?? ''));
-        $item->linkUrl = $url === '' ? null : $url;
+        $item->linkUrl = $url === '' || !GalleryItemValidator::isSafeLinkUrl($url) ? null : $url;
         $item->sortOrder = (int) ($entry['sortOrder'] ?? 0);
 
         $status = (string) ($entry['status'] ?? self::STATUS_DRAFT);

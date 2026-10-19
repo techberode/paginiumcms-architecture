@@ -23,6 +23,7 @@ use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use PaginiumCMS\Http\Controllers\Admin\CodeEditorController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -42,7 +43,8 @@ return function (App $app): void {
         $group->post('/save', [$controller, 'saveFile']);
         $group->get('/backups', [$controller, 'getBackups']);
         $group->post('/restore', [$controller, 'restoreBackup']);
-    })->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['SUPER_ADMIN']))
+    })->add(new PermissionMiddleware($container->get(AuthorizationInterface::class), 'system:manage'))
+        ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
 };

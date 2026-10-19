@@ -36,9 +36,10 @@ return function (App $app): void {
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));
 
-    $app->group('/api/admin/metrics/apm', function (RouteCollectorProxy $group) use ($controller) {
+    $app->group('/api/admin/metrics/apm', function (RouteCollectorProxy $group) use ($controller, $authz) {
         $group->get('', [$controller, 'summary']);
-        $group->post('/clear', [$controller, 'clearSamples']);
+        $group->post('/clear', [$controller, 'clearSamples'])
+            ->add(new PermissionMiddleware($authz, 'metrics:manage'));
     })
         ->add(new PermissionMiddleware($authz, 'metrics:read'))
         ->add(new RoleMiddleware($authz, ['ADMIN', 'SUPER_ADMIN']))

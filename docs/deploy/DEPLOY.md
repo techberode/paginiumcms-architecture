@@ -123,6 +123,8 @@ cd ..
 
 The production compose merge (`docs/deploy/docker-compose.prod.yml`) includes a **Redis** service and sets `REDIS_HOST=redis` on PHP. The prod file must **`profiles: !reset []`** on `redis` — the base `docker-compose.yml` tags Redis with profile `cache` for local dev; without reset, **`stack.sh up -d` never starts Redis** and the admin probe reports *extension loaded but connection to redis:6379 failed*. After copying the prod override, run **`stack.sh build php`** (ext-redis), then **`stack.sh up -d`**. Verify **Settings → Hybrid Engine → cache probe** (`redisCache: available`). See [CACHE_OPERATIONS.md](../en/runbooks/CACHE_OPERATIONS.md).
 
+**Redis password and container limits (ISS-204):** set `REDIS_PASSWORD` in the **stack** `.env` (next to `APP_ROOT`, not only in `$APP_ROOT/.env`) — compose passes the same value to `redis-server --requirepass` and to PHP (`environment` overrides `env_file`), so both sides always agree; empty = no auth (Redis is not published on the host). The override also sets `mem_limit` / `cpus` / `pids_limit` and `no-new-privileges` on PHP, nginx and Redis; tune with `PHP_MEM_LIMIT` (default `3g`, enough for in-container `npm run build:prod`), `PHP_CPUS`, `PHP_PIDS_LIMIT`, `NGINX_MEM_LIMIT`. The PHP code mount stays read-write because admin self-update builds inside the container.
+
 `npm ci` and the Composer lockfile must belong to the same tag. A server must not repair dependencies using ad-hoc `npm update` or `composer update`.
 
 ## 7. Commit deployment for staging or rapid beta updates
@@ -462,6 +464,31 @@ cd frontend && npm ci && npm run build:prod && cd ..
 ```
 
 If the new version changed authoritative data incompatibly, checking out code is insufficient. Use the documented restore or a forward fix. Every future migration must state backward compatibility and its rollback boundary.
+
+<a id="upgrade-iss-204"></a>
+
+### 13.1 Upgrade notes — ISS-204 (audit remediation)
+
+`git pull` / admin System update does **not** refresh the stack-local copies under `STACK_DIR`. Do this once per stack (production **and** demo):
+
+1. **Refresh the compose override** (required — limits, `no-new-privileges`, Redis password support):
+
+   ```bash
+   STACK_DIR=/var/lib/docker/compose/paginiumcms
+   sudo cp "$APP_ROOT/docs/deploy/docker-compose.prod.yml" "$STACK_DIR/docker-compose.prod.yml"
+   STACK_DIR="$STACK_DIR" APP_ROOT="$APP_ROOT" "$APP_ROOT/scripts/bootstrap-stack-permissions.sh"   # root:www-data, 750
+   ```
+
+2. **Recreate containers** (required): `"$STACK_DIR/stack.sh" up -d`. Changed limits force PHP, nginx and Redis to be recreated, which also loads the new `docker/nginx/default.conf` (404 for `/data`, `/logs`, `/backups`, `/dev`, `/cache`, `/vendor`, `/config`). A single-file bind mount keeps the old inode after `git pull`, so without recreate/restart nginx serves the stale config.
+3. **Redis password** (recommended): add `REDIS_PASSWORD=$(openssl rand -hex 32)` to the **stack** `.env`, then `stack.sh up -d` again. Do this only **after** step 1 — PHP sending a password to a Redis started without `--requirepass` breaks the (derived) Redis cache. Empty keeps the previous no-auth behaviour.
+4. **CPU limit:** the override defaults `PHP_CPUS=2.0`; on hosts with fewer than 2 CPUs set `PHP_CPUS=1.0` in the stack `.env` or compose refuses to start PHP.
+5. **libsodium check:** off-site backup encryption and `backup:decrypt-offsite` need `ext-sodium` in the PHP image:
+
+   ```bash
+   "$STACK_DIR/stack.sh" exec php php -r 'echo function_exists("sodium_crypto_pwhash") ? "ok\n" : "MISSING\n";'
+   ```
+
+No data migration is needed: ADMIN/EDITOR roles receive the new `system:manage`, `backup:manage`, `metrics:manage` and `mail:send` permissions automatically on load; custom roles must opt in via Roles. Setup token fail-closed only affects non-installed instances whose `APP_ENV` is not `development`/`local`/`testing`/`test`.
 
 ## 14. Docker autostart
 

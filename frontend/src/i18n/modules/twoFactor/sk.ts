@@ -1,0 +1,40 @@
+import type { MessageTree } from '../../types';
+
+/** Nastavenia 2FA v účte (slovensky). */
+export const twoFactorSk: MessageTree = {
+  title: 'Dvojfaktorové overenie (2FA)',
+  subtitle: 'TOTP kód z mobilnej aplikácie pri každom prihlásení.',
+  loading: 'Načítavam stav 2FA…',
+  status: {
+    active: 'Aktívne',
+    pending: 'Čaká na overenie',
+    off: 'Vypnuté',
+  },
+  activeNotice: '2FA je zapnutá a overená. Pri ďalšom prihlásení zadáte 6-miestny kód z autentifikátora.',
+  compatibleApps: 'Kompatibilné aplikácie',
+  start: 'Začať nastavenie 2FA',
+  generating: 'Generujem QR kód…',
+  step1Title: 'Nainštalujte autentifikátor',
+  step1Body: 'Odporúčame Google Authenticator (Android / iOS) alebo Authy.',
+  step2Title: 'Naskenujte QR kód',
+  step2Body: 'V aplikácii zvoľte „Pridať účet“ → „Naskenovať QR kód“.',
+  qrAlt: 'QR kód pre Google Authenticator',
+  manualEntry: 'Manuálne zadanie (ak QR nefunguje)',
+  copySecret: 'Skopírovať tajný kľúč',
+  refreshQr: 'Obnoviť QR kód',
+  step3Title: 'Zadajte overovací kód',
+  step3Body: '6-miestny kód z aplikácie (obnovuje sa každých 30 s).',
+  verify: 'Overiť a aktivovať',
+  disable: 'Vypnúť 2FA',
+  showQrAgain: 'Zobraziť QR kód znova',
+  confirmDisable: 'Naozaj chcete vypnúť dvojfaktorové overenie?',
+  toast: {
+    scanQr: 'Naskenujte QR kód v autentifikátore a zadajte overovací kód',
+    enableFailed: 'Nepodarilo sa aktivovať 2FA',
+    active: '2FA je aktívna',
+    invalidCode: 'Neplatný kód – skúste aktuálny kód z autentifikátora',
+    disabled: '2FA deaktivovaná',
+    secretCopied: 'Tajný kľúč skopírovaný',
+    copyFailed: 'Kopírovanie zlyhalo',
+  },
+};

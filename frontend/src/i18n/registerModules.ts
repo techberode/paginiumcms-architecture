@@ -55,6 +55,10 @@ import { playgroundEn } from './modules/playground/en';
 import { playgroundSk } from './modules/playground/sk';
 import { migrationEn } from './modules/migration/en';
 import { migrationSk } from './modules/migration/sk';
+import { devtoolsEn } from './modules/devtools/en';
+import { devtoolsSk } from './modules/devtools/sk';
+import { twoFactorEn } from './modules/twoFactor/en';
+import { twoFactorSk } from './modules/twoFactor/sk';
 
 export function registerAllI18nModules(): void {
   registerModuleMessages('sk', 'admin', adminSk);
@@ -111,6 +115,10 @@ export function registerAllI18nModules(): void {
   registerModuleMessages('en', 'playground', playgroundEn);
   registerModuleMessages('sk', 'migration', migrationSk);
   registerModuleMessages('en', 'migration', migrationEn);
+  registerModuleMessages('sk', 'devtools', devtoolsSk);
+  registerModuleMessages('en', 'devtools', devtoolsEn);
+  registerModuleMessages('sk', 'twoFactor', twoFactorSk);
+  registerModuleMessages('en', 'twoFactor', twoFactorEn);
 }
 
 registerAllI18nModules();

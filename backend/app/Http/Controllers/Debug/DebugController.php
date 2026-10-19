@@ -7,11 +7,14 @@ namespace PaginiumCMS\Http\Controllers\Debug;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Core\Logging\Services\DebugEventLogger;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Support\LogSanitizer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class DebugController
 {
+    private const MAX_CONTEXT_BYTES = 8192;
+
     public function __construct(private JsonResponder $json)
     {
     }
@@ -23,11 +26,17 @@ final class DebugController
         }
 
         $payload = $this->parseJsonBody($request);
-        $event = (string) ($payload['event'] ?? 'frontend.event');
+        $event = LogSanitizer::value((string) ($payload['event'] ?? 'frontend.event'), 128);
         $context = is_array($payload['context'] ?? null) ? $payload['context'] : [];
 
         $context['url'] = $context['url'] ?? (string) ($payload['url'] ?? '');
-        $context['user_agent'] = $request->getHeaderLine('User-Agent');
+        $context['user_agent'] = LogSanitizer::value($request->getHeaderLine('User-Agent'), 512);
+        $context = LogSanitizer::context($context);
+
+        $encoded = json_encode($context, JSON_UNESCAPED_UNICODE);
+        if (!is_string($encoded) || strlen($encoded) > self::MAX_CONTEXT_BYTES) {
+            $context = ['truncated' => true, 'user_agent' => $context['user_agent']];
+        }
 
         DebugEventLogger::log('frontend', $event, $context);
 

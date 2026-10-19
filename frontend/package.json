@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:security": "vitest run src/security src/api/client.security.test.ts src/utils/debugLog.test.ts",
+    "test:security": "vitest run src/security src/api/client.security.test.ts src/utils/debugLog.test.ts src/utils/sanitizeHtml.test.ts",
     "test:msw": "vitest run src/mocks/handlers.test.ts",
     "audit:security": "npm audit --audit-level=critical",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 65",

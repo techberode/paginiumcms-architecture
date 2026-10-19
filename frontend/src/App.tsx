@@ -9,31 +9,7 @@ import {
   PublicSlugPage,
   PublicNotFoundCatchAll,
 } from './components/layout/PublicSiteLayout';
-import { DashboardView } from './components/backend/DashboardView';
-import { AnalyticsView } from './components/backend/AnalyticsView';
-import { PagesManager } from './components/backend/PagesManager';
-import { EditorialCalendarView } from './components/backend/EditorialCalendarView';
-import { MarkdownEditor } from './components/backend/MarkdownEditor';
-import { BackupManager } from './components/backend/BackupManager';
-import { ContentMigrationManager } from './components/backend/ContentMigrationManager';
-import { SettingsView } from './components/backend/SettingsView';
-import { TranslationEditor } from './components/backend/TranslationEditor';
-import { AccountView } from './components/backend/AccountView';
-import { UsersManager } from './components/backend/UsersManager';
-import { NotificationsOverview } from './components/backend/NotificationsOverview';
-import { SchedulerView } from './components/backend/SchedulerView';
-import { ExtensionsManager } from './components/backend/ExtensionsManager';
-import { ThemesManager } from './components/backend/ThemesManager';
-import { ThemeStudioShell } from './components/backend/ThemeStudioShell';
-import { MediaManager } from './components/backend/MediaManager';
-import { NavigationManager } from './components/backend/NavigationManager';
-import { CommentsManager } from './components/backend/CommentsManager';
-import { MessagesViewer } from './components/backend/MessagesViewer';
-import { NewsletterSubscribersPanel } from './components/backend/NewsletterSubscribersPanel';
-import { GalleryManager } from './components/backend/GalleryManager';
-import { GitHubSyncPanel } from './components/backend/GitHubSyncPanel';
-import { CodeEditor } from './components/CodeEditor/CodeEditor';
-import { AuditTrail } from './components/Audit/AuditTrail';
+import { AdminRouteErrorBoundary } from './components/layout/AdminRouteErrorBoundary';
 import { LoginModal } from './components/frontend/LoginModal';
 import { BlogRenderer } from './components/frontend/BlogRenderer';
 import { FeaturesPage } from './components/frontend/FeaturesPage';
@@ -46,43 +22,116 @@ import { CookiePolicyPage } from './components/frontend/CookiePolicyPage';
 import { NewsletterUnsubscribePage } from './components/frontend/NewsletterUnsubscribePage';
 import { useAuth } from './hooks/useAuth';
 import { AdminRoleGuard } from './components/auth/AdminRoleGuard';
-import { PreviewPage } from './components/backend/PreviewPage';
-import { DeveloperLogsViewer } from './components/backend/DeveloperLogsViewer';
-import { TrashManager } from './components/backend/TrashManager';
-import { FirewallManager } from './components/backend/FirewallManager';
-import { LogsManager } from './components/backend/LogsManager';
-import { SecurityAuditManager } from './components/backend/SecurityAuditManager';
-import { BlueprintManager } from './components/backend/BlueprintManager';
-import { DemoManager } from './components/backend/DemoManager';
-import { SystemUpdateView } from './components/backend/SystemUpdateView';
-import { ApiKeysManager } from './components/backend/ApiKeysManager';
-import { RedirectsManager } from './components/backend/RedirectsManager';
-import { ShortcodesManager } from './components/backend/ShortcodesManager';
-import { WidgetsManager } from './components/backend/WidgetsManager';
-import { TeamsManager } from './components/backend/TeamsManager';
-import { TeamChatView } from './components/backend/TeamChatView';
-import { EventsManager } from './components/backend/EventsManager';
-import { TimeTrackerView } from './components/backend/TimeTrackerView';
-import { KanbanBoardView } from './components/backend/KanbanBoardView';
-import { MailInboxView } from './components/backend/MailInboxView';
-import { CategoriesManager } from './components/backend/CategoriesManager';
-import { RolesManager } from './components/backend/RolesManager';
-import { SnippetsManager } from './components/backend/SnippetsManager';
-import { OriginPanelView } from './components/backend/OriginPanelView';
-import { PlaygroundView } from './components/backend/PlaygroundView';
-import { ProjectPlannerView } from './components/backend/ProjectPlannerView';
-import { ProjectPlanDetailView } from './components/backend/ProjectPlanDetailView';
-import { WebhooksManager } from './components/backend/WebhooksManager';
 import { SetupWizardView } from './components/setup/SetupWizardView';
 import { useSetupStatus } from './hooks/useSetupStatus';
 import { debugLog } from './utils/debugLog';
 import { ADMIN_DEFAULT_ROUTE } from './config/adminNavSections';
 import { postAuthPath } from './utils/postAuthPath';
 
+/** Route-level code splitting: admin views load on demand, outside the public-site bundle. */
+function lazyView<P extends object>(load: () => Promise<React.ComponentType<P>>) {
+  return React.lazy(async () => ({ default: await load() }));
+}
+
+const DashboardView = lazyView(() => import('./components/backend/DashboardView').then((m) => m.DashboardView));
+const AnalyticsView = lazyView(() => import('./components/backend/AnalyticsView').then((m) => m.AnalyticsView));
+const PagesManager = lazyView(() => import('./components/backend/PagesManager').then((m) => m.PagesManager));
+const EditorialCalendarView = lazyView(() =>
+  import('./components/backend/EditorialCalendarView').then((m) => m.EditorialCalendarView)
+);
+const MarkdownEditor = lazyView(() => import('./components/backend/MarkdownEditor').then((m) => m.MarkdownEditor));
+const BackupManager = lazyView(() => import('./components/backend/BackupManager').then((m) => m.BackupManager));
+const ContentMigrationManager = lazyView(() =>
+  import('./components/backend/ContentMigrationManager').then((m) => m.ContentMigrationManager)
+);
+const SettingsView = lazyView(() => import('./components/backend/SettingsView').then((m) => m.SettingsView));
+const TranslationEditor = lazyView(() =>
+  import('./components/backend/TranslationEditor').then((m) => m.TranslationEditor)
+);
+const AccountView = lazyView(() => import('./components/backend/AccountView').then((m) => m.AccountView));
+const UsersManager = lazyView(() => import('./components/backend/UsersManager').then((m) => m.UsersManager));
+const NotificationsOverview = lazyView(() =>
+  import('./components/backend/NotificationsOverview').then((m) => m.NotificationsOverview)
+);
+const SchedulerView = lazyView(() => import('./components/backend/SchedulerView').then((m) => m.SchedulerView));
+const ExtensionsManager = lazyView(() =>
+  import('./components/backend/ExtensionsManager').then((m) => m.ExtensionsManager)
+);
+const ThemesManager = lazyView(() => import('./components/backend/ThemesManager').then((m) => m.ThemesManager));
+const ThemeStudioShell = lazyView(() =>
+  import('./components/backend/ThemeStudioShell').then((m) => m.ThemeStudioShell)
+);
+const MediaManager = lazyView(() => import('./components/backend/MediaManager').then((m) => m.MediaManager));
+const NavigationManager = lazyView(() =>
+  import('./components/backend/NavigationManager').then((m) => m.NavigationManager)
+);
+const CommentsManager = lazyView(() => import('./components/backend/CommentsManager').then((m) => m.CommentsManager));
+const MessagesViewer = lazyView(() => import('./components/backend/MessagesViewer').then((m) => m.MessagesViewer));
+const NewsletterSubscribersPanel = lazyView(() =>
+  import('./components/backend/NewsletterSubscribersPanel').then((m) => m.NewsletterSubscribersPanel)
+);
+const GalleryManager = lazyView(() => import('./components/backend/GalleryManager').then((m) => m.GalleryManager));
+const GitHubSyncPanel = lazyView(() => import('./components/backend/GitHubSyncPanel').then((m) => m.GitHubSyncPanel));
+const CodeEditor = lazyView(() => import('./components/CodeEditor/CodeEditor').then((m) => m.CodeEditor));
+const AuditTrail = lazyView(() => import('./components/Audit/AuditTrail').then((m) => m.AuditTrail));
+const PreviewPage = lazyView(() => import('./components/backend/PreviewPage').then((m) => m.PreviewPage));
+const DeveloperLogsViewer = lazyView(() =>
+  import('./components/backend/DeveloperLogsViewer').then((m) => m.DeveloperLogsViewer)
+);
+const TrashManager = lazyView(() => import('./components/backend/TrashManager').then((m) => m.TrashManager));
+const FirewallManager = lazyView(() => import('./components/backend/FirewallManager').then((m) => m.FirewallManager));
+const LogsManager = lazyView(() => import('./components/backend/LogsManager').then((m) => m.LogsManager));
+const SecurityAuditManager = lazyView(() =>
+  import('./components/backend/SecurityAuditManager').then((m) => m.SecurityAuditManager)
+);
+const BlueprintManager = lazyView(() =>
+  import('./components/backend/BlueprintManager').then((m) => m.BlueprintManager)
+);
+const DemoManager = lazyView(() => import('./components/backend/DemoManager').then((m) => m.DemoManager));
+const SystemUpdateView = lazyView(() =>
+  import('./components/backend/SystemUpdateView').then((m) => m.SystemUpdateView)
+);
+const ApiKeysManager = lazyView(() => import('./components/backend/ApiKeysManager').then((m) => m.ApiKeysManager));
+const RedirectsManager = lazyView(() =>
+  import('./components/backend/RedirectsManager').then((m) => m.RedirectsManager)
+);
+const ShortcodesManager = lazyView(() =>
+  import('./components/backend/ShortcodesManager').then((m) => m.ShortcodesManager)
+);
+const WidgetsManager = lazyView(() => import('./components/backend/WidgetsManager').then((m) => m.WidgetsManager));
+const TeamsManager = lazyView(() => import('./components/backend/TeamsManager').then((m) => m.TeamsManager));
+const TeamChatView = lazyView(() => import('./components/backend/TeamChatView').then((m) => m.TeamChatView));
+const EventsManager = lazyView(() => import('./components/backend/EventsManager').then((m) => m.EventsManager));
+const TimeTrackerView = lazyView(() => import('./components/backend/TimeTrackerView').then((m) => m.TimeTrackerView));
+const KanbanBoardView = lazyView(() => import('./components/backend/KanbanBoardView').then((m) => m.KanbanBoardView));
+const MailInboxView = lazyView(() => import('./components/backend/MailInboxView').then((m) => m.MailInboxView));
+const CategoriesManager = lazyView(() =>
+  import('./components/backend/CategoriesManager').then((m) => m.CategoriesManager)
+);
+const RolesManager = lazyView(() => import('./components/backend/RolesManager').then((m) => m.RolesManager));
+const SnippetsManager = lazyView(() => import('./components/backend/SnippetsManager').then((m) => m.SnippetsManager));
+const OriginPanelView = lazyView(() => import('./components/backend/OriginPanelView').then((m) => m.OriginPanelView));
+const PlaygroundView = lazyView(() => import('./components/backend/PlaygroundView').then((m) => m.PlaygroundView));
+const ProjectPlannerView = lazyView(() =>
+  import('./components/backend/ProjectPlannerView').then((m) => m.ProjectPlannerView)
+);
+const ProjectPlanDetailView = lazyView(() =>
+  import('./components/backend/ProjectPlanDetailView').then((m) => m.ProjectPlanDetailView)
+);
+const WebhooksManager = lazyView(() => import('./components/backend/WebhooksManager').then((m) => m.WebhooksManager));
+
 function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+    </div>
+  );
+}
+
+function AdminViewFallback() {
+  return (
+    <div className="flex justify-center py-16">
+      <div className="animate-spin h-10 w-10 border-b-2 border-indigo-600 rounded-full" />
     </div>
   );
 }
@@ -126,11 +175,17 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AdminShell() {
+  const { pathname } = useLocation();
+
   return (
     <ProtectedRoute>
       <AdminRoleGuard>
         <ResponsiveLayout>
-          <Outlet />
+          <AdminRouteErrorBoundary resetKey={pathname}>
+            <React.Suspense fallback={<AdminViewFallback />}>
+              <Outlet />
+            </React.Suspense>
+          </AdminRouteErrorBoundary>
         </ResponsiveLayout>
       </AdminRoleGuard>
     </ProtectedRoute>
@@ -287,7 +342,9 @@ function App() {
         element={
           <ProtectedRoute>
             <AdminRoleGuard>
-              <PreviewPage />
+              <React.Suspense fallback={<LoadingScreen />}>
+                <PreviewPage />
+              </React.Suspense>
             </AdminRoleGuard>
           </ProtectedRoute>
         }

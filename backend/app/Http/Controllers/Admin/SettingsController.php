@@ -410,6 +410,12 @@ final class SettingsController
      */
     public function reset(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        /** @var User|null $user */
+        $user = $request->getAttribute('user');
+        if (!$this->isSuperAdmin($user)) {
+            return $this->json->error($response, 'Len super administrátor môže obnoviť všetky nastavenia', 403);
+        }
+
         $this->settings->reset();
 
         return $this->json->success(

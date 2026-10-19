@@ -8,6 +8,13 @@ services:
     restart: unless-stopped
     init: true
     stop_grace_period: 30s
+    # Code mount stays RW and FPM master runs as root (workers = www-data): admin
+    # self-update runs git pull + npm build inside this container. Limits cap blast radius.
+    mem_limit: ${PHP_MEM_LIMIT:-3g}
+    cpus: ${PHP_CPUS:-2.0}
+    pids_limit: ${PHP_PIDS_LIMIT:-512}
+    security_opt:
+      - no-new-privileges:true
     build:
       context: ${APP_ROOT}
       dockerfile: docker/php/Dockerfile
@@ -28,6 +35,10 @@ services:
     restart: unless-stopped
     init: true
     stop_grace_period: 15s
+    mem_limit: ${NGINX_MEM_LIMIT:-256m}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       - php
     ports: !override

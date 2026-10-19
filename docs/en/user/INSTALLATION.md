@@ -136,7 +136,7 @@ Change the password and enable 2FA before exposing the host to the Internet.
 
 Routes under `/api/setup/` are **CSRF-exempt** for the initial bootstrap only. After `general.installed = true`, setup endpoints return **404**.
 
-**Production:** set `SETUP_TOKEN` in `.env` and pass the same value to the browser setup flow (`VITE_SETUP_TOKEN` at build time, or header `X-Setup-Token` / JSON `setupToken` on `POST /api/setup/complete`). Without a token, production rejects setup calls.
+**Production:** set `SETUP_TOKEN` in `.env` and pass the same value to the browser setup flow (`VITE_SETUP_TOKEN` at build time, or header `X-Setup-Token` / JSON `setupToken` on `POST /api/setup/complete`). Without a token, setup calls are rejected for **every** `APP_ENV` except `development`, `local`, `testing` and `test` — an unset or mistyped value (e.g. `prod`, `live`) fails closed. Generate one with `openssl rand -hex 24`.
 
 If the install flag is set but user files are missing or unreadable, HTTP setup stays closed — use `php backend/bin/bootstrap-admin.php` (fail-closed).
 

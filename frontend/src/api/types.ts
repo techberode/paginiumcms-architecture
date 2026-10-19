@@ -40,6 +40,8 @@ export interface User {
   deskBubbleX?: number;
   deskBubbleY?: number;
   roles: string[];
+  /** Self-registration option the account was created through ('' for admin-created users). */
+  registrationOptionId?: string;
   permissions?: string[];
   hasTeamChat?: boolean;
   active?: boolean;
@@ -61,7 +63,6 @@ export interface LoginResponse {
   success: boolean;
   user: User;
   requires_two_factor?: boolean;
-  token?: string;
 }
 
 export interface RegisterRequest {
@@ -95,6 +96,25 @@ export interface Page {
   lastReviewedAt?: string;
   isStale?: boolean;
   monthsSinceReview?: number | null;
+  /** Fields below mirror ContentController::serializeContent (optional for older payloads/fixtures). */
+  path?: string;
+  type?: string;
+  contentFormat?: 'markdown' | 'html' | 'tiptap_json' | string;
+  /** Optimistic-lock fingerprint; send back as `baseRevision` on save. */
+  revision?: string;
+  category?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonical?: string;
+  noIndex?: boolean;
+  editorProfile?: string;
+  editorMode?: string;
+  /** ISO 8601 or '' when not scheduled. */
+  scheduledAt?: string;
+  schemaVersion?: number;
+  defaultLocale?: string;
+  localizedContent?: Record<string, unknown>;
+  localeStatus?: Record<string, string>;
 }
 
 export interface Article extends Page {
@@ -110,6 +130,7 @@ export interface Article extends Page {
   authorBioStored?: string;
   authorAvatarUrlStored?: string;
   readingTime: number;
+  newsRetentionDays?: number | null;
   commentsEnabled?: boolean;
   commentsRequireApproval?: boolean | null;
   commentsAllowGuests?: boolean | null;

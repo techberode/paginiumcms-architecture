@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 use PaginiumCMS\Http\Controllers\Admin\SystemUpdateController;
 use PaginiumCMS\Http\Middleware\AuthMiddleware;
+use PaginiumCMS\Http\Middleware\PermissionMiddleware;
 use PaginiumCMS\Http\Middleware\RoleMiddleware;
 use PaginiumCMS\Http\Middleware\TwoFactorMiddleware;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
@@ -28,6 +29,7 @@ return function (App $app): void {
         $group->post('/check', [$controller, 'check']);
         $group->post('/run', [$controller, 'run']);
     })
+        ->add(new PermissionMiddleware($container->get(AuthorizationInterface::class), 'system:manage'))
         ->add(new RoleMiddleware($container->get(AuthorizationInterface::class), ['SUPER_ADMIN']))
         ->add($container->get(TwoFactorMiddleware::class))
         ->add($container->get(AuthMiddleware::class));

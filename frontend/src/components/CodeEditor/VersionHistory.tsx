@@ -93,7 +93,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({ contentId, onRes
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading version history...</div>;
+    return <div className="flex justify-center p-8">{t('devtools.editor.historyLoading')}</div>;
   }
 
   return (

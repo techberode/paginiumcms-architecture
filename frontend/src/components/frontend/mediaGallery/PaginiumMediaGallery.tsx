@@ -12,6 +12,7 @@ import 'yet-another-react-lightbox/plugins/counter.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import '../../../theme/paginiumMediaGallery.css';
 import { resolvePublicMediaUrl } from '../../../api/media';
+import { safeOptionalHref } from '../../../security/safeUrl';
 import { useI18n } from '../../../context/I18nContext';
 import { inferVideoMimeFromPath } from '../../../utils/mediaKindFromPath';
 import type { PaginiumMediaGalleryCaptionStyle, PaginiumMediaSlide } from './types';
@@ -38,7 +39,8 @@ function buildCaptionNodes(
     ) : undefined;
 
   const hasDescription = (slide.description?.trim() ?? '') !== '';
-  const hasLink = (slide.linkUrl?.trim() ?? '') !== '';
+  const linkHref = safeOptionalHref(slide.linkUrl);
+  const hasLink = linkHref !== undefined;
 
   const description =
     hasDescription || hasLink ? (
@@ -46,7 +48,7 @@ function buildCaptionNodes(
         {hasDescription ? <p>{slide.description}</p> : null}
         {hasLink ? (
           <a
-            href={slide.linkUrl}
+            href={linkHref}
             target="_blank"
             rel="noopener noreferrer"
             className="paginium-media-gallery__link"

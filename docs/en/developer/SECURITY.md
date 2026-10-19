@@ -250,6 +250,28 @@ authenticated actor
 
 User guide: [ACCESS_CONTROL.md](../user/ACCESS_CONTROL.md).
 
+<a id="route-permission-map-iss-204"></a>
+
+### 9.1 Route permission map (ISS-204)
+
+Every mutating admin route carries `AuthMiddleware` + `TwoFactorMiddleware` + **`PermissionMiddleware('module:action')`**. `RoleMiddleware` stays as defense-in-depth but is never the only gate. SUPER_ADMIN bypasses permission checks; `module:manage` implies every `module:*`.
+
+| Area | Route file | Permission |
+|---|---|---|
+| Users | `Http/Routes/users.php` | `user:manage` |
+| Settings | `Http/Routes/settings.php` | `settings:manage`; `DELETE /api/admin/settings` (reset all) → **SUPER_ADMIN only** (controller check) |
+| Extensions, firewall, system update, code editor, cache, jobs, GitHub | `extensions.php`, `firewall.php`, `systemupdate.php`, `codeeditor.php`, `cache.php`, `jobs.php`, `github.php` | `system:manage` |
+| Backups | `bootstrap/app.php` (`/api/admin/backups*`) | `backup:manage` |
+| Logs | `logs.php` | `logs:view`; purge / bulk delete / delete-all also `system:manage` |
+| Trash | `trash.php` | `content:delete` |
+| Metrics | `metrics.php` | `metrics:read`; `POST …/apm/clear` → `metrics:manage` |
+| Mail | `mail.php` | group `mail:read-own` (own mailbox credentials, folders, flags); `POST /send` → `mail:send` |
+| Team chat / kanban / comment reply-claim | `team-chat.php`, `team-kanban.php`, `comments.php` | Auth on route; **resource-scoped** membership/assignment checks in the service layer (cannot be a global permission) |
+
+Upgrade guard: `AuthorizationManager::applyRoleGuards()` auto-grants `system:manage`, `backup:manage`, `metrics:manage` to ADMIN and `mail:send` to ADMIN/EDITOR roles that already have `mail:read-own`, so older `settings` role matrices do not lock admins out. Custom roles opt in explicitly. Regression: `backend/tests/Http/Routes/RoutePermissionHardeningTest.php`, `AuthorizationManagerSettingsReloadTest.php`.
+
+When adding a route: pick an existing catalog permission (`PermissionCatalog::ALL`) or add a new one there **and** in `defaultRolePermissions()`, the FE labels (`i18n/modules/settings/{sk,en}.ts`) and, if existing roles must keep access after upgrade, a guard in `applyRoleGuards()`.
+
 ## 10. CSRF and the browser boundary
 
 Session mutations use a synchronizer token:
@@ -272,6 +294,10 @@ Bootstrap on app load calls `GET /api/auth/csrf-token` and stores the token in `
 
 Exempt routes must be an exact allow-list (e.g. only `POST /api/comments`, not authenticated `…/reply` or `…/claim`). A public form without session CSRF needs alternative controls: origin/content-type policy, rate limit, anti-automation, input validation, and abuse monitoring.
 
+`CsrfMiddleware::EXEMPT_PREFIXES` entries are written **without** a trailing slash (`'/api/setup'`, `'/api/webhooks'`); `isExempt()` normalises with `rtrim($prefix, '/')` and matches `$path === $prefix` or `str_starts_with($path, $prefix . '/')`, so `/api/setupx` is **not** exempt. Before ISS-204 a trailing slash made both prefixes dead (HMAC webhooks got `403 csrf_invalid`). Only pre-auth routes may live under an exempt prefix — authenticated webhook management is `/api/admin/platform/webhooks` (CSRF enforced). `CsrfMiddlewareTest` covers child paths and lookalikes.
+
+Non-JSON requests (multipart uploads, blob downloads) must still go through the shared client: `apiClient.post(url, formData)` for uploads, `apiClient.postBlobWithCsrf(url, body)` for POSTs that return a file (one token refresh + retry on `403 csrf_invalid`). No raw `fetch` for mutating calls.
+
 `SameSite` is a supplement, not the sole CSRF defense.
 
 ## 11. Validation, encoding, and safe rendering
@@ -280,7 +306,9 @@ Exempt routes must be an exact allow-list (e.g. only `POST /api/comments`, not a
 - canonicalize paths before allow/deny decisions,
 - encode output for HTML/attribute/URL/JSON context,
 - sanitize Markdown/HTML preview through an allow-list,
-- explicitly allow URL schemes and reject `javascript:`-style variants,
+- explicitly allow URL schemes and reject `javascript:`-style variants — `FILTER_VALIDATE_URL` alone is **not** a scheme check (it accepts `javascript://host/%0a…`); use an explicit `http`/`https` allow-list such as `GalleryItemValidator::isSafeLinkUrl()` on the backend and `safeOptionalHref()` / `sanitizeNavigationUrl()` (`frontend/src/security/safeUrl.ts`) for every user-supplied `href` in the SPA ([ISS-204](../ISSUES.md#iss-204)),
+- media URLs embedded in rendered content go through `DamMediaUrl::sanitize()` (only `/storage/…` and `/api/media/file/…`, no `..`, encoded traversal, backslash, control characters or `//host`),
+- iframes in sanitized HTML: HTTPS embed hosts only and never same-origin (`sandbox` includes `allow-same-origin`),
 - deliver SVG/HTML/XML uploads according to a safe policy, commonly attachment + sandbox CSP,
 - error responses contain no internal paths, stack traces, or secrets.
 
@@ -337,6 +365,8 @@ Required checks:
 - provider-test audit without secrets.
 
 DNS may change between validation and connection. Prefer an HTTP-client/network layer that can bind validation to the actual target IP or revalidate on connect/redirect. A one-time URL regex is not SSRF protection.
+
+PHP stream contexts follow redirects by default. Outbound helpers set `'follow_location' => 0` and, when redirects are legitimate, follow them **manually** with a hop limit, re-running scheme/host allow-list + `OutboundUrlGuard` on every `Location` (reference: `StockImageImporter::download()`, max 3 hops). Fixed-host adapters (Telegram) still go through the guard for consistency and validate any user-supplied path component (bot token format).
 
 ## 15. Uploads, archives, and media
 
@@ -463,6 +493,8 @@ The release gate includes:
 - separation of build and deploy credentials,
 - ideally SBOM and provenance/signing.
 
+Current CI policy (ISS-204): third-party actions pinned to **commit SHAs** with a version comment (Dependabot `github-actions` bumps them); `composer audit`; `npm audit --omit=dev --audit-level=high` for runtime dependencies plus `--audit-level=critical` for the full tree (dev-only `braces` chain tracked in [ISS-197](../ISSUES.md#iss-197)); the PHP job fails if libsodium is missing so crypto tests cannot silently skip.
+
 An advisory must not disappear merely because CI blocks at `high` while the finding is `moderate`. Temporary acceptance belongs in `ISSUES.md` with an owner, reason, and review date.
 
 A pull request from a fork must not receive production secrets. Deployment environments require explicit protection and minimal token scopes.
@@ -588,6 +620,11 @@ A private `SECURITY_ISSUES.md` may contain a detailed internal incident workflow
 - [ ] public docroot limited to `backend/public/`,
 - [ ] staff 2FA according to policy,
 - [ ] real `APP_KEY` and protected recovery procedure,
+- [ ] `SETUP_TOKEN` set before first browser setup — required for every `APP_ENV` except `development|local|testing|test` (`SetupAccessGuard`, fails closed on typos),
+- [ ] `API_KEY_PEPPER` / `API_JWT_KEY` set if the headless API is used; `REDIS_PASSWORD` on shared hosts (see `.env.example`),
+- [ ] published container ports bound to `127.0.0.1` behind the host reverse proxy (`PAGINIUM_BIND` only for LAN testing),
+- [ ] Apache `.htaccess` / nginx CSP identical (`script-src 'self'`, no `unsafe-inline`/`unsafe-eval`),
+- [ ] off-site backup passphrase stored outside the CMS and `backup:decrypt-offsite` tested once,
 - [ ] CSRF/RBAC/Path ACL regression tests green,
 - [ ] WAF/rate limit and log sanitization verified,
 - [ ] storage, logs, backups, and developer data inaccessible from the web,

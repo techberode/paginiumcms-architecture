@@ -613,24 +613,12 @@ export async function bulkDownloadMedia(
   }
 
   try {
-    const csrf = typeof localStorage !== 'undefined' ? localStorage.getItem('csrf_token') ?? '' : '';
-    const response = await fetch(`${resolveApiBaseUrl()}/api/media/bulk-download`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/zip',
-        'X-CSRF-TOKEN': csrf,
-      },
-      body: JSON.stringify({ paths }),
-    });
-
-    if (!response.ok) {
+    const response = await apiClient.postBlobWithCsrf('/api/media/bulk-download', { paths });
+    if (!response.ok || !response.blob) {
       return { ok: false, error: `HTTP ${response.status}` };
     }
 
-    const blob = await response.blob();
-    return { ok: true, blob };
+    return { ok: true, blob: response.blob };
   } catch {
     return { ok: false, error: 'network' };
   }

@@ -37,6 +37,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { FeatureGallerySection } from '../frontend/FeatureGallerySection';
 import { normalizeGalleryPublicPath } from '../../utils/galleryPublicRoute';
 import { MediaPickerModal } from './MediaPickerModal';
+import { safeOptionalHref } from '../../security/safeUrl';
 
 type FormState = {
   title: string;
@@ -430,9 +431,9 @@ export const GalleryManager: React.FC = () => {
                   >
                     {item.status === 'published' ? t('gallery.actions.unpublish') : t('gallery.actions.publish')}
                   </button>
-                  {item.linkUrl ? (
+                  {safeOptionalHref(item.linkUrl) ? (
                     <a
-                      href={item.linkUrl}
+                      href={safeOptionalHref(item.linkUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-secondary text-xs px-3 py-1.5 inline-flex items-center gap-1"

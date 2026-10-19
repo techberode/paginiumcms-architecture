@@ -60,11 +60,20 @@ export interface UserDetailResponse {
 }
 
 export async function listUsers(): Promise<UsersListResponse> {
+  try {
+    return await fetchUsersList();
+  } catch {
+    return { users: [] };
+  }
+}
+
+/** Like {@link listUsers} but throws on API failure so callers can render an error state. */
+export async function fetchUsersList(): Promise<UsersListResponse> {
   const res = await apiClient.get<UsersListResponse>('/api/admin/users');
   if (res.success && res.data) {
     return res.data;
   }
-  return { users: [] };
+  throw new Error(res.error || 'users_list_failed');
 }
 
 export async function getUser(id: string): Promise<UserDetailResponse | null> {

@@ -21,3 +21,25 @@ describe('sanitizePublicHtml (DOMPurify in browser env)', () => {
     }
   });
 });
+
+describe('isAllowedIframeSrc (sandbox allow-same-origin guard)', () => {
+  it('accepts HTTPS embeds from allow-listed cross-origin hosts', async () => {
+    const { isAllowedIframeSrc } = await import('./sanitizeHtml');
+    expect(isAllowedIframeSrc('https://www.youtube-nocookie.com/embed/abc')).toBe(true);
+    expect(isAllowedIframeSrc('https://player.vimeo.com/video/1')).toBe(true);
+  });
+
+  it.each([
+    ['same-origin absolute', () => `${window.location.origin}/admin`],
+    ['same-origin relative', () => '/storage/evil.html'],
+    ['protocol-relative', () => '//evil.example/embed'],
+    ['plain http', () => 'http://www.youtube.com/embed/abc'],
+    ['lookalike suffix', () => 'https://evilyoutube.com/embed'],
+    ['allow-listed host as subdomain label', () => 'https://youtube.com.evil.example/embed'],
+    ['javascript scheme', () => 'javascript:alert(1)'],
+    ['data scheme', () => 'data:text/html,<script>alert(1)</script>'],
+  ])('rejects %s', async (_label, src) => {
+    const { isAllowedIframeSrc } = await import('./sanitizeHtml');
+    expect(isAllowedIframeSrc(src())).toBe(false);
+  });
+});

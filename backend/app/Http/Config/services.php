@@ -1229,7 +1229,8 @@ return [
             get(MediaRepositoryInterface::class),
             get(SettingsRepositoryInterface::class),
             get(StockImageCatalog::class),
-            get(UploadPolicyEngine::class)
+            get(UploadPolicyEngine::class),
+            get(OutboundUrlGuard::class)
         ),
 
     NavigationRepositoryInterface::class => create(NavigationRepository::class)

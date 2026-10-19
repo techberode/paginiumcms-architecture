@@ -64,8 +64,8 @@ final class CsrfMiddleware implements MiddlewareInterface
         '/api/maintenance',
         '/api/debug/client-event',
         '/api/demo/quick-login',
-        '/api/setup/',
-        '/api/webhooks/',
+        '/api/setup',
+        '/api/webhooks',
         '/api/headless',
         '/api/admin/metrics/host/ingest',
     ];
@@ -111,6 +111,10 @@ final class CsrfMiddleware implements MiddlewareInterface
         }
 
         foreach (array_merge(self::EXEMPT_PREFIXES, $this->extraExemptPrefixes) as $prefix) {
+            $prefix = rtrim($prefix, '/');
+            if ($prefix === '') {
+                continue;
+            }
             if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return true;
             }

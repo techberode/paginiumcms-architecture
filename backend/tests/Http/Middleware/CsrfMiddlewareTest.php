@@ -142,6 +142,46 @@ final class CsrfMiddlewareTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function preAuthExemptPaths(): iterable
+    {
+        yield 'setup complete' => ['/api/setup/complete'];
+        yield 'github release webhook' => ['/api/webhooks/github/release'];
+    }
+
+    /**
+     * @dataProvider preAuthExemptPaths
+     */
+    public function testPreAuthPrefixChildPathsAreExempt(string $path): void
+    {
+        $response = $this->makeMiddleware()->process(
+            $this->request('POST', $path),
+            $this->handler()
+        );
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testSetupLookalikePrefixIsNotExempt(): void
+    {
+        $response = $this->makeMiddleware()->process(
+            $this->request('POST', '/api/setupx/complete'),
+            $this->handler()
+        );
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testExtraPrefixWithTrailingSlashMatchesChildren(): void
+    {
+        $csrf = $this->createMock(CsrfProtectionInterface::class);
+        $csrf->method('verifyToken')->willReturn(false);
+        $middleware = new CsrfMiddleware($csrf, ['/api/custom/', '/']);
+
+        $this->assertSame(200, $middleware->process($this->request('POST', '/api/custom/hook'), $this->handler())->getStatusCode());
+        $this->assertSame(403, $middleware->process($this->request('POST', '/api/pages'), $this->handler())->getStatusCode());
+    }
+
     public function testProtectedPostWithoutTokenIsRejected(): void
     {
         $response = $this->makeMiddleware()->process(

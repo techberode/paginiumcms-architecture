@@ -136,22 +136,16 @@ export const themesApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/admin/themes/import', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include',
-    });
-
-    const payload = await response.json();
-    if (payload.success && payload.data) {
-      return { ok: true, data: payload.data as ThemeImportResult };
+    const response = await apiClient.post<ThemeImportResult>('/api/admin/themes/import', formData);
+    if (response.success && response.data) {
+      return { ok: true, data: response.data };
     }
 
     const error =
-      typeof payload.error === 'string'
-        ? payload.error
-        : typeof payload.message === 'string'
-          ? payload.message
+      typeof response.error === 'string'
+        ? response.error
+        : typeof response.message === 'string'
+          ? response.message
           : undefined;
 
     return { ok: false, data: null, error };
