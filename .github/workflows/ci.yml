@@ -49,7 +49,8 @@ jobs:
           coverage: none
 
       - name: Require libsodium (backup cipher tests must not skip)
-        run: php -r 'exit(function_exists("sodium_crypto_pwhash") ? 0 : 1);'
+        run: |
+          php -r 'exit(function_exists("sodium_crypto_pwhash") ? 0 : 1);'
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist
