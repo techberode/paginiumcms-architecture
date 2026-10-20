@@ -27,4 +27,23 @@ final class BackupOffsiteWebDavServiceTest extends TestCase
         $this->assertFalse($result['uploaded']);
         $this->assertSame('disabled_or_missing_file', $result['error'] ?? '');
     }
+
+    public function testDiagnoseReportsMissingPasswordWhenOverrideExistsButEmpty(): void
+    {
+        $settings = $this->createMock(SettingsRepositoryInterface::class);
+        $settings->method('group')->with('backups')->willReturn([
+            'offsiteWebDavEnabled' => true,
+            'offsiteWebDavUrl' => 'https://cloud.example.com/remote.php/dav/files/user',
+            'offsiteWebDavUsername' => 'user',
+            'offsiteWebDavPassword' => '',
+            'offsiteEncryptEnabled' => false,
+        ]);
+        $settings->method('hasOverride')->with('backups', 'offsiteWebDavPassword')->willReturn(true);
+
+        $service = new BackupOffsiteWebDavService($settings, OutboundUrlGuard::fromEnv(), new BackupOffsiteArchiveCipher());
+        $diag = $service->diagnose();
+
+        $this->assertFalse($diag['ready']);
+        $this->assertArrayHasKey('passwordHint', $diag);
+    }
 }

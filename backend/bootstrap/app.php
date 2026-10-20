@@ -120,15 +120,8 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 $projectRoot = dirname(__DIR__, 2);
 $backendRoot = dirname(__DIR__);
 $appEnvForDotenv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '');
-// PHPUnit / HTTP tests set APP_ENV=testing before bootstrap — skip .env so local
-// DEMO_MODE=true or production flags do not pollute the shared storage tree.
-if ($appEnvForDotenv !== 'testing' && class_exists(\Dotenv\Dotenv::class)) {
-    if (is_file($projectRoot . '/.env')) {
-        \Dotenv\Dotenv::createUnsafeImmutable($projectRoot)->safeLoad();
-    } elseif (is_file($backendRoot . '/.env')) {
-        \Dotenv\Dotenv::createUnsafeImmutable($backendRoot)->safeLoad();
-    }
-}
+require_once __DIR__ . '/dotenv.php';
+paginium_bootstrap_dotenv($projectRoot, $backendRoot, (string) $appEnvForDotenv);
 
 require_once __DIR__ . '/timezone.php';
 
@@ -709,6 +702,12 @@ $containerBuilder->addDefinitions([
 
     RunBackupScheduleCommand::class => function ($container) {
         return new RunBackupScheduleCommand($container->get(BackupScheduler::class));
+    },
+
+    \PaginiumCMS\Core\Backup\Commands\BackupOffsiteProbeCommand::class => function ($container) {
+        return new \PaginiumCMS\Core\Backup\Commands\BackupOffsiteProbeCommand(
+            $container->get(\PaginiumCMS\Core\Backup\Services\BackupOffsiteWebDavService::class),
+        );
     },
 
     RedirectValidateCommand::class => function ($container) {

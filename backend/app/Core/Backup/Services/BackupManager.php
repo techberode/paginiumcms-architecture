@@ -576,7 +576,9 @@ class BackupManager implements BackupInterface
             'mode' => $mode,
         ]);
 
-        if ($backup->getOffsiteUploaded() === false && $this->offsiteWebDav !== null && $this->offsiteWebDav->isEnabled()) {
+        if ($backup->getOffsiteUploaded() !== true
+            && $this->offsiteWebDav !== null
+            && $this->offsiteWebDav->isConfigured()) {
             $zipPath = $backup->getFilePath();
             if ($zipPath !== '' && is_file($zipPath)) {
                 $this->pushOffsiteUpload($backup, $zipPath);
@@ -603,7 +605,7 @@ class BackupManager implements BackupInterface
 
     private function pushOffsiteUpload(BackupMetadata $metadata, string $fullPath): void
     {
-        if ($this->offsiteWebDav === null || !$this->offsiteWebDav->isEnabled()) {
+        if ($this->offsiteWebDav === null || !$this->offsiteWebDav->isConfigured()) {
             $metadata->setOffsiteUploaded(null);
             $metadata->setOffsiteError(null);
 

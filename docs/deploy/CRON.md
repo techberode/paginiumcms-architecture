@@ -76,6 +76,8 @@ Benefits:
 
 `flock -n` prevents the next minute run from overlapping a still-running process.
 
+**Off-site backup (Nextcloud/WebDAV):** scheduled runs use the same upload as manual backups. If local ZIPs appear but nothing reaches Nextcloud, compare CLI vs web: `php backend/bin/console backup:offsite-probe` (and `--upload`) **inside the same PHP container** as cron (`stack.sh exec …`). A missing or empty `APP_KEY` in the cron environment prevents decrypting the stored WebDAV password — manual runs from the admin UI can still work when FPM loads `.env` correctly. Ensure `.env` contains a stable `APP_KEY` and cron never invokes bare host PHP against a different checkout.
+
 ## 4. Host PHP alternative
 
 Host cron is acceptable only when:

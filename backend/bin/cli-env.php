@@ -12,10 +12,10 @@ function paginium_cli_bootstrap_env(): void
         return;
     }
 
-    $envPath = dirname(__DIR__, 2);
-    if (is_file($envPath . '/.env') && class_exists(\Dotenv\Dotenv::class)) {
-        \Dotenv\Dotenv::createUnsafeImmutable($envPath)->safeLoad();
-    }
+    $projectRoot = dirname(__DIR__, 2);
+    $backendRoot = dirname(__DIR__);
+    require_once $backendRoot . '/bootstrap/dotenv.php';
+    paginium_bootstrap_dotenv($projectRoot, $backendRoot, (string) (getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? '')));
 
     $loaded = true;
 }

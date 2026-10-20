@@ -20,13 +20,20 @@ final class BackupOffsiteWebDavService
     ) {
     }
 
-    public function isEnabled(): bool
+    public function isConfigured(): bool
     {
         $group = $this->settings->group('backups');
 
         return (bool) ($group['offsiteWebDavEnabled'] ?? false)
             && trim((string) ($group['offsiteWebDavUrl'] ?? '')) !== ''
-            && trim((string) ($group['offsiteWebDavUsername'] ?? '')) !== ''
+            && trim((string) ($group['offsiteWebDavUsername'] ?? '')) !== '';
+    }
+
+    public function isEnabled(): bool
+    {
+        $group = $this->settings->group('backups');
+
+        return $this->isConfigured()
             && $this->resolvePassword($group) !== '';
     }
 
@@ -102,19 +109,9 @@ final class BackupOffsiteWebDavService
             return ['uploaded' => false, 'error' => 'url_blocked'];
         }
 
-        if (!$this->ensureRemoteCollection($baseUrl, $username, $password, $prefix)) {
-            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
-                @unlink($encryptedTemp);
-            }
-
-            return ['uploaded' => false, 'error' => 'mkcol_failed'];
-        }
-
         $size = filesize($uploadPath);
         if ($size === false) {
-            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
-                @unlink($encryptedTemp);
-            }
+            $this->cleanupTemp($encryptedTemp);
 
             return ['uploaded' => false, 'error' => 'stat_failed'];
         }
@@ -123,23 +120,138 @@ final class BackupOffsiteWebDavService
             @set_time_limit(0);
         }
 
+        $put = $this->webDavPut($targetUrl, $uploadPath, $size, $username, $password, $contentType);
+        if (!$put['ok'] && in_array($put['http'], [404, 409], true)) {
+            $mkcolError = $this->ensureRemoteCollection($baseUrl, $username, $password, $prefix);
+            if ($mkcolError !== null) {
+                $this->cleanupTemp($encryptedTemp);
+                $this->logFailure($remoteFileName, $mkcolError);
+
+                return ['uploaded' => false, 'error' => $mkcolError];
+            }
+            $put = $this->webDavPut($targetUrl, $uploadPath, $size, $username, $password, $contentType);
+        }
+
+        $this->cleanupTemp($encryptedTemp);
+
+        if ($put['ok']) {
+            error_log(sprintf(
+                '[PaginiumCMS] backup offsite upload OK (%s)',
+                LogSanitizer::value($remoteFileName)
+            ));
+
+            return ['uploaded' => true, 'remoteUrl' => $targetUrl];
+        }
+
+        $message = $put['error'] !== '' ? $put['error'] : ('HTTP ' . $put['http']);
+        $this->logFailure($remoteFileName, $message);
+
+        return ['uploaded' => false, 'error' => $message];
+    }
+
+    /**
+     * Read-only diagnostics for CLI / support (no secrets returned).
+     *
+     * @return array<string, mixed>
+     */
+    public function diagnose(): array
+    {
+        $group = $this->settings->group('backups');
+        $baseUrl = rtrim(trim((string) ($group['offsiteWebDavUrl'] ?? '')), '/');
+        $username = trim((string) ($group['offsiteWebDavUsername'] ?? ''));
+        $password = $this->resolvePassword($group);
+        $encrypt = (bool) ($group['offsiteEncryptEnabled'] ?? false);
+        $encKey = trim((string) ($group['offsiteEncryptionKey'] ?? ''));
+
+        $out = [
+            'enabled' => (bool) ($group['offsiteWebDavEnabled'] ?? false),
+            'ready' => $this->isEnabled(),
+            'urlConfigured' => $baseUrl !== '',
+            'usernameConfigured' => $username !== '',
+            'passwordConfigured' => $password !== '',
+            'encryptEnabled' => $encrypt,
+            'encryptionKeyConfigured' => !$encrypt || $encKey !== '',
+            'sodiumAvailable' => function_exists('sodium_crypto_secretstream_xchacha20poly1305_init_push')
+                && function_exists('sodium_crypto_pwhash'),
+            'urlAllowed' => null,
+            'urlBlockReason' => null,
+        ];
+
+        if ($baseUrl !== '') {
+            try {
+                $this->guard->assertAllowed($baseUrl);
+                $out['urlAllowed'] = true;
+            } catch (\Throwable $e) {
+                $out['urlAllowed'] = false;
+                $out['urlBlockReason'] = $e->getMessage();
+            }
+        }
+
+        if ($password === '' && $this->settings->hasOverride('backups', 'offsiteWebDavPassword')) {
+            $out['passwordHint'] = 'Stored WebDAV password could not be decrypted (check APP_KEY in cron/CLI .env).';
+        }
+
+        if ($encrypt && !$out['sodiumAvailable']) {
+            $out['encryptHint'] = 'offsiteEncryptEnabled requires PHP ext-sodium in this runtime.';
+        }
+
+        return $out;
+    }
+
+    /**
+     * Optional smoke upload (tiny payload) to verify WebDAV credentials.
+     *
+     * @return array{uploaded: bool, error?: string}
+     */
+    public function probeUpload(): array
+    {
+        if (!$this->isEnabled()) {
+            return ['uploaded' => false, 'error' => 'not_configured'];
+        }
+
+        $temp = tempnam(sys_get_temp_dir(), 'paginium-offsite-probe-');
+        if ($temp === false) {
+            return ['uploaded' => false, 'error' => 'temp_failed'];
+        }
+
+        $name = 'paginium-probe-' . gmdate('Y-m-d-His') . '.txt';
+        file_put_contents($temp, 'PaginiumCMS off-site probe ' . gmdate('c'));
+
+        try {
+            return $this->uploadZipIfConfigured($temp, $name);
+        } finally {
+            @unlink($temp);
+        }
+    }
+
+    private function cleanupTemp(?string $encryptedTemp): void
+    {
+        if ($encryptedTemp !== null && is_file($encryptedTemp)) {
+            @unlink($encryptedTemp);
+        }
+    }
+
+    /**
+     * @return array{ok: bool, http: int, error: string}
+     */
+    private function webDavPut(
+        string $targetUrl,
+        string $uploadPath,
+        int $size,
+        string $username,
+        string $password,
+        string $contentType,
+    ): array {
         $handle = fopen($uploadPath, 'rb');
         if ($handle === false) {
-            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
-                @unlink($encryptedTemp);
-            }
-
-            return ['uploaded' => false, 'error' => 'open_failed'];
+            return ['ok' => false, 'http' => 0, 'error' => 'open_failed'];
         }
 
         $curl = curl_init($targetUrl);
         if ($curl === false) {
             fclose($handle);
-            if ($encryptedTemp !== null && is_file($encryptedTemp)) {
-                @unlink($encryptedTemp);
-            }
 
-            return ['uploaded' => false, 'error' => 'curl_init_failed'];
+            return ['ok' => false, 'http' => 0, 'error' => 'curl_init_failed'];
         }
 
         curl_setopt_array($curl, [
@@ -148,6 +260,7 @@ final class BackupOffsiteWebDavService
             CURLOPT_INFILESIZE => $size,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERPWD => $username . ':' . $password,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
             CURLOPT_HTTPHEADER => ['Content-Type: ' . $contentType],
             CURLOPT_TIMEOUT => max(120, (int) min(7200, (int) ($size / (256 * 1024)) + 120)),
             CURLOPT_FOLLOWLOCATION => false,
@@ -158,23 +271,16 @@ final class BackupOffsiteWebDavService
         $curlError = curl_error($curl);
         curl_close($curl);
         fclose($handle);
-        if ($encryptedTemp !== null && is_file($encryptedTemp)) {
-            @unlink($encryptedTemp);
-        }
 
         if ($httpCode >= 200 && $httpCode < 300) {
-            error_log(sprintf(
-                '[PaginiumCMS] backup offsite upload OK (%s)',
-                LogSanitizer::value($remoteFileName)
-            ));
-
-            return ['uploaded' => true, 'remoteUrl' => $targetUrl];
+            return ['ok' => true, 'http' => $httpCode, 'error' => ''];
         }
 
-        $message = $curlError !== '' ? $curlError : ('HTTP ' . $httpCode . ' ' . (is_string($body) ? substr($body, 0, 200) : ''));
-        $this->logFailure($remoteFileName, $message);
+        $message = $curlError !== ''
+            ? $curlError
+            : ('HTTP ' . $httpCode . (is_string($body) && $body !== '' ? ' ' . substr($body, 0, 200) : ''));
 
-        return ['uploaded' => false, 'error' => $message];
+        return ['ok' => false, 'http' => $httpCode, 'error' => $message];
     }
 
     /**
@@ -187,10 +293,10 @@ final class BackupOffsiteWebDavService
         return $password;
     }
 
-    private function ensureRemoteCollection(string $baseUrl, string $username, string $password, string $prefix): bool
+    private function ensureRemoteCollection(string $baseUrl, string $username, string $password, string $prefix): ?string
     {
         if ($prefix === '') {
-            return true;
+            return null;
         }
 
         $segments = array_values(array_filter(explode('/', str_replace('\\', '/', $prefix)), static fn (string $s): bool => $s !== ''));
@@ -198,25 +304,27 @@ final class BackupOffsiteWebDavService
 
         foreach ($segments as $segment) {
             $current .= '/' . rawurlencode($segment);
-            if (!$this->webDavMkcol($current, $username, $password)) {
-                return false;
+            $code = $this->webDavMkcol($current, $username, $password);
+            if (!in_array($code, [201, 405, 409, 207], true)) {
+                return sprintf('mkcol_failed: HTTP %d for %s', $code, $segment);
             }
         }
 
-        return true;
+        return null;
     }
 
-    private function webDavMkcol(string $collectionUrl, string $username, string $password): bool
+    private function webDavMkcol(string $collectionUrl, string $username, string $password): int
     {
         $curl = curl_init($collectionUrl);
         if ($curl === false) {
-            return false;
+            return 0;
         }
 
         curl_setopt_array($curl, [
             CURLOPT_CUSTOMREQUEST => 'MKCOL',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERPWD => $username . ':' . $password,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
             CURLOPT_TIMEOUT => 60,
             CURLOPT_FOLLOWLOCATION => false,
         ]);
@@ -225,8 +333,7 @@ final class BackupOffsiteWebDavService
         $httpCode = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
 
-        // 201 Created, 405 Method Not Allowed (exists), 409 Conflict (exists) — treat as OK.
-        return in_array($httpCode, [201, 405, 409, 207], true);
+        return $httpCode;
     }
 
     private function logFailure(string $fileName, string $message): void
