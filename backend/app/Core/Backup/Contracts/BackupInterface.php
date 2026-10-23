@@ -112,7 +112,10 @@ interface BackupInterface
      * @return array{
      *     ran: bool,
      *     reason?: string,
+     *     created?: bool,
      *     backup?: BackupMetadata,
+     *     referenceBackupId?: string|null,
+     *     filesCompared?: int,
      *     offsiteUploaded?: bool|null,
      *     offsiteError?: string|null
      * }

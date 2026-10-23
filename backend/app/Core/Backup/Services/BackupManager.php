@@ -15,6 +15,7 @@ use PaginiumCMS\Core\Security\Services\ZipEntryGuard;
 use PaginiumCMS\Core\Settings\Contracts\SettingsRepositoryInterface;
 use PaginiumCMS\Support\FileHelper;
 use PaginiumCMS\Support\JsonHelper;
+use PaginiumCMS\Support\LogSanitizer;
 
 class BackupManager implements BackupInterface
 {
@@ -492,12 +493,16 @@ class BackupManager implements BackupInterface
         );
         $mode = BackupScope::normalizeMode($options['mode'] ?? BackupScope::MODE_FULL);
 
+        $skipIfUnchanged = !array_key_exists('skip_if_unchanged', $options)
+            || (bool) $options['skip_if_unchanged'];
+
         $schedule = [
             'enabled' => true,
             'interval' => $interval,
             'keep' => $keep,
             'includes' => $includes,
             'mode' => $mode,
+            'skip_if_unchanged' => $skipIfUnchanged,
             'last_run' => null,
             'next_run' => $this->calculateNextRun($interval),
         ];
@@ -554,11 +559,11 @@ class BackupManager implements BackupInterface
     public function runScheduledBackupIfDue(): array
     {
         $schedulePath = $this->backupPath . '/schedule.json';
-        if (!file_exists($schedulePath)) {
+        $schedule = $this->readSchedulePayload($schedulePath);
+        if ($schedule === null) {
             return ['ran' => false, 'reason' => 'no_schedule'];
         }
 
-        $schedule = JsonHelper::decode(FileHelper::read($schedulePath));
         $nextRun = strtotime((string) ($schedule['next_run'] ?? ''));
         if ($nextRun === false || time() < $nextRun) {
             return ['ran' => false, 'reason' => 'not_due'];
@@ -570,6 +575,23 @@ class BackupManager implements BackupInterface
                 : BackupScope::DEFAULT_INCLUDES
         );
         $mode = BackupScope::normalizeMode($schedule['mode'] ?? BackupScope::MODE_FULL);
+        $skipIfUnchanged = (bool) ($schedule['skip_if_unchanged'] ?? true);
+
+        if ($skipIfUnchanged) {
+            $precheck = $this->scheduledScopeUnchangedSinceLatestBackup($includes);
+            if ($precheck['unchanged'] === true) {
+                $this->logScheduledBackupSkippedUnchanged($precheck);
+                $this->persistScheduleAfterRun($schedulePath, $schedule, $includes, $mode);
+
+                return [
+                    'ran' => false,
+                    'reason' => 'skipped_unchanged',
+                    'created' => false,
+                    'referenceBackupId' => $precheck['referenceBackupId'] ?? null,
+                    'filesCompared' => $precheck['filesCompared'] ?? 0,
+                ];
+            }
+        }
 
         $backup = $this->create('scheduled_' . date('Y-m-d_H-i-s'), [
             'includes' => $includes,
@@ -586,17 +608,14 @@ class BackupManager implements BackupInterface
             }
         }
 
-        $schedule['last_run'] = date('Y-m-d H:i:s');
-        $schedule['next_run'] = $this->calculateNextRun((string) ($schedule['interval'] ?? 'daily'));
-        $schedule['includes'] = $includes;
-        $schedule['mode'] = $mode;
-        file_put_contents($schedulePath, JsonHelper::encode($schedule));
+        $this->persistScheduleAfterRun($schedulePath, $schedule, $includes, $mode);
 
         $keep = max(1, (int) ($schedule['keep'] ?? 7));
         $this->pruneOldBackups($keep);
 
         return [
             'ran' => true,
+            'created' => true,
             'backup' => $backup,
             'offsiteUploaded' => $backup->getOffsiteUploaded(),
             'offsiteError' => $backup->getOffsiteError(),
@@ -728,6 +747,14 @@ class BackupManager implements BackupInterface
      */
     private function findIncrementalBase(array $includes): ?BackupMetadata
     {
+        return $this->findLatestCompletedBackupForIncludes($includes);
+    }
+
+    /**
+     * @param list<string> $includes
+     */
+    private function findLatestCompletedBackupForIncludes(array $includes): ?BackupMetadata
+    {
         $signature = BackupScope::includesSignature($includes);
         foreach ($this->listBackups() as $backup) {
             if ($backup->getStatus() !== 'completed') {
@@ -741,6 +768,102 @@ class BackupManager implements BackupInterface
         }
 
         return null;
+    }
+
+    /**
+     * Compares live scoped files (content + config per schedule) to the newest completed backup manifest.
+     *
+     * @param list<string> $includes
+     * @return array{
+     *     unchanged: bool,
+     *     referenceBackupId?: string,
+     *     filesCompared?: int
+     * }
+     */
+    private function scheduledScopeUnchangedSinceLatestBackup(array $includes): array
+    {
+        $reference = $this->findLatestCompletedBackupForIncludes($includes);
+        if ($reference === null) {
+            return ['unchanged' => false];
+        }
+
+        $baseline = $this->loadManifestHashes($reference);
+        if ($baseline === []) {
+            return ['unchanged' => false];
+        }
+
+        $live = $this->collectScopedFiles($includes);
+        $liveHashes = [];
+        foreach ($live as $path => $info) {
+            $liveHashes[$path] = $info['sha256'];
+        }
+
+        if (count($liveHashes) !== count($baseline)) {
+            return ['unchanged' => false];
+        }
+
+        foreach ($liveHashes as $path => $hash) {
+            if (!isset($baseline[$path]) || !hash_equals($baseline[$path], $hash)) {
+                return ['unchanged' => false];
+            }
+        }
+
+        foreach ($baseline as $path => $_hash) {
+            if (!isset($liveHashes[$path])) {
+                return ['unchanged' => false];
+            }
+        }
+
+        return [
+            'unchanged' => true,
+            'referenceBackupId' => $reference->getId(),
+            'filesCompared' => count($liveHashes),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $precheck
+     */
+    private function logScheduledBackupSkippedUnchanged(array $precheck): void
+    {
+        error_log(sprintf(
+            '[PaginiumCMS] scheduled backup pre-check: skipped — no changes in scoped content/config vs archive %s (%d files compared)',
+            LogSanitizer::value((string) ($precheck['referenceBackupId'] ?? '')),
+            (int) ($precheck['filesCompared'] ?? 0)
+        ));
+    }
+
+    /**
+     * @param array<string, mixed> $schedule
+     * @param list<string> $includes
+     */
+    private function persistScheduleAfterRun(string $schedulePath, array $schedule, array $includes, string $mode): void
+    {
+        $schedule['last_run'] = date('Y-m-d H:i:s');
+        $schedule['next_run'] = $this->calculateNextRun((string) ($schedule['interval'] ?? 'daily'));
+        $schedule['includes'] = $includes;
+        $schedule['mode'] = $mode;
+        file_put_contents($schedulePath, JsonHelper::encode($schedule));
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function readSchedulePayload(string $schedulePath): ?array
+    {
+        if (!file_exists($schedulePath)) {
+            return null;
+        }
+
+        $decoded = JsonHelper::decode(FileHelper::read($schedulePath));
+        $schedule = [];
+        foreach ($decoded as $key => $value) {
+            if (is_string($key)) {
+                $schedule[$key] = $value;
+            }
+        }
+
+        return $schedule === [] ? null : $schedule;
     }
 
     /**

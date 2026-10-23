@@ -319,6 +319,47 @@ class BackupManagerTest extends TestCase
         }
     }
 
+    public function testRunScheduledBackupIfDueSkipsWhenScopeUnchanged(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive extension is required.');
+        }
+
+        $tempRoot = sys_get_temp_dir() . '/paginium_backup_skip_' . uniqid('', true);
+        $backupPath = $tempRoot . '/backups';
+        $contentPath = $tempRoot . '/content';
+        mkdir($backupPath, 0755, true);
+        mkdir($contentPath . '/pages', 0755, true);
+        file_put_contents($contentPath . '/pages/home.md', "---\ntitle: Home\n---\n# Home");
+
+        $validator = new FileValidator($contentPath);
+        $reader = new FileReader($validator);
+        $writer = new FileWriter($validator);
+        $manager = new BackupManager($reader, $writer, $backupPath, $contentPath);
+
+        try {
+            $manager->scheduleBackup('daily', 7, ['skip_if_unchanged' => true]);
+            $schedulePath = $backupPath . '/schedule.json';
+            $schedule = json_decode((string) file_get_contents($schedulePath), true);
+            $schedule['next_run'] = date('Y-m-d H:i:s', time() - 3600);
+            file_put_contents($schedulePath, json_encode($schedule, JSON_PRETTY_PRINT));
+
+            $first = $manager->runScheduledBackupIfDue();
+            $this->assertTrue($first['ran']);
+
+            $schedule = json_decode((string) file_get_contents($schedulePath), true);
+            $schedule['next_run'] = date('Y-m-d H:i:s', time() - 60);
+            file_put_contents($schedulePath, json_encode($schedule, JSON_PRETTY_PRINT));
+
+            $second = $manager->runScheduledBackupIfDue();
+            $this->assertFalse($second['ran']);
+            $this->assertSame('skipped_unchanged', $second['reason'] ?? null);
+            $this->assertSame(1, count($manager->listBackups()));
+        } finally {
+            $this->removeDirectory($tempRoot);
+        }
+    }
+
     public function testCreateRespectsGranularIncludes(): void
     {
         if (!class_exists(\ZipArchive::class)) {

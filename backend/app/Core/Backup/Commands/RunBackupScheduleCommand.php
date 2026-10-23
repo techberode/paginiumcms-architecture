@@ -28,6 +28,17 @@ class RunBackupScheduleCommand extends Command
     {
         $result = $this->scheduler->runIfDue();
 
+        if (($result['reason'] ?? null) === 'skipped_unchanged') {
+            $output->writeln('<comment>⏭ Záloha preskočená — scoped obsah/konfigurácia sa nezmenil oproti poslednej archíve.</comment>');
+            $output->writeln(sprintf(
+                '  (porovnaných súborov: %d, referencia: %s)',
+                (int) ($result['filesCompared'] ?? 0),
+                (string) ($result['referenceBackupId'] ?? '—')
+            ));
+
+            return Command::SUCCESS;
+        }
+
         if ($result['ran'] === true) {
             $output->writeln('<info>✅ Záloha vytvorená.</info>');
             if (isset($result['backup']) && is_object($result['backup']) && method_exists($result['backup'], 'getId')) {

@@ -66,7 +66,7 @@ Scheduled backups persist `includes` and `mode` in `storage/backups/schedule.jso
 0 2 * * * flock -n /run/lock/paginium-backup.lock /path/to/stack.sh exec -T -u www-data php php backend/bin/console backup:run-schedule >> /var/log/paginiumcms/backup.log 2>&1
 ```
 
-Alternative: enable scheduler job `backup-scheduled` (`backup.scheduled`) with expression `0 2 * * *` and run `scheduler:run` every minute ([CRON.md](../../deploy/CRON.md)). Both paths call the same `runScheduledBackupIfDue()` gate (`schedule.json` `next_run`).
+Alternative: enable scheduler job `backup-scheduled` (`backup.scheduled`) with expression **`* * * * *`** (handler is cheap when `not_due`) and run `scheduler:run` every minute ([CRON.md](../../deploy/CRON.md)). Do **not** use `0 2 * * *` on the job unless you also run `backup:run-schedule` at 02:00 — otherwise a missed 02:00 minute skips the whole day. Both paths call the same `runScheduledBackupIfDue()` gate (`schedule.json` `next_run`).
 
 **Tips:**
 
@@ -74,6 +74,7 @@ Alternative: enable scheduler job `backup-scheduled` (`backup.scheduled`) with e
 - Prefer `mode: full` for nightly jobs unless disk is tight; incremental needs an intact baseline chain.
 - After enabling the schedule, run once manually: `php backend/bin/console backup:run-schedule` (confirms ZIP + `backup:inspect-media` healthy).
 - Cron at 02:00 only runs when `next_run` in `schedule.json` is due; if the first run was scheduled for later the same day, either wait or trigger manually once.
+- **Skip if unchanged (scheduled only):** when `skip_if_unchanged` is true (default), before creating a ZIP the engine compares SHA-256 manifests of the scoped trees (`content` / `config` flags from the schedule) against the newest completed backup with the same scope. If nothing changed, no archive is written, `next_run` still advances, and PHP logs `scheduled backup pre-check: skipped`. Manual backups always create an archive. Set `skipIfUnchanged: false` in `POST /api/admin/backups/schedule` to disable.
 - **Scheduled off-site:** uses the same upload pipeline as manual backups. Metadata JSON lists `offsiteUploaded` / `offsiteError`. CLI prints WebDAV status after `backup:run-schedule`. Cron/scheduler must load the same `.env` as PHP-FPM (`APP_KEY` decrypts the WebDAV app token) — see [Security and credentials](#security-and-credentials).
 - **ZIP size on disk:** Settings → Backups off-site → **ZIP compression (0–9)** (`backupZipDeflateLevel`, default 6). Lower hosting use without changing backup scope.
 

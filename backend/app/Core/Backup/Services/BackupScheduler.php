@@ -20,7 +20,10 @@ class BackupScheduler
      * @return array{
      *     ran: bool,
      *     reason?: string,
+     *     created?: bool,
      *     backup?: mixed,
+     *     referenceBackupId?: string|null,
+     *     filesCompared?: int,
      *     offsiteUploaded?: bool|null,
      *     offsiteError?: string|null
      * }

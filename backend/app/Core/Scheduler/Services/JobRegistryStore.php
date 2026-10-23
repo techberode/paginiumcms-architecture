@@ -134,7 +134,8 @@ final class JobRegistryStore
                     'id' => 'backup-scheduled',
                     'name' => 'Scheduled backup',
                     'handler' => 'backup.scheduled',
-                    'cron' => '0 2 * * *',
+                    // Run every minute; due gate is storage/backups/schedule.json next_run (not 02:00 only).
+                    'cron' => '* * * * *',
                     'enabled' => true,
                     'system' => true,
                     'payload' => [],

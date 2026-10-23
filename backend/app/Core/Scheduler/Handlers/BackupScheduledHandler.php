@@ -27,8 +27,23 @@ final class BackupScheduledHandler implements JobHandlerInterface
     public function handle(array $payload = []): JobRunResult
     {
         $result = $this->backups->runScheduledBackupIfDue();
-        $ran = (bool) $result['ran'];
+        $reason = isset($result['reason']) ? (string) $result['reason'] : null;
 
+        if ($reason === 'skipped_unchanged') {
+            $files = (int) ($result['filesCompared'] ?? 0);
+
+            return new JobRunResult(
+                true,
+                sprintf(
+                    'Scheduled backup skipped — scoped content/config unchanged (%d files vs previous archive)',
+                    $files
+                ),
+                $result,
+                'skipped_unchanged'
+            );
+        }
+
+        $ran = (bool) $result['ran'];
         $message = 'Backup not due';
         if ($ran) {
             $offsite = $result['offsiteUploaded'] ?? null;
@@ -45,7 +60,7 @@ final class BackupScheduledHandler implements JobHandlerInterface
             $ran,
             $message,
             $result,
-            isset($result['reason']) ? (string) $result['reason'] : null
+            $reason
         );
     }
 }

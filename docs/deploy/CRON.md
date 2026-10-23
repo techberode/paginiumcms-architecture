@@ -16,7 +16,7 @@ The retained current profile includes, for example:
 |---|---|---|---|
 | `content-scheduled-publish` | `content.scheduled_publish` | every minute | publish due content |
 | `monitoring-pipeline` | `monitoring.pipeline` | every minute | monitoring and log scanning |
-| `backup-scheduled` | `backup.scheduled` | daily at 02:00 | scheduled CMS backup (see [BACKUP_RESTORE.md](../en/developer/BACKUP_RESTORE.md#scheduled-backup-cron); optional Nextcloud upload after success — [ISS-201](../ISSUES.md#iss-201)) |
+| `backup-scheduled` | `backup.scheduled` | every minute (`* * * * *`) | checks `schedule.json` `next_run` — creates a ZIP only when due (see [BACKUP_RESTORE.md](../en/developer/BACKUP_RESTORE.md#scheduled-backup-cron); optional Nextcloud upload — [ISS-201](../ISSUES.md#iss-201)) |
 | `storage-retention` | `storage.retention` | daily at 03:00 | trash / content-version / draft-orphan retention ([STORAGE.md](../en/architecture/STORAGE.md#14-storage-retention-trash-versions-drafts); Settings → **storageRetention** — [ISS-202](../ISSUES.md#iss-202)) |
 | `admin-cache-warm` | `admin_cache.warm` | every minute | **disabled by default** — pre-warm admin P2 cache (It.100c); same as `cache:warm-admin` |
 | `host-metrics-collect` | `host_metrics.collect` | every 5 min | **disabled by default** — host load/RAM/disk snapshot (It.82d); requires Engine host metrics ON |

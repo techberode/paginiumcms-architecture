@@ -311,9 +311,11 @@ class BackupController
             }
         }
         $mode = BackupScope::normalizeMode($data['mode'] ?? BackupScope::MODE_FULL);
+        $skipIfUnchanged = !array_key_exists('skipIfUnchanged', $data) || (bool) $data['skipIfUnchanged'];
         $this->backup->scheduleBackup($interval, $keep, [
             'includes' => $includes,
             'mode' => $mode,
+            'skip_if_unchanged' => $skipIfUnchanged,
         ]);
 
         return $this->json->success($response, $this->backup->getScheduleInfo(), 200, 'Backup schedule saved');

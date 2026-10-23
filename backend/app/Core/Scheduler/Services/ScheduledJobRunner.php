@@ -19,6 +19,7 @@ final class ScheduledJobRunner
         'disabled',
         'nothing_due',
         'some_items_skipped',
+        'skipped_unchanged',
     ];
 
     public function __construct(

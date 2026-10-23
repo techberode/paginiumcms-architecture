@@ -1,4 +1,5 @@
-FROM php:8.5-fpm-bookworm
+# Pin patch level for security releases (e.g. PHP2Shell — use 8.5.12+).
+FROM php:8.5.12-fpm-bookworm
 
 # mbstring, curl, opcache are compiled into the official image — git, openssh-client, zip, composer, node for admin deploy.
 RUN apt-get update \
