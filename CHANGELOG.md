@@ -51,6 +51,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 | Release | Date | Scope |
 |---|---:|---|
+| [`2.1.0-beta.99`](#release-2-1-0-beta-99) | 2026-10-23 | ISS-203/204 · storage retention · backup off-site · PHP 8.5.12 |
 | [`2.1.0-beta.98`](#release-2-1-0-beta-98) | 2026-10-11 | It.100 admin load · It.82d host metrics · It.99 polyglot · ops docs hub |
 | [`2.1.0-beta.97`](#release-2-1-0-beta-97) | 2026-10-06 | Experience Phase C reference seeds · B3 reading progress + View Transitions + pg-glass |
 | [`2.1.0-beta.96`](#release-2-1-0-beta-96) | 2026-10-06 | Experience B1 visual-frame motion · B2 section-band reveal/hover v3 · It.98/growth/docs portal plan · SK marketing drafts |
@@ -217,6 +218,16 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ---
 
+
+<a id="release-2-1-0-beta-99"></a>
+
+## [2.1.0-beta.99] – 2026-10-23
+
+Security audits **ISS-203** and **ISS-204**, **storage retention** (ISS-202), **Nextcloud/WebDAV off-site backups** (ISS-201), scheduled backup **skip-if-unchanged** manifest check, Docker **PHP 8.5.12** pin, and backup scheduler job `* * * * *` gate on `schedule.json`.
+
+Details: see **[Unreleased](#unreleased)** bullets above (now shipped in this tag).
+
+---
 
 <a id="release-2-1-0-beta-98"></a>
 
