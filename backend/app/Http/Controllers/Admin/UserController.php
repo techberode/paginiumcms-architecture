@@ -12,6 +12,7 @@ use PaginiumCMS\Core\Validation\Validator;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\SuperAdminAccountProtection;
 use PaginiumCMS\Http\Support\RequestJsonBody;
 use PaginiumCMS\Modules\Security\Contracts\AuthorizationInterface;
 use PaginiumCMS\Modules\Security\Contracts\PasswordPolicyInterface;
@@ -175,6 +176,12 @@ final class UserController
         if ($user === null) {
             return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
+
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($this->resolveActor($request), $user);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
+        }
+
         $payload = $this->parseJsonBody($request);
 
         $rules = [
@@ -293,6 +300,11 @@ final class UserController
             return $this->json->error($response, 'Používateľ neexistuje', 404);
         }
 
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($actor, $target);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
+        }
+
         if ($target->isSuperAdmin() && $this->countSuperAdmins() <= 1) {
             return $this->json->error($response, 'Nemôžete zmazať posledného super administrátora', 400);
         }
@@ -337,6 +349,13 @@ final class UserController
                 continue;
             }
 
+            $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($actor, $target);
+            if ($denied !== null) {
+                $batch->addFailure($targetId, $denied);
+
+                continue;
+            }
+
             if ($target->isSuperAdmin() && $this->countSuperAdmins() <= 1) {
                 $batch->addFailure($targetId, 'Nemôžete zmazať posledného super administrátora');
 
@@ -358,6 +377,11 @@ final class UserController
         $user = $this->resolveUser((string) ($args['id'] ?? ''));
         if ($user === null) {
             return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($this->resolveActor($request), $user);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
         }
 
         $payload = $this->parseJsonBody($request);
@@ -388,6 +412,11 @@ final class UserController
         $user = $this->resolveUser((string) ($args['id'] ?? ''));
         if ($user === null) {
             return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($this->resolveActor($request), $user);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
         }
 
         $uploadedFiles = $request->getUploadedFiles();
@@ -425,6 +454,11 @@ final class UserController
         $user = $this->resolveUser((string) ($args['id'] ?? ''));
         if ($user === null) {
             return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($this->resolveActor($request), $user);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
         }
 
         $this->avatars->remove($user);

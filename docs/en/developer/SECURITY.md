@@ -260,8 +260,12 @@ Every mutating admin route carries `AuthMiddleware` + `TwoFactorMiddleware` + **
 |---|---|---|
 | Users | `Http/Routes/users.php` | `user:manage` |
 | Settings | `Http/Routes/settings.php` | `settings:manage`; `DELETE /api/admin/settings` (reset all) → **SUPER_ADMIN only** (controller check) |
-| Extensions, firewall, system update, code editor, cache, jobs, GitHub | `extensions.php`, `firewall.php`, `systemupdate.php`, `codeeditor.php`, `cache.php`, `jobs.php`, `github.php` | `system:manage` |
-| Backups | `bootstrap/app.php` (`/api/admin/backups*`) | `backup:manage` |
+| Extensions (list) | `extensions.php` | `system:manage` |
+| Extensions (import/enable/disable/uninstall) | `ExtensionsController` | **`SUPER_ADMIN` only** ([ISS-205](../ISSUES.md#iss-205)) |
+| Firewall, system update, code editor, cache, jobs, GitHub | `firewall.php`, `systemupdate.php`, `codeeditor.php`, `cache.php`, `jobs.php`, `github.php` | `system:manage` |
+| Backups (list/create/download/schedule) | `bootstrap/app.php` (`/api/admin/backups*`) | `backup:manage` |
+| Backups (import/restore/bulk-restore) | `BackupController` | **`SUPER_ADMIN` only** ([ISS-205](../ISSUES.md#iss-205)) |
+| Users — mutate existing SUPER_ADMIN | `UserController`, `GdprController` | **`SUPER_ADMIN` actor** ([ISS-205](../ISSUES.md#iss-205)) |
 | Logs | `logs.php` | `logs:view`; purge / bulk delete / delete-all also `system:manage` |
 | Trash | `trash.php` | `content:delete` |
 | Metrics | `metrics.php` | `metrics:read`; `POST …/apm/clear` → `metrics:manage` |
@@ -306,7 +310,7 @@ Non-JSON requests (multipart uploads, blob downloads) must still go through the 
 - canonicalize paths before allow/deny decisions,
 - encode output for HTML/attribute/URL/JSON context,
 - sanitize Markdown/HTML preview through an allow-list,
-- explicitly allow URL schemes and reject `javascript:`-style variants — `FILTER_VALIDATE_URL` alone is **not** a scheme check (it accepts `javascript://host/%0a…`); use an explicit `http`/`https` allow-list such as `GalleryItemValidator::isSafeLinkUrl()` on the backend and `safeOptionalHref()` / `sanitizeNavigationUrl()` (`frontend/src/security/safeUrl.ts`) for every user-supplied `href` in the SPA ([ISS-204](../ISSUES.md#iss-204)),
+- explicitly allow URL schemes and reject `javascript:`-style variants — `FILTER_VALIDATE_URL` alone is **not** a scheme check (it accepts `javascript://host/%0a…`); HTML/mail sanitizers must normalize schemes like browsers (`SafeUriSchemeNormalizer` — leading C0 controls, TAB/LF/CR) before deny checks ([ISS-205](../ISSUES.md#iss-205)); use an explicit `http`/`https` allow-list such as `GalleryItemValidator::isSafeLinkUrl()` on the backend and `safeOptionalHref()` / `sanitizeNavigationUrl()` (`frontend/src/security/safeUrl.ts`) for every user-supplied `href` in the SPA ([ISS-204](../ISSUES.md#iss-204)),
 - media URLs embedded in rendered content go through `DamMediaUrl::sanitize()` (only `/storage/…` and `/api/media/file/…`, no `..`, encoded traversal, backslash, control characters or `//host`),
 - iframes in sanitized HTML: HTTPS embed hosts only and never same-origin (`sandbox` includes `allow-same-origin`),
 - deliver SVG/HTML/XML uploads according to a safe policy, commonly attachment + sandbox CSP,

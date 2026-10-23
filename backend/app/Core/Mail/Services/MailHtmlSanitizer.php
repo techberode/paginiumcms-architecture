@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Mail\Services;
 
+use PaginiumCMS\Core\Security\Services\SafeUriSchemeNormalizer;
 use DOMDocument;
 use DOMElement;
 
@@ -224,17 +225,20 @@ final class MailHtmlSanitizer
 
     private static function isSafeUri(string $uri): bool
     {
-        $value = trim(html_entity_decode($uri, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $value = SafeUriSchemeNormalizer::decodedTrimmed($uri);
         if ($value === '' || $value === '#') {
             return true;
         }
-        if (preg_match('/^\s*(javascript|vbscript|data\s*:\s*text)\s*:/i', $value) === 1) {
+
+        $probe = SafeUriSchemeNormalizer::schemeProbe($value);
+
+        if (preg_match('/^(javascript|vbscript|data\s*:\s*text)\s*:/i', $probe) === 1) {
             return false;
         }
         if (preg_match('~^(https?://|mailto:|tel:|cid:|data:image/|/|\./|#)~i', $value) === 1) {
             return true;
         }
 
-        return preg_match('~^[a-z][a-z0-9+\-.]*:~i', $value) !== 1;
+        return preg_match('~^[a-z][a-z0-9+\-.]*:~i', $probe) !== 1;
     }
 }

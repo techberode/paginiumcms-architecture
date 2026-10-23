@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 18 October 2026 · register **ISS-001–ISS-204** · latest public release tag **`v2.1.0-beta.98`**
+> **Last updated:** 23 October 2026 · register **ISS-001–ISS-205** · latest public release tag **`v2.1.0-beta.99`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -227,6 +227,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-202](#iss-202) | Configurable trash / version / draft storage retention (Oct 2026 ops) | Low (disk / ops) | ✅ Shipped (Unreleased) |
 | [ISS-203](#iss-203) | Oct 2026 security audit — setup hijack, media registry leak, CSRF/comments | **High (security)** | ✅ Fixed (Unreleased) |
 | [ISS-204](#iss-204) | 18 Oct 2026 full audit — gallery stored XSS, route RBAC, dead CSRF exemptions, SSRF redirects, backup KDF | **High (security)** | ✅ Fixed (Unreleased) |
+| [ISS-205](#iss-205) | 23 Oct 2026 audit (`0533d07`) — SUPER_ADMIN account takeover, sanitizer `javascript:` C0 bypass, plugin/backup restore gates | **High (security)** | ✅ Fixed (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6267,6 +6268,35 @@ After [ISS-200](#iss-200) recovery, production needed **daily full backups** and
 | Prod PHP container: RW code mount, FPM master as root | Required by admin self-update (`git pull` + `npm run build:prod` in-container). Mitigated with `mem_limit`/`cpus`/`pids_limit` + `no-new-privileges`; workers run as `www-data`. |
 | `npm audit` high in dev deps (`braces` via Tailwind 3) | No patched version; build-time only — [ISS-197](#iss-197). Runtime deps gated at `high`. |
 | God-files, `Core/Event` vs `Core/Events` naming, `docs/sk` migration, remaining controller HTTP tests | Tracked refactors; no behavioural risk. Split per domain when touched. |
+
+---
+
+## ISS-205 – Oct 2026 audit follow-up (SUPER_ADMIN, sanitizer URI, privileged ops)
+
+| Field | Value |
+|--------|--------|
+| **Severity** | High (privilege escalation, stored XSS on static/headless HTML) |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Baseline** | External audit on `0533d07`; shipped fixes on `main` after `v2.1.0-beta.99` |
+| **Docs** | [SECURITY.md](en/developer/SECURITY.md#route-permission-map-iss-204) · private log `SECURITY_ISSUES.md` (gitignored) |
+
+### Shipped
+
+- **SUPER_ADMIN target guard (#1):** `SuperAdminAccountProtection` — ADMIN (or any non–super-admin) receives **403** when mutating an existing SUPER_ADMIN via user update/delete/bulk/avatar or GDPR export/anonymize. Assigning role SUPER_ADMIN remains super-admin-only (unchanged).
+- **Sanitizer URI bypass (#3):** `SafeUriSchemeNormalizer` applies browser-like scheme probing (strip leading C0/spaces, remove TAB/LF/CR) in `HtmlDomSanitizer` and `MailHtmlSanitizer`. Regression: `HtmlDomSanitizerTest` (leading `\x01`, entity tabs, `java\tscript:`, etc.).
+- **Plugin mutations (#6):** `POST /import`, enable/disable/uninstall, bulk-uninstall → **SUPER_ADMIN** controller gate; `GET /api/admin/extensions` unchanged for ADMIN with `system:manage`.
+- **Backup restore (#10 partial):** `POST /backups/import`, `POST /backups/{id}/restore`, `POST /backups/bulk-restore` → **SUPER_ADMIN** only (ADMIN keeps create/list/download/schedule).
+
+### Already fixed before ISS-205
+
+ISS-203 (#2, #4, #5, #11, #12, #14) and ISS-204 (#7 route, #9 CSRF, gallery URL validation).
+
+### Deferred / operator
+
+- Off-site ZIP encryption default off — enable `backups.offsiteEncryptEnabled` in production ([ISS-203](#iss-203)).
+- Plugin package signing — future; CodePolicy + SUPER_ADMIN gate only.
+- SVG DOM allow-list — upload scan + attachment/CSP ([ISS-203](#iss-203)).
+- npm `braces` dev chain — [ISS-197](#iss-197).
 
 ---
 

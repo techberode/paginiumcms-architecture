@@ -234,12 +234,14 @@ final class HtmlDomSanitizer
 
     private function isSafeUri(string $uri): bool
     {
-        $value = trim(html_entity_decode($uri, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $value = SafeUriSchemeNormalizer::decodedTrimmed($uri);
         if ($value === '' || $value === '#') {
             return true;
         }
 
-        if (preg_match('/^\s*(javascript|vbscript|data)\s*:/i', $value) === 1) {
+        $probe = SafeUriSchemeNormalizer::schemeProbe($value);
+
+        if (preg_match('/^(javascript|vbscript|data)\s*:/i', $probe) === 1) {
             return false;
         }
 
@@ -248,7 +250,7 @@ final class HtmlDomSanitizer
         }
 
         // Relative paths without scheme (e.g. blog/post)
-        return preg_match('~^[a-z][a-z0-9+\-.]*:~i', $value) !== 1;
+        return preg_match('~^[a-z][a-z0-9+\-.]*:~i', $probe) !== 1;
     }
 
     private function isAllowedEmbedIframe(DOMElement $iframe): bool

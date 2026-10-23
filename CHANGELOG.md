@@ -13,6 +13,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Security audit 2026-10-23 (ISS-205)** — [ISS-205](docs/ISSUES.md#iss-205) · private incident log `SECURITY_ISSUES.md` (gitignored)
+  - **SUPER_ADMIN account protection:** non–super-admin actors get **403** when updating, deleting, avatar/GDPR actions on an existing SUPER_ADMIN (`SuperAdminAccountProtection`).
+  - **Stored XSS — sanitizer URI:** `SafeUriSchemeNormalizer` + scheme probe in `HtmlDomSanitizer` / `MailHtmlSanitizer` (leading C0 / tab-in-`javascript:` bypass); `HtmlDomSanitizerTest`.
+  - **Privileged ops:** extension import/enable/disable/uninstall and backup import/restore/bulk-restore require **SUPER_ADMIN** (controller gate; ADMIN keeps extension list + backup create/list).
 - **Security audit 2026-10-18 (ISS-204)** — [ISS-204](docs/ISSUES.md#iss-204) · [SECURITY.md](docs/en/developer/SECURITY.md#route-permission-map-iss-204) · **upgrade steps:** [DEPLOY.md §13.1](docs/deploy/DEPLOY.md#upgrade-iss-204) (re-copy stack override + `stack.sh up -d`)
   - **Stored XSS fix:** gallery `linkUrl` accepts only `http(s)://…` or site-relative `/…` (`javascript://…%0a…` previously passed `FILTER_VALIDATE_URL`); unsafe stored values are dropped on read; FE renders user links via `safeOptionalHref()` (gallery, media gallery, footer social links).
   - **RBAC — new permissions:** `system:manage`, `backup:manage`, `metrics:manage`, `mail:send`. Routes now require `PermissionMiddleware` (role middleware kept as defense-in-depth): users → `user:manage`; extensions, firewall, system update, code editor, cache, jobs, GitHub → `system:manage`; backups → `backup:manage`; trash → `content:delete`; logs → `logs:view` (+ `system:manage` for purge/bulk delete); APM clear → `metrics:manage`; mail send → `mail:send`.

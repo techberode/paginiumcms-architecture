@@ -35,12 +35,23 @@ final class ExtensionsControllerTest extends TestCase
 
     public function testImportRequiresZipFile(): void
     {
-        $this->loginAsAdminUser();
+        $this->loginAsSuperAdminUser();
 
         $response = $this->handleRequest(
             $this->createJsonRequest('POST', '/api/admin/extensions/import')
         );
 
         $this->assertSame(400, $response->getStatusCode());
+    }
+
+    public function testImportForbiddenForAdmin(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/extensions/import')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
     }
 }

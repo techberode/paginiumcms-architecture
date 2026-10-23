@@ -8,6 +8,7 @@ use PaginiumCMS\Core\Gdpr\GdprPseudonym;
 use PaginiumCMS\Core\Gdpr\Services\GdprAnonymizeService;
 use PaginiumCMS\Core\Gdpr\Services\GdprExportService;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\SuperAdminAccountProtection;
 use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Modules\Security\Services\SecurityAuditStore;
 use PaginiumCMS\Modules\Security\Services\UserRepository;
@@ -42,6 +43,11 @@ final class GdprController
         }
 
         $actor = $this->resolveActor($request);
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($actor, $target);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
+        }
+
         $query = $request->getQueryParams();
         $format = strtolower(trim((string) ($query['format'] ?? 'json')));
 
@@ -110,6 +116,11 @@ final class GdprController
         $target = $this->resolveUser($targetId);
         if ($target === null) {
             return $this->json->error($response, 'Používateľ neexistuje', 404);
+        }
+
+        $denied = SuperAdminAccountProtection::denyMutatingSuperAdmin($actor, $target);
+        if ($denied !== null) {
+            return $this->json->error($response, $denied, 403);
         }
 
         if ($target->isSuperAdmin() && $this->countSuperAdmins() <= 1) {

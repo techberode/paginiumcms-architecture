@@ -125,6 +125,37 @@ class UserControllerTest extends TestCase
         $this->controller->store($request, (new ResponseFactory())->createResponse());
     }
 
+    public function testAdminCannotUpdateSuperAdminEmail(): void
+    {
+        $super = new User();
+        $super->setEmail('super@test.sk');
+        $super->setName('Super');
+        $super->setPassword('SecurePass1!');
+        $super->setRoles(['SUPER_ADMIN']);
+        $this->repo->save($super);
+
+        $admin = new User();
+        $admin->setEmail('admin@test.sk');
+        $admin->setName('Admin');
+        $admin->setPassword('SecurePass1!');
+        $admin->setRoles(['ADMIN']);
+        $this->repo->save($admin);
+
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/api/admin/users/' . $super->getId())
+            ->withAttribute('user', $admin)
+            ->withBody($this->streamJson(['email' => 'hijack@test.sk']));
+
+        $response = $this->controller->update(
+            $request,
+            (new ResponseFactory())->createResponse(),
+            ['id' => $super->getId()]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('super@test.sk', $this->repo->findById($super->getId())?->getEmail());
+    }
+
     public function testDestroyPreventsSelfDelete(): void
     {
         $actor = new User();

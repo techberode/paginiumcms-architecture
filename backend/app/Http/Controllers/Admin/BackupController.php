@@ -17,6 +17,7 @@ use PaginiumCMS\Modules\Security\Models\User;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkOperationLimits;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\SuperAdminAccountProtection;
 use PaginiumCMS\Support\FileHelper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -77,6 +78,11 @@ class BackupController
 
     public function importBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $uploadedFiles = $request->getUploadedFiles();
         $file = $uploadedFiles['file'] ?? null;
 
@@ -176,6 +182,11 @@ class BackupController
 
     public function restoreBackup(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $id = (string) $request->getAttribute('id');
 
         try {
@@ -255,6 +266,11 @@ class BackupController
 
     public function bulkRestoreBackups(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $ids = $this->normalizeIds($request);
         if ($ids === []) {
             return $this->json->error($response, 'Vyžaduje sa aspoň jedno ID', 400);
@@ -342,5 +358,19 @@ class BackupController
         $user = $request->getAttribute('user');
 
         return $user instanceof User ? $user->getId() : null;
+    }
+
+    private function denyUnlessSuperAdmin(ServerRequestInterface $request, ResponseInterface $response): ?ResponseInterface
+    {
+        $user = $request->getAttribute('user');
+        $actor = $user instanceof User ? $user : null;
+        $message = SuperAdminAccountProtection::denyUnlessSuperAdminActor($actor);
+        if ($message === null) {
+            return null;
+        }
+
+        $status = $actor === null ? 401 : 403;
+
+        return $this->json->error($response, $message, $status);
     }
 }

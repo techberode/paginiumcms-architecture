@@ -13,6 +13,7 @@ use PaginiumCMS\Http\Extensions\Contracts\PluginManagerInterface;
 use PaginiumCMS\Http\Support\BulkBatchResult;
 use PaginiumCMS\Http\Support\BulkIdsParser;
 use PaginiumCMS\Http\Support\JsonResponder;
+use PaginiumCMS\Http\Support\SuperAdminAccountProtection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -39,6 +40,11 @@ final class ExtensionsController
 
     public function import(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $uploadedFiles = $request->getUploadedFiles();
         $file = $uploadedFiles['file'] ?? null;
 
@@ -80,6 +86,11 @@ final class ExtensionsController
      */
     public function enable(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $id = (string) ($args['id'] ?? '');
 
         try {
@@ -96,6 +107,11 @@ final class ExtensionsController
      */
     public function disable(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $id = (string) ($args['id'] ?? '');
 
         try {
@@ -112,6 +128,11 @@ final class ExtensionsController
      */
     public function uninstall(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $id = (string) ($args['id'] ?? '');
 
         try {
@@ -125,6 +146,11 @@ final class ExtensionsController
 
     public function bulkUninstall(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        $denied = $this->denyUnlessSuperAdmin($request, $response);
+        if ($denied !== null) {
+            return $denied;
+        }
+
         $ids = BulkIdsParser::fromRequest($request);
         if ($ids === []) {
             return $this->json->error($response, 'No extensions selected', 400);
@@ -148,5 +174,19 @@ final class ExtensionsController
         $user = $request->getAttribute('user');
 
         return $user instanceof User ? $user->getId() : null;
+    }
+
+    private function denyUnlessSuperAdmin(ServerRequestInterface $request, ResponseInterface $response): ?ResponseInterface
+    {
+        $user = $request->getAttribute('user');
+        $actor = $user instanceof User ? $user : null;
+        $message = SuperAdminAccountProtection::denyUnlessSuperAdminActor($actor);
+        if ($message === null) {
+            return null;
+        }
+
+        $status = $actor === null ? 401 : 403;
+
+        return $this->json->error($response, $message, $status);
     }
 }

@@ -64,6 +64,28 @@ final class RoutePermissionHardeningTest extends TestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
+    public function testAdminCannotImportBackupArchive(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/backups/import')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testAdminCannotImportExtensionZip(): void
+    {
+        $this->loginAsAdminUser();
+
+        $response = $this->handleRequest(
+            $this->createJsonRequest('POST', '/api/admin/extensions/import')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
     private function loginWithRole(string $role): void
     {
         $userData = $this->createTestUser();
