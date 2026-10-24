@@ -348,30 +348,41 @@ export const authApi = {
       enabled: boolean;
       verified: boolean;
       setupPending: boolean;
+      sessionVerified: boolean;
     }> => {
       const res = await apiClient.get<{
         success?: boolean;
         enabled?: boolean;
         verified?: boolean;
         setup_pending?: boolean;
+        session_verified?: boolean;
       }>('/api/auth/2fa/status');
       const payload = (res.data ?? res) as {
         enabled?: boolean;
         verified?: boolean;
         setup_pending?: boolean;
+        session_verified?: boolean;
       };
       const hasFields =
         typeof payload.enabled === 'boolean' ||
         typeof payload.verified === 'boolean' ||
-        typeof payload.setup_pending === 'boolean';
+        typeof payload.setup_pending === 'boolean' ||
+        typeof payload.session_verified === 'boolean';
       if (res.success === false && !hasFields) {
-        return { ok: false, enabled: false, verified: false, setupPending: false };
+        return {
+          ok: false,
+          enabled: false,
+          verified: false,
+          setupPending: false,
+          sessionVerified: false,
+        };
       }
       return {
         ok: true,
         enabled: Boolean(payload.enabled),
         verified: Boolean(payload.verified),
         setupPending: Boolean(payload.setup_pending),
+        sessionVerified: Boolean(payload.session_verified),
       };
     },
 

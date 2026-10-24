@@ -35,6 +35,7 @@ import { PublicHeaderStack } from './PublicHeaderStack';
 import { PublicBreadcrumbs } from '../frontend/PublicBreadcrumbs';
 import { resolvePublicBreadcrumbsPlacement } from '../../utils/publicBreadcrumbsPlacement';
 import { isAdminAppRoute } from '../../utils/appRoutes';
+import { isPublicAdminChromeAllowed } from '../../utils/twoFactorSessionGate';
 import { resolveSiteHomePage } from '../../utils/siteHomePage';
 import { PublicNotFoundContent } from '../frontend/PublicNotFoundContent';
 import { PublicRouteErrorBoundary } from './PublicRouteErrorBoundary';
@@ -124,7 +125,7 @@ export const PublicSiteLayout: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = usePublicNavigate();
-  const { user, pendingTwoFactor } = useAuth();
+  const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
   const { getPageBySlug, getArticleBySlug, navigation, secondaryNavigation, pages } = usePublicSite();
   const { settings } = useSettingsContext();
   const siteName = String(settings?.general?.siteName ?? 'PaginiumCMS');
@@ -146,7 +147,7 @@ export const PublicSiteLayout: React.FC = () => {
     ? chrome.secondary.position === 'sticky'
     : true;
 
-  const showCmsBar = Boolean(user && !pendingTwoFactor);
+  const showCmsBar = isPublicAdminChromeAllowed(user, pendingTwoFactor, twoFactorSetupPending);
 
   const currentDoc: CMSBarDoc | undefined = useMemo(() => {
     if (pathname.startsWith('/blog/')) {

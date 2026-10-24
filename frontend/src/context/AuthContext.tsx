@@ -6,6 +6,7 @@ import { User } from '../api/types';
 import { authApi, LoginResult, RegisterResult } from '../api/auth';
 import { debugLogProvider } from '../utils/debugLog';
 import { clearSystemUpdateSessionAutoCheck } from '../utils/systemUpdateCheckCache';
+import { twoFactorFlagsFromStatus } from '../utils/twoFactorSessionGate';
 
 export interface LoginOutcome {
   success: boolean;
@@ -63,13 +64,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Pri transientnom zlyhaní /api/auth/2fa/status neprepínať stav — inak
         // keepalive každé 4 min falošne nastaví pendingTwoFactor → redirect /login.
         if (status.ok) {
-          setTwoFactorSetupPending(status.setupPending);
-          setPendingTwoFactor(!status.verified && !status.setupPending);
+          const flags = twoFactorFlagsFromStatus(status);
+          setTwoFactorSetupPending(flags.twoFactorSetupPending);
+          setPendingTwoFactor(flags.pendingTwoFactor);
         }
         debugLogProvider('auth', 'refresh.done', {
           authenticated: true,
           twoFactorEnabled: true,
           twoFactorVerified: status.ok ? status.verified : undefined,
+          twoFactorSessionVerified: status.ok ? status.sessionVerified : undefined,
           twoFactorSetupPending: status.ok ? status.setupPending : undefined,
           twoFactorStatusOk: status.ok,
           userId: probe.user.id,
@@ -152,8 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         if (activeUser.twoFactorEnabled) {
           const status = await authApi.twoFactor.getStatus();
-          setTwoFactorSetupPending(status.setupPending);
-          setPendingTwoFactor(!status.verified && !status.setupPending);
+          const flags = twoFactorFlagsFromStatus(status);
+          setTwoFactorSetupPending(flags.twoFactorSetupPending);
+          setPendingTwoFactor(flags.pendingTwoFactor);
         } else {
           setPendingTwoFactor(false);
           setTwoFactorSetupPending(false);

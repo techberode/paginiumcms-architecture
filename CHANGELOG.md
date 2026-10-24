@@ -13,6 +13,10 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Critical — incomplete 2FA login UI (ISS-206)** — [ISS-206](docs/ISSUES.md#iss-206)
+  - **Symptom:** after password-only login with 2FA enabled, abandoning TOTP still showed public CMS bar and **Paginium Admin** as if fully authenticated.
+  - **Cause:** frontend cleared `pendingTwoFactor` using account `verified` from `/api/auth/2fa/status` instead of **`session_verified`**.
+  - **Fix:** `twoFactorSessionGate` + `session_verified` in `AuthContext`; public admin chrome and maintenance staff bypass require a completed session TOTP when 2FA applies. Admin APIs remain fail-closed via `TwoFactorMiddleware` (unchanged).
 - **Security audit 2026-10-23 (ISS-205)** — [ISS-205](docs/ISSUES.md#iss-205) · private incident log `SECURITY_ISSUES.md` (gitignored)
   - **SUPER_ADMIN account protection:** non–super-admin actors get **403** when updating, deleting, avatar/GDPR actions on an existing SUPER_ADMIN (`SuperAdminAccountProtection`).
   - **Stored XSS — sanitizer URI:** `SafeUriSchemeNormalizer` + scheme probe in `HtmlDomSanitizer` / `MailHtmlSanitizer` (leading C0 / tab-in-`javascript:` bypass); `HtmlDomSanitizerTest`.

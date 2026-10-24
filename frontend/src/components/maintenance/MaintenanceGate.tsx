@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { ComingSoonPage } from './ComingSoonPage';
 import { UnderMaintenancePage } from './UnderMaintenancePage';
+import { isPublicAdminChromeAllowed } from '../../utils/twoFactorSessionGate';
 
 const STAFF_ROLES = ['EDITOR', 'ADMIN', 'SUPER_ADMIN'];
 
@@ -14,14 +15,14 @@ interface MaintenanceGateProps {
 
 export const MaintenanceGate: React.FC<MaintenanceGateProps> = ({ children }) => {
   const { settings, loading } = useSettingsContext();
-  const { user, pendingTwoFactor } = useAuth();
+  const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
   const { pathname } = useLocation();
 
   const mode = settings.maintenance?.mode ?? 'off';
   const maintenanceActive = isMaintenanceActive(mode);
 
   const isStaff =
-    Boolean(user && !pendingTwoFactor) &&
+    isPublicAdminChromeAllowed(user, pendingTwoFactor, twoFactorSetupPending) &&
     (user?.roles ?? []).some((role) => STAFF_ROLES.includes(role));
 
   if (loading || !maintenanceActive || isStaff) {

@@ -16,6 +16,7 @@ import { SideNav } from './SideNav';
 import type { NavigationLayoutSettings } from '../../utils/navigationLayoutSettings';
 import type { PublicNavChrome } from '../../utils/publicNavChrome';
 import { BTN_PRIMARY_GRADIENT, LOGO_FALLBACK, NAV_LINK_ACTIVE, NAV_LINK_IDLE } from '../../theme/publicUiClasses';
+import { isPublicAdminChromeAllowed } from '../../utils/twoFactorSessionGate';
 import { useTextScale } from '../../hooks/useTextScale';
 import { TextScaleControl } from '../common/TextScaleControl';
 
@@ -172,7 +173,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { navigation } = usePublicSite();
   const { get } = useSettingsContext();
-  const { user } = useAuth();
+  const { user, pendingTwoFactor, twoFactorSetupPending } = useAuth();
+  const showAdminEntry = isPublicAdminChromeAllowed(user, pendingTwoFactor, twoFactorSetupPending);
   const { t } = useI18n();
   const location = useLocation();
   const navigate = usePublicNavigate();
@@ -272,7 +274,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline text-theme-text-muted font-normal">{t('public.nav.search')}</span>
           </button>
 
-          {user ? (
+          {showAdminEntry ? (
             <button
               type="button"
               onClick={() => navigate('/dashboard')}

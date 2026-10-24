@@ -40,6 +40,7 @@ describe('TwoFactorSettings', () => {
       enabled: false,
       verified: false,
       setupPending: false,
+      sessionVerified: false,
     });
 
     renderWithProviders(<TwoFactorSettings />);
@@ -53,6 +54,7 @@ describe('TwoFactorSettings', () => {
       enabled: true,
       verified: false,
       setupPending: true,
+      sessionVerified: false,
     });
     vi.mocked(authApi.twoFactor.getQrCode).mockResolvedValue({
       qr_code: 'data:image/svg+xml;base64,PHN2Zy8+',

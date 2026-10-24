@@ -190,6 +190,7 @@ Session IDs, cookies, and CSRF tokens are not written to normal logs.
 - debug OTP is never returned in production,
 - SUPER_ADMIN/staff policy is applied consistently to UI and API,
 - role downgrade or account deactivation invalidates relevant sessions.
+- **Session vs account 2FA ([ISS-206](../ISSUES.md#iss-206)):** `/api/auth/2fa/status` distinguishes **`verified`** (persisted setup) from **`session_verified`** (TOTP for the current session). The admin SPA and public live-edit chrome must treat login as incomplete until `session_verified` when account 2FA is enabled; backend `TwoFactorMiddleware` already blocks protected routes without session TOTP.
 
 ### 7.4 SSO
 

@@ -6,7 +6,7 @@ icon: material/alert-circle-check
 
 # PaginiumCMS – Known Incidents and Fixes
 
-> **Last updated:** 23 October 2026 · register **ISS-001–ISS-205** · latest public release tag **`v2.1.0-beta.99`**
+> **Last updated:** 24 October 2026 · register **ISS-001–ISS-206** · latest public release tag **`v2.1.0-beta.99`**
 
 This is the canonical public register of production, integration, security, operations, and CI incidents found during PaginiumCMS development. Every incident number in the overview is a stable link to its record.
 
@@ -228,6 +228,7 @@ This is the canonical public register of production, integration, security, oper
 | [ISS-203](#iss-203) | Oct 2026 security audit — setup hijack, media registry leak, CSRF/comments | **High (security)** | ✅ Fixed (Unreleased) |
 | [ISS-204](#iss-204) | 18 Oct 2026 full audit — gallery stored XSS, route RBAC, dead CSRF exemptions, SSRF redirects, backup KDF | **High (security)** | ✅ Fixed (Unreleased) |
 | [ISS-205](#iss-205) | 23 Oct 2026 audit (`0533d07`) — SUPER_ADMIN account takeover, sanitizer `javascript:` C0 bypass, plugin/backup restore gates | **High (security)** | ✅ Fixed (Unreleased) |
+| [ISS-206](#iss-206) | Incomplete 2FA login exposed public CMS bar + “Paginium Admin” (wrong `verified` vs `session_verified`) | **Critical (security)** | ✅ Fixed (Unreleased) |
 
 ## CI failures (GitHub Actions)
 
@@ -6268,6 +6269,45 @@ After [ISS-200](#iss-200) recovery, production needed **daily full backups** and
 | Prod PHP container: RW code mount, FPM master as root | Required by admin self-update (`git pull` + `npm run build:prod` in-container). Mitigated with `mem_limit`/`cpus`/`pids_limit` + `no-new-privileges`; workers run as `www-data`. |
 | `npm audit` high in dev deps (`braces` via Tailwind 3) | No patched version; build-time only — [ISS-197](#iss-197). Runtime deps gated at `high`. |
 | God-files, `Core/Event` vs `Core/Events` naming, `docs/sk` migration, remaining controller HTTP tests | Tracked refactors; no behavioural risk. Split per domain when touched. |
+
+---
+
+## ISS-206 – Incomplete 2FA session treated as full login on public site
+
+| Field | Value |
+|--------|--------|
+| **Severity** | **Critical (security)** — broken authentication UX and trust boundary on the public surface |
+| **Status** | ✅ Fixed (Unreleased) |
+| **Reported** | 24 Oct 2026 (operator reproduction) |
+| **Docs** | [SECURITY.md](en/developer/SECURITY.md#73-2fa-and-otp) |
+
+### Symptom
+
+After a successful password step with 2FA enabled, abandoning the TOTP challenge still left the **public** site in a “half-logged-in” state: live CMS bar (**Upraviť stránku**, **Nový článok**, **Administrácia**) and navbar **Paginium Admin** were visible as if the session were fully established.
+
+### Root cause
+
+`GET /api/auth/2fa/status` exposes two different booleans:
+
+- **`verified`** — account-level 2FA setup is complete (`twoFactorVerifiedAt` persisted).
+- **`session_verified`** — TOTP was satisfied for the **current** HttpOnly session (`paginium_totp_verified`).
+
+`AuthContext` and public chrome used **`verified`** to clear `pendingTwoFactor`. For users with 2FA already configured, `verified === true` while `session_verified === false` after password-only login, so the SPA assumed a complete session.
+
+### Impact
+
+| Layer | Effect |
+|--------|--------|
+| **Backend API** | Unchanged fail-closed: `TwoFactorMiddleware` still returns **401** / `requires_two_factor` on protected admin routes without session TOTP. |
+| **Public SPA** | **Incorrect** — admin affordances and staff maintenance bypass (`MaintenanceGate`) could activate before TOTP, misleading operators and weakening the perceived auth boundary. |
+| **Risk class** | Session confusion, social/engineering surface, maintenance-mode preview for staff without completing 2FA — **not** a direct RBAC bypass on mutating APIs, but a **critical** defect in the 2FA login contract. |
+
+### Fix
+
+- Map `session_verified` in `authApi.twoFactor.getStatus()`.
+- `twoFactorSessionGate.ts` — derive `pendingTwoFactor` from **`session_verified`** when account 2FA is enabled and setup is complete.
+- Gate public admin chrome via `isPublicAdminChromeAllowed()` in `PublicSiteLayout`, `Navbar`, and `MaintenanceGate`.
+- Regression: `frontend/src/utils/twoFactorSessionGate.test.ts`.
 
 ---
 
