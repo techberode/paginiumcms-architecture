@@ -44,6 +44,8 @@ Príklad snippetu: [nginx-internal-llm.conf.example](../deploy/nginx-internal-ll
 
 **Rovnaký vzor:** proxy `/internal/translate/` → port LibreTranslate, `translation.baseUrl` = `https://<tvoj-cms-host>/internal/translate` (v nastaveniach bez `/translate` — cesty doplní driver).
 
+Odporúčaný Docker stack (localhost only, SK/EN modely, API kľúče): [docker-compose.libretranslate.yml](../deploy/docker-compose.libretranslate.yml) + [libretranslate.env.example](../deploy/libretranslate.env.example). nginx snippet: [nginx-internal-llm.conf.example](../deploy/nginx-internal-llm.conf.example).
+
 ---
 
 ## 3. Ollama na homeserveri
@@ -118,8 +120,11 @@ V `local`/`development` guard dočasne povolí HTTP a privátne IP — len na v�
 | Príznak | Príčina | Riešenie |
 |---------|---------|----------|
 | SSRF / URL not allowed | LAN alebo `http://` v produkcii | HTTPS proxy na tom istom hoste (§2). |
-| Beh visí queued | Nebeží worker | Cron + `worker:process` (§5). |
+| `timeout of 30000ms exceeded`, stav `queued` | Prehliadač 30s; pomalý LLM | FE timeout execute 180s; nginx `/api/` `proxy_read_timeout` ≥300s; `timeoutSeconds` 90–120. Suggest SEO volá execute synchronne. |
+| Beh visí queued (async) | Nebeží worker | Cron + `worker:process` (§5) — nie editor SEO. |
 | No tools allowed | Prázdny `allowedTools` | Doplniť tooly (§4). |
+| 503 provider unavailable | Ollama/OpenRouter down, timeout, alebo starý BE bez `assistant`+`tool` správ | Deploy aktuálneho backendu; curl na provider; OpenRouter kredit/model. |
+| SEO „Article SEO Title“ | Model bez kontextu / slabý tool calling | Deploy BE (snapshot `content.read`); skús `openai/gpt-4o-mini` cez OpenRouter. |
 
 ---
 

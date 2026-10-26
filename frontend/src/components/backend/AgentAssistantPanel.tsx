@@ -41,6 +41,9 @@ export const AgentAssistantPanel: React.FC<Props> = ({
     if (message.includes('budget') || message.includes('BUDGET')) {
       return t('editor.agent.budget');
     }
+    if (message.includes('timeout') || message.includes('ECONNABORTED')) {
+      return t('editor.agent.timeout');
+    }
     return message || t('editor.agent.failed');
   };
 
@@ -52,7 +55,7 @@ export const AgentAssistantPanel: React.FC<Props> = ({
         resourceId: slug,
         locale,
         sourceRevision,
-        prompt: 'Suggest SEO meta for this article',
+        prompt: t('editor.agent.suggestSeoPrompt', { locale, type, slug }),
         tools: ['content.read', 'seo.suggest_meta'],
       });
       if (!queued.success || !queued.data) {
@@ -61,8 +64,13 @@ export const AgentAssistantPanel: React.FC<Props> = ({
       }
       const executed = await agentApi.execute(queued.data.id);
       if (!executed.success || !executed.data) {
-        toast.error(mapError(executed.error || executed.message || ''));
-        setRun(queued.data);
+        const err = executed.error || executed.message || '';
+        toast.error(mapError(err));
+        if (!err.includes('timeout') && !err.includes('ECONNABORTED')) {
+          setRun(queued.data);
+        } else {
+          setRun(null);
+        }
         return;
       }
       setRun(executed.data);

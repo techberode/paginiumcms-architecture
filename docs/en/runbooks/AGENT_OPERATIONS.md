@@ -78,9 +78,9 @@ curl -sS -H "Authorization: Bearer <optional-token>" \
 |-------|--------|
 | `enabled` | Master switch. Off = no LLM calls. |
 | `provider` | `ollama` or `openai_compatible` (OpenAI-compatible HTTP API). |
-| `baseUrl` | HTTPS base **without** `/v1`. Example: `https://paginium.example/internal/llm`. |
-| `apiKey` | Optional Bearer token (encrypted at rest, write-only in UI). |
-| `model` | Ollama model id (e.g. `llama3.2`). Empty → driver default. |
+| `baseUrl` | HTTPS base **without** `/v1`. Homelab Ollama: `https://<cms-host>/internal/llm`. Cloud: `https://openrouter.ai/api` or vendor root (no `/v1`). |
+| `apiKey` | Bearer token for cloud providers (OpenRouter `sk-or-…`). Optional for local Ollama. Encrypted at rest, write-only in UI. |
+| `model` | Provider model id (Ollama: `llama3.2`; OpenRouter: `openai/gpt-4o-mini`). Empty → driver default. |
 | `allowedTools` | Comma-separated allow-list. **Empty = no tools** even when enabled. |
 | `maxTokensPerRun`, `maxToolSteps`, `dailyTokenLimit`, `timeoutSeconds` | Cost and safety bounds. |
 
@@ -90,18 +90,32 @@ Save settings, then use **Test connection** in the assistant panel (`POST /api/a
 
 ---
 
-## 5. Scheduler and worker (required for long runs)
+## 5. Scheduler and worker
 
-HTTP `POST /api/admin/agent/runs` returns **202** and enqueues work. Execution uses handler **`agent.run`** via the worker.
+HTTP `POST /api/admin/agent/runs` returns **202** and can enqueue **`agent.run`** for async execution.
 
-Ensure host cron runs both (same checkout and `.env` as the web app):
+The editor **Suggest SEO** button calls **`POST …/runs/{id}/execute` synchronously** in the same HTTP request (no worker required for that path).
+
+For other async agent jobs, ensure host cron runs both (same checkout and `.env` as the web app):
 
 ```bash
 php backend/bin/console scheduler:run
 php backend/bin/console worker:process
 ```
 
-See [CRON.md](../deploy/CRON.md). Without the worker, runs stay queued and proposals never appear.
+See [CRON.md](../deploy/CRON.md). Without the worker, async runs stay queued; the editor SEO button is unaffected once execute timeout/nginx limits are sufficient (§7).
+
+### OpenRouter (cloud, pay-as-you-go)
+
+| Field | Example |
+|-------|---------|
+| `provider` | `openai_compatible` |
+| `baseUrl` | `https://openrouter.ai/api` |
+| `apiKey` | OpenRouter API key |
+| `model` | `openai/gpt-4o-mini` (Text + tools in catalog) |
+| `timeoutSeconds` | `90`–`120` |
+
+Filter models on **Text** with **tools** support. Free models may rate-limit (**429** → CMS **503**).
 
 ---
 
@@ -122,9 +136,10 @@ Development / `APP_ENV=local`: the guard allows HTTP and private IPs for local t
 | Symptom | Likely cause | Action |
 |---------|----------------|--------|
 | Test connection: SSRF / URL not allowed | LAN or `http://` URL in production | Use HTTPS same-host nginx proxy (§2). |
-| Test OK, runs stuck queued | Worker not running | Fix cron + `worker:process` (§5). |
+| Editor: `timeout of 30000ms exceeded`, status stays `queued` | Browser axios default 30s; CPU Ollama + tools slower | Deploy FE with agent execute timeout (180s); nginx `/api/` `proxy_read_timeout` ≥300s; Settings `timeoutSeconds` 90–120. Editor calls execute synchronously (worker not required for Suggest SEO). |
+| Test OK, runs stuck queued | Worker not running | Fix cron + `worker:process` (§5) for async jobs only. |
 | `No tools are allowed` | Empty or invalid `allowedTools` | Add comma-separated tool names (§4). |
-| 503 provider unavailable | Ollama down, wrong model, timeout | Check Ollama logs, increase `timeoutSeconds`. |
+| 503 provider unavailable | Ollama down, wrong model, timeout, or OpenAI-compatible **400** on 2nd tool step (fixed in orchestrator: `assistant` + `tool` messages) | Check provider body via curl; increase `timeoutSeconds`; deploy current backend for multi-step tools. |
 | Apply 409 | Content changed during run | Re-run proposal against current revision. |
 
 ---

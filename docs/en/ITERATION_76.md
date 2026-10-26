@@ -173,4 +173,4 @@ Settings → Translation provides URL, write-only credential field, connection t
 
 ## Follow-ups
 
-[It.77 cloud providers](ITERATION_77.md) · [It.75 AI agent](ITERATION_75.md)
+[It.77 cloud providers](ITERATION_77.md) · [It.75 AI agent](ITERATION_75.md) · [It.102 translation polish](ITERATION_102.md)

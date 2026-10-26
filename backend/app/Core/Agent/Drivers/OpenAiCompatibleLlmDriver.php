@@ -73,6 +73,7 @@ final class OpenAiCompatibleLlmDriver implements LlmProviderInterface
                 'name' => $name,
                 'arguments' => $arguments,
                 'tokens' => $tokens,
+                'toolCallId' => trim((string) ($first['id'] ?? '')),
             ];
         }
 

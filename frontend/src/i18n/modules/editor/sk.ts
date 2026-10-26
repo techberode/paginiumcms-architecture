@@ -786,6 +786,8 @@ export const editorSk: MessageTree = {
     title: 'AI asistent',
     hint: 'Len návrhy. Použiť zapíše vybrané polia. Agent nikdy nepublikuje.',
     suggestSeo: 'Navrhnúť SEO pre tento článok',
+    suggestSeoPrompt:
+      'Navrhni SEO meta v jazyku {locale} pre {type} „{slug}“. Volaj seo.suggest_meta s reálnym titulkom a popisom podľa textu článku z CMS snapshotu — nie všeobecné anglické placeholdery.',
     running: 'Beží…',
     runStatus: '{status} · {provider}',
     proposal: 'Návrh',
@@ -800,6 +802,8 @@ export const editorSk: MessageTree = {
     budget: 'Denný limit asistenta je vyčerpaný.',
     failed: 'Beh asistenta zlyhal.',
     noProposal: 'Beh skončil bez použiteľného návrhu.',
+    timeout:
+      'Asistent nestihol odpovedať v časovom limite prehliadača. Na pomalom CPU zvýš v Nastaveniach timeout (90–120 s) a v nginx `proxy_read_timeout` pre `/api/`. Skús znova.',
   },
   newsArchive: {
     title: 'News a archív',

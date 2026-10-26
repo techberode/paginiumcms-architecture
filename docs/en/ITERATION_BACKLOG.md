@@ -27,6 +27,7 @@ This document fixes the old backlog, which mixed shipped iterations, planned fea
 |-------|------|----------|--------|--------|
 | — | **It.100** Admin load & cache tiers (living) | 🟡 ops | 🔄 **ongoing** | [ITERATION_100.md](ITERATION_100.md) · ops [ADMIN_OPERATIONS.md](developer/ADMIN_OPERATIONS.md) · probe [ADMIN_LOAD_SIMULATION.md](developer/ADMIN_LOAD_SIMULATION.md) |
 | 0d | **It.101** Public form builder (widgets & shortcodes) | 🟡 P1 | ⏳ planned | [ITERATION_101.md](ITERATION_101.md) · SK [ITERATION_101 (SK)](../sk/ITERATION_101.md) · 404 report shipped ahead of 101 |
+| 0e | **It.102** Assisted translation polish (shortcodes, editor UX) | 🔵 | ⏳ planned | [ITERATION_102.md](ITERATION_102.md) · It.76/77 foundation shipped; manual locales OK until then |
 | 0 | **It.99** Upload polyglot hardening (lean) | 🟡 security | ✅ shipped | [ITERATION_99.md](ITERATION_99.md) · [UPLOAD_POLYGLOT.md](developer/UPLOAD_POLYGLOT.md) · [ISS-195](../ISSUES.md#iss-195) |
 | 0 | **It.58f-i** Page field composer (sections + gallery per block) | 🟡 P1 | 🟡 a–f + islands; **g–k** ⏳ React image/video gallery | [PAGE_FIELD_COMPOSER_PLANNED.md](architecture/PAGE_FIELD_COMPOSER_PLANNED.md) · [GALLERY_LIGHTBOX_PLANNED.md](architecture/GALLERY_LIGHTBOX_PLANNED.md) |
 | 0b | **It.97** CSP `frame-src 'self'` + embed/map facades | 🔵 | ⏸️ | **Deferred** — keep current embed/map iframe + CSP exceptions; prefer **React islands** for rich UI — [REACT_SHORTCODE_ISLANDS.md](architecture/REACT_SHORTCODE_ISLANDS.md) |

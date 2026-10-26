@@ -164,6 +164,9 @@ final class AgentServiceTest extends TestCase
 
         $executed = $stack['service']->execute((string) $queued['id'], $llm);
         $this->assertSame('succeeded', $executed['status']);
+        $secondRequestMessages = $llm->calls[1]['messages'] ?? [];
+        $roles = array_map(static fn (array $m): string => (string) ($m['role'] ?? ''), $secondRequestMessages);
+        $this->assertContains('tool', $roles, 'OpenAI-compatible providers require assistant/tool message pairs after tool execution');
         $this->assertIsArray($executed['proposal']);
         $this->assertSame('seo', $executed['proposal']['kind']);
         $this->assertSame('Hello SEO', $executed['proposal']['payload']['fields']['seoTitle'] ?? null);

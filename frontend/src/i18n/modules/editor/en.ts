@@ -786,6 +786,8 @@ export const editorEn: MessageTree = {
     title: 'AI assistant',
     hint: 'Proposals only. Apply writes the selected fields. The agent never publishes.',
     suggestSeo: 'Suggest SEO for this article',
+    suggestSeoPrompt:
+      'Suggest SEO meta in locale {locale} for {type} "{slug}". Call seo.suggest_meta with a real title and description from the CMS article snapshot — not generic placeholders.',
     running: 'Running…',
     runStatus: '{status} · {provider}',
     proposal: 'Proposal',
@@ -800,6 +802,8 @@ export const editorEn: MessageTree = {
     budget: 'Daily assistant budget exceeded.',
     failed: 'The assistant run failed.',
     noProposal: 'The run finished without a usable proposal.',
+    timeout:
+      'The assistant did not finish before the browser request timed out. On slow CPU, raise the provider timeout in Settings (90–120s) and nginx `proxy_read_timeout` for `/api/`, then try again.',
   },
   newsArchive: {
     title: 'News & archive',

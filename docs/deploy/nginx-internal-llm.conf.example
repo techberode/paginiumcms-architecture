@@ -8,11 +8,14 @@
 # Restrict who can call these paths (VPN, admin IP, or auth_request).
 
 location /internal/llm/ {
-    # allow 10.0.0.0/8;   # example: VPN only — adjust to your policy
+    # allow 127.0.0.1;
+    # allow 192.168.10.0/24;   # LAN admin
+    # allow 172.16.0.0/12;     # Docker bridge (PHP container → nginx)
     # deny all;
 
     proxy_http_version 1.1;
-    proxy_set_header Host $host;
+    # Some Ollama builds reject Host: paginiumcms.com — use loopback if you get HTTP 403 + Allow: GET
+    proxy_set_header Host 127.0.0.1:11434;
     proxy_set_header Connection "";
     proxy_read_timeout 300s;
     proxy_send_timeout 300s;
@@ -21,8 +24,16 @@ location /internal/llm/ {
     proxy_pass http://127.0.0.1:11434/;
 }
 
-# LibreTranslate (It.76) — adjust port to your instance
-# location /internal/translate/ {
-#     proxy_pass http://127.0.0.1:5000/;
-#     proxy_read_timeout 120s;
-# }
+# LibreTranslate (It.76) — docs/deploy/docker-compose.libretranslate.yml (127.0.0.1:5000)
+location /internal/translate/ {
+    # allow 10.0.0.0/8;   # example: VPN / admin IP only
+    # deny all;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header Connection "";
+    proxy_read_timeout 120s;
+    proxy_send_timeout 120s;
+
+    proxy_pass http://127.0.0.1:5000/;
+}

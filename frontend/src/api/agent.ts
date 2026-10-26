@@ -1,5 +1,8 @@
 import apiClient from './client';
 
+/** LLM + tool loop on CPU Ollama can exceed the default 30s axios timeout. */
+const AGENT_LLM_TIMEOUT_MS = 180_000;
+
 export interface AgentQuota {
   day: string;
   used: number;
@@ -61,7 +64,10 @@ export interface AgentApplyResult {
 
 export const agentApi = {
   status: async () => apiClient.get<AgentStatus>('/api/admin/agent/status'),
-  testConnection: async () => apiClient.post<AgentConnection>('/api/admin/agent/connection'),
+  testConnection: async () =>
+    apiClient.post<AgentConnection>('/api/admin/agent/connection', undefined, {
+      timeout: AGENT_LLM_TIMEOUT_MS,
+    }),
   enqueue: async (payload: {
     resourceType: string;
     resourceId: string;
@@ -71,7 +77,10 @@ export const agentApi = {
     tools?: string[];
   }) => apiClient.post<AgentRun>('/api/admin/agent/runs', payload),
   show: async (runId: string) => apiClient.get<AgentRun>(`/api/admin/agent/runs/${runId}`),
-  execute: async (runId: string) => apiClient.post<AgentRun>(`/api/admin/agent/runs/${runId}/execute`),
+  execute: async (runId: string) =>
+    apiClient.post<AgentRun>(`/api/admin/agent/runs/${runId}/execute`, undefined, {
+      timeout: AGENT_LLM_TIMEOUT_MS,
+    }),
   cancel: async (runId: string) => apiClient.post<{ cancelled: boolean }>(`/api/admin/agent/runs/${runId}/cancel`),
   apply: async (proposalId: string) =>
     apiClient.post<AgentApplyResult>(`/api/admin/agent/proposals/${proposalId}/apply`),

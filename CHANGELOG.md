@@ -13,6 +13,11 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **Agent assistant — SEO / OpenRouter / Ollama homelab (It.75 ops)** — [AGENT_OPERATIONS.md](docs/en/runbooks/AGENT_OPERATIONS.md)
+  - **Backend:** orchestrator seeds `content.read` snapshot before the LLM loop; OpenAI-compatible multi-step tools use proper `assistant` + `tool` messages (fixes **503** on `execute` with OpenRouter / `gpt-4o-mini` after the first tool call).
+  - **Frontend:** `agentApi.execute` / connection test use **180s** axios timeout; editor maps timeout errors and avoids showing a stale `queued` run after browser abort.
+  - **Deploy:** `nginx-paginiumcms.com.conf` — `/internal/translate/` + `/internal/llm/` proxy blocks, `/api/` `proxy_read_timeout` 300s; [docker-compose.libretranslate.yml](docs/deploy/docker-compose.libretranslate.yml) + [nginx-internal-llm.conf.example](docs/deploy/nginx-internal-llm.conf.example).
+- **Planned — It.102 assisted translation polish** — [ITERATION_102](docs/en/ITERATION_102.md): shortcode/Markdown placeholder guard, optional metadata-only translate, editor refresh after Apply; manual locales remain supported until shipped.
 - **Critical — incomplete 2FA login UI (ISS-206)** — [ISS-206](docs/ISSUES.md#iss-206)
   - **Symptom:** after password-only login with 2FA enabled, abandoning TOTP still showed public CMS bar and **Paginium Admin** as if fully authenticated.
   - **Cause:** frontend cleared `pendingTwoFactor` using account `verified` from `/api/auth/2fa/status` instead of **`session_verified`**.

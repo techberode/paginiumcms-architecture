@@ -8,13 +8,14 @@ namespace PaginiumCMS\Core\Agent\Contracts;
  * Typed completion + tool request (It.75). Implementations must not log content or secrets.
  *
  * @phpstan-type AgentToolSpec array{name: string, description: string, parameters: array<string, mixed>}
- * @phpstan-type AgentMessage array{role: string, content: string}
+ * @phpstan-type AgentMessage array{role: string, content?: string, tool_calls?: list<array<string, mixed>>, tool_call_id?: string}
  * @phpstan-type AgentCompletion array{
  *     type: 'tool_call'|'message',
  *     name?: string,
  *     arguments?: array<string, mixed>,
  *     content?: string,
- *     tokens: int
+ *     tokens: int,
+ *     toolCallId?: string
  * }
  */
 interface LlmProviderInterface

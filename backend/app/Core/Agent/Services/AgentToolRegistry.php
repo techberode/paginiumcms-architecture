@@ -73,7 +73,7 @@ final class AgentToolRegistry
             ],
             'seo.suggest_meta' => [
                 'name' => 'seo.suggest_meta',
-                'description' => 'Store a schema-bound SEO title/description/keywords proposal. Does not save.',
+                'description' => 'Store SEO title/description/keywords from the article snapshot (real wording, run locale). Does not save.',
                 'parameters' => [
                     'type' => 'object',
                     'additionalProperties' => false,
