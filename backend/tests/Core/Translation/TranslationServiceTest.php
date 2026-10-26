@@ -67,6 +67,60 @@ final class TranslationServiceTest extends TestCase
         $this->assertSame([], $transport->calls);
     }
 
+    public function testProposeMetadataOnlySkipsBodyField(): void
+    {
+        $transport = new RecordingTranslationTransport();
+        $page = $this->slovakPage();
+        $service = $this->makeService($transport, [
+            'enabled' => true,
+            'provider' => 'libretranslate',
+            'baseUrl' => 'https://translate.example.com',
+        ], $page);
+
+        $proposal = $service->propose('page', 'about', [
+            'sourceLocale' => 'sk',
+            'targetLocales' => ['en'],
+            'fields' => ['title', 'seoTitle'],
+        ], 'user-1', null);
+
+        $this->assertSame('ok', $proposal['locales']['en']['status']);
+        $this->assertArrayHasKey('title', $proposal['locales']['en']['fields']);
+        $this->assertArrayNotHasKey('body', $proposal['locales']['en']['fields']);
+        $this->assertCount(1, $transport->calls);
+    }
+
+    public function testProposeProtectsShortcodeClosersInBody(): void
+    {
+        $transport = new RecordingTranslationTransport();
+        $page = $this->slovakPage();
+        $page->setFrontMatter(array_merge($page->getFrontMatter(), [
+            'localizedContent' => [
+                'sk' => [
+                    'title' => 'Ahoj',
+                    'body' => '[alert-box tone="info"]Pozor[/alert-box]',
+                    'seo' => ['title' => '', 'description' => ''],
+                ],
+                'en' => ['title' => '', 'body' => '', 'seo' => ['title' => '', 'description' => '']],
+            ],
+        ]));
+        $service = $this->makeService($transport, [
+            'enabled' => true,
+            'provider' => 'libretranslate',
+            'baseUrl' => 'https://translate.example.com',
+        ], $page);
+
+        $service->propose('page', 'about', [
+            'sourceLocale' => 'sk',
+            'targetLocales' => ['en'],
+            'fields' => ['body'],
+        ], 'user-1', null);
+
+        $this->assertNotEmpty($transport->calls);
+        $sent = (string) ($transport->calls[0]['body']['q'] ?? '');
+        $this->assertStringNotContainsString('[/alert-box]', $sent);
+        $this->assertStringContainsString('Pozor', $sent);
+    }
+
     public function testProposeAndApplyWritesDraftOnly(): void
     {
         $transport = new RecordingTranslationTransport();

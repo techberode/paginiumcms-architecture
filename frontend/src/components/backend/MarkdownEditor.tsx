@@ -91,7 +91,7 @@ import {
   emptyLocaleEditorState,
   hydrateLocaleEditorFromLoad,
   normalizeContentLocale,
-  resolveInitialEditorLocale,
+  resolveEditorLocaleAfterLoad,
   type ContentLocaleCode,
   type LocaleEditorState,
 } from '../../utils/contentEditorLocale';
@@ -546,7 +546,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
     ]
   );
 
-  const loadContent = async () => {
+  const loadContent = async (preferLocale?: ContentLocaleCode) => {
     setLoading(true);
     try {
       const response = await get<ContentEditorLoadData>(`${endpoint}/${slug}`);
@@ -580,7 +580,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
         setLocaleStates(hydrated.localeStates);
         setLocaleStatusMap(hydrated.localeStatus);
 
-        const initialTab = resolveInitialEditorLocale(hydrated.defaultLocale, adminUiLocale, hydrated.localeStates);
+        const initialTab = resolveEditorLocaleAfterLoad(
+          preferLocale,
+          hydrated.defaultLocale,
+          adminUiLocale,
+          hydrated.localeStates
+        );
         const initialState =
           hydrated.localeStates[initialTab] ??
           hydrated.localeStates[hydrated.defaultLocale] ??
@@ -1247,8 +1252,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ type = 'page' })
               })}
               sourceRevision={baseRevision}
               canEdit={canEdit && !isNew}
-              onApplied={() => {
-                void loadContent();
+              onApplied={(appliedLocales) => {
+                const next = appliedLocales[0];
+                const asLocale =
+                  next && SUPPORTED_LOCALES.includes(next as ContentLocaleCode)
+                    ? (next as ContentLocaleCode)
+                    : undefined;
+                void loadContent(asLocale);
               }}
             />
             <AgentAssistantPanel

@@ -109,6 +109,13 @@ final class TranslationSettings
         return max(3, min(60, (int) ($group['timeoutSeconds'] ?? 15)));
     }
 
+    public function protectShortcodeBlocks(): bool
+    {
+        $group = $this->settings->group('translation');
+
+        return (bool) ($group['protectShortcodeBlocks'] ?? false);
+    }
+
     private function normalizeProvider(string $provider): string
     {
         $provider = strtolower(trim($provider));

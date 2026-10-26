@@ -239,6 +239,20 @@ export function normalizeContentLocale(value: string | undefined): ContentLocale
   return SUPPORTED_LOCALES.includes(code as ContentLocaleCode) ? (code as ContentLocaleCode) : null;
 }
 
+export function resolveEditorLocaleAfterLoad(
+  preferLocale: string | undefined,
+  defaultLocale: ContentLocaleCode,
+  adminUiLocale: string,
+  localeStates: Partial<Record<ContentLocaleCode, LocaleEditorState>> = {}
+): ContentLocaleCode {
+  const preferred = normalizeContentLocale(preferLocale);
+  if (preferred && localeStates[preferred]) {
+    return preferred;
+  }
+
+  return resolveInitialEditorLocale(defaultLocale, adminUiLocale, localeStates);
+}
+
 export function resolveInitialEditorLocale(
   defaultLocale: ContentLocaleCode,
   adminUiLocale: string,

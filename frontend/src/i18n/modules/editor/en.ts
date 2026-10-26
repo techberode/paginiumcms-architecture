@@ -715,6 +715,15 @@ export const editorEn: MessageTree = {
     skipped: 'Skipped (already filled)',
     failedLocale: 'Failed',
     close: 'Close',
+    noResult: 'No locale could be translated. Check skipped or failed rows below.',
+    fieldsLabel: 'Fields to translate',
+    metadataOnly: 'Metadata only',
+    field: {
+      title: 'Title',
+      body: 'Body',
+      seoTitle: 'SEO title',
+      seoDescription: 'SEO description',
+    },
   },
   articleHero: {
     title: 'Article hero image (crop)',

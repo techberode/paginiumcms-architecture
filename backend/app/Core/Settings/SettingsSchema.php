@@ -183,6 +183,7 @@ final class SettingsSchema
                     ['key' => 'fallbackProvider', 'type' => 'enum', 'label' => 'Fallback provider', 'default' => 'none', 'options' => ['none', 'libretranslate', 'deepl', 'google'], 'rules' => ['required', 'in:none,libretranslate,deepl,google'], 'help' => 'Used only when failover is enabled and differs from the primary. none = no fallback.'],
                     ['key' => 'dailyCharLimit', 'type' => 'int', 'label' => 'Daily character quota', 'default' => 0, 'rules' => ['int', 'min:0', 'max:5000000'], 'help' => '0 = unlimited (administrator policy). Counted on source characters sent to the provider.'],
                     ['key' => 'overwriteExisting', 'type' => 'bool', 'label' => 'Overwrite existing locales', 'default' => false, 'rules' => ['bool'], 'help' => 'Off = Translate missing only. On = filled locales can be replaced by a reviewed proposal (still as draft).'],
+                    ['key' => 'protectShortcodeBlocks', 'type' => 'bool', 'label' => 'Protect paired shortcode blocks', 'default' => false, 'rules' => ['bool'], 'help' => 'Off = translate inner shortcode text; opening/closing tags stay protected. On = entire [tag …]…[/tag] blocks are not sent to the provider (useful for code-heavy articles).'],
                     ['key' => 'timeoutSeconds', 'type' => 'int', 'label' => 'Provider timeout (seconds)', 'default' => 15, 'rules' => ['required', 'int', 'min:3', 'max:60']],
                 ],
             ],

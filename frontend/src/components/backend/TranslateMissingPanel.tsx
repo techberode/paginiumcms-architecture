@@ -6,6 +6,8 @@ import {
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../hooks/useToast';
 
+const TRANSLATABLE_FIELDS = ['title', 'body', 'seoTitle', 'seoDescription'] as const;
+
 interface Props {
   type: string;
   slug: string;
@@ -13,7 +15,23 @@ interface Props {
   missingLocales: string[];
   sourceRevision: string;
   canEdit: boolean;
-  onApplied: () => void;
+  onApplied: (appliedLocales: string[]) => void;
+}
+
+function formatLocaleErrors(errors: Record<string, string[]> | undefined): string {
+  if (!errors) {
+    return '';
+  }
+  const parts: string[] = [];
+  for (const [key, value] of Object.entries(errors)) {
+    if (!key.startsWith('locale_')) {
+      continue;
+    }
+    const code = key.slice('locale_'.length).toUpperCase();
+    const message = value.join(' ');
+    parts.push(`${code}: ${message}`);
+  }
+  return parts.join(' · ');
 }
 
 export const TranslateMissingPanel: React.FC<Props> = ({
@@ -30,6 +48,7 @@ export const TranslateMissingPanel: React.FC<Props> = ({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [proposal, setProposal] = useState<ContentTranslationProposal | null>(null);
+  const [fields, setFields] = useState<string[]>([...TRANSLATABLE_FIELDS]);
 
   const targets = useMemo(
     () => missingLocales.filter((code) => code !== sourceLocale),
@@ -40,7 +59,12 @@ export const TranslateMissingPanel: React.FC<Props> = ({
     return null;
   }
 
-  const mapError = (message: string): string => {
+  const mapError = (message: string, errors?: Record<string, string[]>): string => {
+    const codeStr = errors?.code?.[0];
+    if (codeStr === 'NO_RESULT') {
+      const detail = formatLocaleErrors(errors);
+      return detail !== '' ? detail : t('editor.translation.noResult');
+    }
     if (message.includes('disabled')) {
       return t('editor.translation.disabled');
     }
@@ -53,6 +77,20 @@ export const TranslateMissingPanel: React.FC<Props> = ({
     return message || t('editor.translation.failed');
   };
 
+  const toggleField = (field: string) => {
+    setFields((prev) => {
+      if (prev.includes(field)) {
+        const next = prev.filter((item) => item !== field);
+        return next.length === 0 ? prev : next;
+      }
+      return [...prev, field];
+    });
+  };
+
+  const useMetadataOnly = () => {
+    setFields(['title', 'seoTitle', 'seoDescription']);
+  };
+
   const requestProposal = async () => {
     setBusy(true);
     try {
@@ -60,9 +98,10 @@ export const TranslateMissingPanel: React.FC<Props> = ({
         sourceLocale,
         targetLocales: targets,
         sourceRevision,
+        fields,
       });
       if (!res.success || !res.data) {
-        toast.error(mapError(res.error || res.message || ''));
+        toast.error(mapError(res.error || res.message || '', res.errors));
         return;
       }
       setProposal(res.data);
@@ -80,13 +119,13 @@ export const TranslateMissingPanel: React.FC<Props> = ({
     try {
       const res = await contentTranslationsApi.apply(proposal.id);
       if (!res.success) {
-        toast.error(mapError(res.error || res.message || ''));
+        toast.error(mapError(res.error || res.message || '', res.errors));
         return;
       }
       toast.success(t('editor.translation.applied'));
       setProposal(null);
       setOpen(false);
-      onApplied();
+      onApplied(res.data?.appliedLocales ?? []);
     } finally {
       setBusy(false);
     }
@@ -109,14 +148,40 @@ export const TranslateMissingPanel: React.FC<Props> = ({
 
   return (
     <div className="relative" data-testid="translate-missing-panel">
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => void requestProposal()}
-        className="inline-flex items-center rounded-lg border border-admin-border px-2.5 py-1 text-xs font-semibold text-admin-text hover:bg-admin-canvas disabled:opacity-60"
-      >
-        {busy ? t('editor.translation.proposing') : t('editor.translation.translateMissing')}
-      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void requestProposal()}
+          className="inline-flex items-center rounded-lg border border-admin-border px-2.5 py-1 text-xs font-semibold text-admin-text hover:bg-admin-canvas disabled:opacity-60"
+        >
+          {busy ? t('editor.translation.proposing') : t('editor.translation.translateMissing')}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={useMetadataOnly}
+          className="text-xs font-medium text-admin-muted underline-offset-2 hover:underline disabled:opacity-60"
+        >
+          {t('editor.translation.metadataOnly')}
+        </button>
+      </div>
+      <fieldset className="mt-2 space-y-1 border-0 p-0">
+        <legend className="text-[11px] font-medium text-admin-muted">{t('editor.translation.fieldsLabel')}</legend>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-admin-text">
+          {TRANSLATABLE_FIELDS.map((field) => (
+            <label key={field} className="inline-flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={fields.includes(field)}
+                onChange={() => toggleField(field)}
+                disabled={busy}
+              />
+              {t(`editor.translation.field.${field}`)}
+            </label>
+          ))}
+        </div>
+      </fieldset>
       {open && proposal && (
         <div className="absolute left-0 z-20 mt-2 w-[min(28rem,calc(100vw-2rem))] rounded-lg border border-admin-border bg-admin-card p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -137,7 +202,7 @@ export const TranslateMissingPanel: React.FC<Props> = ({
                 ) : (
                   <p className="text-amber-700 dark:text-amber-200">
                     {row.status === 'skipped'
-                      ? t('editor.translation.skipped')
+                      ? row.error || t('editor.translation.skipped')
                       : row.error || t('editor.translation.failedLocale')}
                   </p>
                 )}

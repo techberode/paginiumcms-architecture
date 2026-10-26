@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { hydrateLocaleEditorFromLoad, resolveInitialEditorLocale } from './contentEditorLocale';
+import {
+  hydrateLocaleEditorFromLoad,
+  resolveEditorLocaleAfterLoad,
+  resolveInitialEditorLocale,
+} from './contentEditorLocale';
 import type { ContentEditorLoadData } from './contentEditorApi';
 
 describe('contentEditorLocale', () => {
@@ -84,5 +88,24 @@ describe('contentEditorLocale', () => {
 
     const hydrated = hydrateLocaleEditorFromLoad(data, 'markdown', 'markdown');
     expect(resolveInitialEditorLocale('sk', 'en', hydrated.localeStates)).toBe('sk');
+  });
+
+  it('resolveEditorLocaleAfterLoad switches to applied locale when present', () => {
+    const data: ContentEditorLoadData = {
+      title: 'SK',
+      content: 'SK body',
+      status: 'published',
+      defaultLocale: 'sk',
+      schemaVersion: 2,
+      localizedContent: {
+        sk: { title: 'SK', body: 'SK body', seo: { title: '' } },
+        en: { title: 'EN', body: 'EN body', seo: { title: '' } },
+      },
+      localeStatus: { sk: 'published', en: 'draft' },
+    };
+
+    const hydrated = hydrateLocaleEditorFromLoad(data, 'markdown', 'markdown');
+    expect(resolveEditorLocaleAfterLoad('en', 'sk', 'sk', hydrated.localeStates)).toBe('en');
+    expect(resolveEditorLocaleAfterLoad('xx', 'sk', 'sk', hydrated.localeStates)).toBe('sk');
   });
 });

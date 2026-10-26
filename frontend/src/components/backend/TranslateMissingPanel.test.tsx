@@ -77,7 +77,7 @@ describe('TranslateMissingPanel', () => {
     await waitFor(() => {
       expect(mocks.apply).toHaveBeenCalledWith('job1');
     });
-    expect(onApplied).toHaveBeenCalled();
+    expect(onApplied).toHaveBeenCalledWith(['en']);
     expect(mocks.toast.success).toHaveBeenCalled();
   });
 

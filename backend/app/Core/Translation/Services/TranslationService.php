@@ -140,7 +140,7 @@ final class TranslationService
                 $translated = [];
                 $usedProvider = $provider->id();
                 foreach ($sourceFields as $field => $text) {
-                    $protected = $this->placeholders->protect($text);
+                    $protected = $this->placeholders->protect($text, $this->settings->protectShortcodeBlocks());
                     $result = $this->translateWithFailover(
                         $provider,
                         $protected['text'],
@@ -169,7 +169,7 @@ final class TranslationService
 
         $okCount = count(array_filter($locales, static fn (array $row): bool => $row['status'] === 'ok'));
         if ($okCount === 0) {
-            throw new TranslationException('No locales were translated', 422, 'NO_RESULT');
+            throw new TranslationException('No locales were translated', 422, 'NO_RESULT', ['locales' => $locales]);
         }
 
         $this->quota->consume($used);

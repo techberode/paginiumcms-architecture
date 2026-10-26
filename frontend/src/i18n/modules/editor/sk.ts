@@ -715,6 +715,15 @@ export const editorSk: MessageTree = {
     skipped: 'Preskočené (už vyplnené)',
     failedLocale: 'Zlyhalo',
     close: 'Zavrieť',
+    noResult: 'Žiadnu lokalitu sa nepodarilo preložiť. Skontroluj preskočené alebo zlyhané riadky.',
+    fieldsLabel: 'Polia na preklad',
+    metadataOnly: 'Len metadáta',
+    field: {
+      title: 'Nadpis',
+      body: 'Telo',
+      seoTitle: 'SEO nadpis',
+      seoDescription: 'SEO popis',
+    },
   },
   articleHero: {
     title: 'Hero obrázok článku (orez)',

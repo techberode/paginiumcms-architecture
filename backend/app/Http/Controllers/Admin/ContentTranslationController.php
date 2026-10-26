@@ -55,7 +55,7 @@ final class ContentTranslationController
 
             return $this->json->success($response, $proposal, 201, 'Translation proposal ready');
         } catch (TranslationException $e) {
-            return $this->json->error($response, $e->getMessage(), $e->httpStatus, ['code' => $e->errorCode]);
+            return $this->translationError($response, $e);
         }
     }
 
@@ -72,7 +72,7 @@ final class ContentTranslationController
                 $this->translations->getProposal((string) ($args['jobId'] ?? ''), $actor['id'])
             );
         } catch (TranslationException $e) {
-            return $this->json->error($response, $e->getMessage(), $e->httpStatus, ['code' => $e->errorCode]);
+            return $this->translationError($response, $e);
         }
     }
 
@@ -87,7 +87,7 @@ final class ContentTranslationController
 
             return $this->json->success($response, $result, 200, 'Translation applied as draft');
         } catch (TranslationException $e) {
-            return $this->json->error($response, $e->getMessage(), $e->httpStatus, ['code' => $e->errorCode]);
+            return $this->translationError($response, $e);
         }
     }
 
@@ -102,7 +102,7 @@ final class ContentTranslationController
 
             return $this->json->success($response, ['discarded' => true]);
         } catch (TranslationException $e) {
-            return $this->json->error($response, $e->getMessage(), $e->httpStatus, ['code' => $e->errorCode]);
+            return $this->translationError($response, $e);
         }
     }
 
@@ -117,5 +117,24 @@ final class ContentTranslationController
         }
 
         throw new TranslationException('Authentication required', 401, 'UNAUTHENTICATED');
+    }
+
+    private function translationError(ResponseInterface $response, TranslationException $e): ResponseInterface
+    {
+        /** @var array<string, array<int, string>> $errors */
+        $errors = ['code' => [$e->errorCode]];
+        $locales = $e->context['locales'] ?? null;
+        if (is_array($locales)) {
+            foreach ($locales as $locale => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $status = (string) ($row['status'] ?? 'unknown');
+                $detail = trim((string) ($row['error'] ?? ''));
+                $errors['locale_' . (string) $locale] = [$detail !== '' ? $status . ': ' . $detail : $status];
+            }
+        }
+
+        return $this->json->error($response, $e->getMessage(), $e->httpStatus, $errors);
     }
 }
