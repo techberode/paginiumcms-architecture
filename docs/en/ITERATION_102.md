@@ -39,7 +39,7 @@ Keep assisted translation **optional** and **safe**, but make it usable for real
 ## Out of scope
 
 - Autonomous publish, new cloud providers, or replacing human review.
-- Public visitor-facing AI chat (see [It.75](ITERATION_75.md) — admin proposals only).
+- Public visitor-facing AI chat (see [It.103](ITERATION_103.md) — planned; [It.75](ITERATION_75.md) remains admin proposals only).
 
 ## Definition of Done
 

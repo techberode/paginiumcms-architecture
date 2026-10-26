@@ -117,6 +117,10 @@ See [CRON.md](../deploy/CRON.md). Without the worker, async runs stay queued; th
 
 Filter models on **Text** with **tools** support. Free models may rate-limit (**429** → CMS **503**).
 
+Use an **inference** API key. OpenRouter **management** keys cannot call chat completions (connection test may still pass).
+
+**Roadmap:** [ITERATION_103.md](../ITERATION_103.md) — Apply keywords to `seo.tags`, tag/category tools, optional public chat widget ([Elfsight-class benchmark](https://elfsight.com/ai-chatbot-widget/), first-party implementation).
+
 ---
 
 ## 6. Security checklist

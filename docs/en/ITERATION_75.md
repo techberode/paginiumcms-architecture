@@ -204,6 +204,10 @@ Credentials are encrypted. In production, `OutboundUrlGuard` allows **HTTPS** to
 - [x] The translation tool reuses It.76/77 rather than a duplicate provider stack.
 - [x] SK/EN user, security, privacy, and operations documentation is updated.
 
+## Successor — It.103 (planned)
+
+MVP shipped **Suggest SEO** only. [It.103](ITERATION_103.md) covers admin polish (Apply keywords → `seo.tags`, tag/category/newsletter proposal tools) and an optional **public AI chat widget** (first-party alternative to hosted widgets such as [Elfsight AI Chatbot](https://elfsight.com/ai-chatbot-widget/)), with retrieval over published content and handoff to It.93o Messages—**not** an extension of the admin tool loop to anonymous visitors.
+
 ## Related
 
-[AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) · [It.76](ITERATION_76.md) · [It.77](ITERATION_77.md) · [It.29](ITERATION_29.md) · [It.66](ITERATION_66.md) · [It.67](ITERATION_67.md)
+[AGENT_OPERATIONS.md](runbooks/AGENT_OPERATIONS.md) · [It.103](ITERATION_103.md) · [It.76](ITERATION_76.md) · [It.77](ITERATION_77.md) · [It.29](ITERATION_29.md) · [It.66](ITERATION_66.md) · [It.67](ITERATION_67.md)
