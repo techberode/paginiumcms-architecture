@@ -61,16 +61,42 @@ final class DomainMailService
         ];
     }
 
-    public function savePassword(User $user, string $password): void
+    public function savePassword(User $user, string $password, string $mailbox = ''): void
     {
         $this->assertEnabled();
-        $mailbox = $this->mailbox($user);
+        $mailbox = strtolower(trim($mailbox));
+        if ($mailbox === '') {
+            $mailbox = $this->mailbox($user);
+        }
         SiteMailboxGuard::assertMailbox($mailbox, $this->siteHost());
         $password = trim($password);
         if ($password === '') {
             throw new InvalidArgumentException('Mailbox password is required.');
         }
-        $this->secrets->savePassword($user->getId(), $password, $mailbox);
+        $this->secrets->updateAccountPassword($user->getId(), $mailbox, $password, $this->primaryMailbox($user));
+    }
+
+    public function disconnectAccount(User $user, string $mailbox): void
+    {
+        $this->assertEnabled();
+        $mailbox = strtolower(trim($mailbox));
+        SiteMailboxGuard::assertMailbox($mailbox, $this->siteHost());
+        $primary = $this->primaryMailbox($user);
+        if ($mailbox !== $primary && !$this->isKnownAccount($user, $mailbox, $primary)) {
+            throw new InvalidArgumentException('Mailbox is not added.');
+        }
+        $this->secrets->clearMailboxCredentials($user->getId(), $mailbox, $primary);
+    }
+
+    private function isKnownAccount(User $user, string $mailbox, string $primary): bool
+    {
+        foreach ($this->secrets->listAccounts($user->getId(), $primary) as $row) {
+            if ($row['mailbox'] === $mailbox) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function addAccount(User $user, string $mailbox, string $password): void

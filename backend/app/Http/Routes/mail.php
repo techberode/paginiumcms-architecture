@@ -9,6 +9,7 @@ declare(strict_types=1);
  *  - PUT  /api/admin/mail/password
  *  - POST /api/admin/mail/accounts
  *  - DELETE /api/admin/mail/accounts
+ *  - POST   /api/admin/mail/accounts/disconnect
  *  - PUT  /api/admin/mail/active
  *  - GET  /api/admin/mail/folders
  *  - DELETE /api/admin/mail/folders
@@ -48,6 +49,7 @@ return function (App $app): void {
         $group->put('/password', [$controller, 'savePassword']);
         $group->post('/accounts', [$controller, 'addAccount']);
         $group->delete('/accounts', [$controller, 'removeAccount']);
+        $group->post('/accounts/disconnect', [$controller, 'disconnectAccount']);
         $group->put('/active', [$controller, 'selectAccount']);
         $group->get('/folders', [$controller, 'folders']);
         $group->post('/folders', [$controller, 'createFolder']);

@@ -44,9 +44,10 @@ final class MailController
 
         $body = RequestJsonBody::decode($request) ?? [];
         $password = is_string($body['password'] ?? null) ? $body['password'] : '';
+        $mailbox = is_string($body['mailbox'] ?? null) ? $body['mailbox'] : '';
 
         try {
-            $this->mail->savePassword($user, $password);
+            $this->mail->savePassword($user, $password, $mailbox);
         } catch (InvalidArgumentException $exception) {
             return $this->mailValidation($response, $exception);
         } catch (EncryptionUnavailableException $exception) {
@@ -95,6 +96,25 @@ final class MailController
         }
 
         return $this->json->success($response, ['removed' => true]);
+    }
+
+    public function disconnectAccount(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $user = $this->actor($request);
+        if ($user === null) {
+            return $this->json->error($response, 'Unauthorized', 401);
+        }
+
+        $body = RequestJsonBody::decode($request) ?? [];
+        $mailbox = is_string($body['mailbox'] ?? null) ? $body['mailbox'] : '';
+
+        try {
+            $this->mail->disconnectAccount($user, $mailbox);
+        } catch (InvalidArgumentException $exception) {
+            return $this->mailValidation($response, $exception);
+        }
+
+        return $this->json->success($response, ['disconnected' => true]);
     }
 
     public function selectAccount(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

@@ -170,10 +170,49 @@ final class MailboxSecretRepository
         if ($mailbox === $primary) {
             throw new InvalidArgumentException('This mailbox cannot be removed.');
         }
+        $this->clearMailboxCredentials($userId, $mailbox, $primaryMailbox);
+    }
+
+    public function updateAccountPassword(string $userId, string $mailbox, string $password, string $primaryMailbox): void
+    {
+        $mailbox = $this->assertMailboxKey($mailbox);
+        $primary = $this->assertMailboxKey($primaryMailbox);
+        $password = trim($password);
+        if ($password === '') {
+            throw new InvalidArgumentException('Mailbox password is required.');
+        }
+
+        $doc = $this->readDocument($userId);
+        if ($mailbox !== $primary && !isset($doc['accounts'][$mailbox])) {
+            throw new InvalidArgumentException('Mailbox is not added.');
+        }
+
+        $this->savePassword($userId, $password, $mailbox);
+    }
+
+    public function clearMailboxCredentials(string $userId, string $mailbox, string $primaryMailbox): void
+    {
+        $mailbox = $this->assertMailboxKey($mailbox);
+        $primary = $this->assertMailboxKey($primaryMailbox);
         $doc = $this->readDocument($userId);
         $accounts = $doc['accounts'];
+        if ($doc['legacy'] !== '' && !isset($accounts[$primary])) {
+            $accounts[$primary] = $doc['legacy'];
+        }
         unset($accounts[$mailbox]);
-        $active = $doc['active'] === $mailbox ? $primary : ($doc['active'] !== '' ? $doc['active'] : $primary);
+        if ($accounts === []) {
+            $this->delete($userId);
+
+            return;
+        }
+
+        $active = $doc['active'] !== '' ? $doc['active'] : $primary;
+        if ($active === $mailbox || !isset($accounts[$active])) {
+            foreach ($accounts as $key => $_cipher) {
+                $active = $key;
+                break;
+            }
+        }
         $this->writeDocument($userId, $primary, $active, $accounts);
     }
 

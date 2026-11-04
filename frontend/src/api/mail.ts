@@ -94,8 +94,16 @@ export const mailApi = {
     return null;
   },
 
-  savePassword: async (password: string): Promise<ApiResponse<{ saved: boolean }>> => {
-    return apiClient.put<{ saved: boolean }>('/api/admin/mail/password', { password });
+  savePassword: async (password: string, mailbox?: string): Promise<ApiResponse<{ saved: boolean }>> => {
+    const body: { password: string; mailbox?: string } = { password };
+    if (mailbox && mailbox.trim() !== '') {
+      body.mailbox = mailbox.trim();
+    }
+    return apiClient.put<{ saved: boolean }>('/api/admin/mail/password', body);
+  },
+
+  disconnectAccount: async (mailbox: string): Promise<ApiResponse<{ disconnected: boolean }>> => {
+    return apiClient.post<{ disconnected: boolean }>('/api/admin/mail/accounts/disconnect', { mailbox });
   },
 
   addAccount: async (mailbox: string, password: string): Promise<ApiResponse<{ added: boolean }>> => {

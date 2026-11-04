@@ -84,6 +84,24 @@ final class MailboxSecretRepositoryTest extends TestCase
         $this->assertNull($this->repository->getPassword('user_abc', 'info@paginium.test'));
     }
 
+    public function testUpdatesStoredPasswordForPrimaryMailbox(): void
+    {
+        $this->repository->savePassword('user_abc', 'old-pass', 'editor@paginium.test');
+        $this->repository->updateAccountPassword('user_abc', 'editor@paginium.test', 'new-pass', 'editor@paginium.test');
+        $this->assertSame('new-pass', $this->repository->getPassword('user_abc', 'editor@paginium.test'));
+    }
+
+    public function testDisconnectPrimaryKeepsExtraMailboxCredentials(): void
+    {
+        $this->repository->savePassword('user_abc', 'primary-pass', 'editor@paginium.test');
+        $this->repository->addAccount('user_abc', 'info@paginium.test', 'info-pass', 'editor@paginium.test');
+        $this->repository->clearMailboxCredentials('user_abc', 'editor@paginium.test', 'editor@paginium.test');
+
+        $this->assertNull($this->repository->getPassword('user_abc', 'editor@paginium.test'));
+        $this->assertSame('info-pass', $this->repository->getPassword('user_abc', 'info@paginium.test'));
+        $this->assertSame('info@paginium.test', $this->repository->activeMailbox('user_abc', 'editor@paginium.test'));
+    }
+
     private function removeTree(string $path): void
     {
         if (!is_dir($path)) {

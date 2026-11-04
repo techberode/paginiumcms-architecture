@@ -264,6 +264,7 @@ export const MailInboxView: React.FC = () => {
   const [extraMailbox, setExtraMailbox] = useState('');
   const [extraPassword, setExtraPassword] = useState('');
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [showCredentials, setShowCredentials] = useState(false);
   const [listFilter, setListFilter] = useState<'all' | 'starred'>('all');
   const [labelFilter, setLabelFilter] = useState<string | null>(null);
   const [labelDefinitions, setLabelDefinitions] = useState<MailLabelDefinition[]>([]);
@@ -518,6 +519,12 @@ export const MailInboxView: React.FC = () => {
   }, [folder, loadMailbox, loadStatus, t]);
 
   useEffect(() => {
+    if (status?.enabled && status.mailboxAllowed && !status.hasPassword) {
+      setShowCredentials(true);
+    }
+  }, [status?.enabled, status?.hasPassword, status?.mailboxAllowed]);
+
+  useEffect(() => {
     setPage(1);
   }, [search, folder, pageSize, listFilter, labelFilter, sortField, sortDirection]);
 
@@ -738,7 +745,8 @@ export const MailInboxView: React.FC = () => {
   };
 
   const savePassword = async () => {
-    const response = await mailApi.savePassword(password);
+    const mailbox = status?.mailbox ?? '';
+    const response = await mailApi.savePassword(password, mailbox);
     if (!response.success) {
       toast.error(describeMailError(firstError(response), 'platform.mail.toast.saveFailed'));
       return;
@@ -749,6 +757,27 @@ export const MailInboxView: React.FC = () => {
     if (next?.enabled && next.hasPassword && next.mailboxAllowed) {
       await loadMailbox(folder);
     }
+  };
+
+  const disconnectActiveAccount = async () => {
+    const mailbox = status?.mailbox ?? '';
+    if (mailbox === '') {
+      return;
+    }
+    if (!(await confirmDestructive(t('platform.mail.confirmDisconnectAccount', { mailbox })))) {
+      return;
+    }
+    const response = await mailApi.disconnectAccount(mailbox);
+    if (!response.success) {
+      toast.error(describeMailError(firstError(response), 'platform.mail.toast.saveFailed'));
+      return;
+    }
+    toast.success(t('platform.mail.toast.accountDisconnected'));
+    setPassword('');
+    setShowCredentials(true);
+    setFolders([]);
+    setMessages([]);
+    await loadStatus();
   };
 
   const resolveAllowRemoteImages = useCallback(
@@ -1434,6 +1463,16 @@ export const MailInboxView: React.FC = () => {
                 {t('platform.mail.addAccount')}
               </button>
             ) : null}
+            {status?.enabled && status.mailboxAllowed && status.hasPassword ? (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-admin-primary hover:bg-admin-sidebar-hover"
+                onClick={() => setShowCredentials((current) => !current)}
+                data-testid="mail-toggle-credentials"
+              >
+                {showCredentials ? t('platform.mail.hideCredentials') : t('platform.mail.showCredentials')}
+              </button>
+            ) : null}
             {activeAccount && !activeAccount.primary ? (
               <button
                 type="button"
@@ -1494,25 +1533,50 @@ export const MailInboxView: React.FC = () => {
         </AdminHintCard>
       ) : null}
 
-      {status?.enabled && status.mailboxAllowed && !status.hasPassword ? (
-        <AdminWidgetCard title={status.mailbox || t('platform.mail.title')}>
+      {status?.enabled && status.mailboxAllowed && (showCredentials || !status.hasPassword) ? (
+        <AdminWidgetCard title={t('platform.mail.manageCredentials')}>
+          {status.mailbox ? (
+            <p className="mb-2 text-sm font-medium text-admin-text">
+              {status.mailbox}
+              {activeAccount?.primary ? ` (${t('platform.mail.primaryAccount')})` : ''}
+            </p>
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <label className="block grow text-sm text-admin-muted">
+            <label className="block min-w-0 grow text-sm text-admin-muted">
               {t('platform.mail.password')}
               <input
                 type="password"
                 className={`${MAIL_FIELD} mt-1`}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                autoComplete="off"
+                autoComplete="new-password"
                 data-testid="mail-password"
               />
             </label>
-            <button type="button" className="btn btn-primary" onClick={() => void savePassword()} data-testid="mail-save-password">
-              {t('platform.mail.savePassword')}
+            <button
+              type="button"
+              className="btn btn-primary shrink-0"
+              onClick={() => void savePassword()}
+              data-testid="mail-save-password"
+            >
+              {status.hasPassword ? t('platform.mail.updatePassword') : t('platform.mail.savePassword')}
             </button>
           </div>
-          <p className="mt-2 text-sm text-admin-muted">{t('platform.mail.needPassword')}</p>
+          <p className="mt-2 text-sm text-admin-muted">
+            {status.hasPassword ? t('platform.mail.updatePasswordHint') : t('platform.mail.needPassword')}
+          </p>
+          {status.hasPassword && status.mailbox ? (
+            <div className="mt-3">
+              <button
+                type="button"
+                className="text-sm font-semibold text-red-600 hover:underline dark:text-red-400"
+                onClick={() => void disconnectActiveAccount()}
+                data-testid="mail-disconnect-account"
+              >
+                {t('platform.mail.disconnectAccount')}
+              </button>
+            </div>
+          ) : null}
         </AdminWidgetCard>
       ) : null}
 
