@@ -70,6 +70,7 @@ return [
     'it101_schema' => 'Schéma formulára + admin CRUD',
     'it101_presets' => 'Predvolené formuláre (kontakt, broken link, …)',
     'it101_shortcode' => 'Shortcode [form] / widget form-embed',
+    'it101_form_builder' => 'Verejný form builder (It.101)',
     'it101_submit' => 'Odoslanie → Message Desk (chránené)',
     'it99' => 'It.99 Upload polyglot hardening',
     'it99_polyglot' => 'Marker scan, SVG/PDF sondy, voliteľný re-encode',

@@ -6,6 +6,7 @@ import { MediaGalleryIsland } from './MediaGalleryIsland';
 import { PricingTableIsland } from './PricingTableIsland';
 import { StatsRowIsland } from './StatsRowIsland';
 import { BeforeAfterIsland } from './BeforeAfterIsland';
+import { PublicFormIsland } from './PublicFormIsland';
 import type { IslandProps } from './publicIslandDefinitions';
 
 export type PublicIslandComponent = React.ComponentType<{ attrs: IslandProps; innerHtml?: string }>;
@@ -37,6 +38,7 @@ export const PUBLIC_ISLANDS: Record<string, PublicIslandComponent> = {
   'pricing-table': PricingTableIsland,
   'stats-row': StatsRowIsland,
   'before-after': BeforeAfterIsland,
+  'form-embed': PublicFormIsland,
 };
 
 export function PublicIslandHost({

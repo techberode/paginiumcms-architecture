@@ -49,6 +49,12 @@ export const publicSk: MessageTree = {
     serverErrorBody: 'Stránku sa nepodarilo zobraziť. Skúste to neskôr alebo prejdite na úvod.',
     pageNotFound: 'Stránka „:slug“ neexistuje.',
   },
+  formBuilder: {
+    submit: 'Odoslať',
+    sent: 'Ďakujeme — správa bola prijatá.',
+    failed: 'Formulár sa nepodarilo odoslať. Skúste neskôr.',
+    unavailable: 'Formulár nie je k dispozícii.',
+  },
   brokenReport: {
     title: 'Nahlásiť nefunkčný odkaz alebo chýbajúci obsah',
     hint: 'URL sme doplnili automaticky — stačí krátky popis, ak viete, odkiaľ ste prišli.',

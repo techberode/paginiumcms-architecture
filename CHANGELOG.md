@@ -13,6 +13,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 
 ## [Unreleased]
 
+- **It.101 public form builder** — [ITERATION_101](docs/en/ITERATION_101.md): flat-file definitions (`forms:manage`, `/forms`), presets, `[form]` / `form-embed` island, public submit API → Message Desk; Origin `it.101.form_builder`.
 - **Agent assistant — SEO / OpenRouter / Ollama homelab (It.75 ops)** — [AGENT_OPERATIONS.md](docs/en/runbooks/AGENT_OPERATIONS.md)
   - **Backend:** orchestrator seeds `content.read` snapshot before the LLM loop; OpenAI-compatible multi-step tools use proper `assistant` + `tool` messages (fixes **503** on `execute` with OpenRouter / `gpt-4o-mini` after the first tool call).
   - **Frontend:** `agentApi.execute` / connection test use **180s** axios timeout; editor maps timeout errors and avoids showing a stale `queued` run after browser abort.

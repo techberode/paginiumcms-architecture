@@ -41,6 +41,7 @@ import {
   Radar,
   Users2,
   Columns,
+  ClipboardList,
 } from 'lucide-react';
 import type { AdminNavItemDef, AdminNavSectionDef } from './adminNavTypes';
 
@@ -169,6 +170,13 @@ export const ADMIN_NAV_SECTIONS: AdminNavSectionDef[] = [
         labelKey: 'admin.nav.widgets',
         href: '/widgets',
         icon: Boxes,
+        adminOnly: true,
+      },
+      {
+        id: 'forms',
+        labelKey: 'admin.nav.forms',
+        href: '/forms',
+        icon: ClipboardList,
         adminOnly: true,
       },
       {

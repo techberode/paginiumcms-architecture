@@ -70,6 +70,7 @@ return [
     'it101_schema' => 'Form definition schema + admin CRUD',
     'it101_presets' => 'Bundled form presets (contact, broken link, …)',
     'it101_shortcode' => '[form] shortcode / form-embed widget',
+    'it101_form_builder' => 'Public form builder (It.101)',
     'it101_submit' => 'Guarded submission pipeline → Message Desk',
     'it99' => 'It.99 Upload polyglot hardening',
     'it99_polyglot' => 'Marker scan, SVG/PDF probes, optional re-encode',

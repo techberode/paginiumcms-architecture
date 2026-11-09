@@ -39,6 +39,14 @@ export const PUBLIC_ISLAND_DEFINITIONS: PublicIslandDefinition[] = [
     ],
   },
   {
+    id: 'form-embed',
+    legacyClasses: ['pg-public-form', 'pg-island--form-embed'],
+    attrs: [
+      { htmlAttr: 'data-form-id', propKey: 'formId' },
+      { htmlAttr: 'data-title', propKey: 'title' },
+    ],
+  },
+  {
     id: 'before-after',
     legacyClasses: ['pg-before-after'],
     attrs: [

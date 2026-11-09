@@ -32,6 +32,7 @@ export * from './drafts';
 export * from './events';
 export * from './extensions';
 export * from './firewall';
+export * from './forms';
 export * from './github';
 export * from './git';
 export * from './gallery';
@@ -51,6 +52,7 @@ export * from './notifications';
 export * from './origin';
 export * from './playground';
 export * from './projectPlanner';
+export * from './publicForms';
 export * from './queryIndex';
 export * from './redirects';
 export * from './registrationInvites';
@@ -106,6 +108,7 @@ import { demoApi } from './demo';
 import { eventsApi } from './events';
 import { extensionsApi } from './extensions';
 import { firewallApi } from './firewall';
+import { formsApi } from './forms';
 import { gitApi } from './git';
 import { staticSiteApi } from './staticSite';
 import { healthApi } from './health';
@@ -154,6 +157,7 @@ export const api = {
   events: eventsApi,
   extensions: extensionsApi,
   firewall: firewallApi,
+  forms: formsApi,
   git: gitApi,
   staticSite: staticSiteApi,
   health: healthApi,

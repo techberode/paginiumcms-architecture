@@ -50,6 +50,7 @@ export const ADMIN_I18N_KEY_PREFIX_ROUTES: Array<{ prefix: string; path: string 
   { prefix: 'platform.themes', path: '/themes' },
   { prefix: 'platform.shortcodes', path: '/shortcodes' },
   { prefix: 'platform.widgets', path: '/widgets' },
+  { prefix: 'platform.forms', path: '/forms' },
   { prefix: 'platform.codeEditor', path: '/code-editor' },
   { prefix: 'platform.drafts', path: '/drafts' },
   { prefix: 'platform.metrics', path: '/metrics' },

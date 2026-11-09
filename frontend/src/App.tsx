@@ -99,6 +99,7 @@ const ShortcodesManager = lazyView(() =>
   import('./components/backend/ShortcodesManager').then((m) => m.ShortcodesManager)
 );
 const WidgetsManager = lazyView(() => import('./components/backend/WidgetsManager').then((m) => m.WidgetsManager));
+const FormsManager = lazyView(() => import('./components/backend/FormsManager').then((m) => m.FormsManager));
 const TeamsManager = lazyView(() => import('./components/backend/TeamsManager').then((m) => m.TeamsManager));
 const TeamChatView = lazyView(() => import('./components/backend/TeamChatView').then((m) => m.TeamChatView));
 const EventsManager = lazyView(() => import('./components/backend/EventsManager').then((m) => m.EventsManager));
@@ -316,6 +317,7 @@ function App() {
         <Route path="/webhooks" element={<WebhooksManager />} />
         <Route path="/shortcodes" element={<ShortcodesManager />} />
         <Route path="/widgets" element={<WidgetsManager />} />
+        <Route path="/forms" element={<FormsManager />} />
         <Route path="/snippets" element={<SnippetsManager />} />
         <Route path="/origin" element={<OriginPanelView />} />
         <Route path="/playground" element={<PlaygroundView />} />

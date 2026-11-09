@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PaginiumCMS\Core\Layout\Services;
 
+use PaginiumCMS\Core\Forms\Services\FormEmbedRenderer;
 use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 use PaginiumCMS\Support\MapEmbedUrlGuard;
 
@@ -21,6 +22,7 @@ final class WidgetCatalog
 
     public function __construct(
         private ?WidgetDefinitionRepository $custom = null,
+        private ?FormEmbedRenderer $formEmbed = null,
     ) {
     }
 
@@ -192,6 +194,11 @@ final class WidgetCatalog
                 'href' => '/contact',
                 'subject' => '',
             ]),
+            $this->type('form-embed', true, [
+                'id' => 'string',
+            ], [
+                'id' => 'contact-lite',
+            ]),
             $this->type('checklist', true, [
                 'title' => 'string',
                 'items' => 'string',
@@ -251,6 +258,7 @@ final class WidgetCatalog
             'data-table',
             'bar-chart',
             'form-cta',
+            'form-embed',
             'checklist',
             'stat-duo',
         ];
@@ -301,6 +309,7 @@ final class WidgetCatalog
             'data-table' => $this->renderDataTable($attrs),
             'bar-chart' => $this->renderBarChart($attrs),
             'form-cta' => $this->renderFormCta($attrs),
+            'form-embed' => $this->renderFormEmbed($attrs),
             'checklist' => $this->renderChecklist($attrs),
             'stat-duo' => $this->renderStatDuo($attrs),
             default => '[widget' . $rawAttrs . ']' . $inner . ($inner === '' ? '' : '[/widget]'),
@@ -646,6 +655,21 @@ final class WidgetCatalog
             . '<p class="pg-widget-title">' . $this->e($attrs['title'] ?? '') . '</p>'
             . $bars
             . '</div>';
+    }
+
+    /**
+     * @param array<string, string> $attrs
+     */
+    /**
+     * @param array<string, string> $attrs
+     */
+    private function renderFormEmbed(array $attrs): string
+    {
+        if ($this->formEmbed === null) {
+            return '<!-- form-embed unavailable -->';
+        }
+
+        return $this->formEmbed->render((string) ($attrs['id'] ?? ''));
     }
 
     /**

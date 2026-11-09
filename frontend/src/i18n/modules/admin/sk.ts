@@ -48,6 +48,7 @@ export const adminSk: MessageTree = {
     webhooks: 'Webhooky',
     shortcodes: 'Shortcodes',
     widgets: 'Widgety',
+    forms: 'Verejné formuláre',
     snippets: 'Snippety',
     settings: 'Nastavenia',
     translations: 'Preklady',

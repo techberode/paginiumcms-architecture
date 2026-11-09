@@ -249,6 +249,13 @@ class AuthorizationManager implements AuthorizationInterface
         }
 
         if ($role === AuthorizationInterface::ROLE_ADMIN
+            && !in_array('forms:manage', $permissions, true)
+        ) {
+            $permissions[] = 'forms:manage';
+            $permissions = PermissionCatalog::normalizeList($permissions);
+        }
+
+        if ($role === AuthorizationInterface::ROLE_ADMIN
             && !in_array('metrics:read', $permissions, true)
         ) {
             $permissions[] = 'metrics:read';

@@ -97,6 +97,7 @@ export const originEn = {
     it99_polyglot: 'Upload polyglot hardening (It.99)',
     it100_admin_p2_cache: 'Admin P2 overview cache (It.100)',
     it82_host_metrics: 'Host metrics snapshot (It.82d)',
+    it101_form_builder: 'Public form builder (It.101)',
   },
   catalog: {
     it67: 'It.67 Untrusted surfaces',

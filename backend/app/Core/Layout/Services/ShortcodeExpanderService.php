@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PaginiumCMS\Core\Layout\Services;
 
 use PaginiumCMS\Core\FlatFile\Contracts\FileReaderInterface;
+use PaginiumCMS\Core\Forms\Services\FormEmbedRenderer;
 use PaginiumCMS\Core\Media\Services\DamMediaUrl;
 use PaginiumCMS\Core\Security\Services\ContentSecuritySanitizer;
 use PaginiumCMS\Core\Snippets\Services\SnippetRepository;
@@ -30,6 +31,7 @@ final class ShortcodeExpanderService
         private ?GalleryRepositoryInterface $gallery = null,
         private ?LatestPublishedArticlesProvider $latestArticles = null,
         private ?MediaRepositoryInterface $media = null,
+        private ?FormEmbedRenderer $formEmbed = null,
         private string $definitionsRelativeDir = 'data/shortcodes/definitions',
     ) {
     }
@@ -152,6 +154,15 @@ final class ShortcodeExpanderService
             $expandedInner = trim($inner) === '' ? '' : $this->expand($inner);
 
             return $this->sanitizer->sanitizeHtml(StatsRowRenderer::render($attrs, $expandedInner));
+        }
+
+        if ($name === 'form') {
+            $attrs = $this->parseAttributes($rawAttrs, ['attrs' => ['id' => ['type' => 'string']]]);
+            if ($this->formEmbed === null) {
+                return '[form' . $rawAttrs . ']';
+            }
+
+            return $this->sanitizer->sanitizeHtml($this->formEmbed->render((string) ($attrs['id'] ?? '')));
         }
 
         $definition = $this->loadDefinition($name);

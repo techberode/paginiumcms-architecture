@@ -12,6 +12,7 @@ use PaginiumCMS\Modules\Origin\Probes\AtRestEncryptionFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ApiKeysFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\ArticlePrintFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\BulkSelectionUxFeatureProbe;
+use PaginiumCMS\Modules\Origin\Probes\FormBuilderFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\DuplicateContentFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\HostMetricsFeatureProbe;
 use PaginiumCMS\Modules\Origin\Probes\LockingFeatureProbe;
@@ -40,6 +41,7 @@ final class FeatureProbeRegistry
             new AtRestEncryptionFeatureProbe($support, $encryption),
             new LockingFeatureProbe($support),
             new ShortcodesFeatureProbe($support),
+            new FormBuilderFeatureProbe($support),
             new ScheduledPublishFeatureProbe($support),
             new UntrustedSurfacesFeatureProbe($support),
             new UploadPolyglotFeatureProbe($support),

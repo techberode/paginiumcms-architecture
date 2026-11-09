@@ -97,6 +97,7 @@ export const originSk = {
     it99_polyglot: 'Upload polyglot (It.99)',
     it100_admin_p2_cache: 'Admin P2 cache (It.100)',
     it82_host_metrics: 'Host snapshot (It.82d)',
+    it101_form_builder: 'Verejný form builder (It.101)',
   },
   catalog: {
     it67: 'It.67 Nedôveryhodné plochy',

@@ -45,6 +45,7 @@ final class PermissionCatalog
         'api-keys:manage',
         'redirects:manage',
         'webhooks:manage',
+        'forms:manage',
         'profile:edit',
     ];
 
@@ -88,6 +89,7 @@ final class PermissionCatalog
                 'api-keys:manage',
                 'redirects:manage',
                 'webhooks:manage',
+                'forms:manage',
             ],
             AuthorizationInterface::ROLE_EDITOR => [
                 'content:create',
@@ -102,6 +104,7 @@ final class PermissionCatalog
                 'support-ticket:manage',
                 'mail:read-own',
                 'mail:send',
+                'forms:manage',
             ],
             AuthorizationInterface::ROLE_USER => [
                 'content:view',

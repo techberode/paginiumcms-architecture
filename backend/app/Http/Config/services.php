@@ -65,6 +65,10 @@ use PaginiumCMS\Core\CodePolicy\Services\UntrustedPolicyScanner;
 use PaginiumCMS\Core\Layout\Services\ShortcodeDefinitionManager;
 use PaginiumCMS\Core\Layout\Services\ShortcodeCatalogSeeder;
 use PaginiumCMS\Core\Layout\Services\LatestPublishedArticlesProvider;
+use PaginiumCMS\Core\Forms\Services\FormDefinitionPolicy;
+use PaginiumCMS\Core\Forms\Services\FormDefinitionRepository;
+use PaginiumCMS\Core\Forms\Services\FormEmbedRenderer;
+use PaginiumCMS\Core\Forms\Services\PublicFormService;
 use PaginiumCMS\Core\Layout\Services\ShortcodeExpanderService;
 use PaginiumCMS\Core\Layout\Services\ShortcodeRegistry;
 use PaginiumCMS\Core\Layout\Services\WidgetCatalog;
@@ -335,7 +339,9 @@ use PaginiumCMS\Http\Controllers\Admin\ApiKeyController;
 use PaginiumCMS\Http\Controllers\Admin\NotFoundReportController;
 use PaginiumCMS\Http\Controllers\Admin\WebhookController;
 use PaginiumCMS\Http\Controllers\Admin\GdprController;
+use PaginiumCMS\Http\Controllers\Admin\FormController;
 use PaginiumCMS\Http\Controllers\Admin\RedirectController;
+use PaginiumCMS\Http\Controllers\Public\PublicFormController;
 use PaginiumCMS\Http\Controllers\Headless\HeadlessTokenController;
 use PaginiumCMS\Http\Controllers\Admin\SettingsController;
 use PaginiumCMS\Http\Controllers\Admin\TranslationController;
@@ -1845,8 +1851,27 @@ return [
             get(FileReaderInterface::class),
             get(FileWriterInterface::class)
         ),
+    FormDefinitionPolicy::class => create(FormDefinitionPolicy::class),
+    FormDefinitionRepository::class => create(FormDefinitionRepository::class)
+        ->constructor(
+            get(FormDefinitionPolicy::class),
+            get(FileReaderInterface::class),
+            get(FileWriterInterface::class)
+        ),
+    FormEmbedRenderer::class => create(FormEmbedRenderer::class)
+        ->constructor(get(FormDefinitionRepository::class)),
+    PublicFormService::class => create(PublicFormService::class)
+        ->constructor(
+            get(FormDefinitionRepository::class),
+            get(Validator::class),
+            get(MessageDeskService::class),
+            get(VisitorEmailGuard::class)
+        ),
     WidgetCatalog::class => create(WidgetCatalog::class)
-        ->constructor(get(WidgetDefinitionRepository::class)),
+        ->constructor(
+            get(WidgetDefinitionRepository::class),
+            get(FormEmbedRenderer::class)
+        ),
     LatestPublishedArticlesProvider::class => create(LatestPublishedArticlesProvider::class)
         ->constructor(get(ContentIndexService::class)),
     ShortcodeExpanderService::class => create(ShortcodeExpanderService::class)
@@ -1858,7 +1883,8 @@ return [
             get(WidgetCatalog::class),
             get(GalleryRepositoryInterface::class),
             get(LatestPublishedArticlesProvider::class),
-            get(MediaRepositoryInterface::class)
+            get(MediaRepositoryInterface::class),
+            get(FormEmbedRenderer::class)
         ),
     SnippetRegistry::class => create(SnippetRegistry::class)
         ->constructor(
@@ -2643,6 +2669,16 @@ return [
             get(\PaginiumCMS\Modules\Security\Services\ApiKeyVerifier::class),
             get(\PaginiumCMS\Modules\Security\Services\ApiJwtService::class),
             get(SecurityAuditStore::class),
+            get(JsonResponder::class)
+        ),
+    FormController::class => create(FormController::class)
+        ->constructor(
+            get(FormDefinitionRepository::class),
+            get(JsonResponder::class)
+        ),
+    PublicFormController::class => create(PublicFormController::class)
+        ->constructor(
+            get(PublicFormService::class),
             get(JsonResponder::class)
         ),
     RedirectController::class => create(RedirectController::class)

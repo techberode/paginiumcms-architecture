@@ -49,6 +49,12 @@ export const publicEn: MessageTree = {
     serverErrorBody: 'We could not render this page. Try again later or return to the home page.',
     pageNotFound: 'Page “:slug” does not exist.',
   },
+  formBuilder: {
+    submit: 'Send',
+    sent: 'Thank you — we received your message.',
+    failed: 'Could not send the form. Try again later.',
+    unavailable: 'This form is not available.',
+  },
   brokenReport: {
     title: 'Report a broken link or missing content',
     hint: 'We filled in the URL automatically — add a short note if you know where you came from.',

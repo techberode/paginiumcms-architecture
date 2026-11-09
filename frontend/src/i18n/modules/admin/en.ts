@@ -48,6 +48,7 @@ export const adminEn: MessageTree = {
     webhooks: 'Webhooks',
     shortcodes: 'Shortcodes',
     widgets: 'Widgets',
+    forms: 'Public forms',
     snippets: 'Snippets',
     settings: 'Settings',
     translations: 'Translations',

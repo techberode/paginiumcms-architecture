@@ -32,6 +32,7 @@ const ADMIN_ROUTES = new Set([
   '/webhooks',
   '/shortcodes',
   '/widgets',
+  '/forms',
   '/snippets',
   '/notifications',
   '/scheduler',
