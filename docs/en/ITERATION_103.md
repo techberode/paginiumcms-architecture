@@ -1,6 +1,6 @@
 # Iteration 103 — AI assistant expansion (admin polish + public chat widget)
 
-> **Status:** ⏳ planned  
+> **Status:** 🟡 **103a shipped** (keywords, tags, category, newsletter snippet). **103b** public chat widget still planned.  
 > **Priority:** 🔵 (admin polish **103a**) · 🟡 P2 (public widget **103b** — optional product slice)  
 > **Depends on:** [It.75](ITERATION_75.md) (shipped `beta.88`), [It.93o](ITERATION_93.md) (staff/desk/messages), [It.67](ITERATION_67.md) (CSP/sandbox), [It.29](ITERATION_29.md) (queue)  
 > **Commercial benchmark (non-integration):** [Elfsight AI Chatbot](https://elfsight.com/ai-chatbot-widget/) — embeddable site assistant with branding, FAQ-style answers, and lead capture; Paginium should offer a **first-party**, self-hosted equivalent tied to flat-file content and existing Messages/desk flows.
@@ -150,10 +150,10 @@ agentPublicChat:
 
 **103a**
 
-- [ ] `keywords` Apply → `seo.tags` with tests.
-- [ ] At least one of: `content.suggest_tags` or `content.suggest_categories` shipped with Apply.
-- [ ] AGENT_OPERATIONS updated (keys, models, troubleshooting).
-- [ ] CHANGELOG + backlog status on ship.
+- [x] `keywords` Apply → document `tags` (editor `seo.tags` comma list) with tests.
+- [x] `content.suggest_tags`, `content.suggest_categories`, and `newsletter.suggest_snippet` shipped with Apply (no send).
+- [x] AGENT_OPERATIONS updated (keys, models, troubleshooting).
+- [x] CHANGELOG + backlog status on ship.
 
 **103b**
 

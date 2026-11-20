@@ -181,6 +181,80 @@ final class TeamChatController
     /**
      * @param array<string, string> $args
      */
+    /**
+     * @param array<string, string> $args
+     */
+    public function topics(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $actor = $request->getAttribute('user');
+        if (!$actor instanceof User) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        try {
+            $topics = $this->chat->topics((string) ($args['teamId'] ?? ''), $actor);
+        } catch (InvalidArgumentException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 404);
+        }
+
+        return $this->json->success($response, ['topics' => $topics]);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function importTopic(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $actor = $request->getAttribute('user');
+        if (!$actor instanceof User) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+        $body = RequestJsonBody::decode($request) ?? [];
+
+        try {
+            $topic = $this->chat->importTicketTopic(
+                (string) ($args['teamId'] ?? ''),
+                $actor,
+                (string) ($body['ticketId'] ?? ''),
+                (string) ($body['title'] ?? '')
+            );
+        } catch (InvalidArgumentException $exception) {
+            return $this->json->error($response, $exception->getMessage(), 422);
+        }
+
+        return $this->json->success($response, ['topic' => $topic], 201);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    public function archiveTopic(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $actor = $request->getAttribute('user');
+        if (!$actor instanceof User) {
+            return $this->json->error($response, 'Neprihlásený používateľ', 401);
+        }
+
+        try {
+            $topic = $this->chat->archiveTopic(
+                (string) ($args['teamId'] ?? ''),
+                $actor,
+                (string) ($args['topicId'] ?? '')
+            );
+        } catch (InvalidArgumentException $exception) {
+            return $this->json->error(
+                $response,
+                $exception->getMessage(),
+                $this->historyErrorStatus($exception, 404)
+            );
+        }
+
+        return $this->json->success($response, ['topic' => $topic]);
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
     public function post(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $actor = $request->getAttribute('user');
@@ -195,7 +269,8 @@ final class TeamChatController
                 $actor,
                 (string) ($body['kind'] ?? TeamChatStore::KIND_TEXT),
                 (string) ($body['body'] ?? ''),
-                (string) ($body['language'] ?? '')
+                (string) ($body['language'] ?? ''),
+                (string) ($body['topicId'] ?? '')
             );
         } catch (InvalidArgumentException $exception) {
             return $this->json->validation($response, 'Validation failed', ['body' => $exception->getMessage()]);

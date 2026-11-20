@@ -803,6 +803,18 @@ export const editorEn: MessageTree = {
     seoTitle: 'SEO title',
     seoDescription: 'SEO description',
     keywords: 'Keywords',
+    tags: 'Tags',
+    category: 'Category',
+    subject: 'Newsletter subject',
+    preheader: 'Preheader',
+    suggestMeta: 'Suggest metadata',
+    suggestMetaPrompt:
+      'Suggest SEO, tags, and one existing category in locale {locale} for {type} "{slug}". Call seo.suggest_meta, content.suggest_tags, and content.suggest_categories. Do not invent a category slug.',
+    suggestNewsletter: 'Suggest newsletter snippet',
+    suggestNewsletterPrompt:
+      'Suggest a newsletter subject and preheader in locale {locale} for {type} "{slug}". Call newsletter.suggest_snippet. Do not send mail.',
+    schema: 'The assistant returned a proposal the CMS cannot store. Check the allowed tools.',
+    providerKey: 'The provider rejected the key. Use an inference key, not a management key.',
     apply: 'Apply selected',
     discard: 'Discard',
     applied: 'Proposal applied',

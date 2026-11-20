@@ -18,7 +18,8 @@ This canonical history records release facts supported by the supplied `CHANGELO
   - **Backend:** orchestrator seeds `content.read` snapshot before the LLM loop; OpenAI-compatible multi-step tools use proper `assistant` + `tool` messages (fixes **503** on `execute` with OpenRouter / `gpt-4o-mini` after the first tool call).
   - **Frontend:** `agentApi.execute` / connection test use **180s** axios timeout; editor maps timeout errors and avoids showing a stale `queued` run after browser abort.
   - **Deploy:** `nginx-paginiumcms.com.conf` — `/internal/translate/` + `/internal/llm/` proxy blocks, `/api/` `proxy_read_timeout` 300s; [docker-compose.libretranslate.yml](docs/deploy/docker-compose.libretranslate.yml) + [nginx-internal-llm.conf.example](docs/deploy/nginx-internal-llm.conf.example).
-- **Planned — It.103 AI assistant expansion** — [ITERATION_103](docs/en/ITERATION_103.md): admin Apply for SEO keywords → `seo.tags`, tag/category/newsletter proposal tools; optional first-party **public AI chat widget** (Elfsight-class benchmark, self-hosted retrieval + desk handoff). Default off; separate from It.75 admin tool loop.
+- **It.103a — admin assistant proposals** — [ITERATION_103](docs/en/ITERATION_103.md): Apply writes `keywords` and `content.suggest_tags` onto document tags, `content.suggest_categories` onto an existing category slug, and `newsletter.suggest_snippet` onto `newsletterSnippet` (subject + preheader, no send). Editor buttons for metadata and newsletter. **103b** public chat widget remains planned.
+- **It.93l-3 team-chat topics** — import a thread from a ticket id, idle auto-archive (`teamChat.topicIdleHours`, default 72h), leader/SUPER_ADMIN archive, desktop notification when the team-chat inbox count rises.
 - **It.102 assisted translation polish** — [ITERATION_102](docs/en/ITERATION_102.md): closing shortcode + optional paired-block guard (`translation.protectShortcodeBlocks`); editor field picker / metadata-only; reload switches to applied locale; `NO_RESULT` per-locale error detail.
 - **Critical — incomplete 2FA login UI (ISS-206)** — [ISS-206](docs/ISSUES.md#iss-206)
   - **Symptom:** after password-only login with 2FA enabled, abandoning TOTP still showed public CMS bar and **Paginium Admin** as if fully authenticated.
@@ -55,7 +56,7 @@ This canonical history records release facts supported by the supplied `CHANGELO
 - **Public 404:** broken-content report form (prefilled URL/referer → Message Desk via `/api/contact`); optional custom page via `layout.notFoundPageSlug`; toggle `layout.brokenContentReportOn404`
 - **Public blog:** latest-article highlight (includes archived when newest), sort **Z–A** (`titleDesc`), `GET /api/articles?include_archived=1` for highlight fetch
 - **Layout:** `layout.breadcrumbsPosition` — breadcrumbs above content or below hero (pages, articles, blog)
-- **It.101 (planned):** public form builder — [ITERATION_101.md](docs/en/ITERATION_101.md) · SK [docs/sk/ITERATION_101.md](docs/sk/ITERATION_101.md)
+- **It.101:** public form builder shipped — [ITERATION_101.md](docs/en/ITERATION_101.md)
 - **Editor:** Autosave for new unsaved pages/articles (provisional `koncept-DDMMYYYY-*` slug, `GET /api/drafts/pending`, Pages/Articles banner, desk `content_draft` queue item) — if not already on `main` from a prior slice, still pending separate ship
 - **It.100 (living):** further tuning (P3 async beyond logs, Redis job projections, prod metrics) — [ITERATION_100.md](docs/en/ITERATION_100.md)
 - **It.98:** workspace + CLI — [ITERATION_98.md](docs/en/ITERATION_98.md)

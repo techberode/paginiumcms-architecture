@@ -321,6 +321,49 @@ final class TeamChatStoreTest extends TestCase
         $this->chat->post((string) $team['id'], $member, TeamChatStore::KIND_TEXT, 'nope');
     }
 
+    public function testTicketTopicIdleCloseAndLeaderArchive(): void
+    {
+        $member = new User();
+        $member->setName('Ada');
+        $member->setEmail('ada@example.com');
+        $member->setRoles(['USER']);
+        $leader = new User();
+        $leader->setName('Lead');
+        $leader->setEmail('lead@example.com');
+        $leader->setRoles(['SUPER_ADMIN']);
+
+        $team = $this->teams->create('Devs', TeamRepository::TYPE_EXTERNAL, [$member->getId(), $leader->getId()]);
+        $topic = $this->chat->importTicketTopic((string) $team['id'], $member, 'card-12', 'Broken footer');
+        $this->assertSame(TeamChatStore::TOPIC_OPEN, $topic['status']);
+
+        $again = $this->chat->importTicketTopic((string) $team['id'], $member, 'card-12', 'Broken footer');
+        $this->assertSame($topic['id'], $again['id']);
+
+        $posted = $this->chat->post((string) $team['id'], $member, TeamChatStore::KIND_TEXT, 'Looking', '', (string) $topic['id']);
+        $this->assertSame($topic['id'], $posted['topicId']);
+
+        $path = $this->baseDir . '/data/team-chat/' . $team['id'] . '/topics.json';
+        $raw = json_decode((string) file_get_contents($path), true);
+        $this->assertIsArray($raw);
+        $raw['topics'][0]['lastActivityAt'] = time() - (80 * 3600);
+        file_put_contents($path, json_encode($raw));
+
+        $closed = $this->chat->topics((string) $team['id'], $member);
+        $this->assertSame(TeamChatStore::TOPIC_ARCHIVED, $closed[0]['status']);
+        $this->assertSame('idle', $closed[0]['closeReason']);
+
+        $fresh = $this->chat->importTicketTopic((string) $team['id'], $member, 'card-99', 'New thread');
+        try {
+            $this->chat->archiveTopic((string) $team['id'], $member, (string) $fresh['id']);
+            $this->fail('Member must not archive');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(TeamChatStore::HISTORY_ACCESS_DENIED, $exception->getMessage());
+        }
+
+        $archived = $this->chat->archiveTopic((string) $team['id'], $leader, (string) $fresh['id']);
+        $this->assertSame('leader', $archived['closeReason']);
+    }
+
     private function userWithFixedId(string $id): User
     {
         return new class($id) extends User {

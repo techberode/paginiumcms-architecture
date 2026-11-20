@@ -928,7 +928,8 @@ return [
             get(\PaginiumCMS\Modules\Media\Contracts\MediaRepositoryInterface::class),
             get(TranslationService::class),
             get(AuthorizationInterface::class),
-            get(SecurityAuditStore::class)
+            get(SecurityAuditStore::class),
+            get(\PaginiumCMS\Core\Content\Services\CategoryRepository::class)
         ),
     AgentOrchestrator::class => create(AgentOrchestrator::class)
         ->constructor(

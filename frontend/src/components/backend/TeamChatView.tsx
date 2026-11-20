@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Download, Hash, Loader2, Paperclip, RefreshCw, Search, Send, Trash2, Upload } from 'lucide-react';
-import { teamChatApi, type TeamChatMessage, type TeamChatRoom } from '../../api/teamChat';
+import { teamChatApi, type TeamChatMessage, type TeamChatRoom, type TeamChatTopic } from '../../api/teamChat';
 import type { TeamType } from '../../api/teams';
 import { useToast } from '../../hooks/useToast';
 import { useI18n } from '../../context/I18nContext';
@@ -28,6 +28,10 @@ export const TeamChatView: React.FC = () => {
   const [searchResults, setSearchResults] = useState<TeamChatMessage[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [clearingHistory, setClearingHistory] = useState(false);
+  const [topics, setTopics] = useState<TeamChatTopic[]>([]);
+  const [topicId, setTopicId] = useState('');
+  const [ticketId, setTicketId] = useState('');
+  const [topicTitle, setTopicTitle] = useState('');
 
   const loadRooms = useCallback(async () => {
     setLoading(true);
@@ -69,6 +73,19 @@ export const TeamChatView: React.FC = () => {
     void loadMessages(teamId);
   }, [loadMessages, teamId]);
 
+  const loadTopics = useCallback(async (id: string) => {
+    if (id === '') {
+      setTopics([]);
+      return;
+    }
+    setTopics(await teamChatApi.topics(id));
+  }, []);
+
+  useEffect(() => {
+    setTopicId('');
+    void loadTopics(teamId);
+  }, [loadTopics, teamId]);
+
   const activeRoom = useMemo(
     () => rooms.find((room) => room.id === teamId) ?? null,
     [rooms, teamId]
@@ -103,6 +120,7 @@ export const TeamChatView: React.FC = () => {
         kind,
         body: body.trim(),
         language: kind === 'code' ? language : '',
+        topicId,
       });
       if (!response.success) {
         toast.error(response.error || t('platform.teamChat.toast.sendFailed'));
@@ -252,9 +270,97 @@ export const TeamChatView: React.FC = () => {
 
           <section className="rounded-2xl border border-admin-border bg-admin-card flex flex-col min-h-0 h-full">
             <header className="px-4 py-3 border-b border-admin-border space-y-2 shrink-0">
-              <div className="text-sm font-semibold text-admin-text">
-                {activeRoom ? `#${activeRoom.name}` : t('platform.teamChat.selectRoom')}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm font-semibold text-admin-text">
+                  {activeRoom ? `#${activeRoom.name}` : t('platform.teamChat.selectRoom')}
+                </div>
+                {teamId !== '' ? (
+                  <button
+                    type="button"
+                    className="text-xs text-admin-muted underline"
+                    onClick={() => {
+                      if (typeof Notification === 'undefined') {
+                        return;
+                      }
+                      void Notification.requestPermission();
+                    }}
+                  >
+                    {t('platform.teamChat.notifyEnable')}
+                  </button>
+                ) : null}
               </div>
+              {teamId !== '' ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    className={`${ADMIN_INPUT} text-xs py-1.5 max-w-xs`}
+                    value={topicId}
+                    onChange={(event) => setTopicId(event.target.value)}
+                    aria-label={t('platform.teamChat.topicLabel')}
+                  >
+                    <option value="">{t('platform.teamChat.topicRoom')}</option>
+                    {topics.map((topic) => (
+                      <option key={topic.id} value={topic.id}>
+                        {topic.status === 'archived' ? `[${topic.status}] ` : ''}
+                        {topic.title}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className={`${ADMIN_INPUT} text-xs py-1.5 w-28`}
+                    value={ticketId}
+                    onChange={(event) => setTicketId(event.target.value)}
+                    placeholder={t('platform.teamChat.topicTicket')}
+                  />
+                  <input
+                    className={`${ADMIN_INPUT} text-xs py-1.5 w-40`}
+                    value={topicTitle}
+                    onChange={(event) => setTopicTitle(event.target.value)}
+                    placeholder={t('platform.teamChat.topicTitle')}
+                  />
+                  <button
+                    type="button"
+                    className="rounded-md border border-admin-border px-2 py-1 text-xs"
+                    onClick={() => {
+                      void (async () => {
+                        const response = await teamChatApi.importTopic(teamId, {
+                          ticketId: ticketId.trim(),
+                          title: topicTitle.trim(),
+                        });
+                        if (!response.success || !response.data) {
+                          toast.error(response.error || t('platform.teamChat.topicFailed'));
+                          return;
+                        }
+                        setTopicId(response.data.topic.id);
+                        setTicketId('');
+                        setTopicTitle('');
+                        toast.success(t('platform.teamChat.topicImported'));
+                        await loadTopics(teamId);
+                      })();
+                    }}
+                  >
+                    {t('platform.teamChat.topicImport')}
+                  </button>
+                  {canManageHistory && topicId !== '' ? (
+                    <button
+                      type="button"
+                      className="rounded-md border border-admin-border px-2 py-1 text-xs"
+                      onClick={() => {
+                        void (async () => {
+                          const response = await teamChatApi.archiveTopic(teamId, topicId);
+                          if (!response.success) {
+                            toast.error(response.error || t('platform.teamChat.topicFailed'));
+                            return;
+                          }
+                          toast.success(t('platform.teamChat.topicArchived'));
+                          await loadTopics(teamId);
+                        })();
+                      }}
+                    >
+                      {t('platform.teamChat.topicArchive')}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
               {teamId !== '' && canManageHistory ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="flex flex-1 min-w-[12rem] items-center gap-2 text-xs">
@@ -313,7 +419,17 @@ export const TeamChatView: React.FC = () => {
               ) : null}
             </header>
             <ol className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3" data-testid="team-chat-messages">
-              {(searchResults ?? messages).map((message) => (
+              {(searchResults ?? messages)
+                .filter((message) => {
+                  if (searchResults) {
+                    return true;
+                  }
+                  if (topicId === '') {
+                    return !message.topicId;
+                  }
+                  return message.topicId === topicId;
+                })
+                .map((message) => (
                 <li key={message.id} className="rounded-xl bg-admin-canvas px-3 py-2 text-admin-text">
                   <div className="text-xs font-medium text-admin-muted mb-1">
                     {message.authorName}

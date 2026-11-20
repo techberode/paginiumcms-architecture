@@ -119,7 +119,9 @@ Filter models on **Text** with **tools** support. Free models may rate-limit (**
 
 Use an **inference** API key. OpenRouter **management** keys cannot call chat completions (connection test may still pass).
 
-**Roadmap:** [ITERATION_103.md](../ITERATION_103.md) — Apply keywords to `seo.tags`, tag/category tools, optional public chat widget ([Elfsight-class benchmark](https://elfsight.com/ai-chatbot-widget/), first-party implementation).
+**Apply:** `keywords` and `content.suggest_tags` become document `tags`. `content.suggest_categories` sets the category slug only when that slug already exists. `newsletter.suggest_snippet` stores `newsletterSnippet` on the document and does not send mail. Reload the editor after Apply. Empty keyword/tag lists do not clear existing tags.
+
+**Still planned:** [ITERATION_103.md](../ITERATION_103.md) public chat widget (**103b**).
 
 ---
 

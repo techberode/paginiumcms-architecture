@@ -16,6 +16,7 @@ final class TeamChatSettingsSchemaTest extends TestCase
         $this->assertSame(800, $defaults['maxStoredMessages'] ?? 0);
         $this->assertSame(80, $defaults['liveWindowMessages'] ?? 0);
         $this->assertSame(100, $defaults['searchMaxResults'] ?? 0);
+        $this->assertSame(72, $defaults['topicIdleHours'] ?? 0);
         $this->assertFalse(SettingsSchema::isSuperAdminOnly('teamChat'));
     }
 }

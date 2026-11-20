@@ -803,6 +803,18 @@ export const editorSk: MessageTree = {
     seoTitle: 'SEO titulok',
     seoDescription: 'SEO popis',
     keywords: 'Kľúčové slová',
+    tags: 'Tagy',
+    category: 'Kategória',
+    subject: 'Predmet newslettera',
+    preheader: 'Preheader',
+    suggestMeta: 'Navrhnúť metadáta',
+    suggestMetaPrompt:
+      'Navrhni SEO, tagy a jednu existujúcu kategóriu v jazyku {locale} pre {type} „{slug}“. Volaj seo.suggest_meta, content.suggest_tags a content.suggest_categories. Nevymýšľaj slug kategórie.',
+    suggestNewsletter: 'Navrhnúť newsletter',
+    suggestNewsletterPrompt:
+      'Navrhni predmet a preheader newslettera v jazyku {locale} pre {type} „{slug}“. Volaj newsletter.suggest_snippet. Neodosielaj poštu.',
+    schema: 'Asistent vrátil návrh, ktorý CMS nevie uložiť. Skontrolujte povolené nástroje.',
+    providerKey: 'Poskytovateľ odmietol kľúč. Použite inference kľúč, nie management kľúč.',
     apply: 'Použiť vybrané',
     discard: 'Zahodiť',
     applied: 'Návrh je použitý',

@@ -36,6 +36,12 @@ final class TeamChatStore
 
     public const READ_SCHEMA = 'team-chat-read@1';
 
+    public const TOPIC_SCHEMA = 'team-chat-topic@1';
+
+    public const TOPIC_OPEN = 'open';
+
+    public const TOPIC_ARCHIVED = 'archived';
+
     public const MAX_IMPORT_MESSAGES = 500;
 
     public const HISTORY_ACCESS_DENIED = 'History access denied.';
@@ -118,6 +124,7 @@ final class TeamChatStore
     public function messages(string $teamId, User $actor): array
     {
         $team = $this->requireAccess($teamId, $actor);
+        $this->closeIdleTopics((string) $team['id']);
         $items = $this->listMessages((string) $team['id']);
         $watermark = 0;
         foreach ($items as $item) {
@@ -293,7 +300,7 @@ final class TeamChatStore
     /**
      * @return array<string, mixed>
      */
-    public function post(string $teamId, User $actor, string $kind, string $body, string $language = ''): array
+    public function post(string $teamId, User $actor, string $kind, string $body, string $language = '', string $topicId = ''): array
     {
         $team = $this->requireAccess($teamId, $actor);
         $kind = $kind === self::KIND_CODE ? self::KIND_CODE : self::KIND_TEXT;
@@ -303,12 +310,109 @@ final class TeamChatStore
         }
         $body = LogSanitizer::value($body, self::MAX_BODY);
         $language = strtolower(preg_replace('/[^a-z0-9+#.-]/', '', $language) ?? '');
+        $topicId = $this->normalizeTopicId($topicId);
+        if ($topicId !== '') {
+            $this->requireOpenTopic((string) $team['id'], $topicId);
+        }
 
-        return $this->writeMessage((string) $team['id'], $actor, [
+        $message = $this->writeMessage((string) $team['id'], $actor, [
             'kind' => $kind,
             'body' => $body,
             'language' => $kind === self::KIND_CODE ? $language : '',
+            'topicId' => $topicId,
         ]);
+        if ($topicId !== '') {
+            $this->touchTopic((string) $team['id'], $topicId);
+        }
+
+        return $message;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function topics(string $teamId, User $actor): array
+    {
+        $team = $this->requireAccess($teamId, $actor);
+        $id = (string) $team['id'];
+        $this->closeIdleTopics($id);
+
+        return $this->readTopics($id);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function importTicketTopic(string $teamId, User $actor, string $ticketId, string $title): array
+    {
+        $team = $this->requireAccess($teamId, $actor);
+        $id = (string) $team['id'];
+        $ticketId = trim($ticketId);
+        if (preg_match('/^[A-Za-z0-9_-]{1,80}$/', $ticketId) !== 1) {
+            throw new InvalidArgumentException('Ticket id is invalid.');
+        }
+        $title = trim(LogSanitizer::value($title, 120));
+        if ($title === '') {
+            throw new InvalidArgumentException('Topic title is required.');
+        }
+
+        $topics = $this->readTopics($id);
+        foreach ($topics as $index => $topic) {
+            if ((string) ($topic['sourceTicketId'] ?? '') !== $ticketId) {
+                continue;
+            }
+            $topics[$index]['title'] = $title;
+            $topics[$index]['status'] = self::TOPIC_OPEN;
+            $topics[$index]['lastActivityAt'] = time();
+            $this->writeTopics($id, $topics);
+
+            return $topics[$index];
+        }
+
+        $topic = [
+            'schema' => self::TOPIC_SCHEMA,
+            'id' => 'topic_' . bin2hex(random_bytes(6)),
+            'teamId' => $id,
+            'title' => $title,
+            'status' => self::TOPIC_OPEN,
+            'sourceTicketId' => $ticketId,
+            'createdBy' => $actor->getId(),
+            'createdAt' => time(),
+            'lastActivityAt' => time(),
+            'archivedBy' => '',
+            'archivedAt' => 0,
+            'closeReason' => '',
+        ];
+        $topics[] = $topic;
+        $this->writeTopics($id, $topics);
+
+        return $topic;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function archiveTopic(string $teamId, User $actor, string $topicId): array
+    {
+        $team = $this->requireAccess($teamId, $actor);
+        $this->requireHistoryAccess($team, $actor);
+        $id = (string) $team['id'];
+        $topicId = $this->normalizeTopicId($topicId);
+        $topics = $this->readTopics($id);
+        foreach ($topics as $index => $topic) {
+            if ((string) ($topic['id'] ?? '') !== $topicId) {
+                continue;
+            }
+            $topics[$index]['status'] = self::TOPIC_ARCHIVED;
+            $topics[$index]['archivedBy'] = $actor->getId();
+            $topics[$index]['archivedAt'] = time();
+            $topics[$index]['closeReason'] = 'leader';
+            $this->writeTopics($id, $topics);
+
+            return $topics[$index];
+        }
+
+        throw new InvalidArgumentException('Topic not found.');
     }
 
     /**
@@ -503,6 +607,7 @@ final class TeamChatStore
             'kind' => (string) ($fields['kind'] ?? self::KIND_TEXT),
             'body' => (string) ($fields['body'] ?? ''),
             'language' => (string) ($fields['language'] ?? ''),
+            'topicId' => (string) ($fields['topicId'] ?? ''),
             'file' => is_array($fields['file'] ?? null) ? $fields['file'] : null,
             'createdAt' => time(),
         ];
@@ -547,6 +652,117 @@ final class TeamChatStore
         usort($items, static fn (array $a, array $b): int => ((int) $a['createdAt']) <=> ((int) $b['createdAt']));
 
         return $items;
+    }
+
+    private function topicIdleHours(): int
+    {
+        $value = (int) ($this->settings->group('teamChat')['topicIdleHours'] ?? 72);
+
+        return max(1, min(720, $value));
+    }
+
+    private function normalizeTopicId(string $topicId): string
+    {
+        $topicId = trim($topicId);
+        if ($topicId === '') {
+            return '';
+        }
+        if (preg_match('/^topic_[a-f0-9]{12}$/', $topicId) !== 1) {
+            throw new InvalidArgumentException('Topic id is invalid.');
+        }
+
+        return $topicId;
+    }
+
+    private function requireOpenTopic(string $teamId, string $topicId): void
+    {
+        foreach ($this->readTopics($teamId) as $topic) {
+            if ((string) ($topic['id'] ?? '') !== $topicId) {
+                continue;
+            }
+            if ((string) ($topic['status'] ?? '') !== self::TOPIC_OPEN) {
+                throw new InvalidArgumentException('Topic is archived.');
+            }
+
+            return;
+        }
+
+        throw new InvalidArgumentException('Topic not found.');
+    }
+
+    private function touchTopic(string $teamId, string $topicId): void
+    {
+        $topics = $this->readTopics($teamId);
+        foreach ($topics as $index => $topic) {
+            if ((string) ($topic['id'] ?? '') !== $topicId) {
+                continue;
+            }
+            $topics[$index]['lastActivityAt'] = time();
+            $this->writeTopics($teamId, $topics);
+
+            return;
+        }
+    }
+
+    private function closeIdleTopics(string $teamId): void
+    {
+        $cutoff = time() - ($this->topicIdleHours() * 3600);
+        $topics = $this->readTopics($teamId);
+        $changed = false;
+        foreach ($topics as $index => $topic) {
+            if ((string) ($topic['status'] ?? '') !== self::TOPIC_OPEN) {
+                continue;
+            }
+            if ((int) ($topic['lastActivityAt'] ?? 0) > $cutoff) {
+                continue;
+            }
+            $topics[$index]['status'] = self::TOPIC_ARCHIVED;
+            $topics[$index]['archivedAt'] = time();
+            $topics[$index]['closeReason'] = 'idle';
+            $changed = true;
+        }
+        if ($changed) {
+            $this->writeTopics($teamId, $topics);
+        }
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function readTopics(string $teamId): array
+    {
+        $path = $this->relativeDir . '/' . $teamId . '/topics.json';
+        if (!$this->reader->exists($path)) {
+            return [];
+        }
+        try {
+            $decoded = JsonHelper::decode($this->reader->read($path));
+        } catch (\Throwable) {
+            return [];
+        }
+        $rows = is_array($decoded['topics'] ?? null) ? $decoded['topics'] : [];
+        $topics = [];
+        foreach ($rows as $row) {
+            if (is_array($row) && is_string($row['id'] ?? null)) {
+                $topics[] = $row;
+            }
+        }
+
+        return $topics;
+    }
+
+    /**
+     * @param list<array<string, mixed>> $topics
+     */
+    private function writeTopics(string $teamId, array $topics): void
+    {
+        $dir = $this->relativeDir . '/' . $teamId;
+        $this->writer->createDirectory($dir);
+        $this->writer->write(
+            $dir . '/topics.json',
+            JsonHelper::encode(['schema' => self::TOPIC_SCHEMA, 'topics' => $topics], JSON_PRETTY_PRINT),
+            false
+        );
     }
 
     private function retentionDays(): int

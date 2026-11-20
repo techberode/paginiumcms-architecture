@@ -6,6 +6,7 @@ namespace PaginiumCMS\Core\Agent\Services;
 
 use PaginiumCMS\Core\Agent\Exception\AgentException;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\Services\CategoryRepository;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Services\ContentRevision;
 use PaginiumCMS\Core\Translation\Exception\TranslationException;
@@ -34,6 +35,7 @@ final class AgentToolRegistry
         private TranslationService $translations,
         private AuthorizationInterface $authz,
         private SecurityAuditStore $audit,
+        private CategoryRepository $categories,
     ) {
     }
 
@@ -68,6 +70,43 @@ final class AgentToolRegistry
                         'body' => ['type' => 'string', 'maxLength' => 20000],
                         'seoTitle' => ['type' => 'string', 'maxLength' => 70],
                         'seoDescription' => ['type' => 'string', 'maxLength' => 160],
+                    ],
+                ],
+            ],
+            'content.suggest_tags' => [
+                'name' => 'content.suggest_tags',
+                'description' => 'Store a comma-separated tag proposal aligned with the article. Does not save.',
+                'parameters' => [
+                    'type' => 'object',
+                    'additionalProperties' => false,
+                    'required' => ['tags'],
+                    'properties' => [
+                        'tags' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 400],
+                    ],
+                ],
+            ],
+            'content.suggest_categories' => [
+                'name' => 'content.suggest_categories',
+                'description' => 'Store one existing category slug. Does not create categories or save content.',
+                'parameters' => [
+                    'type' => 'object',
+                    'additionalProperties' => false,
+                    'required' => ['category'],
+                    'properties' => [
+                        'category' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
+                    ],
+                ],
+            ],
+            'newsletter.suggest_snippet' => [
+                'name' => 'newsletter.suggest_snippet',
+                'description' => 'Store a newsletter subject and preheader proposal. Does not send mail.',
+                'parameters' => [
+                    'type' => 'object',
+                    'additionalProperties' => false,
+                    'required' => ['subject', 'preheader'],
+                    'properties' => [
+                        'subject' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 120],
+                        'preheader' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200],
                     ],
                 ],
             ],
@@ -167,6 +206,9 @@ final class AgentToolRegistry
             'content.read' => $this->contentRead($arguments, $run),
             'content.propose_patch' => ['kind' => 'content_patch', 'fields' => $this->pickFields($arguments, ['title', 'body', 'seoTitle', 'seoDescription'])],
             'seo.suggest_meta' => ['kind' => 'seo', 'fields' => $this->pickFields($arguments, ['seoTitle', 'seoDescription', 'keywords'])],
+            'content.suggest_tags' => ['kind' => 'taxonomy', 'fields' => $this->pickFields($arguments, ['tags'])],
+            'content.suggest_categories' => $this->suggestCategory($arguments),
+            'newsletter.suggest_snippet' => ['kind' => 'newsletter_snippet', 'fields' => $this->pickFields($arguments, ['subject', 'preheader'])],
             'media.suggest_alt' => $this->mediaAlt($arguments),
             'comments.summarize' => $this->commentsSummarize($arguments, $run),
             'translation.translate' => $this->translation($arguments, $run, $actor),
@@ -179,7 +221,7 @@ final class AgentToolRegistry
         $ok = match ($tool) {
             'content.read' => $this->authz->hasPermission($actor, 'content:edit')
                 || $this->authz->hasPermission($actor, 'content:view'),
-            'content.propose_patch', 'seo.suggest_meta', 'translation.translate' => $this->authz->hasPermission($actor, 'content:edit'),
+            'content.propose_patch', 'seo.suggest_meta', 'content.suggest_tags', 'content.suggest_categories', 'newsletter.suggest_snippet', 'translation.translate' => $this->authz->hasPermission($actor, 'content:edit'),
             'media.suggest_alt' => $this->authz->hasPermission($actor, 'media:upload'),
             'comments.summarize' => $this->authz->hasRole($actor, ['EDITOR', 'ADMIN', 'SUPER_ADMIN']),
             default => false,
@@ -262,7 +304,33 @@ final class AgentToolRegistry
             'body' => $body,
             'seoTitle' => (string) ($seo['title'] ?? ''),
             'seoDescription' => (string) ($seo['description'] ?? ''),
+            'tags' => implode(', ', array_map(static fn (mixed $tag): string => (string) $tag, $document->getTags())),
+            'category' => $document->getCategory(),
             'revision' => $this->revision->forContent($document),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     * @return array<string, mixed>
+     */
+    /**
+     * @param array<string, mixed> $arguments
+     * @return array<string, mixed>
+     */
+    private function suggestCategory(array $arguments): array
+    {
+        $slug = strtolower(trim((string) ($arguments['category'] ?? '')));
+        if ($slug === '' || preg_match('/^[a-z0-9][a-z0-9-]{0,63}$/', $slug) !== 1) {
+            throw new AgentException('Malformed tool arguments', 422, 'SCHEMA');
+        }
+        if ($this->categories->get($slug) === null) {
+            throw new AgentException('Unknown category', 422, 'INVALID');
+        }
+
+        return [
+            'kind' => 'taxonomy',
+            'fields' => ['category' => $slug],
         ];
     }
 

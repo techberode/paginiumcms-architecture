@@ -44,7 +44,7 @@ final class AgentApplyService
 
         $kind = (string) ($proposal['kind'] ?? '');
         $result = match ($kind) {
-            'seo', 'content_patch' => $this->applyContent($proposal, $actor),
+            'seo', 'content_patch', 'taxonomy', 'newsletter_snippet' => $this->applyContent($proposal, $actor),
             'media_alt' => $this->applyMedia($proposal, $actor),
             default => throw new AgentException('This proposal cannot be applied', 422, 'NO_RESULT'),
         };
@@ -121,6 +121,32 @@ final class AgentApplyService
             'ogImage' => (string) ($seo['ogImage'] ?? ''),
             'noIndex' => ($seo['noIndex'] ?? false) === true,
         ], $slug);
+        if (array_key_exists('keywords', $fields)) {
+            $tags = $this->tagsFromKeywords((string) $fields['keywords']);
+            if ($tags !== []) {
+                $document->setTags($tags);
+            }
+        }
+        if (array_key_exists('tags', $fields)) {
+            $tags = $this->tagsFromKeywords((string) $fields['tags']);
+            if ($tags !== []) {
+                $document->setTags($tags);
+            }
+        }
+        $category = strtolower(trim((string) ($fields['category'] ?? '')));
+        if ($category !== '' && preg_match('/^[a-z0-9][a-z0-9-]{0,63}$/', $category) === 1) {
+            $document->setCategory($category);
+        }
+        $subject = trim((string) ($fields['subject'] ?? ''));
+        $preheader = trim((string) ($fields['preheader'] ?? ''));
+        if ($subject !== '' || $preheader !== '') {
+            $frontMatter = $document->getFrontMatter();
+            $frontMatter['newsletterSnippet'] = [
+                'subject' => mb_substr($subject, 0, 120),
+                'preheader' => mb_substr($preheader, 0, 200),
+            ];
+            $document->setFrontMatter($frontMatter);
+        }
         $this->content->save($document);
 
         return [
@@ -129,6 +155,36 @@ final class AgentApplyService
             'revision' => $this->revision->forContent($document),
             'published' => false,
         ];
+    }
+
+    /**
+     * SEO panel stores tags as a comma-separated string (`seo.tags` in the editor).
+     * Empty or over-long tokens are dropped; an empty result does not wipe existing tags.
+     *
+     * @return list<string>
+     */
+    private function tagsFromKeywords(string $keywords): array
+    {
+        $parts = preg_split('/[,;]+/u', $keywords);
+        if ($parts === false) {
+            return [];
+        }
+
+        $tags = [];
+        foreach ($parts as $part) {
+            $tag = trim($part);
+            if ($tag === '' || mb_strlen($tag) > 64) {
+                continue;
+            }
+            if (!in_array($tag, $tags, true)) {
+                $tags[] = $tag;
+            }
+            if (count($tags) >= 50) {
+                break;
+            }
+        }
+
+        return $tags;
     }
 
     /**

@@ -39,7 +39,17 @@ export interface TeamChatMessage {
   body: string;
   language?: string;
   file?: TeamChatFile | null;
+  topicId?: string;
   createdAt: number;
+}
+
+export interface TeamChatTopic {
+  id: string;
+  title: string;
+  status: 'open' | 'archived' | string;
+  sourceTicketId?: string;
+  closeReason?: string;
+  lastActivityAt?: number;
 }
 
 export const teamChatApi = {
@@ -92,9 +102,33 @@ export const teamChatApi = {
     return response.success ? (response.data?.messages ?? []) : [];
   },
 
+  topics: async (teamId: string): Promise<TeamChatTopic[]> => {
+    const response = await apiClient.get<{ topics?: TeamChatTopic[] }>(
+      `/api/team-chat/${encodeURIComponent(teamId)}/topics`
+    );
+    return response.success ? (response.data?.topics ?? []) : [];
+  },
+
+  importTopic: async (
+    teamId: string,
+    payload: { ticketId: string; title: string }
+  ): Promise<ApiResponse<{ topic: TeamChatTopic }>> => {
+    return apiClient.post<{ topic: TeamChatTopic }>(
+      `/api/team-chat/${encodeURIComponent(teamId)}/topics`,
+      payload
+    );
+  },
+
+  archiveTopic: async (teamId: string, topicId: string): Promise<ApiResponse<{ topic: TeamChatTopic }>> => {
+    return apiClient.post<{ topic: TeamChatTopic }>(
+      `/api/team-chat/${encodeURIComponent(teamId)}/topics/${encodeURIComponent(topicId)}/archive`,
+      {}
+    );
+  },
+
   post: async (
     teamId: string,
-    payload: { kind: 'text' | 'code'; body: string; language?: string }
+    payload: { kind: 'text' | 'code'; body: string; language?: string; topicId?: string }
   ): Promise<ApiResponse<{ message: TeamChatMessage }>> => {
     return apiClient.post<{ message: TeamChatMessage }>(
       `/api/team-chat/${encodeURIComponent(teamId)}`,

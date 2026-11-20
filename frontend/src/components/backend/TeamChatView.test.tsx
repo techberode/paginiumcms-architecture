@@ -23,6 +23,9 @@ vi.mock('../../api/teamChat', () => ({
         createdAt: 1,
       },
     ]),
+    topics: vi.fn(async () => []),
+    importTopic: vi.fn(),
+    archiveTopic: vi.fn(),
     post: vi.fn(async () => ({ success: true, data: { message: { id: 'tcm_2' } } })),
     upload: vi.fn(),
     downloadUrl: (teamId: string, fileId: string) => `/api/team-chat/${teamId}/files/${fileId}`,
@@ -45,6 +48,7 @@ describe('TeamChatView', () => {
         kind: 'text',
         body: 'Ship it',
         language: '',
+        topicId: '',
       });
     });
   });

@@ -44,10 +44,16 @@ export const AgentAssistantPanel: React.FC<Props> = ({
     if (message.includes('timeout') || message.includes('ECONNABORTED')) {
       return t('editor.agent.timeout');
     }
+    if (message.includes('NO_TOOLS') || message.includes('SCHEMA')) {
+      return t('editor.agent.schema');
+    }
+    if (message.includes('401') || message.toLowerCase().includes('management')) {
+      return t('editor.agent.providerKey');
+    }
     return message || t('editor.agent.failed');
   };
 
-  const suggestSeo = async () => {
+  const runTools = async (tools: string[], prompt: string) => {
     setBusy(true);
     try {
       const queued = await agentApi.enqueue({
@@ -55,8 +61,8 @@ export const AgentAssistantPanel: React.FC<Props> = ({
         resourceId: slug,
         locale,
         sourceRevision,
-        prompt: t('editor.agent.suggestSeoPrompt', { locale, type, slug }),
-        tools: ['content.read', 'seo.suggest_meta'],
+        prompt,
+        tools,
       });
       if (!queued.success || !queued.data) {
         toast.error(mapError(queued.error || queued.message || ''));
@@ -123,10 +129,35 @@ export const AgentAssistantPanel: React.FC<Props> = ({
         <button
           type="button"
           disabled={busy}
-          onClick={() => void suggestSeo()}
+          onClick={() => void runTools(
+            ['content.read', 'seo.suggest_meta'],
+            t('editor.agent.suggestSeoPrompt', { locale, type, slug }),
+          )}
           className="rounded-md bg-admin-sidebar-active px-3 py-1.5 text-sm font-semibold text-admin-sidebar-active-text disabled:opacity-60"
         >
           {busy ? t('editor.agent.running') : t('editor.agent.suggestSeo')}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void runTools(
+            ['content.read', 'seo.suggest_meta', 'content.suggest_tags', 'content.suggest_categories'],
+            t('editor.agent.suggestMetaPrompt', { locale, type, slug }),
+          )}
+          className="rounded-md border border-admin-border px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
+        >
+          {t('editor.agent.suggestMeta')}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void runTools(
+            ['content.read', 'newsletter.suggest_snippet'],
+            t('editor.agent.suggestNewsletterPrompt', { locale, type, slug }),
+          )}
+          className="rounded-md border border-admin-border px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
+        >
+          {t('editor.agent.suggestNewsletter')}
         </button>
       </div>
       <p className="text-xs text-admin-muted">{t('editor.agent.hint')}</p>
@@ -154,6 +185,30 @@ export const AgentAssistantPanel: React.FC<Props> = ({
             <p>
               <span className="text-admin-muted">{t('editor.agent.keywords')}: </span>
               {fields.keywords}
+            </p>
+          ) : null}
+          {fields.tags ? (
+            <p>
+              <span className="text-admin-muted">{t('editor.agent.tags')}: </span>
+              {fields.tags}
+            </p>
+          ) : null}
+          {fields.category ? (
+            <p>
+              <span className="text-admin-muted">{t('editor.agent.category')}: </span>
+              {fields.category}
+            </p>
+          ) : null}
+          {fields.subject ? (
+            <p>
+              <span className="text-admin-muted">{t('editor.agent.subject')}: </span>
+              {fields.subject}
+            </p>
+          ) : null}
+          {fields.preheader ? (
+            <p>
+              <span className="text-admin-muted">{t('editor.agent.preheader')}: </span>
+              {fields.preheader}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2">

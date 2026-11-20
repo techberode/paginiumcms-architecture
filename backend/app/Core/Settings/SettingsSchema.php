@@ -198,7 +198,7 @@ final class SettingsSchema
                     ['key' => 'maxTokensPerRun', 'type' => 'int', 'label' => 'Max tokens per run', 'default' => 4000, 'rules' => ['required', 'int', 'min:256', 'max:32000']],
                     ['key' => 'maxToolSteps', 'type' => 'int', 'label' => 'Max tool steps', 'default' => 6, 'rules' => ['required', 'int', 'min:1', 'max:12']],
                     ['key' => 'dailyTokenLimit', 'type' => 'int', 'label' => 'Daily token budget', 'default' => 0, 'rules' => ['int', 'min:0', 'max:2000000'], 'help' => '0 = unlimited (administrator policy). Counted on provider-reported tokens.'],
-                    ['key' => 'allowedTools', 'type' => 'string', 'label' => 'Allowed tools', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Comma-separated allow-list. Empty = no tools (enabling the agent grants nothing). Known: content.read, content.propose_patch, seo.suggest_meta, media.suggest_alt, comments.summarize, translation.translate.'],
+                    ['key' => 'allowedTools', 'type' => 'string', 'label' => 'Allowed tools', 'default' => '', 'rules' => ['string', 'max:500'], 'help' => 'Comma-separated allow-list. Empty = no tools (enabling the agent grants nothing). Known: content.read, content.propose_patch, seo.suggest_meta, content.suggest_tags, content.suggest_categories, newsletter.suggest_snippet, media.suggest_alt, comments.summarize, translation.translate.'],
                     ['key' => 'proposalTtlMinutes', 'type' => 'int', 'label' => 'Proposal TTL (minutes)', 'default' => 60, 'rules' => ['required', 'int', 'min:5', 'max:1440']],
                     ['key' => 'timeoutSeconds', 'type' => 'int', 'label' => 'Provider timeout (seconds)', 'default' => 30, 'rules' => ['required', 'int', 'min:5', 'max:120']],
                 ],
@@ -348,6 +348,7 @@ final class SettingsSchema
                     ['key' => 'maxStoredMessages', 'type' => 'int', 'label' => 'Max messages per room', 'default' => 800, 'rules' => ['required', 'int', 'min:100', 'max:5000'], 'help' => 'Hard cap per team room after retention. Oldest entries drop first.'],
                     ['key' => 'liveWindowMessages', 'type' => 'int', 'label' => 'Live window in UI', 'default' => 80, 'rules' => ['required', 'int', 'min:20', 'max:500'], 'help' => 'How many newest messages load in /team-chat. Search and export use the full retained history.'],
                     ['key' => 'searchMaxResults', 'type' => 'int', 'label' => 'Search result limit', 'default' => 100, 'rules' => ['required', 'int', 'min:10', 'max:500'], 'help' => 'Max matches returned by GET …/search?q=… per request.'],
+                    ['key' => 'topicIdleHours', 'type' => 'int', 'label' => 'Topic idle auto-close (hours)', 'default' => 72, 'rules' => ['required', 'int', 'min:1', 'max:720'], 'help' => 'Open team-chat topics with no new message for this long are archived automatically. Leaders can still archive sooner.'],
                 ],
             ],
             'playground' => [

@@ -16,6 +16,7 @@ use PaginiumCMS\Core\Agent\Services\AgentService;
 use PaginiumCMS\Core\Agent\Services\AgentSettings;
 use PaginiumCMS\Core\Agent\Services\AgentToolRegistry;
 use PaginiumCMS\Core\Content\LocalizedContentNormalizer;
+use PaginiumCMS\Core\Content\Services\CategoryRepository;
 use PaginiumCMS\Core\Content\LocalizedContentWriter;
 use PaginiumCMS\Core\FlatFile\Contracts\ContentRepositoryInterface;
 use PaginiumCMS\Core\FlatFile\Models\Page;
@@ -260,6 +261,133 @@ final class AgentServiceTest extends TestCase
         }
     }
 
+    public function testApplyWritesTagsFromKeywords(): void
+    {
+        $llm = new ScriptedLlmProvider([
+            [
+                'type' => 'tool_call',
+                'name' => 'seo.suggest_meta',
+                'arguments' => [
+                    'seoTitle' => 'Next title',
+                    'seoDescription' => 'Next description text.',
+                    'keywords' => 'cms, seo; cms,  ',
+                ],
+                'tokens' => 5,
+            ],
+            ['type' => 'message', 'content' => 'done', 'tokens' => 1],
+        ]);
+        $stack = $this->makeStack($this->activeSettings(), $llm);
+        $stack['page']->setTags(['keep-me']);
+        $queued = $stack['service']->enqueue([
+            'resourceType' => 'page',
+            'resourceId' => 'about',
+            'locale' => 'sk',
+            'tools' => ['seo.suggest_meta'],
+        ], $stack['actor']);
+        $executed = $stack['service']->execute((string) $queued['id'], $llm);
+        $stack['service']->apply((string) $executed['proposal']['id'], $stack['actor']);
+
+        $this->assertSame(['cms', 'seo'], $stack['page']->getTags());
+        $this->assertSame('Next title', $stack['page']->getFrontMatter()['localizedContent']['sk']['seo']['title'] ?? null);
+    }
+
+    public function testApplyKeepsTagsWhenKeywordsEmpty(): void
+    {
+        $llm = new ScriptedLlmProvider([
+            [
+                'type' => 'tool_call',
+                'name' => 'seo.suggest_meta',
+                'arguments' => [
+                    'seoTitle' => 'Next title',
+                    'seoDescription' => 'Next description text.',
+                    'keywords' => '   ,  ',
+                ],
+                'tokens' => 5,
+            ],
+            ['type' => 'message', 'content' => 'done', 'tokens' => 1],
+        ]);
+        $stack = $this->makeStack($this->activeSettings(), $llm);
+        $stack['page']->setTags(['keep-me']);
+        $queued = $stack['service']->enqueue([
+            'resourceType' => 'page',
+            'resourceId' => 'about',
+            'tools' => ['seo.suggest_meta'],
+        ], $stack['actor']);
+        $executed = $stack['service']->execute((string) $queued['id'], $llm);
+        $stack['service']->apply((string) $executed['proposal']['id'], $stack['actor']);
+
+        $this->assertSame(['keep-me'], $stack['page']->getTags());
+    }
+
+    public function testApplyWritesTaxonomyAndNewsletterSnippet(): void
+    {
+        $llm = new ScriptedLlmProvider([
+            [
+                'type' => 'tool_call',
+                'name' => 'content.suggest_tags',
+                'arguments' => ['tags' => 'news, cms'],
+                'tokens' => 4,
+            ],
+            [
+                'type' => 'tool_call',
+                'name' => 'content.suggest_categories',
+                'arguments' => ['category' => 'news'],
+                'tokens' => 4,
+            ],
+            [
+                'type' => 'tool_call',
+                'name' => 'newsletter.suggest_snippet',
+                'arguments' => ['subject' => 'Weekly', 'preheader' => 'Short preview'],
+                'tokens' => 4,
+            ],
+            ['type' => 'message', 'content' => 'done', 'tokens' => 1],
+        ]);
+        $stack = $this->makeStack(array_merge($this->activeSettings(), [
+            'allowedTools' => 'content.suggest_tags,content.suggest_categories,newsletter.suggest_snippet',
+        ]), $llm);
+        $stack['categories']->save('news', 'News');
+        $queued = $stack['service']->enqueue([
+            'resourceType' => 'page',
+            'resourceId' => 'about',
+            'tools' => ['content.suggest_tags', 'content.suggest_categories', 'newsletter.suggest_snippet'],
+        ], $stack['actor']);
+        $executed = $stack['service']->execute((string) $queued['id'], $llm);
+        $stack['service']->apply((string) $executed['proposal']['id'], $stack['actor']);
+
+        $this->assertSame(['news', 'cms'], $stack['page']->getTags());
+        $this->assertSame('news', $stack['page']->getCategory());
+        $snippet = $stack['page']->getFrontMatter()['newsletterSnippet'] ?? null;
+        $this->assertSame('Weekly', is_array($snippet) ? ($snippet['subject'] ?? null) : null);
+        $this->assertSame('Short preview', is_array($snippet) ? ($snippet['preheader'] ?? null) : null);
+    }
+
+    public function testSuggestCategoryRejectsUnknownSlug(): void
+    {
+        $llm = new ScriptedLlmProvider([
+            [
+                'type' => 'tool_call',
+                'name' => 'content.suggest_categories',
+                'arguments' => ['category' => 'missing', 'eval' => 'nope'],
+                'tokens' => 2,
+            ],
+        ]);
+        $stack = $this->makeStack(array_merge($this->activeSettings(), [
+            'allowedTools' => 'content.suggest_categories',
+        ]), $llm);
+        $queued = $stack['service']->enqueue([
+            'resourceType' => 'page',
+            'resourceId' => 'about',
+            'tools' => ['content.suggest_categories'],
+        ], $stack['actor']);
+
+        try {
+            $stack['service']->execute((string) $queued['id'], $llm);
+            $this->fail('Expected schema reject');
+        } catch (AgentException $e) {
+            $this->assertSame('SCHEMA', $e->errorCode);
+        }
+    }
+
     public function testApplyRevisionConflict(): void
     {
         $llm = new ScriptedLlmProvider([
@@ -428,6 +556,7 @@ final class AgentServiceTest extends TestCase
      *     page: Page,
      *     budget: AgentBudgetStore,
      *     translationTransport: RecordingTranslationTransport,
+     *     categories: CategoryRepository,
      *     flags: AgentPermissionFlags
      * }
      */
@@ -478,6 +607,7 @@ final class AgentServiceTest extends TestCase
         $reader = new FileReader($validator);
         $writer = new FileWriter($validator);
         $agentSettings = new AgentSettings($settings);
+        $categories = new CategoryRepository($reader, $writer);
         $normalizer = new LocalizedContentNormalizer($settings);
         $revision = new ContentRevision();
         $audit = new SecurityAuditStore($reader);
@@ -512,7 +642,8 @@ final class AgentServiceTest extends TestCase
             $media,
             $translations,
             $authz,
-            $audit
+            $audit,
+            $categories
         );
         $providers = (new AgentLlmProviderRegistry($agentSettings))->withOverride($llm);
         $orchestrator = new AgentOrchestrator($agentSettings, $providers, $tools, $proposals, $budget, $audit);
@@ -543,6 +674,7 @@ final class AgentServiceTest extends TestCase
             'page' => $page,
             'budget' => $budget,
             'translationTransport' => $translationTransport,
+            'categories' => $categories,
             'flags' => $flags,
         ];
     }

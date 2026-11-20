@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { teamChatApi, type TeamChatInboxItem } from '../api/teamChat';
 import { AuthContext } from '../context/AuthContext';
+import { useI18n } from '../context/I18nContext';
 
 export interface TeamChatInboxState {
   ready: boolean;
@@ -11,6 +12,8 @@ export interface TeamChatInboxState {
 
 export function useTeamChatInbox(): TeamChatInboxState {
   const user = useContext(AuthContext)?.user ?? null;
+  const { t } = useI18n();
+  const previousCount = useRef<number | null>(null);
   const [items, setItems] = useState<TeamChatInboxItem[]>([]);
   const [count, setCount] = useState(0);
   const [ready, setReady] = useState(false);
@@ -32,6 +35,18 @@ export function useTeamChatInbox(): TeamChatInboxState {
       setItems(inbox.items);
       setCount(inbox.count);
       setReady(true);
+      if (
+        previousCount.current !== null
+        && inbox.count > previousCount.current
+        && typeof Notification !== 'undefined'
+        && Notification.permission === 'granted'
+      ) {
+        const newest = inbox.items[0];
+        new Notification(t('platform.teamChat.notifyGeneric'), {
+          body: newest?.preview || newest?.teamName || '',
+        });
+      }
+      previousCount.current = inbox.count;
     };
 
     void load();
@@ -42,7 +57,7 @@ export function useTeamChatInbox(): TeamChatInboxState {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [user?.hasTeamChat, user?.id]);
+  }, [t, user?.hasTeamChat, user?.id]);
 
   return {
     ready,

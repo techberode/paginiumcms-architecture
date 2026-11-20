@@ -21,6 +21,9 @@ return function (App $app): void {
         $group->get('/{teamId}/export', [$controller, 'exportArchive']);
         $group->post('/{teamId}/import', [$controller, 'importArchive']);
         $group->post('/{teamId}/clear-history', [$controller, 'clearHistory']);
+        $group->get('/{teamId}/topics', [$controller, 'topics']);
+        $group->post('/{teamId}/topics', [$controller, 'importTopic']);
+        $group->post('/{teamId}/topics/{topicId}/archive', [$controller, 'archiveTopic']);
         $group->get('/{teamId}', [$controller, 'messages']);
         $group->post('/{teamId}', [$controller, 'post'])
             ->add($container->get(TeamChatRateLimitMiddleware::class));
