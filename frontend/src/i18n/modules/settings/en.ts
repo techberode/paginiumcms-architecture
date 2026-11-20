@@ -2140,6 +2140,10 @@ export const settingsEn: MessageTree = {
       "searchMaxResults": {
         "label": "Search result limit",
         "help": "Maximum matches returned by team chat history search per request."
+      },
+      "topicIdleHours": {
+        "label": "Topic idle auto-close (hours)",
+        "help": "Open topics with no new message for this long are archived. A team leader can archive sooner."
       }
     },
     "playground": {

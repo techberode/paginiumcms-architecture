@@ -27,6 +27,7 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDef[] = [
       'smtp',
       'imap',
       'scheduler',
+      'teamChat',
       'workflows',
       'codePolicy',
       'playground',

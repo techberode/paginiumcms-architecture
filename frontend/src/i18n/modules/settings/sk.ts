@@ -1469,6 +1469,10 @@ export const settingsSk: MessageTree = {
       "searchMaxResults": {
         "label": "Limit výsledkov vyhľadávania",
         "help": "Max. počet zhôd na jeden dopyt history search."
+      },
+      "topicIdleHours": {
+        "label": "Automatické zatvorenie témy (hodiny)",
+        "help": "Otvorená téma bez novej správy sa po tomto čase archivuje. Vedúci tímu ju môže archivovať skôr."
       }
     },
     "playground": {

@@ -64,6 +64,9 @@ describe('settings i18n module', () => {
     expect(SETTINGS_CATEGORIES.find((category) => category.id === 'system')?.groups).toContain(
       'imap'
     );
+    expect(SETTINGS_CATEGORIES.find((category) => category.id === 'system')?.groups).toContain(
+      'teamChat'
+    );
     expect(SETTINGS_CATEGORIES.find((category) => category.id === 'site')?.groups).toContain(
       'translation'
     );
